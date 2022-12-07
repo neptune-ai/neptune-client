@@ -19,7 +19,7 @@ import unittest
 
 from neptune.new import (
     ANONYMOUS,
-    init,
+    init_run,
 )
 from neptune.new.envs import (
     API_TOKEN_ENV_NAME,
@@ -44,91 +44,91 @@ class TestLogHandler(unittest.TestCase):
             NeptuneHandler(run="PET-1")
 
     def test_default_attribute(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp)
+            logger = logging.getLogger()
+            logger.addHandler(handler)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "test message"])
 
     def test_custom_monitoring_namespace(self):
-        exp = init(mode="debug", flush_period=0.5, monitoring_namespace="watching")
-        handler = NeptuneHandler(run=exp)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
+        with init_run(mode="debug", flush_period=0.5, monitoring_namespace="watching") as exp:
+            handler = NeptuneHandler(run=exp)
+            logger = logging.getLogger()
+            logger.addHandler(handler)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["watching"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message"])
+            log_entries = list(exp["watching"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "test message"])
 
     def test_custom_target_attribute(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp, path="logging/my/logger")
-        logger = logging.getLogger()
-        logger.addHandler(handler)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp, path="logging/my/logger")
+            logger = logging.getLogger()
+            logger.addHandler(handler)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["logging"]["my"]["logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message"])
-        self.assertNotIn("python_logger", exp.get_structure()["monitoring"])
+            log_entries = list(exp["logging"]["my"]["logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "test message"])
+            self.assertNotIn("python_logger", exp.get_structure()["monitoring"])
 
     def test_custom_level(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp, level=logging.ERROR)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp, level=logging.ERROR)
+            logger = logging.getLogger()
+            logger.addHandler(handler)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message"])
 
     def test_formatter_works(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp)
-        handler.setFormatter(logging.Formatter("%(levelname)s|%(name)s: %(message)s"))
-        logger = logging.getLogger()
-        logger.addHandler(handler)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp)
+            handler.setFormatter(logging.Formatter("%(levelname)s|%(name)s: %(message)s"))
+            logger = logging.getLogger()
+            logger.addHandler(handler)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
 
     def test_log_level_works(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp)
+            logger = logging.getLogger()
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "debug message", "test message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "debug message", "test message"])
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
     def test_log_level_works_with_level(self):
-        exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneHandler(run=exp, level=logging.WARNING)
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel(logging.DEBUG)
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            handler = NeptuneHandler(run=exp, level=logging.WARNING)
+            logger = logging.getLogger()
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "test message"])
 
-        handler.setLevel(logging.ERROR)
+            handler.setLevel(logging.ERROR)
 
-        self._log_messages(logger)
+            self._log_messages(logger)
 
-        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message", "error message"])
+            log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+            self.assertListEqual(log_entries, ["error message", "test message", "error message"])

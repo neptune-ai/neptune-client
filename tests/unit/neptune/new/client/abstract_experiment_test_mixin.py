@@ -37,31 +37,32 @@ class AbstractExperimentTestMixin:
 
     def test_incorrect_mode(self):
         with self.assertRaises(ValueError):
-            self.call_init(mode="srtgj")
+            with self.call_init(mode="srtgj"):
+                pass
 
     def test_debug_mode(self):
-        exp = self.call_init(mode="debug")
-        exp["some/variable"] = 13
-        self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+        with self.call_init(mode="debug") as exp:
+            exp["some/variable"] = 13
+            self.assertEqual(13, exp["some/variable"].fetch())
+            self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_offline_mode(self):
-        exp = self.call_init(mode="offline")
-        exp["some/variable"] = 13
-        with self.assertRaises(NeptuneOfflineModeFetchException):
-            exp["some/variable"].fetch()
+        with self.call_init(mode="offline") as exp:
+            exp["some/variable"] = 13
+            with self.assertRaises(NeptuneOfflineModeFetchException):
+                exp["some/variable"].fetch()
 
-        exp_dir = f"{exp.container_type.value}__{exp._id}"
-        self.assertIn(exp_dir, os.listdir(".neptune/offline"))
-        self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
+            exp_dir = f"{exp.container_type.value}__{exp._id}"
+            self.assertIn(exp_dir, os.listdir(".neptune/offline"))
+            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
 
     def test_sync_mode(self):
-        exp = self.call_init(mode="sync")
-        exp["some/variable"] = 13
-        exp["copied/variable"] = exp["some/variable"]
-        self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertEqual(13, exp["copied/variable"].fetch())
-        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+        with self.call_init(mode="sync") as exp:
+            exp["some/variable"] = 13
+            exp["copied/variable"] = exp["some/variable"]
+            self.assertEqual(13, exp["some/variable"].fetch())
+            self.assertEqual(13, exp["copied/variable"].fetch())
+            self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
@@ -100,45 +101,45 @@ class AbstractExperimentTestMixin:
     def test_async_mode_stop_on_dead(self):
         stream = StringIO()
         with contextlib.redirect_stdout(stream):
-            exp = self.call_init(mode="async", flush_period=0.5)
-            update_freq = 1
-            default_freq = exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
-            try:
-                exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = update_freq
-                exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
-                exp["some/variable"] = 13
-                exp.stop()
-            finally:
-                exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = default_freq
+            with self.call_init(mode="async", flush_period=0.5) as exp:
+                update_freq = 1
+                default_freq = exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
+                try:
+                    exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = update_freq
+                    exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+                    exp["some/variable"] = 13
+                    exp.stop()
+                finally:
+                    exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = default_freq
 
         self.assertIn("NeptuneSynchronizationAlreadyStopped", stream.getvalue())
 
     def test_missing_attribute(self):
-        exp = self.call_init(mode="debug")
-        with self.assertRaises(MissingFieldException):
-            exp["non/existing/path"].fetch()
+        with self.call_init(mode="debug") as exp:
+            with self.assertRaises(MissingFieldException):
+                exp["non/existing/path"].fetch()
 
     def test_wrong_function(self):
-        exp = self.call_init(mode="debug")
-        with self.assertRaises(AttributeError):
-            exp["non/existing/path"].foo()
+        with self.call_init(mode="debug") as exp:
+            with self.assertRaises(AttributeError):
+                exp["non/existing/path"].foo()
 
     def test_wrong_per_type_function(self):
-        exp = self.call_init(mode="debug")
-        exp["some/path"] = "foo"
-        with self.assertRaises(TypeDoesNotSupportAttributeException):
-            exp["some/path"].download()
+        with self.call_init(mode="debug") as exp:
+            exp["some/path"] = "foo"
+            with self.assertRaises(TypeDoesNotSupportAttributeException):
+                exp["some/path"].download()
 
     def test_clean_data_on_stop(self):
-        exp = self.call_init(mode="async", flush_period=0.5)
-        container_path = exp._op_processor._queue._dir_path
+        with self.call_init(mode="async", flush_period=0.5) as exp:
+            container_path = exp._op_processor._queue._dir_path
 
-        assert os.path.exists(container_path)
+            assert os.path.exists(container_path)
 
-        exp.stop()
+            exp.stop()
 
-        assert not os.path.exists(container_path)
-        assert not os.path.exists(container_path.parent)
+            assert not os.path.exists(container_path)
+            assert not os.path.exists(container_path.parent)
 
     @abstractmethod
     def test_read_only_mode(self):

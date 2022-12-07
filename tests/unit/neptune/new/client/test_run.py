@@ -70,21 +70,20 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        exp = init_run(mode="read-only", with_id="whatever")
+        with init_run(mode="read-only", with_id="whatever") as exp:
+            with self.assertLogs() as caplog:
+                exp["some/variable"] = 13
+                exp["some/other_variable"] = 11
+                self.assertEqual(
+                    caplog.output,
+                    [
+                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "Client in read-only mode, nothing will be saved to server."
+                    ],
+                )
 
-        with self.assertLogs() as caplog:
-            exp["some/variable"] = 13
-            exp["some/other_variable"] = 11
-            self.assertEqual(
-                caplog.output,
-                [
-                    "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
-                    "Client in read-only mode, nothing will be saved to server."
-                ],
-            )
-
-        self.assertEqual(42, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+            self.assertEqual(42, exp["some/variable"].fetch())
+            self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
@@ -112,39 +111,39 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.new.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
-        exp = init_run(mode="debug")
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
+        with init_run(mode="debug") as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init_run(mode="debug", source_files=[])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
+        with init_run(mode="debug", source_files=[]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init_run(mode="debug", source_files=["../*"])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main_dir/main.py")
+        with init_run(mode="debug", source_files=["../*"]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "main_dir/main.py")
 
-        exp = init_run(mode="debug", source_files=["internal/*"])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
+        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init_run(mode="debug", source_files=["../other_dir/*"])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
+        with init_run(mode="debug", source_files=["../other_dir/*"]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
     @patch("neptune.vendor.lib_programname.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
-        exp = init_run(mode="debug")
-        with self.assertRaises(MissingFieldException):
-            exp["source_code/entrypoint"].fetch()
+        with init_run(mode="debug") as exp:
+            with self.assertRaises(MissingFieldException):
+                exp["source_code/entrypoint"].fetch()
 
-        exp = init_run(mode="debug", source_files=[])
-        with self.assertRaises(MissingFieldException):
-            exp["source_code/entrypoint"].fetch()
+        with init_run(mode="debug", source_files=[]) as exp:
+            with self.assertRaises(MissingFieldException):
+                exp["source_code/entrypoint"].fetch()
 
-        exp = init_run(mode="debug", source_files=["../*"])
-        with self.assertRaises(MissingFieldException):
-            exp["source_code/entrypoint"].fetch()
+        with init_run(mode="debug", source_files=["../*"]) as exp:
+            with self.assertRaises(MissingFieldException):
+                exp["source_code/entrypoint"].fetch()
 
-        exp = init_run(mode="debug", source_files=["internal/*"])
-        with self.assertRaises(MissingFieldException):
-            exp["source_code/entrypoint"].fetch()
+        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+            with self.assertRaises(MissingFieldException):
+                exp["source_code/entrypoint"].fetch()
 
     @patch("neptune.new.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
@@ -158,11 +157,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     def test_entrypoint_without_common_root(self):
-        exp = init_run(mode="debug", source_files=["../*"])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
+        with init_run(mode="debug", source_files=["../*"]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
-        exp = init_run(mode="debug", source_files=["internal/*"])
-        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
+        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):
         # given uninitialized run
