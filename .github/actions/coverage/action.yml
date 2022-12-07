@@ -14,15 +14,6 @@ description: Gather and report coverage to Codecov
 runs:
     using: "composite"
     steps:
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
-      - name: Install coverage
-        run: pip install coverage[toml]
-        shell: bash
-
       - name: Download coverages
         uses: actions/download-artifact@v3
         with:
