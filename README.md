@@ -84,7 +84,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="all metadata metrics" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/all-metadata-metrics.gif" width="600">
+      <img border="0" alt="all metadata metrics" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/all-metadata-metrics.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -104,7 +104,7 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="organize dashboards" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/organize-dashboards.gif" width="600">
+      <img border="0" alt="organize dashboards" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/organize-dashboards.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -216,7 +216,7 @@ trainer.fit(my_model, my_dataloader)
 &nbsp;
 
 <div align="center">
-    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-customers.png" width="1500" />
+    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-customers.png" width="1500" />
 </div>
 &nbsp;
 
