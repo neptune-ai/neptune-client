@@ -63,11 +63,17 @@ class TestExperiment(unittest.TestCase):
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
 
-        run1 = init(**kwargs)
-        run2 = init_run(**kwargs)
-        project = init_project(**kwargs)
-        model = init_model(key="MOD", **kwargs)
-        return [run1, run2, project, model]
+        with init(**kwargs) as run:
+            yield run
+
+        with init_run(**kwargs) as run:
+            yield run
+
+        with init_project(**kwargs) as project:
+            yield project
+
+        with init_model(key="MOD", **kwargs) as model:
+            yield model
 
     def test_define(self):
         for exp in self.get_experiments(flush_period=0.5):

@@ -60,40 +60,42 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
-            init_project(name=self.PROJECT_NAME, mode="offline")
+            with init_project(name=self.PROJECT_NAME, mode="offline"):
+                pass
 
     def test_no_project_name(self):
         with self.assertRaises(NeptuneMissingProjectNameException):
-            init_project(mode="async")
+            with init_project(mode="async"):
+                pass
 
     def test_inexistent_project(self):
         with self.assertRaises(NeptuneMissingProjectNameException):
-            init_project(mode="async")
+            with init_project(mode="async"):
+                pass
 
     def test_project_name_env_var(self):
         os.environ[PROJECT_ENV_NAME] = self.PROJECT_NAME
 
-        project = init_project(mode="sync")
-        project["some/variable"] = 13
-        self.assertEqual(13, project["some/variable"].fetch())
+        with init_project(mode="sync") as project:
+            project["some/variable"] = 13
+            self.assertEqual(13, project["some/variable"].fetch())
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        project = init_project(name=self.PROJECT_NAME, mode="read-only")
+        with init_project(name=self.PROJECT_NAME, mode="read-only") as project:
+            with self.assertLogs() as caplog:
+                project["some/variable"] = 13
+                project["some/other_variable"] = 11
+                self.assertEqual(
+                    caplog.output,
+                    [
+                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "Client in read-only mode, nothing will be saved to server."
+                    ],
+                )
 
-        with self.assertLogs() as caplog:
-            project["some/variable"] = 13
-            project["some/other_variable"] = 11
-            self.assertEqual(
-                caplog.output,
-                [
-                    "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
-                    "Client in read-only mode, nothing will be saved to server."
-                ],
-            )
-
-        self.assertEqual(42, project["some/variable"].fetch())
-        self.assertNotIn(str(project._id), os.listdir(".neptune"))
+            self.assertEqual(42, project["some/variable"].fetch())
+            self.assertNotIn(str(project._id), os.listdir(".neptune"))

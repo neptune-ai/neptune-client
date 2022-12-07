@@ -88,21 +88,20 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_read_only_mode(self):
-        exp = init_model_version(mode="read-only", with_id="whatever")
+        with init_model_version(mode="read-only", with_id="whatever") as exp:
+            with self.assertLogs() as caplog:
+                exp["some/variable"] = 13
+                exp["some/other_variable"] = 11
+                self.assertEqual(
+                    caplog.output,
+                    [
+                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "Client in read-only mode, nothing will be saved to server."
+                    ],
+                )
 
-        with self.assertLogs() as caplog:
-            exp["some/variable"] = 13
-            exp["some/other_variable"] = 11
-            self.assertEqual(
-                caplog.output,
-                [
-                    "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
-                    "Client in read-only mode, nothing will be saved to server."
-                ],
-            )
-
-        self.assertEqual(42, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+            self.assertEqual(42, exp["some/variable"].fetch())
+            self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -128,26 +127,29 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model_version(with_id=None, model=None)
+            with init_model_version(with_id=None, model=None):
+                pass
+
         with self.assertRaises(NeptuneParametersCollision):
-            init_model_version(version="foo", with_id="foo")
+            with init_model_version(version="foo", with_id="foo"):
+                pass
 
     def test_change_stage(self):
-        exp = self.call_init()
-        exp.change_stage(stage="production")
+        with self.call_init() as exp:
+            exp.change_stage(stage="production")
 
-        self.assertEqual("production", exp["sys/stage"].fetch())
+            self.assertEqual("production", exp["sys/stage"].fetch())
 
-        with self.assertRaises(ValueError):
-            exp.change_stage(stage="wrong_stage")
+            with self.assertRaises(ValueError):
+                exp.change_stage(stage="wrong_stage")
 
     def test_change_stage_of_offline_model_version(self):
         # this test will be required when we decide that creating model versions
         # in offline mode is allowed
         with self.assertRaises(NeptuneException):
-            exp = self.call_init(mode="offline")
-            with self.assertRaises(NeptuneOfflineModeChangeStageException):
-                exp.change_stage(stage="production")
+            with self.call_init(mode="offline") as exp:
+                with self.assertRaises(NeptuneOfflineModeChangeStageException):
+                    exp.change_stage(stage="production")
 
     def test_name_parameter(self):
         with self.call_init(name="some_name") as exp:
