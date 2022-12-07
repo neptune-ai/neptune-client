@@ -21,73 +21,33 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
 
-    - name: Unit - New
+    - name: Test
       run: |
         coverage run -m pytest -v ./tests/unit/
-#        --timeout=120 --timeout_method=thread \
-#        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+        --timeout=120 --timeout_method=thread \
+        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-#    - name: Coverage - combine
-#      run: |
-#        coverage combine
-#      shell: bash
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: unit-coverage
+        path: ./.coverage
 
-    - name: Coverage - debug
-      run: |
-        coverage debug data
-      shell: bash
+    - name: Upload test reports
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-artifacts
+        path: ./test-results
 
-#    - name: Upload new client test coverage
-#      uses: actions/upload-artifact@v2
-#      if: always()
-#      with:
-#        name: unit-coverage-new
-#        path: coverage.new.*
-#
-#    - name: Unit - Management
-#      run: |
-#        coverage run --source='neptune.management' --data-file=coverage.management -p -m \
-#        pytest -v ./tests/unit/neptune/management \
-#        --timeout=120 --timeout_method=thread \
-#        --junitxml="./test-results/test-unit-management-${{ inputs.os }}-${{ inputs.python-version }}.xml"
-#      shell: bash
-#
-#    - name: Upload management test coverage
-#      uses: actions/upload-artifact@v2
-#      if: always()
-#      with:
-#        name: unit-coverage-management
-#        path: coverage.management.*
-#
-#    - name: Unit - Legacy
-#      run: |
-#        coverage run --source='neptune.legacy' --data-file=coverage.legacy -p -m \
-#        pytest -v ./tests/unit/neptune/legacy \
-#        --timeout=120 --timeout_method=thread \
-#        --junitxml="./test-results/test-unit-legacy-${{ inputs.os }}-${{ inputs.python-version }}.xml"
-#      shell: bash
-#
-#    - name: Upload legacy client test coverage
-#      uses: actions/upload-artifact@v2
-#      if: always()
-#      with:
-#        name: unit-coverage-legacy
-#        path: coverage.legacy.*
-#
-#    - name: Report
-#      uses: Raalsky/action-junit-report@main
-#      if: always()
-#      with:
-#        report_paths: './test-results/test-unit-*.xml'
-#        update_check: true
-#        include_passed: true
-#        annotate_notice: true
-#        job_name: ${{ inputs.report_job }}
-#
-#    - name: Upload test reports
-#      uses: actions/upload-artifact@v2
-#      if: always()
-#      with:
-#        name: test-artifacts
-#        path: ./test-results
+    - name: Report
+      uses: Raalsky/action-junit-report@main
+      if: always()
+      with:
+        report_paths: './test-results/test-unit-*.xml'
+        update_check: true
+        include_passed: true
+        annotate_notice: true
+        job_name: ${{ inputs.report_job }}
