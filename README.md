@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-banner.jpeg" width="1500" />
+    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-banner.jpeg" width="1500" />
     &nbsp;
  <h1>neptune.ai</h1>
 </div>
@@ -34,7 +34,7 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 &nbsp;
 <div align="center">
     <a href="https://youtu.be/9jN7RuPNEyc">
-      <img border="0" alt="neptune.ai explainer video" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-explainer-video.png" width="600">
+      <img border="0" alt="neptune.ai explainer video" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-explainer-video.png" width="600">
     </a>
 </div>
 &nbsp;
@@ -84,7 +84,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="all metadata metrics" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/all-metadata-metrics.gif" width="600">
+      <img border="0" alt="all metadata metrics" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/all-metadata-metrics.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -104,7 +104,7 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="organize dashboards" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/organize-dashboards.gif" width="600">
+      <img border="0" alt="organize dashboards" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/organize-dashboards.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -128,7 +128,7 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="compare, search, filter" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/compare-search-filter.gif" width="600">
+      <img border="0" alt="compare, search, filter" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/compare-search-filter.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -148,7 +148,7 @@ Version, review, and access production-ready models and metadata associated with
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="register stages" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/register-stages.gif" width="600">
+      <img border="0" alt="register stages" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/register-stages.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -170,7 +170,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="share persistent link" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/share-persistent-link.gif" width="600">
+      <img border="0" alt="share persistent link" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/share-persistent-link.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -179,7 +179,7 @@ Have a single place where your team can see the results and access all models an
 ## Integrate with any MLOps stack
 neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, scikit-learn, XGBoost, Optuna, Kedro, 🤗 Transformers, fastai, Prophet, and more.
 
-#### <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
+#### <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
 Example:
 
@@ -216,7 +216,7 @@ trainer.fit(my_model, my_dataloader)
 &nbsp;
 
 <div align="center">
-    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-customers.png" width="1500" />
+    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-customers.png" width="1500" />
 </div>
 &nbsp;
 
