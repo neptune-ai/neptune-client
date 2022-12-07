@@ -29,17 +29,22 @@ runs:
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Coverage - combine
+      run: |
+        coverage combine --data-file=coverage.new
+      shell: bash
+
     - name: Coverage - debug
       run: |
         coverage debug data
       shell: bash
 
-    - name: Upload new client test coverage
-      uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: unit-coverage-new
-        path: coverage.new.*
+#    - name: Upload new client test coverage
+#      uses: actions/upload-artifact@v2
+#      if: always()
+#      with:
+#        name: unit-coverage-new
+#        path: coverage.new.*
 #
 #    - name: Unit - Management
 #      run: |
@@ -70,20 +75,20 @@ runs:
 #      with:
 #        name: unit-coverage-legacy
 #        path: coverage.legacy.*
-
-    - name: Report
-      uses: Raalsky/action-junit-report@main
-      if: always()
-      with:
-        report_paths: './test-results/test-unit-*.xml'
-        update_check: true
-        include_passed: true
-        annotate_notice: true
-        job_name: ${{ inputs.report_job }}
-
-    - name: Upload test reports
-      uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: test-artifacts
-        path: ./test-results
+#
+#    - name: Report
+#      uses: Raalsky/action-junit-report@main
+#      if: always()
+#      with:
+#        report_paths: './test-results/test-unit-*.xml'
+#        update_check: true
+#        include_passed: true
+#        annotate_notice: true
+#        job_name: ${{ inputs.report_job }}
+#
+#    - name: Upload test reports
+#      uses: actions/upload-artifact@v2
+#      if: always()
+#      with:
+#        name: test-artifacts
+#        path: ./test-results
