@@ -43,6 +43,7 @@ pandas = "*"
 # dev
 altair = { version = "*", optional = true }
 bokeh = { version = "*", optional = true }
+coverage = { version = "*", extras = [ "toml" ], optional = true }
 freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
 mock = { version = "*", optional = true }
@@ -51,7 +52,6 @@ munch = { version = "*", optional = true }
 plotly = { version = "*", optional = true }
 pre-commit = { version = "*", optional = true }
 pytest = { version = "*", optional = true }
-pytest-cov = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
@@ -93,6 +93,8 @@ xgboost = ["neptune-xgboost"]
 dev = [
     "altair",
     "bokeh",
+    "coverage",
+    "Faker",
     "freezegun",
     "matplotlib",
     "mock",
@@ -101,14 +103,12 @@ dev = [
     "plotly",
     "pre-commit",
     "pytest",
-    "pytest-cov",
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
     "tensorflow",
     "torch",
     "vega_datasets",
-    "Faker"
 ]
 e2e = [
     # Integrations
@@ -188,3 +188,10 @@ force_grid_wrap = 2
 [tool.flake8]
 max-line-length = 120
 extend-ignore = "E203"
+
+[tool.coverage]
+source = 'src/'
+
+[tool.coverage.run]
+branch = true
+relative_files = true

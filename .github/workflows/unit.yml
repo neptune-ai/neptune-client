@@ -55,3 +55,18 @@ jobs:
         uses: ./.github/actions/notify
         with:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
+
+  coverage:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Coverage report
+        uses: ./.github/actions/coverage
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          kind: unit

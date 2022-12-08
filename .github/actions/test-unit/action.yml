@@ -21,29 +21,26 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
 
-    - name: Unit - New
+    - name: Test
       run: |
-        echo "<<<<<<<< Running 'new' unittests >>>>>>>>" && \
-        pytest -v ./tests/unit/neptune/new \
+        coverage run -p -m pytest -v ./tests/unit/ \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-    - name: Unit - Management
-      run: |
-        echo "<<<<<<<< Running 'management' unittests >>>>>>>>" && \
-        pytest -v ./tests/unit/neptune/management \
-        --timeout=120 --timeout_method=thread \
-        --junitxml="./test-results/test-unit-management-${{ inputs.os }}-${{ inputs.python-version }}.xml"
-      shell: bash
+    - name: Upload test coverage
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: unit-coverage
+        path: ./.coverage*
 
-    - name: Unit - Legacy
-      run: |
-        echo "<<<<<<<< Running 'legacy' unittests >>>>>>>>" && \
-        pytest -v ./tests/unit/neptune/legacy \
-        --timeout=120 --timeout_method=thread \
-        --junitxml="./test-results/test-unit-legacy-${{ inputs.os }}-${{ inputs.python-version }}.xml"
-      shell: bash
+    - name: Upload test reports
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-artifacts
+        path: ./test-results
 
     - name: Report
       uses: Raalsky/action-junit-report@main
@@ -54,9 +51,3 @@ runs:
         include_passed: true
         annotate_notice: true
         job_name: ${{ inputs.report_job }}
-
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: test-artifacts
-        path: ./test-results
