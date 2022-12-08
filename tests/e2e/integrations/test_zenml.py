@@ -27,6 +27,16 @@ NEPTUNE_STACK_NAME = "neptune_stack"
 
 
 @fixture(scope="session")
+def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
+    try:
+        zenml_client.initialize()
+    except InitializationException:
+        pass
+
+    zenml_client.activate_stack(NEPTUNE_STACK_NAME)
+
+
+@fixture(scope="session")
 def zenml_client() -> Client:
     return Client()
 
@@ -65,21 +75,11 @@ def stack_with_neptune(zenml_client, experiment_tracker_comp):
         return zenml_client.get_stack(name_id_or_prefix=NEPTUNE_STACK_NAME)
 
 
-@fixture(scope="session")
-def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
-    try:
-        zenml_client.initialize()
-    except InitializationException:
-        pass
-
-    zenml_client.activate_stack(NEPTUNE_STACK_NAME)
-
-
 settings = NeptuneExperimentTrackerSettings(tags={"sklearn", "digits"})
 
 
 @step(
-    experiment_tracker=Client().active_stack.experiment_tracker.name,
+    experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
     settings={"experiment_tracker.neptune": settings},
     enable_cache=False,
 )
