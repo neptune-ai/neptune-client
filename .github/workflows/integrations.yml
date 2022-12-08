@@ -302,17 +302,17 @@ jobs:
           module: zenml
           report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
 
-  zenml-notify:
-    needs: [zenml]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Notify
-        uses: ./.github/actions/notify
-        with:
-          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+#  zenml-notify:
+#    needs: [zenml]
+#    runs-on: ubuntu-latest
+#    if: github.ref == 'refs/heads/master'
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: Notify
+#        uses: ./.github/actions/notify
+#        with:
+#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
