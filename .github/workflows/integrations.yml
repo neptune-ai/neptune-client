@@ -43,7 +43,7 @@ jobs:
   fastai-notify:
     needs: [fastai]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -86,7 +86,7 @@ jobs:
   kedro-notify:
     needs: [kedro]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -129,7 +129,7 @@ jobs:
   prophet-notify:
     needs: [prophet]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -172,7 +172,7 @@ jobs:
   keras-notify:
     needs: [keras]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -216,7 +216,7 @@ jobs:
   lightning-notify:
     needs: [lightning]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -260,7 +260,7 @@ jobs:
   huggingface-notify:
     needs: [huggingface]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -304,7 +304,7 @@ jobs:
   zenml-notify:
     needs: [zenml]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

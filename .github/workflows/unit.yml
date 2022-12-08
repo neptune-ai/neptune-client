@@ -44,7 +44,7 @@ jobs:
   unit-tests-notify:
     needs: [ test ]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
