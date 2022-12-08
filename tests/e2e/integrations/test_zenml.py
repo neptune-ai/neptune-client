@@ -15,6 +15,7 @@ from zenml.exceptions import (
     StackExistsError,
 )
 from zenml.integrations.neptune.experiment_trackers.run_state import get_neptune_run
+from zenml.integrations.neptune.flavors import NeptuneExperimentTrackerSettings
 from zenml.pipelines import pipeline
 from zenml.steps import step
 
@@ -74,7 +75,14 @@ def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
     zenml_client.activate_stack(NEPTUNE_STACK_NAME)
 
 
-@step
+settings = NeptuneExperimentTrackerSettings(tags={"sklearn", "digits"})
+
+
+@step(
+    experiment_tracker=Client().active_stack.experiment_tracker.name,
+    settings={"experiment_tracker.neptune": settings},
+    enable_cache=False,
+)
 def example_step() -> None:
     """A very minimalistic pipeline step.
     Loads a sample dataset, trains a simple classifier and logs
@@ -111,7 +119,7 @@ class TestZenML(BaseE2ETest):
 
     def _test_pipeline_runs_without_errors(self):
         run = neptune_example_pipeline(ex_step=example_step())
-        run.run(config_path="zenml_config.yaml")
+        run.run()
 
         self.zenml_run_name = run.get_runs()[-1].name
 
