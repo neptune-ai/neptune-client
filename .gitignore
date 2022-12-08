@@ -127,3 +127,6 @@ venv.bak/
 .vscode
 
 stream.bin
+
+# zenml e2e
+.zen

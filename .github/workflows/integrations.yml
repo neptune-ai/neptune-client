@@ -271,3 +271,47 @@ jobs:
         uses: ./.github/actions/notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+
+  zenml:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.8" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: zenml
+          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+
+  zenml-notify:
+    needs: [zenml]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Notify
+        uses: ./.github/actions/notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
