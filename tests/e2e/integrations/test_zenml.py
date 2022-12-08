@@ -42,13 +42,13 @@ def zenml_client() -> Client:
 
 
 @fixture(scope="session")
-def experiment_tracker_comp(zenml_client):
+def experiment_tracker_comp(zenml_client, environment):
     try:
         return zenml_client.create_stack_component(
             name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
             component_type=StackComponentType.EXPERIMENT_TRACKER,
             flavor="neptune",
-            configuration={},
+            configuration={"api_token": environment.user_token, "project": environment.project},
         )
     except StackComponentExistsError:
         return zenml_client.get_stack_component(
