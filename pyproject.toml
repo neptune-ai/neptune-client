@@ -192,9 +192,7 @@ force_grid_wrap = 2
 max-line-length = 120
 extend-ignore = "E203"
 
-[tool.coverage]
-source = 'src/'
-
 [tool.coverage.run]
+source = ['src']
 branch = true
 relative_files = true
