@@ -26,7 +26,9 @@ def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
 
 @pytest.fixture(scope="session")
 def zenml_client():
-    return zenml.client.Client()
+    from zenml.client import Client
+
+    return Client()
 
 
 @pytest.fixture(scope="session")
