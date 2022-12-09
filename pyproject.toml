@@ -193,6 +193,12 @@ max-line-length = 120
 extend-ignore = "E203"
 
 [tool.coverage.run]
-source = ['src']
+source_pkgs = ['neptune']
 branch = true
 relative_files = true
+
+[tool.coverage.paths]
+source = [
+    'src/neptune',
+    'src\neptune'
+]
