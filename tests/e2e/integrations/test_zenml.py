@@ -1,62 +1,51 @@
 import hashlib
 
-from pytest import (
-    fixture,
-    mark,
-)
+import pytest
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
-from zenml.client import Client
-from zenml.enums import StackComponentType
-from zenml.exceptions import (
-    InitializationException,
-    StackComponentExistsError,
-    StackExistsError,
-)
-from zenml.integrations.neptune.experiment_trackers.run_state import get_neptune_run
-from zenml.integrations.neptune.flavors import NeptuneExperimentTrackerSettings
-from zenml.pipelines import pipeline
-from zenml.steps import step
 
 import neptune.new as neptune
 from tests.e2e.base import BaseE2ETest
+
+zenml = pytest.importorskip("zenml")
 
 NEPTUNE_EXPERIMENT_TRACKER_NAME = "neptune_tracker"
 NEPTUNE_STACK_NAME = "neptune_stack"
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
     try:
         zenml_client.initialize()
-    except InitializationException:
+    except zenml.exceptions.InitializationException:
         pass
 
     zenml_client.activate_stack(NEPTUNE_STACK_NAME)
 
 
-@fixture(scope="session")
-def zenml_client() -> Client:
-    return Client()
+@pytest.fixture(scope="session")
+def zenml_client() -> zenml.client.Client:
+    return zenml.client.Client()
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def experiment_tracker_comp(zenml_client, environment):
     try:
         return zenml_client.create_stack_component(
             name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
-            component_type=StackComponentType.EXPERIMENT_TRACKER,
+            component_type=zenml.enums.StackComponentType.EXPERIMENT_TRACKER,
             flavor="neptune",
             configuration={"api_token": environment.user_token, "project": environment.project},
         )
-    except StackComponentExistsError:
+    except zenml.exceptions.StackComponentExistsError:
         return zenml_client.get_stack_component(
-            component_type=StackComponentType.EXPERIMENT_TRACKER, name_id_or_prefix=NEPTUNE_EXPERIMENT_TRACKER_NAME
+            component_type=zenml.enums.StackComponentType.EXPERIMENT_TRACKER,
+            name_id_or_prefix=NEPTUNE_EXPERIMENT_TRACKER_NAME,
         )
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def stack_with_neptune(zenml_client, experiment_tracker_comp):
     a_id = zenml_client.active_stack.artifact_store.id
     o_id = zenml_client.active_stack.orchestrator.id
@@ -66,19 +55,19 @@ def stack_with_neptune(zenml_client, experiment_tracker_comp):
         return zenml_client.create_stack(
             name=NEPTUNE_STACK_NAME,
             components={
-                StackComponentType.ARTIFACT_STORE: a_id,
-                StackComponentType.ORCHESTRATOR: o_id,
-                StackComponentType.EXPERIMENT_TRACKER: e_id,
+                zenml.enums.StackComponentType.ARTIFACT_STORE: a_id,
+                zenml.enums.StackComponentType.ORCHESTRATOR: o_id,
+                zenml.enums.StackComponentType.EXPERIMENT_TRACKER: e_id,
             },
         )
-    except StackExistsError:
+    except zenml.exceptions.StackExistsError:
         return zenml_client.get_stack(name_id_or_prefix=NEPTUNE_STACK_NAME)
 
 
-settings = NeptuneExperimentTrackerSettings(tags={"sklearn", "digits"})
+settings = zenml.integrations.neptune.flavors.NeptuneExperimentTrackerSettings(tags={"sklearn", "digits"})
 
 
-@step(
+@zenml.steps.step(
     experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
     settings={"experiment_tracker.neptune": settings},
     enable_cache=False,
@@ -88,7 +77,7 @@ def example_step() -> None:
     Loads a sample dataset, trains a simple classifier and logs
     a couple of metrics.
     """
-    neptune_run = get_neptune_run()
+    neptune_run = zenml.integrations.neptune.experiment_trackers.run_state.get_neptune_run()
     digits = load_digits()
     data = digits.images.reshape((len(digits.images), -1))
 
@@ -101,7 +90,7 @@ def example_step() -> None:
     neptune_run["metrics/val_accuracy"] = test_acc
 
 
-@pipeline(
+@zenml.pipelines.pipeline(
     enable_cache=False,
 )
 def neptune_example_pipeline(ex_step):
@@ -111,8 +100,8 @@ def neptune_example_pipeline(ex_step):
     ex_step()
 
 
-@mark.integrations
-@mark.zenml
+@pytest.mark.integrations
+@pytest.mark.zenml
 class TestZenML(BaseE2ETest):
     def _test_setup_creates_stack_with_neptune_experiment_tracker(self, zenml_client):
         assert zenml_client.active_stack.experiment_tracker.name == NEPTUNE_EXPERIMENT_TRACKER_NAME
