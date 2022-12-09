@@ -9,6 +9,7 @@ import neptune.new as neptune
 from tests.e2e.base import BaseE2ETest
 
 zenml = pytest.importorskip("zenml")
+pipelines = pytest.importorskip("zenml.pipelines")
 
 NEPTUNE_EXPERIMENT_TRACKER_NAME = "neptune_tracker"
 NEPTUNE_STACK_NAME = "neptune_stack"
@@ -99,7 +100,7 @@ class TestZenML(BaseE2ETest):
             test_acc = model.score(x_test, y_test)
             neptune_run["metrics/val_accuracy"] = test_acc
 
-        @zenml.pipelines.pipeline(
+        @pipelines.pipeline(
             enable_cache=False,
         )
         def neptune_example_pipeline(ex_step):
