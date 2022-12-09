@@ -1,7 +1,6 @@
 name: integrations
 
 on:
-  push:
   workflow_call:
   workflow_dispatch:
   schedule:
