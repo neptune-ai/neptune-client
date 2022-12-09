@@ -201,7 +201,7 @@ relative_files = true
 
 [tool.coverage.paths]
 source = [
-    'src/',
-    'D:\a\neptune-client\neptune-client\src',
-    '/home/runner/work/neptune-client/neptune-client/src'
+    '.',
+    'D:\a\neptune-client\neptune-client',
+    '/home/runner/work/neptune-client/neptune-client'
 ]
