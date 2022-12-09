@@ -43,7 +43,7 @@ runs:
         path: ./test-results
 
     - name: Report
-      uses: Raalsky/action-junit-report@main
+      uses: mikepenz/action-junit-report@v3.6.2
       if: always()
       with:
         report_paths: './test-results/test-unit-*.xml'
