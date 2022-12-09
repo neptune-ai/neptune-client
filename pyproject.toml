@@ -194,11 +194,12 @@ extend-ignore = "E203"
 
 [tool.coverage.run]
 source_pkgs = ['neptune']
-branch = true
-relative_files = true
+branch = false
+relative_files = false
 
 [tool.coverage.paths]
 source = [
     'src/neptune',
-    'src\neptune'
+    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
 ]
