@@ -67,6 +67,43 @@ def stack_with_neptune(zenml_client, experiment_tracker_comp):
         return zenml_client.get_stack(name_id_or_prefix=NEPTUNE_STACK_NAME)
 
 
+@zenml.steps.step(
+    experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
+    settings={
+        "experiment_tracker.neptune": zenml.integrations.neptune.flavors.NeptuneExperimentTrackerSettings(
+            tags={"sklearn", "digits"}
+        )
+    },
+    enable_cache=False,
+)
+def example_step() -> None:
+    """A very minimalistic pipeline step.
+    Loads a sample dataset, trains a simple classifier and logs
+    a couple of metrics.
+    """
+    neptune_run = zenml.integrations.neptune.experiment_trackers.run_state.get_neptune_run()
+    digits = load_digits()
+    data = digits.images.reshape((len(digits.images), -1))
+
+    x_train, x_test, y_train, y_test = train_test_split(data, digits.target, test_size=0.3)
+    gamma = 0.001
+    neptune_run["params/gamma"] = gamma
+    model = SVC(gamma=gamma)
+    model.fit(x_train, y_train)
+    test_acc = model.score(x_test, y_test)
+    neptune_run["metrics/val_accuracy"] = test_acc
+
+
+@pipelines.pipeline(
+    enable_cache=False,
+)
+def neptune_example_pipeline(ex_step):
+    """
+    Link all the steps artifacts together
+    """
+    ex_step()
+
+
 @pytest.mark.integrations
 @pytest.mark.zenml
 class TestZenML(BaseE2ETest):
@@ -74,41 +111,6 @@ class TestZenML(BaseE2ETest):
         assert zenml_client.active_stack.experiment_tracker.name == NEPTUNE_EXPERIMENT_TRACKER_NAME
 
     def _test_pipeline_runs_without_errors(self):
-        @zenml.steps.step(
-            experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
-            settings={
-                "experiment_tracker.neptune": zenml.integrations.neptune.flavors.NeptuneExperimentTrackerSettings(
-                    tags={"sklearn", "digits"}
-                )
-            },
-            enable_cache=False,
-        )
-        def example_step() -> None:
-            """A very minimalistic pipeline step.
-            Loads a sample dataset, trains a simple classifier and logs
-            a couple of metrics.
-            """
-            neptune_run = zenml.integrations.neptune.experiment_trackers.run_state.get_neptune_run()
-            digits = load_digits()
-            data = digits.images.reshape((len(digits.images), -1))
-
-            x_train, x_test, y_train, y_test = train_test_split(data, digits.target, test_size=0.3)
-            gamma = 0.001
-            neptune_run["params/gamma"] = gamma
-            model = SVC(gamma=gamma)
-            model.fit(x_train, y_train)
-            test_acc = model.score(x_test, y_test)
-            neptune_run["metrics/val_accuracy"] = test_acc
-
-        @pipelines.pipeline(
-            enable_cache=False,
-        )
-        def neptune_example_pipeline(ex_step):
-            """
-            Link all the steps artifacts together
-            """
-            ex_step()
-
         run = neptune_example_pipeline(ex_step=example_step())
         run.run()
 
