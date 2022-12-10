@@ -201,5 +201,6 @@ relative_files = false
 source = [
     'src/neptune',
     '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
     'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
 ]
