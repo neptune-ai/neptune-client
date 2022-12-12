@@ -24,6 +24,7 @@ from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import is_ipython
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import (
+    does_paths_share_common_drive,
     get_absolute_paths,
     get_common_root,
 )
@@ -49,7 +50,7 @@ def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
             common_root = get_common_root(get_absolute_paths(source_files))
             entrypoint_filepath = os.path.abspath(entrypoint_filepath)
 
-            if common_root is not None and os.path.commonpath([common_root, entrypoint_filepath]) is not None:
+            if common_root is not None and does_paths_share_common_drive([common_root, entrypoint_filepath]):
                 entrypoint_filepath = normalize_file_name(os.path.relpath(path=entrypoint_filepath, start=common_root))
 
             entrypoint = normalize_file_name(entrypoint_filepath)
