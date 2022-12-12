@@ -70,11 +70,7 @@ def stack_with_neptune(zenml_client, experiment_tracker_comp):
 
 @zenml.steps.step(
     experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
-    settings={
-        "experiment_tracker.neptune": flavors.NeptuneExperimentTrackerSettings(
-            tags={"sklearn", "digits"}
-        )
-    },
+    settings={"experiment_tracker.neptune": flavors.NeptuneExperimentTrackerSettings(tags={"sklearn", "digits"})}
     enable_cache=False,
 )
 def example_step() -> None:
