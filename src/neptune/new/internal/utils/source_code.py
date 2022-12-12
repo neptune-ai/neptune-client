@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 from typing import (
     TYPE_CHECKING,
@@ -37,9 +36,6 @@ if TYPE_CHECKING:
     from neptune.new import Run
 
 
-_logger = logging.getLogger(__name__)
-
-
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
     entry_filepath = get_path_executed_script()
 
@@ -50,11 +46,10 @@ def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
         elif not source_files:
             entrypoint = os.path.basename(entry_filepath)
         else:
-            common_root = get_common_root(get_absolute_paths(source_files))
-            if common_root is not None:
-                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(entry_filepath), common_root))
-            else:
-                entrypoint = normalize_file_name(os.path.abspath(entry_filepath))
+            entrypoint_abspath = os.path.abspath(entry_filepath)
+            common_root = get_common_root(get_absolute_paths(source_files) + entrypoint_abspath)
+            entrypoint = normalize_file_name(os.path.relpath(entrypoint_abspath, common_root))
+
         run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:
