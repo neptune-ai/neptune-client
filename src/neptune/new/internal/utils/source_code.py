@@ -37,18 +37,22 @@ if TYPE_CHECKING:
 
 
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
-    entry_filepath = get_path_executed_script()
+    entrypoint_filepath = get_path_executed_script()
 
-    if not is_ipython() and entry_filepath != empty_path and os.path.isfile(entry_filepath):
+    if not is_ipython() and entrypoint_filepath != empty_path and os.path.isfile(entrypoint_filepath):
         if source_files is None:
-            entrypoint = os.path.basename(entry_filepath)
-            source_files = str(entry_filepath)
+            entrypoint = os.path.basename(entrypoint_filepath)
+            source_files = str(entrypoint_filepath)
         elif not source_files:
-            entrypoint = os.path.basename(entry_filepath)
+            entrypoint = os.path.basename(entrypoint_filepath)
         else:
-            entrypoint_abspath = os.path.abspath(entry_filepath)
-            common_root = get_common_root(get_absolute_paths(source_files) + entrypoint_abspath)
-            entrypoint = normalize_file_name(os.path.relpath(entrypoint_abspath, common_root))
+            common_root = get_common_root(get_absolute_paths(source_files))
+            entrypoint_filepath = os.path.abspath(entrypoint_filepath)
+
+            if common_root is not None and os.path.commonpath([common_root, entrypoint_filepath]) is not None:
+                entrypoint_filepath = normalize_file_name(os.path.relpath(path=entrypoint_filepath, start=common_root))
+
+            entrypoint = normalize_file_name(entrypoint_filepath)
 
         run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
