@@ -10,6 +10,7 @@ from tests.e2e.base import BaseE2ETest
 
 zenml = pytest.importorskip("zenml")
 pipelines = pytest.importorskip("zenml.pipelines")
+flavors = pytest.importorskip("zenml.integrations.neptune.flavors")
 
 NEPTUNE_EXPERIMENT_TRACKER_NAME = "neptune_tracker"
 NEPTUNE_STACK_NAME = "neptune_stack"
@@ -70,7 +71,7 @@ def stack_with_neptune(zenml_client, experiment_tracker_comp):
 @zenml.steps.step(
     experiment_tracker=NEPTUNE_EXPERIMENT_TRACKER_NAME,
     settings={
-        "experiment_tracker.neptune": zenml.integrations.neptune.flavors.NeptuneExperimentTrackerSettings(
+        "experiment_tracker.neptune": flavors.NeptuneExperimentTrackerSettings(
             tags={"sklearn", "digits"}
         )
     },
