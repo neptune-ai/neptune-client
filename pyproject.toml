@@ -192,9 +192,15 @@ force_grid_wrap = 2
 max-line-length = 120
 extend-ignore = "E203"
 
-[tool.coverage]
-source = 'src/'
-
 [tool.coverage.run]
-branch = true
-relative_files = true
+source_pkgs = ['neptune']
+branch = false
+relative_files = false
+
+[tool.coverage.paths]
+source = [
+    'src/neptune',
+    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
+]

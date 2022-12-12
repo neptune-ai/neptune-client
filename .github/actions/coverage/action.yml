@@ -31,6 +31,10 @@ runs:
         run: coverage combine
         shell: bash
 
+      - name: Show coverage report
+        run: coverage report -m
+        shell: bash
+
       - name: Prepare coverage report
         run: coverage xml
         shell: bash
