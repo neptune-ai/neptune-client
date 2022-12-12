@@ -167,7 +167,7 @@ class Handler:
         """
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 self._container.define(self._path, value)
             else:
                 if isinstance(value, Handler):
@@ -210,7 +210,7 @@ class Handler:
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 attr = File(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
             attr.upload(value, wait)
@@ -224,7 +224,7 @@ class Handler:
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 attr = FileSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
             attr.upload_files(value, wait)
@@ -267,7 +267,7 @@ class Handler:
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 if is_collection(value):
                     if value:
                         first_value = next(iter(value))
@@ -387,7 +387,7 @@ class Handler:
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 neptune_value = cast_value_for_extend(values)
                 attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
                 self._container.set_attribute(self._path, attr)
@@ -414,7 +414,7 @@ class Handler:
         verify_type("values", values, (str, Iterable))
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 attr = StringSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
             attr.add(values, wait)
@@ -623,7 +623,7 @@ class Handler:
         """
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if not attr:
+            if attr is None:
                 attr = Artifact(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
 

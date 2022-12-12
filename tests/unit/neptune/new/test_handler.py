@@ -491,6 +491,12 @@ class TestNamespace(unittest.TestCase):
             self.assertEqual(exp["params/toys"].fetch_last(), "hat")
             self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
 
+    def test_assign_empty_dict(self):
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            exp["params"] = {}
+            exp["params"] = {"foo": 5}
+            self.assertEqual(exp["params/foo"].fetch(), 5)
+
     def test_argparse_namespace(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = argparse.Namespace(

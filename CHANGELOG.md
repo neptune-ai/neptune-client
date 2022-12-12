@@ -1,3 +1,8 @@
+## neptune-client 0.16.15
+
+### Fixes
+- Correct detection of missing attributes ([#1155](https://github.com/neptune-ai/neptune-client/pull/1155))
+
 ## neptune-client 0.16.14
 
 ### Features

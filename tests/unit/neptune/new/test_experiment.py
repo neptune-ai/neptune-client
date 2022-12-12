@@ -102,6 +102,13 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(MetadataInconsistency):
                     exp.define("some/path/value", Float(1))
 
+    def test_define_conflict_with_empty_namespace(self):
+        for exp in self.get_experiments(flush_period=0.5):
+            with self.subTest(msg=f"For type {exp.container_type}"):
+                exp.define("some/path/value", {})
+                with self.assertRaises(MetadataInconsistency):
+                    exp.define("some/path/value", {})
+
     def test_pop(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
