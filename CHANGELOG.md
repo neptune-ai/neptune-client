@@ -1,7 +1,8 @@
-## neptune-client 0.16.15
+## neptune-client 0.16.15 [UNRELEASED]
 
 ### Fixes
 - Correct detection of missing attributes ([#1155](https://github.com/neptune-ai/neptune-client/pull/1155))
+- Fixed entrypoint upload on Windows when entrypoint and source files doesnt share same drive ([#1161](https://github.com/neptune-ai/neptune-client/pull/1161))
 
 ## neptune-client 0.16.14
 

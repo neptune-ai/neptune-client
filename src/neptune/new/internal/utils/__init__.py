@@ -135,6 +135,10 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return None
 
 
+def does_paths_share_common_drive(paths: List[str]) -> bool:
+    return len(set(map(lambda path: os.path.splitdrive(path)[0], paths))) == 1
+
+
 def is_ipython() -> bool:
     try:
         import IPython

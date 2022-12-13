@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 from typing import (
     TYPE_CHECKING,
@@ -25,6 +24,7 @@ from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import is_ipython
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import (
+    does_paths_share_common_drive,
     get_absolute_paths,
     get_common_root,
 )
@@ -37,24 +37,24 @@ if TYPE_CHECKING:
     from neptune.new import Run
 
 
-_logger = logging.getLogger(__name__)
-
-
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
-    entry_filepath = get_path_executed_script()
+    entrypoint_filepath = get_path_executed_script()
 
-    if not is_ipython() and entry_filepath != empty_path and os.path.isfile(entry_filepath):
+    if not is_ipython() and entrypoint_filepath != empty_path and os.path.isfile(entrypoint_filepath):
         if source_files is None:
-            entrypoint = os.path.basename(entry_filepath)
-            source_files = str(entry_filepath)
+            entrypoint = os.path.basename(entrypoint_filepath)
+            source_files = str(entrypoint_filepath)
         elif not source_files:
-            entrypoint = os.path.basename(entry_filepath)
+            entrypoint = os.path.basename(entrypoint_filepath)
         else:
             common_root = get_common_root(get_absolute_paths(source_files))
-            if common_root is not None:
-                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(entry_filepath), common_root))
-            else:
-                entrypoint = normalize_file_name(os.path.abspath(entry_filepath))
+            entrypoint_filepath = os.path.abspath(entrypoint_filepath)
+
+            if common_root is not None and does_paths_share_common_drive([common_root, entrypoint_filepath]):
+                entrypoint_filepath = normalize_file_name(os.path.relpath(path=entrypoint_filepath, start=common_root))
+
+            entrypoint = normalize_file_name(entrypoint_filepath)
+
         run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:
