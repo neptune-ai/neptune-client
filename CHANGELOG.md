@@ -1,7 +1,7 @@
 ## neptune-client 0.16.16 [UNRELEASED]
 
 ### Fixes
-- Disabled "Explore the metadata" message when stopping in debug mode ([#?](https://github.com/neptune-ai/neptune-client/pull/?))
+- Disabled "Explore the metadata" message when stopping in debug mode ([#1165](https://github.com/neptune-ai/neptune-client/pull/1165))
 
 ## neptune-client 0.16.15
 
