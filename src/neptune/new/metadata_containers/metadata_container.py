@@ -203,7 +203,7 @@ class MetadataContainer(AbstractContextManager):
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
 
-        if self._mode != Mode.OFFLINE:
+        if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
             logger.info("Explore the metadata in the Neptune app:")
             logger.info(self._metadata_url)
         self._backend.close()

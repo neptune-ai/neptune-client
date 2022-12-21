@@ -1,4 +1,9 @@
-## neptune-client 0.16.15 [UNRELEASED]
+## neptune-client 0.16.16 [UNRELEASED]
+
+### Fixes
+- Disabled "Explore the metadata" message when stopping in debug mode ([#?](https://github.com/neptune-ai/neptune-client/pull/?))
+
+## neptune-client 0.16.15
 
 ### Fixes
 - Correct detection of missing attributes ([#1155](https://github.com/neptune-ai/neptune-client/pull/1155))
