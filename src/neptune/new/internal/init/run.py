@@ -225,6 +225,7 @@ def init_run(
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
     verify_type("capture_traceback", capture_hardware_metrics, bool)
+    verify_type("git_info", git_info, (GitInfo, type(None)))
     if tags is not None:
         if isinstance(tags, str):
             tags = [tags]

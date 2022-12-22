@@ -24,7 +24,7 @@ from typing import (
 
 
 class GitInfo:
-    def __init__(self, *, repository_path: Optional[Union[str, Path]] = ""):
+    def __init__(self, *, repository_path: Optional[Union[str, Path]] = None):
         self._repository_path = repository_path
 
     def get_repository(self) -> Optional[Any]:
@@ -41,4 +41,4 @@ class GitInfo:
                 return None
 
 
-NoRepository = GitInfo(repository_path=None)
+NoRepository = GitInfo()
