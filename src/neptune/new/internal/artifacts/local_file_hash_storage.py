@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["LocalFileHashStorage"]
+
 import os
 import sqlite3 as sql
 from dataclasses import dataclass

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["track_to_new_artifact", "track_to_existing_artifact"]
+
 from typing import (
     Dict,
     List,

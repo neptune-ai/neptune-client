@@ -13,8 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.common.experiments import Experiment
+from neptune.new import Run
+from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
 from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.compatibility import expect_not_an_experiment
 from neptune.new.internal.utils.paths import join_paths
 
 __all__ = ["expect_not_an_experiment", "join_paths", "verify_type"]
+
+
+def expect_not_an_experiment(run: Run):
+    if isinstance(run, Experiment):
+        raise NeptuneLegacyIncompatibilityException()

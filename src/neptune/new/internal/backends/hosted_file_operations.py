@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "upload_file_attribute",
+    "upload_file_set_attribute",
+    "get_unique_upload_entries",
+    "download_file_set_attribute",
+]
+
 import collections
 import enum
 import json

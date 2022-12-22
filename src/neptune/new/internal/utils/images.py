@@ -13,6 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "get_image_content",
+    "get_html_content",
+    "get_pickle_content",
+    "is_numpy_array",
+    "is_pil_image",
+    "is_matplotlib_figure",
+    "is_plotly_figure",
+    "is_altair_chart",
+    "is_bokeh_figure",
+    "is_pandas_dataframe",
+]
+
 import base64
 import io
 import logging
