@@ -13,9 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "MetadataInconsistency",
+    "AttributeType",
+    "AttributeWithProperties",
+    "NeptuneBackend",
+    "ContainerType",
+    "LeaderboardEntry",
+    "LeaderboardHandler",
+    "RunsTable",
+    "RunsTableEntry",
+]
 
 # backwards compatibility
-# flake8: noqa
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
     AttributeType,

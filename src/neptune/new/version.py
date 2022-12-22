@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["version"]
+
 from packaging.version import parse
 
 from neptune.version import __version__

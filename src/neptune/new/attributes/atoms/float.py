@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["Float"]
+
 import typing
 
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom

@@ -24,6 +24,39 @@ You may also want to check `Neptune docs page`_.
 .. _Neptune docs page:
    https://docs.neptune.ai/api/neptune
 """
+__all__ = [
+    "types",
+    "ANONYMOUS",
+    "ANONYMOUS_API_TOKEN",
+    "NeptunePossibleLegacyUsageException",
+    "NeptuneUninitializedException",
+    "get_project",
+    "init",
+    "init_model",
+    "init_model_version",
+    "init_project",
+    "init_run",
+    "Run",
+    "__version__",
+    "create_experiment",
+    "get_experiment",
+    "append_tag",
+    "append_tags",
+    "remove_tag",
+    "set_property",
+    "remove_property",
+    "send_metric",
+    "log_metric",
+    "send_text",
+    "log_text",
+    "send_image",
+    "log_image",
+    "send_artifact",
+    "delete_artifacts",
+    "log_artifact",
+    "stop",
+    "get_last_run",
+]
 
 from typing import Optional
 
