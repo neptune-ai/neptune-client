@@ -45,6 +45,10 @@ from neptune.new.internal.init import (
     init_run,
 )
 from neptune.new.internal.utils.deprecation import deprecated
+from neptune.new.internal.utils.git import (
+    GitInfo,
+    NoRepository,
+)
 from neptune.new.metadata_containers import Run
 from neptune.new.version import version
 

@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitInfo"]
+__all__ = ["GitInfo", "NoRepository"]
 
-import warnings
 from pathlib import Path
 from typing import (
     Any,
@@ -28,20 +27,18 @@ class GitInfo:
     def __init__(self, *, repository_path: Optional[Union[str, Path]] = ""):
         self._repository_path = repository_path
 
-    @property
-    def repository_path(self) -> Optional[Path]:
-        if self._repository_path is not None:
-            return Path(self._repository_path).parent.resolve()
-
     def get_repository(self) -> Optional[Any]:
-        # WARN: GitPython asserts the existence of `git` executable
-        # which consists in failure during the preparation of conda package
-        try:
-            from git import Repo
+        if self._repository_path is not None:
+            repository_path = Path(self._repository_path).expanduser().resolve()
 
-            return Repo(path=self.repository_path, search_parent_directories=True)
-        except ImportError:
-            warnings.warn("GitPython could not be initialized")
+            # WARN: GitPython asserts the existence of `git` executable
+            # which consists in failure during the preparation of conda package
+            try:
+                from git import Repo
+
+                return Repo(path=repository_path, search_parent_directories=True)
+            except Exception:  # noqa
+                return None
 
 
 NoRepository = GitInfo(repository_path=None)
