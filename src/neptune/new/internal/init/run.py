@@ -59,18 +59,17 @@ from neptune.new.internal.utils import (
     verify_type,
 )
 from neptune.new.internal.utils.deprecation import deprecated_parameter
-from neptune.new.internal.utils.git import (
-    discover_git_repo_location,
-    get_git_info,
-)
+from neptune.new.internal.utils.git import GitInfo
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code
 from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.new.metadata_containers import Run
+from neptune.new.types.atoms.git_ref import GitRef
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
+from neptune.vendor.lib_programname import get_path_executed_script
 
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
@@ -103,6 +102,7 @@ def init_run(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
     capture_traceback: bool = True,
+    git_info: Optional[GitInfo] = None,
     **kwargs,
 ) -> Run:
     """Starts a new tracked run and adds it to the top of the runs table.
@@ -264,7 +264,10 @@ def init_run(
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
-        git_ref = get_git_info(discover_git_repo_location())
+
+        if git_info is None:
+            git_info = GitInfo(repository_path=get_path_executed_script())
+
         if custom_run_id_exceeds_length(custom_run_id):
             custom_run_id = None
 
@@ -272,7 +275,7 @@ def init_run(
 
         api_run = backend.create_run(
             project_id=project_obj.id,
-            git_ref=git_ref,
+            git_ref=GitRef.from_git_info(git_info),
             custom_run_id=custom_run_id,
             notebook_id=notebook_id,
             checkpoint_id=checkpoint_id,
