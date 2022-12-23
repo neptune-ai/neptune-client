@@ -1,0 +1,30 @@
+---
+name: Notify about workflow status
+description: Send Slack channel notification about workflow finish status
+inputs:
+  slack-webhook:
+    description: "A Slack Webhook to post a notification"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: technote-space/workflow-conclusion-action@v3
+
+    - name: Notify about failure
+      uses: 8398a7/action-slack@v3
+      if: env.WORKFLOW_CONCLUSION != 'success'
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+      with:
+        status: failure
+        fields: repo,message,author,job,eventName,took
+
+    - name: Notify about success
+      uses: 8398a7/action-slack@v3
+      if: env.WORKFLOW_CONCLUSION == 'success'
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+      with:
+        status: success
+        fields: repo,message,author,job,eventName,took
