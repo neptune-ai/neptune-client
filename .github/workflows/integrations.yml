@@ -57,7 +57,7 @@ jobs:
         uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.fastai.status }}
+          job-status: ${{ needs.fastai.result }}
 #
 #  kedro:
 #    env:
