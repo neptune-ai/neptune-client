@@ -20,7 +20,7 @@ runs:
 
     - name: Notify about failure
       uses: 8398a7/action-slack@v3
-      if: ${{ inputs.job-status }} != 'success'
+      if: ${{ inputs.job-status != 'success' }}
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
       with:
@@ -29,7 +29,7 @@ runs:
 
     - name: Notify about success
       uses: 8398a7/action-slack@v3
-      if: ${{ inputs.job-status }} == 'success'
+      if: ${{ inputs.job-status == 'success' }}
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
       with:
