@@ -31,12 +31,12 @@ jobs:
         fetch-depth: 0
         ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
-    - name: Install package
-      uses: ./.github/actions/install-package
-      with:
-        python-version: ${{ matrix.python-version }}
-        os: ${{ matrix.os }}
-
+#    - name: Install package
+#      uses: ./.github/actions/install-package
+#      with:
+#        python-version: ${{ matrix.python-version }}
+#        os: ${{ matrix.os }}
+#
 #    - name: Test integration
 #      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
 #      with:
@@ -45,7 +45,7 @@ jobs:
   fastai-notify:
     needs: [fastai]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    if: (success() || failure()) # && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
