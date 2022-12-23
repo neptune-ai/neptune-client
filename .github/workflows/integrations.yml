@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.10" ]
+        python-version: [ "3.7" ] #, "3.10" ]
         os: [ ubuntu-latest ] #, macos-latest ]
     runs-on: ${{ matrix.os }}
     name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
@@ -37,10 +37,10 @@ jobs:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
 
-    - name: Test integration
-      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-      with:
-        working_directory: neptune-fastai
+#    - name: Test integration
+#      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+#      with:
+#        working_directory: neptune-fastai
 
   fastai-notify:
     needs: [fastai]
@@ -57,7 +57,7 @@ jobs:
         uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.fastai.result }}
+          job-status: ${{ needs.fastai.status }}
 #
 #  kedro:
 #    env:

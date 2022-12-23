@@ -13,6 +13,11 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Print
+      if: always()
+      run: echo ${{ inputs.job-status }}
+      shell: bash
+
     - name: Notify about failure
       uses: 8398a7/action-slack@v3
       if: ${{ inputs.job-status }} != 'success'
