@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["init_model"]
+
 import os
 import threading
 from typing import Optional

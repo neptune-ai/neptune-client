@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["JsonFileSplitter"]
+
 import json
 from collections import deque
 from io import StringIO

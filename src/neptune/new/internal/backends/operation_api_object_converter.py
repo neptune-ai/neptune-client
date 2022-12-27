@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["OperationApiObjectConverter"]
 
 from neptune.common.exceptions import InternalClientError
 from neptune.new.internal.operation import (

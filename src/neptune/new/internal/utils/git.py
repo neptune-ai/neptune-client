@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["get_git_info", "discover_git_repo_location"]
+
 import logging
 import os
 import warnings

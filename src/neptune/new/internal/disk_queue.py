@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["QueueElement", "DiskQueue"]
+
 import json
 import logging
 import os
@@ -33,8 +35,6 @@ from typing import (
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
-
-__all__ = ["QueueElement", "DiskQueue"]
 
 T = TypeVar("T")
 
