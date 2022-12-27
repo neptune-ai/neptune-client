@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitInfo", "NoRepository"]
+__all__ = ["GitInfo"]
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     Any,
@@ -23,13 +24,13 @@ from typing import (
 )
 
 
+@dataclass
 class GitInfo:
-    def __init__(self, *, repository_path: Optional[Union[str, Path]] = None):
-        self._repository_path = repository_path
+    repository_path: Optional[Union[str, Path]] = None
 
     def get_repository(self) -> Optional[Any]:
-        if self._repository_path is not None:
-            repository_path = Path(self._repository_path).expanduser().resolve()
+        if self.repository_path is not None:
+            repository_path = Path(self.repository_path).expanduser().resolve()
 
             # WARN: GitPython asserts the existence of `git` executable
             # which consists in failure during the preparation of conda package
@@ -39,6 +40,3 @@ class GitInfo:
                 return Repo(path=repository_path, search_parent_directories=True)
             except Exception:  # noqa
                 return None
-
-
-NoRepository = GitInfo()

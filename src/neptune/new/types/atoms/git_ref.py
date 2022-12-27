@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitRef"]
+__all__ = ["GitRef", "NoRepository"]
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -77,3 +77,6 @@ def get_active_branch(repository) -> str:
     except TypeError as e:
         if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
             return "Detached HEAD"
+
+
+NoRepository = GitInfo()
