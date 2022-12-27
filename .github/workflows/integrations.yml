@@ -53,9 +53,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.fastai.result }}
 
   kedro:
     env:
@@ -98,9 +99,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.kedro.result }}
 
   prophet:
     env:
@@ -143,9 +145,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.prophet.result }}
 
   keras:
     env:
@@ -188,9 +191,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.keras.result }}
 
   lightning:
     env:
@@ -234,9 +238,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.lightning.result }}
 
   huggingface:
     env:
@@ -280,9 +285,10 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.huggingface.result }}
 
   zenml:
     env:
@@ -326,6 +332,7 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Notify
-        uses: ./.github/actions/notify
+        uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.zenml.result }}

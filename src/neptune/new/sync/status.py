@@ -17,5 +17,4 @@
 __all__ = ["StatusRunner"]
 
 # backwards compatibility
-# flake8: noqa
 from neptune.new.cli.status import StatusRunner

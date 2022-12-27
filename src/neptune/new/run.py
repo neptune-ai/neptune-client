@@ -13,10 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "Attribute",
+    "NamespaceAttr",
+    "NamespaceBuilder",
+    "InactiveRunException",
+    "MetadataInconsistency",
+    "NeptunePossibleLegacyUsageException",
+    "Handler",
+    "RunState",
+    "Run",
+    "Boolean",
+    "Integer",
+    "Datetime",
+    "Float",
+    "String",
+    "Namespace",
+    "Value",
+]
 
 # backwards compatibility
-# flake8: noqa
-
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.namespace import NamespaceBuilder

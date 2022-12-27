@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["OperationsPreprocessor"]
+
 import dataclasses
 import typing
 from enum import Enum

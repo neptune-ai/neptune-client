@@ -1,5 +1,5 @@
 ---
-name: Notify
+name: Notify about workflow status
 description: Send Slack channel notification about workflow finish status
 inputs:
   slack-webhook:

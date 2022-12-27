@@ -17,5 +17,4 @@
 __all__ = ["AbstractBackendRunner"]
 
 # backwards compatibility
-# flake8: noqa
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
