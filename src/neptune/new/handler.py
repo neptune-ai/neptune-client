@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["Handler"]
+
 from functools import wraps
 from typing import (
     TYPE_CHECKING,

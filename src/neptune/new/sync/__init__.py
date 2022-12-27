@@ -15,19 +15,30 @@
 #
 
 # backwards compatibility
-# flake8: noqa
 
 __all__ = [
-    "AbstractBackendRunner",
-    "sync",
+    "ApiExperiment",
+    "CannotSynchronizeOfflineRunsWithoutProject",
+    "DiskQueue",
+    "HostedNeptuneBackend",
+    "NeptuneBackend",
+    "NeptuneConnectionLostException",
+    "NeptuneException",
+    "Operation",
+    "Path",
+    "Project",
+    "ProjectNotFound",
+    "RunNotFound",
     "status",
+    "sync",
+    "AbstractBackendRunner",
     "StatusRunner",
     "SyncRunner",
     "get_metadata_container",
+    "get_offline_dirs",
     "get_project",
     "get_qualified_name",
     "is_container_synced_and_remove_junk",
-    "get_offline_dirs",
     "iterate_containers",
     "split_dir_name",
 ]

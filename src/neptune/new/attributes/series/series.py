@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["Series"]
+
 import abc
 import time
 from itertools import cycle

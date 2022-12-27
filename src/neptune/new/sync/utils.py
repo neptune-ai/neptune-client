@@ -25,7 +25,6 @@ __all__ = [
 ]
 
 # backwards compatibility
-# flake8: noqa
 from neptune.new.cli.utils import (
     get_metadata_container,
     get_offline_dirs,

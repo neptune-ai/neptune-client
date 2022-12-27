@@ -17,5 +17,4 @@
 __all__ = ["SyncRunner"]
 
 # backwards compatibility
-# flake8: noqa
 from neptune.new.cli.sync import SyncRunner

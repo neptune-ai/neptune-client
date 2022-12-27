@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["Namespace", "NamespaceBuilder"]
+
 import argparse
 from collections.abc import MutableMapping
 from typing import (

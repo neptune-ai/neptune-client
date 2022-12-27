@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "ANONYMOUS",
+    "ANONYMOUS_API_TOKEN",
+    "NEPTUNE_DATA_DIRECTORY",
+    "NEPTUNE_RUNS_DIRECTORY",
+    "OFFLINE_DIRECTORY",
+    "ASYNC_DIRECTORY",
+    "SYNC_DIRECTORY",
+    "OFFLINE_NAME_PREFIX",
+]
 
 """Constants used by Neptune"""
 
