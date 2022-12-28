@@ -307,7 +307,7 @@ class MetadataContainer(AbstractContextManager):
 
         self.start()
 
-        if not debug_mode:
+        if not debug_mode and self._mode not in {Mode.READ_ONLY}:
             if in_interactive() or in_notebook():
                 logger.info(
                     "Remember to stop your %s once you’ve finished logging your metadata (%s)."
