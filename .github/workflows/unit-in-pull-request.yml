@@ -42,4 +42,4 @@ jobs:
         uses: ./.github/actions/coverage
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          kind: unit
+          kind: unit-pull-request
