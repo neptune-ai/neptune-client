@@ -44,7 +44,7 @@ from tests.unit.neptune.legacy.random_utils import (
 
 class TestExperiment(unittest.TestCase):
     @mock.patch("neptune.common.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.common.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.common.experiments.ExecutionContext", mock.MagicMock())
     def test_send_metric(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
@@ -62,7 +62,7 @@ class TestExperiment(unittest.TestCase):
         channels_values_sender.send.assert_called_with("loss", ChannelType.NUMERIC.value, channel_value)
 
     @mock.patch("neptune.common.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.common.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.common.experiments.ExecutionContext", mock.MagicMock())
     def test_send_text(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
@@ -77,7 +77,7 @@ class TestExperiment(unittest.TestCase):
 
     @mock.patch("neptune.common.experiments.get_image_content", return_value=b"content")
     @mock.patch("neptune.common.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.common.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.common.experiments.ExecutionContext", mock.MagicMock())
     def test_send_image(self, ChannelsValuesSender, content):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
