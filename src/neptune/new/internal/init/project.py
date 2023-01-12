@@ -29,20 +29,24 @@ from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.deprecation import deprecated
+from neptune.new.internal.utils.deprecation import (
+    deprecated,
+    deprecated_parameter,
+)
 from neptune.new.metadata_containers import Project
 from neptune.new.types.mode import Mode
 
 
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def init_project(
     *,
-    name: Optional[str] = None,
+    project: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: Optional[str] = None,
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Project:
-    verify_type("name", name, (str, type(None)))
+    verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("mode", mode, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
@@ -54,9 +58,9 @@ def init_project(
     if mode == Mode.OFFLINE:
         raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
-    name = id_formats.conform_optional(name, QualifiedName)
+    project = id_formats.conform_optional(project, QualifiedName)
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
-    project_obj = project_name_lookup(backend=backend, name=name)
+    project_obj = project_name_lookup(backend=backend, name=project)
 
     project_lock = threading.RLock()
 
@@ -71,7 +75,7 @@ def init_project(
 
     background_jobs = []
 
-    project = Project(
+    npt_project = Project(
         id_=project_obj.id,
         mode=mode,
         backend=backend,
@@ -84,15 +88,16 @@ def init_project(
     )
 
     if mode != Mode.OFFLINE:
-        project.sync(wait=False)
+        npt_project.sync(wait=False)
 
-    project._startup(debug_mode=mode == Mode.DEBUG)
-    return project
+    npt_project._startup(debug_mode=mode == Mode.DEBUG)
+    return npt_project
 
 
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 @deprecated(alternative='init_project(mode="read-only")')
 def get_project(
-    name: Optional[str] = None,
+    project: Optional[str] = None,
     api_token: Optional[str] = None,
     proxies: Optional[dict] = None,
 ) -> Project:
@@ -125,4 +130,4 @@ def get_project(
     .. _init_project docs page:
        https://docs.neptune.ai/api/neptune/#init_project
     """
-    return init_project(name=name, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies)
+    return init_project(project=project, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies)

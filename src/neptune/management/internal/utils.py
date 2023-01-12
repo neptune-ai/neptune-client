@@ -22,13 +22,15 @@ from neptune.management.exceptions import (
     InvalidProjectName,
     MissingWorkspaceName,
 )
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 
 
-def extract_project_and_workspace(name: str, workspace: Optional[str] = None):
-    project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, name)
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
+def extract_project_and_workspace(project: str, workspace: Optional[str] = None):
+    project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project)
 
     if not project_spec:
-        raise InvalidProjectName(name=name)
+        raise InvalidProjectName(name=project)
 
     extracted_workspace, extracted_project_name = (
         project_spec["workspace"],
@@ -36,17 +38,20 @@ def extract_project_and_workspace(name: str, workspace: Optional[str] = None):
     )
 
     if not workspace and not extracted_workspace:
-        raise MissingWorkspaceName(name=name)
+        raise MissingWorkspaceName(name=project)
 
     if workspace and extracted_workspace and workspace != extracted_workspace:
-        raise ConflictingWorkspaceName(name=name, workspace=workspace)
+        raise ConflictingWorkspaceName(name=project, workspace=workspace)
 
     final_workspace_name = extracted_workspace or workspace
 
     return final_workspace_name, extracted_project_name
 
 
-def normalize_project_name(name: str, workspace: Optional[str] = None):
-    extracted_workspace_name, extracted_project_name = extract_project_and_workspace(name=name, workspace=workspace)
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
+def normalize_project_name(project: str, workspace: Optional[str] = None):
+    extracted_workspace_name, extracted_project_name = extract_project_and_workspace(
+        project=project, workspace=workspace
+    )
 
     return f"{extracted_workspace_name}/{extracted_project_name}"
