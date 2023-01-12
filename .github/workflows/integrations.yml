@@ -372,7 +372,7 @@ jobs:
           working_directory: neptune-detectron2
 
   detectron2-notify:
-    needs: [ neptune ]
+    needs: [ detectron2 ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
