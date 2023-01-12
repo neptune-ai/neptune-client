@@ -104,7 +104,7 @@ def get_project(
     """Get a project with given `name`.
 
     Args:
-        name(str, optional): Name of a project in a form of namespace/project_name. Defaults to `None`.
+        project(str, optional): Name of a project in a form of namespace/project_name. Defaults to `None`.
             If None, the value of `NEPTUNE_PROJECT` environment variable will be taken.
         api_token(str, optional): User’s API token. Defaults to `None`.
             If None, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
@@ -120,7 +120,7 @@ def get_project(
         >>> import neptune.new as neptune
 
         >>> # Fetch project 'jack/sandbox'
-        ... project = neptune.get_project(name='jack/sandbox')
+        ... project = neptune.get_project(project='jack/sandbox')
 
         >>> # Fetch all Runs metadata as Pandas DataFrame
         ... runs_table_df = project.fetch_runs_table().to_pandas()

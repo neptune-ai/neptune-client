@@ -268,7 +268,7 @@ def delete_project(project: str, workspace: Optional[str] = None, api_token: Opt
     To delete projects, the user must be a workspace admin.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -281,7 +281,7 @@ def delete_project(project: str, workspace: Optional[str] = None, api_token: Opt
 
     Example:
         >>> from neptune import management
-        >>> management.delete_project(name="ml-team/classification")
+        >>> management.delete_project(project="ml-team/classification")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
@@ -317,7 +317,7 @@ def add_project_member(
     Only project owners can add members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to add to the project.
@@ -339,7 +339,7 @@ def add_project_member(
         >>> from neptune import management
         >>> management.add_project_member(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     username="johnny",
         ...     role="contributor",
         ... )
@@ -383,7 +383,7 @@ def get_project_member_list(
     """Lists members of a Neptune project.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -400,7 +400,7 @@ def get_project_member_list(
 
     Example:
         >>> from neptune import management
-        >>> management.get_project_member_list(name="ml-team/classification")
+        >>> management.get_project_member_list(project="ml-team/classification")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
@@ -434,7 +434,7 @@ def remove_project_member(
     Only project owners can remove members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to remove from the project.
@@ -449,7 +449,7 @@ def remove_project_member(
     Example:
         >>> from neptune import management
         >>> management.remove_project_member(
-        ...     name="ml-team/classification",
+        ...     project="ml-team/classification",
         ...     username="johnny",
         ... )
 
@@ -486,7 +486,7 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
     """Lists members of a Neptune workspace.
 
     Args:
-        name: Name of the Neptune workspace.
+        workspace: Name of the Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -496,7 +496,7 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
 
     Example:
         >>> from neptune import management
-        >>> management.get_workspace_member_list(name="ml-team")
+        >>> management.get_workspace_member_list(workspace="ml-team")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
@@ -543,7 +543,7 @@ def get_workspace_service_account_list(workspace: str, api_token: Optional[str] 
     """Lists service accounts of a Neptune workspace.
 
     Args:
-        name: Name of the Neptune workspace.
+        workspace: Name of the Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -554,7 +554,7 @@ def get_workspace_service_account_list(workspace: str, api_token: Optional[str] 
 
     Example:
         >>> from neptune import management
-        >>> management.get_workspace_service_account_list(name="ml-team")
+        >>> management.get_workspace_service_account_list(workspace="ml-team")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
@@ -575,7 +575,7 @@ def get_project_service_account_list(
     """Lists service accounts assigned to a Neptune project.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -593,7 +593,7 @@ def get_project_service_account_list(
         >>> from neptune import management
         >>> management.get_project_service_account_list(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ... )
 
     You may also want to check the management API reference:
@@ -629,7 +629,7 @@ def add_project_service_account(
     Only project owners can add accounts as members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to add to the project.
@@ -651,7 +651,7 @@ def add_project_service_account(
         >>> from neptune import management
         >>> management.add_project_service_account(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     service_account_name="cicd@ml-team",
         ...     role="contributor",
         ... )
@@ -713,7 +713,7 @@ def remove_project_service_account(
     Only project owners can remove accounts.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to remove from the project.
@@ -729,7 +729,7 @@ def remove_project_service_account(
         >>> from neptune import management
         >>> management.remove_project_service_account(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     service_account_name="cicd@ml-team",
         ... )
 
@@ -782,7 +782,7 @@ def trash_objects(
     """Moves one or more Neptune objects to the project trash.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
@@ -799,7 +799,7 @@ def trash_objects(
 
         Trashing a run with the ID "CLS-1":
         >>> from neptune import management
-        >>> management.trash_objects(name="ml-team/classification", ids="CLS-1")
+        >>> management.trash_objects(project="ml-team/classification", ids="CLS-1")
 
         Trashing two runs and a model with the key "PRETRAINED":
         >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
