@@ -54,6 +54,7 @@ from neptune.new.internal.utils import (
     is_float_like,
     is_string,
     is_string_like,
+    is_stringify_value,
     verify_collection_type,
     verify_type,
 )
@@ -172,6 +173,8 @@ class Handler:
             if attr is None:
                 self._container.define(self._path, value)
             else:
+                if is_stringify_value(value):
+                    value = value.value
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait)

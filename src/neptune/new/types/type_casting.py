@@ -95,17 +95,7 @@ def cast_value(value: Any, warn_implicit_cast: bool = True) -> Value:
         raise TypeError("Value of unsupported type {}".format(type(value)))
 
 
-def cast_value_for_extend(
-    values: Union[Namespace, Series, Collection[Any]], warn_implicit_cast: bool = True
-) -> Union[Series, Namespace]:
-    if isinstance(values, Namespace):
-        return values
-    elif is_dict_like(values):
-        return Namespace(values)
-    elif isinstance(values, Series):
-        return values
-
-    sample_val = next(iter(values))
+def cast_value_for_extend_2(sample_val, values, warn_implicit_cast: bool = True):
     if isinstance(sample_val, File):
         return FileSeries(values=values)
     elif File.is_convertable_to_image(sample_val):
@@ -127,3 +117,21 @@ def cast_value_for_extend(
         return StringSeries(values=values)
     else:
         raise TypeError("Value of unsupported type List[{}]".format(type(sample_val)))
+
+
+def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Union[Series, Namespace]:
+    if isinstance(values, Namespace):
+        return values
+    elif is_dict_like(values):
+        return Namespace(values)
+    elif isinstance(values, Series):
+        return values
+
+    sample_val = next(iter(values))
+
+    if is_stringify_value(sample_val):
+        return cast_value_for_extend_2(
+            sample_val=sample_val.value, values=list(map(lambda value: value.value, values)), warn_implicit_cast=False
+        )
+
+    return cast_value_for_extend_2(sample_val=sample_val, values=values)
