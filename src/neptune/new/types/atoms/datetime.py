@@ -22,6 +22,7 @@ from typing import (
     TypeVar,
 )
 
+from neptune.new.internal.utils.stringify_value import expand_constructor_stringify_value
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -34,6 +35,7 @@ Ret = TypeVar("Ret")
 class Datetime(Atom):
     value: datetime
 
+    @expand_constructor_stringify_value
     def __init__(self, value: datetime):
         self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 

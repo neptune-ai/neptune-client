@@ -30,8 +30,11 @@ from neptune.new.utils import stringify_unsupported
 
 
 class Obj:
+    def __init__(self, name: str = "A"):
+        self._name = name
+
     def __str__(self):
-        return "Object()"
+        return f"Object(name={self._name})"
 
 
 @contextmanager
@@ -63,12 +66,14 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
-    def test_assign__custom_object_direct_method(self, run):
+    def test_assign__custom_object__reassign(self, run):
         with assert_deprecation_warning():
-            run["with_warning"].assign(Obj())
+            run["with_warning"] = Obj()
+            run["with_warning"] = Obj(name="b")
 
         with assert_no_warnings():
-            run["no_warning"].assign(stringify_unsupported(Obj()))
+            run["no_warning"] = stringify_unsupported(Obj())
+            run["no_warning"] = stringify_unsupported(Obj(name="b"))
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
@@ -81,16 +86,38 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
-    def test_assign__float_direct_method(self, run):
+    def test_assign__float__reassign(self, run):
         with assert_deprecation_warning():
-            run["with_warning"].assign(5.3)
+            run["with_warning"] = 4.0
+            run["with_warning"] = 5.3
 
         with assert_no_warnings():
-            run["no_warning"].assign(stringify_unsupported(5.3))
+            run["no_warning"] = stringify_unsupported(4.0)
+            run["no_warning"] = stringify_unsupported(5.3)
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
-    def test_assign__string_type_custom_object(self, run):
+    def test_assign__string(self, run):
+        with assert_deprecation_warning():
+            run["with_warning"] = String("Nothing to be worry about")
+
+        with assert_no_warnings():
+            run["no_warning"] = String(stringify_unsupported("Nothing to be worry about"))
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__string__reassign(self, run):
+        with assert_deprecation_warning():
+            run["with_warning"] = String("Nothing to be worry about")
+            run["with_warning"] = String("... or maybe")
+
+        with assert_no_warnings():
+            run["no_warning"] = String(stringify_unsupported("Nothing to be worry about"))
+            run["no_warning"] = String(stringify_unsupported("... or maybe"))
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__string__custom_object(self, run):
         with assert_deprecation_warning():
             run["with_warning"] = String(Obj())
 
@@ -99,12 +126,34 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
-    def test_assign__string_type_float(self, run):
+    def test_assign__string__custom_object__reassign(self, run):
+        with assert_deprecation_warning():
+            run["with_warning"] = String(Obj())
+            run["with_warning"] = String(Obj(name="B"))
+
+        with assert_no_warnings():
+            run["no_warning"] = String(stringify_unsupported(Obj()))
+            run["no_warning"] = String(stringify_unsupported(Obj(name="B")))
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__string__float(self, run):
         with assert_deprecation_warning():
             run["with_warning"] = String(4.0)
 
         with assert_no_warnings():
             run["no_warning"] = String(stringify_unsupported(4.0))
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__string__float__reassign(self, run):
+        with assert_deprecation_warning():
+            run["with_warning"] = String(4.0)
+            run["with_warning"] = String(5.3)
+
+        with assert_no_warnings():
+            run["no_warning"] = String(stringify_unsupported(4.0))
+            run["no_warning"] = String(stringify_unsupported(5.3))
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
@@ -116,6 +165,19 @@ class TestStringifyUnsupported:
             run["no_warning"] = stringify_unsupported(
                 {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
             )
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__dict__reassign(self, run):
+        with assert_deprecation_warning():
+            run["with_warning"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            run["with_warning"] = {"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}}
+
+        with assert_no_warnings():
+            run["no_warning"] = stringify_unsupported(
+                {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            )
+            run["no_warning"] = stringify_unsupported({"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}})
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 

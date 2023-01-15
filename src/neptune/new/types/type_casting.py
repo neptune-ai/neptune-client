@@ -53,11 +53,13 @@ from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
 
 
-def cast_value(value: Any, warn_implicit_cast: bool = True) -> Value:
+def cast_value(value: Any) -> Value:
     from neptune.new.handler import Handler
 
+    from_stringify_value = False
     if is_stringify_value(value):
-        return cast_value(value=value.value, warn_implicit_cast=False)
+        from_stringify_value, value = True, value.value
+
     if isinstance(value, Value):
         return value
     elif isinstance(value, Handler):
@@ -83,7 +85,7 @@ def cast_value(value: Any, warn_implicit_cast: bool = True) -> Value:
     elif is_dict_like(value):
         return Namespace(value)
     elif is_string_like(value):
-        if warn_implicit_cast:
+        if not from_stringify_value:
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."

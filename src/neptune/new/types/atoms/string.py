@@ -22,7 +22,10 @@ from typing import (
 )
 
 from neptune.common.deprecation import warn_once
-from neptune.new.internal.utils import is_string
+from neptune.new.internal.utils import (
+    is_string,
+    is_stringify_value,
+)
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -37,6 +40,9 @@ class String(Atom):
     value: str
 
     def __init__(self, value):
+        if is_stringify_value(value):
+            value = str(value.value)
+
         if not is_string(value):
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
