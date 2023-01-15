@@ -181,7 +181,7 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
-    def test_log__custom_object_single(self, run):
+    def test_log__custom_object(self, run):
         with assert_deprecation_warning():
             run["with_warning"].log(Obj())
 
@@ -190,7 +190,7 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
 
-    def test_log__custom_object(self, run):
+    def test_log__list_of_custom_objects(self, run):
         with assert_deprecation_warning():
             run["with_warning"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
             run["with_warning"].log(Obj())
@@ -230,7 +230,8 @@ class TestStringifyUnsupported:
                 stringify_unsupported({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
             )
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        assert run["with_warning/zz"].fetch_values().equals(run["no_warning/zz"].fetch_values())
+        assert run["with_warning/bb"].fetch_values().equals(run["no_warning/bb"].fetch_values())
 
     def test_append__float(self, run):
         with assert_deprecation_warning():
@@ -263,4 +264,5 @@ class TestStringifyUnsupported:
             run["no_warning"].append(stringify_unsupported({"zz": 1.0}))
             run["no_warning"].append(stringify_unsupported({"zz": 2.0, "bb": 3.0}))
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        assert run["with_warning/zz"].fetch_values().equals(run["no_warning/zz"].fetch_values())
+        assert run["with_warning/bb"].fetch_values().equals(run["no_warning/bb"].fetch_values())

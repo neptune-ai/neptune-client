@@ -173,8 +173,6 @@ class Handler:
             if attr is None:
                 self._container.define(self._path, value)
             else:
-                if is_stringify_value(value):
-                    value = value.value
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait)
@@ -281,6 +279,10 @@ class Handler:
                 else:
                     first_value = value
 
+                from_stringify_value = False
+                if is_stringify_value(first_value):
+                    from_stringify_value, first_value = True, first_value.value
+
                 if is_float(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string(first_value):
@@ -290,12 +292,13 @@ class Handler:
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
-                    warn_once(
-                        message="The object you're logging will be implicitly cast to a string."
-                        " We'll end support of this behavior in `neptune-client==1.0.0`."
-                        " To log the object as a string, use `.log(str(object))` instead.",
-                        stack_level=3,
-                    )
+                    if not from_stringify_value:
+                        warn_once(
+                            message="The object you're logging will be implicitly cast to a string."
+                            " We'll end support of this behavior in `neptune-client==1.0.0`."
+                            " To log the object as a string, use `.log(str(object))` instead.",
+                            stack_level=3,
+                        )
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
