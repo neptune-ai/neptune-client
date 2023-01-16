@@ -4,7 +4,7 @@
 - Added `stringify_unsupported` function for backward compatibility of implicit string casting ([#1177](https://github.com/neptune-ai/neptune-client/pull/1177))
 
 ### Fixes
-- Fixes implicit casting to string deprecation warnings ([#1177](https://github.com/neptune-ai/neptune-client/pull/1177))
+- Fixed deprecation warnings for implicit casting to string ([#1177](https://github.com/neptune-ai/neptune-client/pull/1177))
 - Disabled info about stopping when using read-only mode ([#1166](https://github.com/neptune-ai/neptune-client/pull/1166))
 - Disabled "Explore the metadata" message when stopping in debug mode ([#1165](https://github.com/neptune-ai/neptune-client/pull/1165))
 
