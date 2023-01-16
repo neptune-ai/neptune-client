@@ -27,6 +27,8 @@ from neptune.new.internal.utils.stringify_value import StringifyValue
 def stringify_unsupported(value) -> Union[StringifyValue, Mapping, List]:
     if isinstance(value, dict):
         return {k: stringify_unsupported(v) for k, v in value.items()}
+
     if isinstance(value, list):
         return list(map(stringify_unsupported, value))
+
     return StringifyValue(value=value)

@@ -23,8 +23,7 @@ def legacy_client_deprecation(func):
     def inner(*args, **kwargs):
         warn_once(
             message="You're using a legacy version of Neptune client."
-            " It will be moved to `neptune.legacy` since `neptune-client==1.0.0`.",
-            stack_level=2,
+            " It will be moved to `neptune.legacy` since `neptune-client==1.0.0`."
         )
         return func(*args, **kwargs)
 

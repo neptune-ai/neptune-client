@@ -89,8 +89,7 @@ def cast_value(value: Any) -> Value:
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `str(object)` or `repr(object)` instead.",
-                stack_level=6,
+                " To log the object as a string, use `str(object)` or `repr(object)` instead."
             )
         return String(str(value))
     else:
@@ -122,12 +121,15 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
     elif is_float_like(sample_val):
         return FloatSeries(values=values)
     elif is_string_like(sample_val):
+        import sys
+        import traceback
+
+        traceback.print_stack(file=sys.stdout)
         if not from_stringify_value:
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `str(object)` or `repr(object)` instead.",
-                stack_level=4,
+                " To log the object as a string, use `str(object)` or `repr(object)` instead."
             )
         return StringSeries(values=values)
     else:
