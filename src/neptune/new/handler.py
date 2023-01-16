@@ -62,6 +62,12 @@ from neptune.new.internal.utils.paths import (
     parse_path,
 )
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.new.metadata_containers import (
+    Model,
+    ModelVersion,
+    Project,
+    Run,
+)
 from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.type_casting import cast_value_for_extend
 from neptune.new.types.value_copy import ValueCopy
@@ -86,6 +92,7 @@ def check_protected_paths(fun):
 
 
 ExtendDictT = Union[Collection[Any], Dict[str, "ExtendDictT"]]
+NeptuneObject = Union[Run, Model, ModelVersion, Project]
 
 
 class Handler:
@@ -94,7 +101,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: "MetadataContainer", path: str):
+    def __init__(self, container: NeptuneObject, path: str):
         super().__init__()
         self._container = container
         self._path = path
@@ -113,6 +120,14 @@ class Handler:
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
+    def __getattr__(self, item: str):
+        run_level_methods = {"exists", "get_structure", "get_run_url", "print_structure", "stop", "sync", "wait"}
+
+        if item in run_level_methods:
+            raise AttributeError("Run-level method used on Handler object.")
+
+        return object.__getattribute__(self, item)
+
     def _get_attribute(self):
         """Returns Attribute defined in `self._path` or throws MissingFieldException"""
         attr = self._container.get_attribute(self._path)
@@ -123,6 +138,9 @@ class Handler:
     @property
     def container(self) -> "MetadataContainer":
         """Returns the container that the attribute is attached to"""
+        return self._container
+
+    def get_root_object(self) -> NeptuneObject:
         return self._container
 
     @check_protected_paths
