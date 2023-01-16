@@ -120,7 +120,17 @@ class Handler:
         run_level_methods = {"exists", "get_structure", "get_run_url", "print_structure", "stop", "sync", "wait"}
 
         if item in run_level_methods:
-            raise AttributeError("Run-level method used on Handler object.")
+            raise AttributeError(
+                "You're invoking an object-level method on a handler for a namespace" "inside the object.",
+                f"""
+                                 For example: You're trying run[{self._path}].{item}()
+                                 but you probably want run.{item}().
+
+                                 To obtain the root object of the namespace handler, you can do:
+                                 root_run = run[{self._path}].get_root_object()
+                                 root_run.{item}()
+                                """,
+            )
 
         return object.__getattribute__(self, item)
 
