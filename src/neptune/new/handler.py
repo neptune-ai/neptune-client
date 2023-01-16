@@ -318,6 +318,7 @@ class Handler:
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
+    @check_protected_paths
     def append(
         self,
         value: Union[dict, Any],
@@ -365,6 +366,7 @@ class Handler:
         value = ExtendUtils.validate_and_transform_to_extend_format(value)
         self.extend(value, step, timestamp, wait, **kwargs)
 
+    @check_protected_paths
     def extend(
         self,
         values: ExtendDictT,
