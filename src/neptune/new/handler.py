@@ -24,6 +24,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    NewType,
     Optional,
     Union,
 )
@@ -62,18 +63,14 @@ from neptune.new.internal.utils.paths import (
     parse_path,
 )
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.metadata_containers import (
-    Model,
-    ModelVersion,
-    Project,
-    Run,
-)
 from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.type_casting import cast_value_for_extend
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
+
+    NeptuneObject = NewType("NeptuneObject", MetadataContainer)
 
 
 def validate_path_not_protected(target_path: str, handler: "Handler"):
@@ -92,7 +89,6 @@ def check_protected_paths(fun):
 
 
 ExtendDictT = Union[Collection[Any], Dict[str, "ExtendDictT"]]
-NeptuneObject = Union[Run, Model, ModelVersion, Project]
 
 
 class Handler:
@@ -101,7 +97,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: NeptuneObject, path: str):
+    def __init__(self, container: "NeptuneObject", path: str):
         super().__init__()
         self._container = container
         self._path = path
@@ -140,7 +136,7 @@ class Handler:
         """Returns the container that the attribute is attached to"""
         return self._container
 
-    def get_root_object(self) -> NeptuneObject:
+    def get_root_object(self) -> "NeptuneObject":
         return self._container
 
     @check_protected_paths
