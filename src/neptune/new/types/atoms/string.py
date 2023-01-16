@@ -47,7 +47,7 @@ class String(Atom):
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `String(str(object))` instead.",
+                " To log the object as a string, use `String(str(object))` or `String(repr(object))` instead.",
                 stack_level=2,
             )
 
