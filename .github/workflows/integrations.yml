@@ -1,11 +1,6 @@
 name: integrations
 
 on:
-  push:
-    branches-ignore:
-      - master
-    tags:
-      - "*"
   workflow_call:
   workflow_dispatch:
   schedule:
