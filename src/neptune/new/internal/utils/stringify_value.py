@@ -29,10 +29,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["StringifyValue", "expand_constructor_stringify_value", "expand_stringify_value"]
+__all__ = ["StringifyValue", "extract_if_stringify_value"]
 
 
-from functools import wraps
 from typing import Any
 
 
@@ -48,15 +47,7 @@ class StringifyValue:
         return str(self.__value)
 
 
-def expand_stringify_value(val):
+def extract_if_stringify_value(val):
     if isinstance(val, StringifyValue):
         return val.value
     return val
-
-
-def expand_constructor_stringify_value(func):
-    @wraps(func)
-    def wrapper(self, value):
-        return func(self, value=expand_stringify_value(value))
-
-    return wrapper

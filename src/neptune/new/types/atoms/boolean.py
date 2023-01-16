@@ -21,7 +21,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.internal.utils.stringify_value import expand_constructor_stringify_value
+from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -35,9 +35,8 @@ class Boolean(Atom):
 
     value: bool
 
-    @expand_constructor_stringify_value
     def __init__(self, value):
-        self.value = bool(value)
+        self.value = bool(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_boolean(self)

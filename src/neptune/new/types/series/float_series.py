@@ -23,7 +23,7 @@ from typing import (
 )
 
 from neptune.new.internal.utils import is_collection
-from neptune.new.internal.utils.stringify_value import expand_stringify_value
+from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ class FloatSeries(Series):
     ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        self._values = [float(expand_stringify_value(value)) for value in values]
+        self._values = [float(extract_if_stringify_value(value)) for value in values]
         self._min = min
         self._max = max
         self._unit = unit

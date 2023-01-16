@@ -21,7 +21,7 @@ from typing import (
 )
 
 from neptune.new.internal.utils import is_collection
-from neptune.new.internal.utils.stringify_value import expand_stringify_value
+from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ class StringSeries(Series):
     def __init__(self, values):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        values_str = [str(expand_stringify_value(val)) for val in values]
+        values_str = [str(extract_if_stringify_value(val)) for val in values]
         self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
         self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
 
