@@ -1,8 +1,5 @@
 ## neptune-client 0.16.16 [UNRELEASED]
 
-### Changes
-- Setup E2E tests for `detectron2` integration ([#1174](https://github.com/neptune-ai/neptune-client/pull/1174))
-
 ### Fixes
 - Disabled info about stopping when using read-only mode ([#1166](https://github.com/neptune-ai/neptune-client/pull/1166))
 - Disabled "Explore the metadata" message when stopping in debug mode ([#1165](https://github.com/neptune-ai/neptune-client/pull/1165))
