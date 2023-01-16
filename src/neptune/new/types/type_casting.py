@@ -129,7 +129,8 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `str(object)` or `repr(object)` instead."
+                " To log the object as a string, use `str(object)` or"
+                " `stringify_unsupported(collection)` for collections and dictionaries instead."
             )
         return StringSeries(values=values)
     else:

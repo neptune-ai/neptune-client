@@ -45,7 +45,8 @@ def extract_value(value: Any) -> str:
         warn_once(
             message="The object you're logging will be implicitly cast to a string."
             " We'll end support of this behavior in `neptune-client==1.0.0`."
-            " To log the object as a string, use `str(object)` or `stringify_unsupported(collection)` instead."
+            " To log the object as a string, use `str(object)` or"
+            " `stringify_unsupported(collection)` for collections and dictionaries instead."
         )
 
     return str(value)
