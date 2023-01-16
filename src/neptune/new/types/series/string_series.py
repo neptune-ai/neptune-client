@@ -21,10 +21,8 @@ from typing import (
     TypeVar,
 )
 
-from neptune.common.deprecation import warn_once
 from neptune.new.internal.utils import (
     is_collection,
-    is_string,
     is_stringify_value,
 )
 from neptune.new.types.series.series import Series
@@ -40,14 +38,6 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 def extract_value(value: Any) -> str:
     if is_stringify_value(value):
         value = str(value.value)
-
-    if not is_string(value):
-        warn_once(
-            message="The object you're logging will be implicitly cast to a string."
-            " We'll end support of this behavior in `neptune-client==1.0.0`."
-            " To log the object as a string, use `str(object)` or"
-            " `stringify_unsupported(collection)` for collections and dictionaries instead."
-        )
 
     return str(value)
 
