@@ -3,6 +3,9 @@
 ### Features
 - Better support for `Handler` level objects ([#1178](https://github.com/neptune-ai/neptune-client/pull/1178))
 
+### Changes
+- Deprecate name parameter in init_project and management API ([#1175](https://github.com/neptune-ai/neptune-client/pull/1175))
+
 ### Fixes
 - Disabled info about stopping when using read-only mode ([#1166](https://github.com/neptune-ai/neptune-client/pull/1166))
 - Disabled "Explore the metadata" message when stopping in debug mode ([#1165](https://github.com/neptune-ai/neptune-client/pull/1165))
