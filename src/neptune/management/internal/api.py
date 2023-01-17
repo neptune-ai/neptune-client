@@ -148,7 +148,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     }
     projects = _get_projects(backend_client, params)
 
-    return [normalize_project_name(project=project.name, workspace=project.organizationName) for project in projects]
+    return [normalize_project_name(name=project.name, workspace=project.organizationName) for project in projects]
 
 
 @with_api_exceptions_handler
@@ -229,7 +229,7 @@ def create_project(
     project_response = _create_project(backend_client, project_qualified_name, params)
 
     return normalize_project_name(
-        project=project_response.result.name,
+        name=project_response.result.name,
         workspace=project_response.result.organizationName,
     )
 
@@ -291,7 +291,7 @@ def delete_project(project: str, workspace: Optional[str] = None, api_token: Opt
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(project=project, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -354,7 +354,7 @@ def add_project_member(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(project=project, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {
         "projectIdentifier": project_identifier,
@@ -410,7 +410,7 @@ def get_project_member_list(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(project=project, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -462,7 +462,7 @@ def remove_project_member(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(project=project, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {
         "projectIdentifier": project_identifier,
@@ -604,7 +604,7 @@ def get_project_service_account_list(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(project=project, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -666,7 +666,7 @@ def add_project_service_account(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(project=project, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
@@ -742,7 +742,7 @@ def remove_project_service_account(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(project=project, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
@@ -817,7 +817,7 @@ def trash_objects(
             verify_collection_type("ids", ids, str)
 
     leaderboard_client = _get_leaderboard_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(project=project, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
