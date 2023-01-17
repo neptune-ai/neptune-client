@@ -13,18 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import wraps
+__all__ = ["stringify_unsupported"]
 
-from neptune.common.deprecation import warn_once
+from typing import (
+    List,
+    Mapping,
+    Union,
+)
+
+from neptune.new.internal.utils.stringify_value import StringifyValue
 
 
-def legacy_client_deprecation(func):
-    @wraps(func)
-    def inner(*args, **kwargs):
-        warn_once(
-            message="You're using a legacy version of Neptune client."
-            " It will be moved to `neptune.legacy` since `neptune-client==1.0.0`."
-        )
-        return func(*args, **kwargs)
+def stringify_unsupported(value) -> Union[StringifyValue, Mapping, List]:
+    if isinstance(value, dict):
+        return {k: stringify_unsupported(v) for k, v in value.items()}
 
-    return inner
+    if isinstance(value, list):
+        return list(map(stringify_unsupported, value))
+
+    return StringifyValue(value=value)

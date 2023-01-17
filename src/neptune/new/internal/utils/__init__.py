@@ -24,6 +24,7 @@ __all__ = [
     "is_float_like",
     "is_dict_like",
     "is_string_like",
+    "is_stringify_value",
     "verify_collection_type",
     "is_collection",
     "base64_encode",
@@ -49,6 +50,8 @@ from typing import (
     TypeVar,
     Union,
 )
+
+from neptune.new.internal.utils.stringify_value import StringifyValue
 
 T = TypeVar("T")
 
@@ -114,6 +117,10 @@ def is_string_like(var):
         return True
     except ValueError:
         return False
+
+
+def is_stringify_value(var):
+    return isinstance(var, StringifyValue)
 
 
 def get_type_name(_type: Union[type, tuple]):

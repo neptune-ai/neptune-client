@@ -76,6 +76,5 @@ from neptune.new.sync.utils import (
 warn_once(
     message="You're using a legacy neptune.new.sync package."
     " It will be removed since `neptune-client==1.0.0`."
-    " Please use neptune.new.cli",
-    stack_level=2,
+    " Please use neptune.new.cli"
 )

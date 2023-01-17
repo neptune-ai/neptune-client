@@ -32,6 +32,7 @@ from neptune.new.internal.utils import (
     is_int,
     is_string,
     is_string_like,
+    is_stringify_value,
 )
 from neptune.new.types import (
     Boolean,
@@ -55,6 +56,10 @@ from neptune.new.types.value_copy import ValueCopy
 def cast_value(value: Any) -> Value:
     from neptune.new.handler import Handler
 
+    from_stringify_value = False
+    if is_stringify_value(value):
+        from_stringify_value, value = True, value.value
+
     if isinstance(value, Value):
         return value
     elif isinstance(value, Handler):
@@ -76,16 +81,16 @@ def cast_value(value: Any) -> Value:
     elif isinstance(value, datetime):
         return Datetime(value)
     elif is_float_like(value):
-        return Float(float(value))
+        return Float(value)
     elif is_dict_like(value):
         return Namespace(value)
     elif is_string_like(value):
-        warn_once(
-            message="The object you're logging will be implicitly cast to a string."
-            " We'll end support of this behavior in `neptune-client==1.0.0`."
-            " To log the object as a string, use `str(object)` instead.",
-            stack_level=6,
-        )
+        if not from_stringify_value:
+            warn_once(
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `str(object)` or `repr(object)` instead."
+            )
         return String(str(value))
     else:
         raise TypeError("Value of unsupported type {}".format(type(value)))
@@ -100,6 +105,11 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
         return values
 
     sample_val = next(iter(values))
+
+    from_stringify_value = False
+    if is_stringify_value(sample_val):
+        from_stringify_value, sample_val = True, sample_val.value
+
     if isinstance(sample_val, File):
         return FileSeries(values=values)
     elif File.is_convertable_to_image(sample_val):
@@ -111,12 +121,13 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
     elif is_float_like(sample_val):
         return FloatSeries(values=values)
     elif is_string_like(sample_val):
-        warn_once(
-            message="The object you're logging will be implicitly cast to a string."
-            " We'll end support of this behavior in `neptune-client==1.0.0`."
-            " To log the object as a string, use `str(object)` instead.",
-            stack_level=4,
-        )
+        if not from_stringify_value:
+            warn_once(
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `str(object)` or"
+                " `stringify_unsupported(collection)` for collections and dictionaries instead."
+            )
         return StringSeries(values=values)
     else:
         raise TypeError("Value of unsupported type List[{}]".format(type(sample_val)))

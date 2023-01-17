@@ -21,6 +21,7 @@ from typing import (
     TypeVar,
 )
 
+from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -35,7 +36,7 @@ class Float(Atom):
     value: float
 
     def __init__(self, value):
-        self.value = float(value)
+        self.value = float(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_float(self)

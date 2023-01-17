@@ -23,6 +23,7 @@ from typing import (
 
 from neptune.new.internal.utils import is_collection
 from neptune.new.internal.utils.logger import logger
+from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types import File
 from neptune.new.types.series.series import Series
 
@@ -36,7 +37,7 @@ class FileSeries(Series):
     def __init__(self, values, **kwargs):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        self._values = [File.create_from(value) for value in values]
+        self._values = [File.create_from(extract_if_stringify_value(value)) for value in values]
 
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
