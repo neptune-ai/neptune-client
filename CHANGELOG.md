@@ -1,5 +1,8 @@
 ## neptune-client 0.16.16 [UNRELEASED]
 
+### Features
+- Better support for `Handler` level objects ([#1178](https://github.com/neptune-ai/neptune-client/pull/1178))
+
 ### Changes
 - Deprecate name parameter in init_project and management API ([#1175](https://github.com/neptune-ai/neptune-client/pull/1175))
 
