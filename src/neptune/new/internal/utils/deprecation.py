@@ -31,6 +31,7 @@ def deprecated(*, alternative: Optional[str] = None):
             warn_once(
                 message=f"`{func.__name__}` is deprecated{additional_info}."
                 f" We'll end support of it in `neptune-client==1.0.0`."
+                " For details, see https://docs.neptune.ai/setup/neptune-client_1-0_release_changes"
             )
 
             return func(*args, **kwargs)

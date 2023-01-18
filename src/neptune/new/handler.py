@@ -321,7 +321,8 @@ class Handler:
                             message="The object you're logging will be implicitly cast to a string."
                             " We'll end support of this behavior in `neptune-client==1.0.0`."
                             " To log the object as a string, use `.log(str(object))` or"
-                            " `.log(stringify_unsupported(collection))` for collections and dictionaries instead."
+                            " `.log(stringify_unsupported(collection))` for collections and dictionaries."
+                            " For details, see https://docs.neptune.ai/setup/neptune-client_1-0_release_changes"
                         )
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:

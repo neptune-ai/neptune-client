@@ -5,6 +5,7 @@
 - Better support for `Handler` level objects ([#1178](https://github.com/neptune-ai/neptune-client/pull/1178))
 
 ### Changes
+- Docstrings and deprecation messages updated ([#1182](https://github.com/neptune-ai/neptune-client/pull/1182))
 - Deprecate name parameter in init_project and management API ([#1175](https://github.com/neptune-ai/neptune-client/pull/1175))
 
 ### Fixes
