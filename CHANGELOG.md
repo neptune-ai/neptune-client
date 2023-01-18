@@ -1,4 +1,4 @@
-## neptune-client 0.16.16 [UNRELEASED]
+## neptune-client 0.16.16
 
 ### Features
 - Added `stringify_unsupported` function for handling backward compatibility of implicit casting ([#1177](https://github.com/neptune-ai/neptune-client/pull/1177))
