@@ -37,6 +37,9 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List]:
         >>> # Error: The tuple is not a supported type
         ... from neptune.new.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
+
+        For more information, see:
+        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
     """
     if isinstance(value, dict):
         return {k: stringify_unsupported(v) for k, v in value.items()}
