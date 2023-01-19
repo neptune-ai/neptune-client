@@ -148,6 +148,20 @@ class Handler:
         return self._container
 
     def get_root_object(self) -> "NeptuneObject":
+        """Returns the root-level object of a namespace handler.
+
+        Example:
+            If you use it on the namespace of a run, the run object is returned.
+
+            >>> pretraining = run["workflow/steps/pretraining"]
+            >>> pretraining.stop()
+            ... # Error: pretraining is a namespace handler object, not a run object
+            >>> pretraining_run = pretraining.get_root_object()
+            >>> pretraining_run.stop()  # The root run is stopped
+
+        For more, see the docs:
+        https://docs.neptune.ai/api/field_types/#get_root_object
+        """
         return self._container
 
     @check_protected_paths
