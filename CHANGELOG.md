@@ -1,3 +1,9 @@
+## neptune-client 0.17.0 [UNRELEASED]
+
+### Features
+
+- Make neptune-aws package installable as `pip install neptune[aws]`.
+
 ## neptune-client 0.16.16
 
 ### Features
