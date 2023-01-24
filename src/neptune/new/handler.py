@@ -24,6 +24,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    NewType,
     Optional,
     Union,
 )
@@ -54,6 +55,7 @@ from neptune.new.internal.utils import (
     is_float_like,
     is_string,
     is_string_like,
+    is_stringify_value,
     verify_collection_type,
     verify_type,
 )
@@ -68,6 +70,8 @@ from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
+
+    NeptuneObject = NewType("NeptuneObject", MetadataContainer)
 
 
 def validate_path_not_protected(target_path: str, handler: "Handler"):
@@ -94,7 +98,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: "MetadataContainer", path: str):
+    def __init__(self, container: "NeptuneObject", path: str):
         super().__init__()
         self._container = container
         self._path = path
@@ -113,6 +117,24 @@ class Handler:
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
+    def __getattr__(self, item: str):
+        run_level_methods = {"exists", "get_structure", "get_run_url", "print_structure", "stop", "sync", "wait"}
+
+        if item in run_level_methods:
+            raise AttributeError(
+                "You're invoking an object-level method on a handler for a namespace" "inside the object.",
+                f"""
+                                 For example: You're trying run[{self._path}].{item}()
+                                 but you probably want run.{item}().
+
+                                 To obtain the root object of the namespace handler, you can do:
+                                 root_run = run[{self._path}].get_root_object()
+                                 root_run.{item}()
+                                """,
+            )
+
+        return object.__getattribute__(self, item)
+
     def _get_attribute(self):
         """Returns Attribute defined in `self._path` or throws MissingFieldException"""
         attr = self._container.get_attribute(self._path)
@@ -123,6 +145,23 @@ class Handler:
     @property
     def container(self) -> "MetadataContainer":
         """Returns the container that the attribute is attached to"""
+        return self._container
+
+    def get_root_object(self) -> "NeptuneObject":
+        """Returns the root-level object of a namespace handler.
+
+        Example:
+            If you use it on the namespace of a run, the run object is returned.
+
+            >>> pretraining = run["workflow/steps/pretraining"]
+            >>> pretraining.stop()
+            ... # Error: pretraining is a namespace handler object, not a run object
+            >>> pretraining_run = pretraining.get_root_object()
+            >>> pretraining_run.stop()  # The root run is stopped
+
+        For more, see the docs:
+        https://docs.neptune.ai/api/field_types/#get_root_object
+        """
         return self._container
 
     @check_protected_paths
@@ -278,6 +317,10 @@ class Handler:
                 else:
                     first_value = value
 
+                from_stringify_value = False
+                if is_stringify_value(first_value):
+                    from_stringify_value, first_value = True, first_value.value
+
                 if is_float(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string(first_value):
@@ -287,12 +330,14 @@ class Handler:
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
-                    warn_once(
-                        message="The object you're logging will be implicitly cast to a string."
-                        " We'll end support of this behavior in `neptune-client==1.0.0`."
-                        " To log the object as a string, use `.log(str(object))` instead.",
-                        stack_level=3,
-                    )
+                    if not from_stringify_value:
+                        warn_once(
+                            message="The object you're logging will be implicitly cast to a string."
+                            " We'll end support of this behavior in `neptune-client==1.0.0`."
+                            " To log the object as a string, use `.log(str(object))` or"
+                            " `.log(stringify_unsupported(collection))` for collections and dictionaries."
+                            " For details, see https://docs.neptune.ai/setup/neptune-client_1-0_release_changes"
+                        )
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
@@ -300,6 +345,7 @@ class Handler:
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
+    @check_protected_paths
     def append(
         self,
         value: Union[dict, Any],
@@ -347,6 +393,7 @@ class Handler:
         value = ExtendUtils.validate_and_transform_to_extend_format(value)
         self.extend(value, step, timestamp, wait, **kwargs)
 
+    @check_protected_paths
     def extend(
         self,
         values: ExtendDictT,

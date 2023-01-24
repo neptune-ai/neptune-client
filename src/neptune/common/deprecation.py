@@ -15,7 +15,11 @@
 #
 __all__ = ["warn_once", "NeptuneDeprecationWarning"]
 
+import os
+import traceback
 import warnings
+
+import neptune
 
 
 class NeptuneDeprecationWarning(DeprecationWarning):
@@ -25,13 +29,22 @@ class NeptuneDeprecationWarning(DeprecationWarning):
 warnings.simplefilter("always", category=NeptuneDeprecationWarning)
 
 warned_once = set()
+path_to_root_module = os.path.dirname(os.path.realpath(neptune.__file__))
 
 
-def warn_once(message: str, stack_level: int = 1):
+def get_user_code_stack_level():
+    call_stack = traceback.extract_stack()
+    for level, stack_frame in enumerate(reversed(call_stack)):
+        if path_to_root_module not in stack_frame.filename:
+            return level
+    return 2
+
+
+def warn_once(message: str):
     if message not in warned_once:
         warnings.warn(
             message=message,
             category=NeptuneDeprecationWarning,
-            stacklevel=stack_level + 1,
+            stacklevel=get_user_code_stack_level(),
         )
         warned_once.add(message)

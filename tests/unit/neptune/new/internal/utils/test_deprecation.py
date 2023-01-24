@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from unittest.mock import patch
+from unittest.mock import (
+    ANY,
+    patch,
+)
 
 import pytest
 
@@ -87,4 +90,6 @@ class TestDeprecatedParameter:
         warn_once(message="Deprecation message 1")
         warn_once(message="Deprecation message 1")
 
-        warn.assert_called_once_with(message="Deprecation message 1", category=NeptuneDeprecationWarning, stacklevel=2)
+        warn.assert_called_once_with(
+            message="Deprecation message 1", category=NeptuneDeprecationWarning, stacklevel=ANY
+        )

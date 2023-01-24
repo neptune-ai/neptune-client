@@ -91,6 +91,7 @@ from neptune.new.internal.utils import (
     verify_collection_type,
     verify_type,
 )
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
 
@@ -259,14 +260,15 @@ def _create_project(backend_client, project_qualified_name: str, params: dict):
         raise ProjectsLimitReached() from e
 
 
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 @with_api_exceptions_handler
-def delete_project(name: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
+def delete_project(project: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
     """Deletes a project from a Neptune workspace.
 
     To delete projects, the user must be a workspace admin.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -279,17 +281,17 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
 
     Example:
         >>> from neptune import management
-        >>> management.delete_project(name="ml-team/classification")
+        >>> management.delete_project(project="ml-team/classification")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -302,8 +304,9 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def add_project_member(
-    name: str,
+    project: str,
     username: str,
     role: str,
     workspace: Optional[str] = None,
@@ -314,7 +317,7 @@ def add_project_member(
     Only project owners can add members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to add to the project.
@@ -336,7 +339,7 @@ def add_project_member(
         >>> from neptune import management
         >>> management.add_project_member(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     username="johnny",
         ...     role="contributor",
         ... )
@@ -344,14 +347,14 @@ def add_project_member(
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("username", username, str)
     verify_type("role", role, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {
         "projectIdentifier": project_identifier,
@@ -367,19 +370,20 @@ def add_project_member(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPConflict as e:
-        members = get_project_member_list(name=name, workspace=workspace, api_token=api_token)
+        members = get_project_member_list(project=project, workspace=workspace, api_token=api_token)
         user_role = members.get(username)
         raise UserAlreadyHasAccess(user=username, project=project_identifier, role=user_role) from e
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def get_project_member_list(
-    name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+    project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
     """Lists members of a Neptune project.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -396,17 +400,17 @@ def get_project_member_list(
 
     Example:
         >>> from neptune import management
-        >>> management.get_project_member_list(name="ml-team/classification")
+        >>> management.get_project_member_list(project="ml-team/classification")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -418,8 +422,9 @@ def get_project_member_list(
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def remove_project_member(
-    name: str,
+    project: str,
     username: str,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
@@ -429,7 +434,7 @@ def remove_project_member(
     Only project owners can remove members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to remove from the project.
@@ -444,20 +449,20 @@ def remove_project_member(
     Example:
         >>> from neptune import management
         >>> management.remove_project_member(
-        ...     name="ml-team/classification",
+        ...     project="ml-team/classification",
         ...     username="johnny",
         ... )
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("username", username, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {
         "projectIdentifier": project_identifier,
@@ -476,11 +481,12 @@ def remove_project_member(
 
 
 @with_api_exceptions_handler
-def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="workspace")
+def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists members of a Neptune workspace.
 
     Args:
-        name: Name of the Neptune workspace.
+        workspace: Name of the Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -490,23 +496,23 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 
     Example:
         >>> from neptune import management
-        >>> management.get_workspace_member_list(name="ml-team")
+        >>> management.get_workspace_member_list(workspace="ml-team")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("workspace", workspace, str)
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
 
-    params = {"organizationIdentifier": name, **DEFAULT_REQUEST_KWARGS}
+    params = {"organizationIdentifier": workspace, **DEFAULT_REQUEST_KWARGS}
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
         return {f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role) for m in result}
     except HTTPNotFound as e:
-        raise WorkspaceNotFound(workspace=name) from e
+        raise WorkspaceNotFound(workspace=workspace) from e
 
 
 @with_api_exceptions_handler
@@ -532,11 +538,12 @@ def _get_raw_workspace_service_account_list(
 
 
 @with_api_exceptions_handler
-def get_workspace_service_account_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="workspace")
+def get_workspace_service_account_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
     Args:
-        name: Name of the Neptune workspace.
+        workspace: Name of the Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -547,12 +554,12 @@ def get_workspace_service_account_list(name: str, api_token: Optional[str] = Non
 
     Example:
         >>> from neptune import management
-        >>> management.get_workspace_service_account_list(name="ml-team")
+        >>> management.get_workspace_service_account_list(workspace="ml-team")
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    service_accounts = _get_raw_workspace_service_account_list(workspace_name=name, api_token=api_token)
+    service_accounts = _get_raw_workspace_service_account_list(workspace_name=workspace, api_token=api_token)
 
     return {
         service_account_name: WorkspaceMemberRoleDTO.to_domain("member")
@@ -561,13 +568,14 @@ def get_workspace_service_account_list(name: str, api_token: Optional[str] = Non
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def get_project_service_account_list(
-    name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+    project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
     """Lists service accounts assigned to a Neptune project.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
@@ -585,18 +593,18 @@ def get_project_service_account_list(
         >>> from neptune import management
         >>> management.get_project_service_account_list(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ... )
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    project_identifier = normalize_project_name(name=project, workspace=workspace)
 
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
@@ -608,8 +616,9 @@ def get_project_service_account_list(
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def add_project_service_account(
-    name: str,
+    project: str,
     service_account_name: str,
     role: str,
     workspace: Optional[str] = None,
@@ -620,7 +629,7 @@ def add_project_service_account(
     Only project owners can add accounts as members.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to add to the project.
@@ -642,7 +651,7 @@ def add_project_service_account(
         >>> from neptune import management
         >>> management.add_project_service_account(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     service_account_name="cicd@ml-team",
         ...     role="contributor",
         ... )
@@ -650,14 +659,14 @@ def add_project_service_account(
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("service_account_name", service_account_name, str)
     verify_type("role", role, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
@@ -681,7 +690,7 @@ def add_project_service_account(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_qualified_name) from e
     except HTTPConflict as e:
-        service_accounts = get_project_service_account_list(name=name, workspace=workspace, api_token=api_token)
+        service_accounts = get_project_service_account_list(project=project, workspace=workspace, api_token=api_token)
         service_account_role = service_accounts.get(service_account_name)
 
         raise ServiceAccountAlreadyHasAccess(
@@ -692,8 +701,9 @@ def add_project_service_account(
 
 
 @with_api_exceptions_handler
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def remove_project_service_account(
-    name: str,
+    project: str,
     service_account_name: str,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
@@ -703,7 +713,7 @@ def remove_project_service_account(
     Only project owners can remove accounts.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to remove from the project.
@@ -719,20 +729,20 @@ def remove_project_service_account(
         >>> from neptune import management
         >>> management.remove_project_service_account(
         ...     workspace="ml-team",
-        ...     name="classification",
+        ...     project="classification",
         ...     service_account_name="cicd@ml-team",
         ... )
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("service_account_name", service_account_name, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
@@ -762,8 +772,9 @@ def remove_project_service_account(
         ) from e
 
 
+@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def trash_objects(
-    name: str,
+    project: str,
     ids: Union[str, Iterable[str]],
     workspace: str = None,
     api_token: str = None,
@@ -771,7 +782,7 @@ def trash_objects(
     """Moves one or more Neptune objects to the project trash.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
@@ -788,7 +799,7 @@ def trash_objects(
 
         Trashing a run with the ID "CLS-1":
         >>> from neptune import management
-        >>> management.trash_objects(name="ml-team/classification", ids="CLS-1")
+        >>> management.trash_objects(project="ml-team/classification", ids="CLS-1")
 
         Trashing two runs and a model with the key "PRETRAINED":
         >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
@@ -796,7 +807,7 @@ def trash_objects(
 
     For more, see the docs: https://docs.neptune.ai/api/management/#trash_objects
     """
-    verify_type("name", name, str)
+    verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     if ids is not None:
@@ -806,7 +817,7 @@ def trash_objects(
             verify_collection_type("ids", ids, str)
 
     leaderboard_client = _get_leaderboard_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
