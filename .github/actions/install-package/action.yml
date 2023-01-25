@@ -33,6 +33,11 @@ runs:
           pip install ".[dev,e2e]"
         shell: bash
 
+      - name: Uninstall rfc
+        run: |
+          pip uninstall rfc3987 rfc3339-validator -y
+        shell: bash
+
       - name: List dependencies
         run: |
           pip list
