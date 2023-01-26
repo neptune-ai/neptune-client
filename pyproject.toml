@@ -67,6 +67,7 @@ torchvision = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
+neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
 neptune-fastai = { version = "*", optional = true }
 neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
@@ -82,6 +83,7 @@ neptune-aws = { version = "*", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
+detectron2 = ["neptune-detectron2"]
 fastai = ["neptune-fastai"]
 kedro = ["kedro-neptune"]
 lightgbm = ["neptune-lightgbm"]
