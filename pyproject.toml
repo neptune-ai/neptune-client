@@ -78,8 +78,10 @@ neptune-tensorflow-keras = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
+neptune-aws = { version = "*", optional = true }
 
 [tool.poetry.extras]
+aws = ["neptune-aws"]
 fastai = ["neptune-fastai"]
 kedro = ["kedro-neptune"]
 lightgbm = ["neptune-lightgbm"]
