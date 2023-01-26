@@ -2,6 +2,7 @@
 
 ### Features
 - Added support for `detectron2` integration ([#1190](https://github.com/neptune-ai/neptune-client/pull/1190))
+- Make neptune-aws package installable as `pip install neptune[aws]`.
 
 ## neptune-client 0.16.16
 
