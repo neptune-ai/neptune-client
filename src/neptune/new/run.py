@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-from typing import Union
-
 __all__ = [
     "Attribute",
     "NamespaceAttr",
@@ -26,7 +24,6 @@ __all__ = [
     "Handler",
     "RunState",
     "Run",
-    "RunType",
     "Boolean",
     "Integer",
     "Datetime",
@@ -57,5 +54,3 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
-
-RunType = Union[Run, Handler]

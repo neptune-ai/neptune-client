@@ -36,7 +36,6 @@ __all__ = [
     "init_project",
     "init_run",
     "Run",
-    "RunType",
     "__version__",
     "create_experiment",
     "get_experiment",
@@ -80,7 +79,6 @@ from neptune.new.internal.init import (
 from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import Run
 from neptune.new.version import version
-from neptune.new.run import RunType
 
 __version__ = str(version)
 
