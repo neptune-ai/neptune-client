@@ -46,6 +46,9 @@ class StringifyValue:
     def __str__(self):
         return str(self.__value)
 
+    def __repr__(self):
+        return repr(self.__value)
+
 
 def extract_if_stringify_value(val):
     if isinstance(val, StringifyValue):

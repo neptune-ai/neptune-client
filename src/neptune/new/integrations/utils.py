@@ -19,8 +19,8 @@ from typing import Union
 
 from neptune.common.experiments import Experiment
 from neptune.new import Run
-from neptune.new.handler import Handler
 from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
+from neptune.new.handler import Handler
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.paths import join_paths
 
@@ -28,5 +28,6 @@ from neptune.new.internal.utils.paths import join_paths
 def expect_not_an_experiment(run: Run):
     if isinstance(run, Experiment):
         raise NeptuneLegacyIncompatibilityException()
+
 
 RunType = Union[Run, Handler]
