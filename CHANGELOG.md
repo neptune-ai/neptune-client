@@ -4,6 +4,9 @@
 - Added support for `detectron2` integration ([#1190](https://github.com/neptune-ai/neptune-client/pull/1190))
 - Make neptune-aws package installable as `pip install neptune[aws]`.  ([#1176](https://github.com/neptune-ai/neptune-client/pull/1176))
 
+### Fixes
+- Added support of tuple in stringify_unsupported ([#1196](https://github.com/neptune-ai/neptune-client/pull/1196))
+
 ## neptune-client 0.16.16
 
 ### Features
