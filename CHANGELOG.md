@@ -6,6 +6,7 @@
 
 ### Fixes
 - Added support of tuple in stringify_unsupported ([#1196](https://github.com/neptune-ai/neptune-client/pull/1196))
+- Fixed lack of `__repr__` for `StringifyValue` ([#1195](https://github.com/neptune-ai/neptune-client/pull/1195))
 
 ## neptune-client 0.16.16
 
