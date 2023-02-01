@@ -39,5 +39,25 @@ class Series(Value):
     def values(self):
         pass
 
+    @property
+    @abc.abstractmethod
+    def steps(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def timestamps(self):
+        pass
+
+    @steps.setter
+    @abc.abstractmethod
+    def steps(self, steps):
+        pass
+
+    @timestamps.setter
+    @abc.abstractmethod
+    def timestamps(self, timestamps):
+        pass
+
     def __len__(self):
         return len(self.values)

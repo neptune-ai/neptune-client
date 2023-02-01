@@ -17,6 +17,7 @@ __all__ = ["FloatSeries"]
 
 from typing import (
     TYPE_CHECKING,
+    Collection,
     Optional,
     TypeVar,
     Union,
@@ -39,6 +40,8 @@ class FloatSeries(Series):
         min: Optional[Union[float, int]] = None,
         max: Optional[Union[float, int]] = None,
         unit: Optional[str] = None,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
     ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
@@ -46,6 +49,8 @@ class FloatSeries(Series):
         self._min = min
         self._max = max
         self._unit = unit
+        self._steps = steps
+        self._timestamps = timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_float_series(self)
@@ -65,6 +70,22 @@ class FloatSeries(Series):
     @property
     def unit(self):
         return self._unit
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
+
+    @steps.setter
+    def steps(self, steps):
+        self._steps = steps
+
+    @timestamps.setter
+    def timestamps(self, timestamps):
+        self._timestamps = timestamps
 
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))

@@ -54,17 +54,22 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def _get_log_operations_from_value(
         self, value: ValTV, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
     ) -> List[LogOperationTV]:
-        if steps is None:
-            steps = cycle([None])
-        else:
-            assert len(value) == len(steps)
-        if timestamps is None:
-            timestamps = cycle([time.time()])
-        else:
-            assert len(value) == len(timestamps)
+        if value.steps is None:
+            if steps is None:
+                steps = cycle([None])
+            else:
+                assert len(value) == len(steps)
+            value.steps = steps
+
+        if value.timestamps is None:
+            if timestamps is None:
+                timestamps = cycle([time.time()])
+            else:
+                assert len(value) == len(timestamps)
+            value.timestamps = timestamps
 
         mapped_values = self._map_series_val(value)
-        values_with_step_and_ts = zip(mapped_values, steps, timestamps)
+        values_with_step_and_ts = zip(mapped_values, value.steps, value.timestamps)
         log_values = [self.operation_cls.ValueType(val, step=step, ts=ts) for val, step, ts in values_with_step_and_ts]
         return [
             self.operation_cls(self._path, chunk) for chunk in get_batches(log_values, batch_size=self.max_batch_size)

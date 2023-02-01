@@ -18,6 +18,8 @@ __all__ = ["StringSeries"]
 from typing import (
     TYPE_CHECKING,
     Any,
+    Collection,
+    Optional,
     TypeVar,
 )
 
@@ -43,7 +45,12 @@ def extract_value(value: Any) -> str:
 
 
 class StringSeries(Series):
-    def __init__(self, values):
+    def __init__(
+        self,
+        values,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+    ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
 
@@ -51,6 +58,8 @@ class StringSeries(Series):
 
         self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
         self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
+        self._steps = steps
+        self._timestamps = timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)
@@ -58,6 +67,22 @@ class StringSeries(Series):
     @property
     def values(self):
         return self._values
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
+
+    @steps.setter
+    def steps(self, steps):
+        self._steps = steps
+
+    @timestamps.setter
+    def timestamps(self, timestamps):
+        self._timestamps = timestamps
 
     @property
     def truncated(self):

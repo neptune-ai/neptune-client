@@ -17,7 +17,9 @@ __all__ = ["FileSeries"]
 
 from typing import (
     TYPE_CHECKING,
+    Collection,
     List,
+    Optional,
     TypeVar,
 )
 
@@ -34,10 +36,18 @@ Ret = TypeVar("Ret")
 
 
 class FileSeries(Series):
-    def __init__(self, values, **kwargs):
+    def __init__(
+        self,
+        values,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+        **kwargs,
+    ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
         self._values = [File.create_from(extract_if_stringify_value(value)) for value in values]
+        self._steps = steps
+        self._timestamps = timestamps
 
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
@@ -50,6 +60,22 @@ class FileSeries(Series):
     @property
     def values(self) -> List[File]:
         return self._values
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
+
+    @steps.setter
+    def steps(self, steps):
+        self._steps = steps
+
+    @timestamps.setter
+    def timestamps(self, timestamps):
+        self._timestamps = timestamps
 
     def __str__(self):
         return f"FileSeries({self.values})"
