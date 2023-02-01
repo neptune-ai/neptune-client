@@ -157,6 +157,28 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
+    def test_assign__tuple(self, run):
+        values = (Obj(), Obj(), Obj())
+
+        with assert_deprecation_warning():
+            run["with_warning"] = values
+
+        with assert_no_warnings():
+            run["no_warning"] = stringify_unsupported(values)
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__tuple_inside_dict(self, run):
+        values = (Obj(), Obj(), Obj())
+
+        with assert_deprecation_warning():
+            run["with_warning"] = {"tuple": values}
+
+        with assert_no_warnings():
+            run["no_warning"] = stringify_unsupported({"tuple": values})
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
     def test_assign__dict(self, run):
         with assert_deprecation_warning():
             run["with_warning"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
