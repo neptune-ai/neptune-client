@@ -86,6 +86,28 @@ class TestStringifyUnsupported:
 
         assert run["with_warning"].fetch() == run["no_warning"].fetch()
 
+    def test_assign__array(self, run):
+        values = [Obj(), Obj(), Obj()]
+
+        with assert_deprecation_warning():
+            run["with_warning"] = values
+
+        with assert_no_warnings():
+            run["no_warning"] = stringify_unsupported(values)
+
+        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+
+    def test_assign__array_inside_dict(self, run):
+        values = [Obj(), Obj(), Obj()]
+
+        with assert_deprecation_warning():
+            run["with_warning"] = {"array": values}
+
+        with assert_no_warnings():
+            run["no_warning"] = stringify_unsupported({"array": values})
+
+        assert run["with_warning"]["array"].fetch() == run["no_warning"]["array"].fetch()
+
     def test_assign__float__reassign(self, run):
         with assert_deprecation_warning():
             run["with_warning"] = 4.0
