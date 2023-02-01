@@ -19,9 +19,7 @@ import time
 from itertools import cycle
 from typing import (
     TYPE_CHECKING,
-    Collection,
     List,
-    Optional,
     TypeVar,
 )
 
@@ -41,8 +39,8 @@ class FileSeries(Series):
     def __init__(
         self,
         values,
-        steps: Optional[Collection[float]] = None,
-        timestamps: Optional[Collection[float]] = None,
+        steps=None,
+        timestamps=None,
         **kwargs,
     ):
         if not is_collection(values):

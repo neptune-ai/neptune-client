@@ -101,27 +101,21 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         **kwargs,
     ) -> None:
         """log is a deprecated method, this code should be removed in future"""
-        if is_collection(value):
-            if step is not None and len(value) > 1:
-                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
-            value = self._data_to_value(value, **kwargs)
-        else:
-            value = self._data_to_value([value], **kwargs)
-
         if step is not None:
             verify_type("step", step, (float, int))
         if timestamp is not None:
             verify_type("timestamp", timestamp, (float, int))
 
-        steps = None if step is None else [step]
-        timestamps = None if timestamp is None else [timestamp] * len(value)
-
-        # TODO:
-        if steps is not None:
-            value._steps = steps
-
-        if timestamps is not None:
-            value._timestamps = timestamps
+        if is_collection(value):
+            if step is not None and len(value) > 1:
+                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
+            steps = None if step is None else [step] * len(value)
+            timestamps = None if timestamp is None else [timestamp] * len(value)
+            value = self._data_to_value(value, steps=steps, timestamps=timestamps, **kwargs)
+        else:
+            steps = None if step is None else [step]
+            timestamps = None if timestamp is None else [timestamp]
+            value = self._data_to_value([value], steps=steps, timestamps=timestamps, **kwargs)
 
         ops = self._get_log_operations_from_value(value)
 
@@ -137,8 +131,6 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         wait: bool = False,
         **kwargs,
     ) -> None:
-        value = self._data_to_value(values, **kwargs)
-
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
             if len(steps) != len(values):
@@ -150,13 +142,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
                     f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(values)}"
                 )
 
-        # TODO:
-        if steps is not None:
-            value._steps = steps
-
-        if timestamps is not None:
-            value._timestamps = timestamps
-
+        value = self._data_to_value(values, steps=steps, timestamps=timestamps, **kwargs)
         ops = self._get_log_operations_from_value(value)
 
         with self._container.lock():

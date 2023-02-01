@@ -19,7 +19,6 @@ import time
 from itertools import cycle
 from typing import (
     TYPE_CHECKING,
-    Collection,
     Optional,
     TypeVar,
     Union,
@@ -42,8 +41,8 @@ class FloatSeries(Series):
         min: Optional[Union[float, int]] = None,
         max: Optional[Union[float, int]] = None,
         unit: Optional[str] = None,
-        steps: Optional[Collection[float]] = None,
-        timestamps: Optional[Collection[float]] = None,
+        steps=None,
+        timestamps=None,
     ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")

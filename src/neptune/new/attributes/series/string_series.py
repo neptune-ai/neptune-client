@@ -67,10 +67,7 @@ class StringSeries(
         return ClearStringLog(self._path)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
-        if kwargs:
-            logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
-
-        return StringSeriesVal(values)
+        return StringSeriesVal(values, **kwargs)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
