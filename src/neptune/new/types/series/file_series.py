@@ -15,6 +15,8 @@
 #
 __all__ = ["FileSeries"]
 
+import time
+from itertools import cycle
 from typing import (
     TYPE_CHECKING,
     Collection,
@@ -46,8 +48,17 @@ class FileSeries(Series):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
         self._values = [File.create_from(extract_if_stringify_value(value)) for value in values]
-        self._steps = steps
-        self._timestamps = timestamps
+        if steps is None:
+            self._steps = cycle([None])
+        else:
+            assert len(values) == len(steps)
+            self._steps = steps
+
+        if timestamps is None:
+            self._timestamps = cycle([time.time()])
+        else:
+            assert len(values) == len(timestamps)
+            self._timestamps = timestamps
 
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
@@ -68,14 +79,6 @@ class FileSeries(Series):
     @property
     def timestamps(self):
         return self._timestamps
-
-    @steps.setter
-    def steps(self, steps):
-        self._steps = steps
-
-    @timestamps.setter
-    def timestamps(self, timestamps):
-        self._timestamps = timestamps
 
     def __str__(self):
         return f"FileSeries({self.values})"

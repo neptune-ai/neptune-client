@@ -15,6 +15,8 @@
 #
 __all__ = ["StringSeries"]
 
+import time
+from itertools import cycle
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -58,8 +60,18 @@ class StringSeries(Series):
 
         self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
         self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
-        self._steps = steps
-        self._timestamps = timestamps
+
+        if steps is None:
+            self._steps = cycle([None])
+        else:
+            assert len(values) == len(steps)
+            self._steps = steps
+
+        if timestamps is None:
+            self._timestamps = cycle([time.time()])
+        else:
+            assert len(values) == len(timestamps)
+            self._timestamps = timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)
@@ -75,14 +87,6 @@ class StringSeries(Series):
     @property
     def timestamps(self):
         return self._timestamps
-
-    @steps.setter
-    def steps(self, steps):
-        self._steps = steps
-
-    @timestamps.setter
-    def timestamps(self, timestamps):
-        self._timestamps = timestamps
 
     @property
     def truncated(self):

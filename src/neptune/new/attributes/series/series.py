@@ -16,8 +16,6 @@
 __all__ = ["Series"]
 
 import abc
-import time
-from itertools import cycle
 from typing import (
     Collection,
     Generic,
@@ -51,23 +49,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
-    def _get_log_operations_from_value(
-        self, value: ValTV, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
-    ) -> List[LogOperationTV]:
-        if value.steps is None:
-            if steps is None:
-                steps = cycle([None])
-            else:
-                assert len(value) == len(steps)
-            value.steps = steps
-
-        if value.timestamps is None:
-            if timestamps is None:
-                timestamps = cycle([time.time()])
-            else:
-                assert len(value) == len(timestamps)
-            value.timestamps = timestamps
-
+    def _get_log_operations_from_value(self, value: ValTV) -> List[LogOperationTV]:
         mapped_values = self._map_series_val(value)
         values_with_step_and_ts = zip(mapped_values, value.steps, value.timestamps)
         log_values = [self.operation_cls.ValueType(val, step=step, ts=ts) for val, step, ts in values_with_step_and_ts]
@@ -106,7 +88,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
                 self._enqueue_operation(clear_op, wait=wait)
             else:
                 self._enqueue_operation(clear_op, wait=False)
-                ops = self._get_log_operations_from_value(value, steps=None, timestamps=None)
+                ops = self._get_log_operations_from_value(value)
                 for op in ops:
                     self._enqueue_operation(op, wait=wait)
 
@@ -134,7 +116,14 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         steps = None if step is None else [step]
         timestamps = None if timestamp is None else [timestamp] * len(value)
 
-        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        # TODO:
+        if steps is not None:
+            value._steps = steps
+
+        if timestamps is not None:
+            value._timestamps = timestamps
+
+        ops = self._get_log_operations_from_value(value)
 
         with self._container.lock():
             for op in ops:
@@ -161,7 +150,14 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
                     f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(values)}"
                 )
 
-        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        # TODO:
+        if steps is not None:
+            value._steps = steps
+
+        if timestamps is not None:
+            value._timestamps = timestamps
+
+        ops = self._get_log_operations_from_value(value)
 
         with self._container.lock():
             for op in ops:
