@@ -44,4 +44,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           kind: unit-pull-request
-          coverage-artifact: 'unit-pull-request-coverage'
+          coverage-artifact: unit-pull-request-coverage

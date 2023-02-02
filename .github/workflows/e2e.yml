@@ -161,3 +161,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           kind: e2e
+          coverage-artifact: e2e-coverage
