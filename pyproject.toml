@@ -166,7 +166,6 @@ packages = [
 
 [tool.poetry.urls]
 "Tracker" = "https://github.com/neptune-ai/neptune-client/issues"
-"Source" = "https://github.com/neptune-ai/neptune-client"
 "Documentation" = "https://docs.neptune.ai/"
 
 [tool.poetry.scripts]
