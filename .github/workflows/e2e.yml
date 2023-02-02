@@ -8,8 +8,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - "*"
 
 env:
   WORKSPACE_NAME: e2e-tests
