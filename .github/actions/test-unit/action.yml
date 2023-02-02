@@ -36,7 +36,7 @@ runs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: ${{ input.coverage-artifact }}
+        name: ${{ inputs.coverage-artifact }}
         path: ./.coverage*
 
     - name: Upload test reports
