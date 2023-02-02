@@ -11,6 +11,10 @@ inputs:
   report_job:
     description: "Job name to update by JUnit report"
     required: true
+  coverage-artifacts-name:
+    description: "Artifact name for storing coverage report"
+    required: false
+    default: unit-coverage
 
 runs:
   using: "composite"
@@ -32,7 +36,7 @@ runs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: unit-coverage
+        name: ${{ inputs.coverage-artifacts-name }}
         path: ./.coverage*
 
     - name: Upload test reports
