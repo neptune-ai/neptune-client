@@ -224,7 +224,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: lightning
-          report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   lightning-notify:
     needs: [lightning]
@@ -271,7 +271,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: huggingface
-          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   huggingface-notify:
     needs: [huggingface]
@@ -318,7 +318,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: zenml
-          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   zenml-notify:
     needs: [zenml]

@@ -15,7 +15,7 @@ inputs:
     description: "Name"
     required: false
     default: ""
-  report_job:
+  report-job:
     description: "Job name to update by JUnit report"
     required: true
 
@@ -51,7 +51,7 @@ runs:
         update_check: true
         include_passed: true
         annotate_notice: true
-        job_name: ${{ inputs.report_job }}
+        job_name: ${{ inputs.report-job }}
 
     - uses: actions/upload-artifact@v2
       if: always()

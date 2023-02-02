@@ -44,7 +44,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: "not s3 and not integrations"
-          report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_management:
     timeout-minutes: 75
@@ -70,7 +70,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: management
-          report_job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_s3_gcs:
     timeout-minutes: 75
@@ -100,7 +100,7 @@ jobs:
           os: ${{ matrix.os }}
           module: s3
           name: s3-gcs
-          report_job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_s3:
     timeout-minutes: 75
@@ -128,7 +128,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: s3
-          report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report-job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e-tests-notify:
     needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3 ]
