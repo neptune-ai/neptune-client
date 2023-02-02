@@ -7,7 +7,7 @@ inputs:
   kind:
      description: "Test kind (e2e or unit)"
      required: true
-  unit-pull-request:
+  coverage-artifact:
     description: "Artifact name of coverage report"
     required: true
 description: Gather and report coverage to Codecov
