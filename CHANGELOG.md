@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.16.17
+## neptune-client 0.16.17
 
 ### Features
 - Added support for `detectron2` integration ([#1190](https://github.com/neptune-ai/neptune-client/pull/1190))
