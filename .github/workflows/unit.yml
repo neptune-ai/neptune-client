@@ -8,8 +8,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - "*"
 
 jobs:
   test:
