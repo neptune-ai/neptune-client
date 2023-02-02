@@ -28,6 +28,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report-job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
+          coverage-artifact: 'unit-pull-request'
 
   coverage:
     needs: [test]
@@ -43,3 +44,4 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           kind: unit-pull-request
+          coverage-artifact: 'unit-pull-request-coverage'

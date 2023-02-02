@@ -7,6 +7,10 @@ inputs:
   kind:
      description: "Test kind (e2e or unit)"
      required: true
+  unit-pull-request:
+    description: "Artifact name of coverage report"
+    required: false
+    default: ${{ inputs.kind }}-coverage
 description: Gather and report coverage to Codecov
 runs:
     using: "composite"
@@ -24,7 +28,7 @@ runs:
       - name: Download coverages
         uses: actions/download-artifact@v3
         with:
-          name: ${{ inputs.kind }}-coverage
+          name: ${{ inputs.unit-pull-request }}
           path: ./
 
       - name: Combine coverages
