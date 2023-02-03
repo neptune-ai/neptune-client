@@ -1,4 +1,4 @@
-name: unit
+name: pull-request-unittests
 
 on:
   workflow_dispatch:
@@ -28,15 +28,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
-
-  coverage:
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+          coverage-artifacts-name: unit-pull-request-coverage
 
       - name: Coverage report
         uses: ./.github/actions/coverage
