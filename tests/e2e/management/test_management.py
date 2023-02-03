@@ -54,6 +54,7 @@ class TestManagement(BaseE2ETest):
         assert username in member_list
         assert member_list.get(username) == expected_role
 
+    @pytest.mark.skip(reason="On prem does not support Service Account")
     def test_standard_scenario(self, environment: Environment):
         project_name = a_project_name(project_slug=f"{fake.slug()}-mgmt")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
@@ -144,6 +145,7 @@ class TestManagement(BaseE2ETest):
 
         assert created_project_identifier not in get_project_list(api_token=environment.admin_token)
 
+    @pytest.mark.skip(reason="On prem does not support Service Account")
     def test_visibility_workspace(self, environment: "Environment"):
         project_name = a_project_name(project_slug=f"{fake.slug()}-workspace")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
@@ -217,6 +219,7 @@ class TestManagement(BaseE2ETest):
 
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
 
+    @pytest.mark.skip(reason="On prem does not support Service Account")
     def test_create_project(self, environment: "Environment"):
         project_name = a_project_name(project_slug=f"{fake.slug()}-create")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
@@ -309,6 +312,7 @@ class TestManagement(BaseE2ETest):
             name=created_project_identifier, api_token=environment.user_token
         )
 
+    @pytest.mark.skip(reason="On prem does not support Service Account")
     def test_invite_as_non_admin(self, environment: "Environment"):
         project_name = a_project_name(project_slug=f"{fake.slug()}-invitation")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
