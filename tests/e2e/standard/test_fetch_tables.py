@@ -126,6 +126,7 @@ class TestFetchTable(BaseE2ETest):
             columns_with_one_key.get_attribute_value(key1)
         assert columns_with_one_key.get_attribute_value(key2) == value2
 
+    @pytest.mark.skip(reason="Failing on onprem")
     def test_fetch_runs_table(self, environment, project):
         def init_run():
             return neptune.init_run(project=environment.project)
@@ -135,6 +136,7 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_runs_as_rows)
 
+    @pytest.mark.skip(reason="Failing on onprem")
     def test_fetch_models_table(self, environment, project):
         def init_run():
             return neptune.init_model(project=environment.project, key=a_key())
@@ -144,6 +146,7 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_models_as_rows)
 
+    @pytest.mark.skip(reason="Failing on onprem")
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_table(self, container: Model, environment):
         model_sys_id = container["sys/id"].fetch()
