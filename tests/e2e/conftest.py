@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 import os
+import random
+import string
 import time
 from datetime import datetime
 
 import pytest
 from faker import Faker
 
-from neptune.management import (
-    add_project_member,
-    create_project,
-)
+from neptune.management import create_project
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new import init_project
 from neptune.new.internal.utils.s3 import get_boto_s3_client
@@ -49,19 +48,13 @@ def environment():
 
     created_project_identifier = create_project(
         name=project_name,
+        key="".join(random.choices(string.ascii_uppercase, k=10)),
         visibility="priv",
         workspace=workspace,
         api_token=admin_token,
     )
 
     time.sleep(10)
-
-    add_project_member(
-        name=created_project_identifier,
-        username=user,
-        role="contributor",
-        api_token=admin_token,
-    )
 
     yield Environment(
         workspace=workspace,
