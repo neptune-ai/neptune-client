@@ -14,10 +14,7 @@
 # limitations under the License.
 #
 import random
-from typing import (
-    Any,
-    List,
-)
+from contextlib import contextmanager
 
 import pytest
 from PIL import Image
@@ -29,119 +26,80 @@ from tests.e2e.base import (
     fake,
 )
 from tests.e2e.utils import (
-    SIZE_1KB,
     generate_image,
     image_to_png,
     tmp_context,
 )
 
-SERIES_VALUES = ["strings", "floats"]
+BASIC_SERIES_TYPES = ["strings", "floats", "images"]
 
 
 class TestSeries(BaseE2ETest):
-    @pytest.mark.parametrize("values", SERIES_VALUES, indirect=True)
+    @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log(self, container: MetadataContainer, values: List[Any], key: str):
-        # when
-        container[key].log(values[0])
-        container[key].log(values[1:])
-        container.sync()
+    def test_log(self, container: MetadataContainer, series_type: str):
+        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
+            namespace.log(values[0])
+            namespace.log(values[1:])
 
-        # then
-        assert container[key].fetch_last() == values[-1]
-        assert list(container[key].fetch_values()["value"]) == values
-
+    @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log_images(self, container: MetadataContainer, key: str):
-        # given
-        images = [generate_image(size=32 * SIZE_1KB) for _ in range(4)]
+    def test_append(self, container: MetadataContainer, series_type: str):
+        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
+            for value in values:
+                namespace.append(value)
 
-        # when
-        container[key].log(images[0])
-        container[key].log(images[1:])
-        container.sync()
-
-        # then
-        assert_images(container=container, key=key, images=images)
-
-    @pytest.mark.parametrize("values", SERIES_VALUES, indirect=True)
+    @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append(self, container: MetadataContainer, values: List[Any], key: str):
-        # when
-        for value in values:
-            container[key].append(value)
-        container.sync()
+    def test_extend(self, container: MetadataContainer, series_type: str):
+        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
+            namespace.extend([values[0]])
+            namespace.extend(values[1:])
 
-        # then
-        assert container[key].fetch_last() == values[-1]
-        assert list(container[key].fetch_values()["value"]) == values
+    @contextmanager
+    def run_operations_then_assert(self, container: MetadataContainer, series_type: str):
+        key = self.gen_key()
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append_images(self, container: MetadataContainer, key: str):
-        # given
-        # images with size between 200KB - 12MB
-        images = list(generate_image(size=2**n) for n in range(8, 12))
+        if series_type == "floats":
+            # given
+            values = list(random.random() for _ in range(50))
 
-        # when
-        for value in images:
-            container[key].append(value)
-        container.sync()
+            # when
+            yield container[key], values
+            container.sync()
 
-        # then
-        assert_images(container=container, key=key, images=images)
+            # then
+            assert container[key].fetch_last() == values[-1]
+            assert list(container[key].fetch_values()["value"]) == values
 
-    @pytest.mark.parametrize("values", SERIES_VALUES, indirect=True)
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend(self, container: MetadataContainer, values: List[Any], key: str):
-        # when
-        container[key].extend([values[0]])
-        container[key].extend(values[1:])
-        container.sync()
+        elif series_type == "strings":
+            # given
+            values = list(fake.word() for _ in range(50))
 
-        # then
-        assert container[key].fetch_last() == values[-1]
-        assert list(container[key].fetch_values()["value"]) == values
+            # when
+            yield container[key], values
+            container.sync()
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend_images(self, container: MetadataContainer, key: str):
-        # given
-        # images with size between 200KB - 12MB
-        images = list(generate_image(size=2**n) for n in range(8, 12))
+            # then
+            assert container[key].fetch_last() == values[-1]
+            assert list(container[key].fetch_values()["value"]) == values
 
-        # when
-        container[key].extend([images[0]])
-        container[key].extend(images[1:])
-        container.sync()
+        elif series_type == "images":
+            # given
+            images = list(generate_image(size=2**n) for n in range(8, 12))
 
-        # then
-        assert_images(container=container, key=key, images=images)
+            # when
+            yield container[key], images
+            container.sync()
 
-    @pytest.fixture()
-    def key(self):
-        yield self.gen_key()
+            # then
+            with tmp_context():
+                container[key].download_last("last")
+                container[key].download("all")
 
+                with Image.open("last/3.png") as img:
+                    assert img == image_to_png(image=images[-1])
 
-@pytest.fixture()
-def values(request):
-    if request.param == "floats":
-        yield list(random.random() for _ in range(50))
-
-    elif request.param == "strings":
-        yield list(fake.word() for _ in range(50))
-
-    elif request.param == "images":
-        # images with size between 200KB - 12MB
-        yield list(generate_image(size=2**n) for n in range(8, 12))
-
-
-def assert_images(container: MetadataContainer, key: str, images: List["Image"]):
-    with tmp_context():
-        container[key].download_last("last")
-        container[key].download("all")
-
-        with Image.open("last/3.png") as img:
-            assert img == image_to_png(image=images[-1])
-
-        for i in range(4):
-            with Image.open(f"all/{i}.png") as img:
-                assert img == image_to_png(image=images[i])
+                for i in range(4):
+                    with Image.open(f"all/{i}.png") as img:
+                        assert img == image_to_png(image=images[i])
