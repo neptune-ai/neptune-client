@@ -20,6 +20,11 @@ import pytest
 from PIL import Image
 
 from neptune.new.metadata_containers import MetadataContainer
+from neptune.new.types import (
+    FileSeries,
+    FloatSeries,
+    StringSeries,
+)
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -31,7 +36,7 @@ from tests.e2e.utils import (
     tmp_context,
 )
 
-BASIC_SERIES_TYPES = ["strings", "floats", "images"]
+BASIC_SERIES_TYPES = ["strings", "floats", "files"]
 
 
 class TestSeries(BaseE2ETest):
@@ -55,6 +60,21 @@ class TestSeries(BaseE2ETest):
         with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
             namespace.extend([values[0]])
             namespace.extend(values[1:])
+
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_float_series_type_assign(self, container: MetadataContainer):
+        with self.run_operations_then_assert(container=container, series_type="floats") as (namespace, values):
+            namespace.assign(FloatSeries(values=values))
+
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_string_series_type_assign(self, container: MetadataContainer):
+        with self.run_operations_then_assert(container=container, series_type="strings") as (namespace, values):
+            namespace.assign(StringSeries(values=values))
+
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_file_series_type_assign(self, container: MetadataContainer):
+        with self.run_operations_then_assert(container=container, series_type="files") as (namespace, values):
+            namespace.assign(FileSeries(values=values))
 
     @contextmanager
     def run_operations_then_assert(self, container: MetadataContainer, series_type: str):
@@ -84,7 +104,7 @@ class TestSeries(BaseE2ETest):
             assert container[key].fetch_last() == values[-1]
             assert list(container[key].fetch_values()["value"]) == values
 
-        elif series_type == "images":
+        elif series_type == "files":
             # given
             images = list(generate_image(size=2**n) for n in range(8, 12))
 
