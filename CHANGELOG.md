@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 0.16.18
+
+### Features
+- Added support for timestamps and steps in Series types constructors ([#1194](https://github.com/neptune-ai/neptune-client/pull/1194))
+
 ## neptune-client 0.16.17
 
 ### Features
