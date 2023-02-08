@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import random
+from typing import List
 
 import pytest
 from PIL import Image
@@ -34,144 +35,143 @@ from tests.e2e.utils import (
 
 class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log_numbers(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [random.random() for _ in range(50)]
+    def test_log_numbers(self, container: MetadataContainer, key: str):
+        # given
+        values = list(random.random() for _ in range(50))
 
+        # when
         container[key].log(values[0])
         container[key].log(values[1:])
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log_strings(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [fake.word() for _ in range(50)]
+    def test_log_strings(self, container: MetadataContainer, key: str):
+        # given
+        values = list(fake.word() for _ in range(50))
 
+        # when
         container[key].log(values[0])
         container[key].log(values[1:])
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log_images(self, container: MetadataContainer):
-        key = self.gen_key()
+    def test_log_images(self, container: MetadataContainer, key: str):
+        # given
         images = [generate_image(size=32 * SIZE_1KB) for _ in range(4)]
 
+        # when
         container[key].log(images[0])
         container[key].log(images[1:])
         container.sync()
 
-        with tmp_context():
-            container[key].download_last("last")
-            container[key].download("all")
-
-            with Image.open("last/3.png") as img:
-                assert img == image_to_png(image=images[-1])
-
-            for i in range(4):
-                with Image.open(f"all/{i}.png") as img:
-                    assert img == image_to_png(image=images[i])
+        # then
+        assert_images(container=container, key=key, images=images)
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append_numbers(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [random.random() for _ in range(50)]
+    def test_append_numbers(self, container: MetadataContainer, key: str):
+        # given
+        values = list(random.random() for _ in range(50))
+
+        # when
         for value in values:
             container[key].append(value)
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append_strings(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [fake.word() for _ in range(50)]
+    def test_append_strings(self, container: MetadataContainer, key: str):
+        # given
+        values = list(fake.word() for _ in range(50))
+
+        # when
         for value in values:
             container[key].append(value)
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append_images(self, container: MetadataContainer):
-        key = self.gen_key()
+    def test_append_images(self, container: MetadataContainer, key: str):
+        # given
         # images with size between 200KB - 12MB
         images = list(generate_image(size=2**n) for n in range(8, 12))
+
+        # when
         for value in images:
             container[key].append(value)
         container.sync()
 
-        with tmp_context():
-            container[key].download_last("last")
-            container[key].download("all")
-
-            with Image.open("last/3.png") as img:
-                assert img == image_to_png(image=images[-1])
-
-            for i in range(4):
-                with Image.open(f"all/{i}.png") as img:
-                    assert img == image_to_png(image=images[i])
+        # then
+        assert_images(container=container, key=key, images=images)
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend_numbers(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [random.random() for _ in range(50)]
+    def test_extend_numbers(self, container: MetadataContainer, key: str):
+        # given
+        values = list(random.random() for _ in range(50))
 
+        # when
         container[key].extend([values[0]])
         container[key].extend(values[1:])
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend_strings(self, container: MetadataContainer):
-        key = self.gen_key()
-        values = [fake.word() for _ in range(50)]
+    def test_extend_strings(self, container: MetadataContainer, key: str):
+        # given
+        values = list(fake.word() for _ in range(50))
 
+        # when
         container[key].extend([values[0]])
         container[key].extend(values[1:])
         container.sync()
 
+        # then
         assert container[key].fetch_last() == values[-1]
-
-        fetched_values = container[key].fetch_values()
-        assert list(fetched_values["value"]) == values
+        assert list(container[key].fetch_values()["value"]) == values
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend_images(self, container: MetadataContainer):
-        key = self.gen_key()
+    def test_extend_images(self, container: MetadataContainer, key: str):
+        # given
         # images with size between 200KB - 12MB
         images = list(generate_image(size=2**n) for n in range(8, 12))
 
+        # when
         container[key].extend([images[0]])
         container[key].extend(images[1:])
         container.sync()
 
-        with tmp_context():
-            container[key].download_last("last")
-            container[key].download("all")
+        # then
+        assert_images(container=container, key=key, images=images)
 
-            with Image.open("last/3.png") as img:
-                assert img == image_to_png(image=images[-1])
+    @pytest.fixture()
+    def key(self):
+        yield self.gen_key()
 
-            for i in range(4):
-                with Image.open(f"all/{i}.png") as img:
-                    assert img == image_to_png(image=images[i])
+
+def assert_images(container: MetadataContainer, key: str, images: List[Image]):
+    with tmp_context():
+        container[key].download_last("last")
+        container[key].download("all")
+
+        with Image.open("last/3.png") as img:
+            assert img == image_to_png(image=images[-1])
+
+        for i in range(4):
+            with Image.open(f"all/{i}.png") as img:
+                assert img == image_to_png(image=images[i])
