@@ -137,3 +137,173 @@ Please contact Neptune support.
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(msg=msg, **STYLES))
+
+
+class ClientHttpError(NeptuneException):
+    def __init__(self, status, response):
+        self.status = status
+        self.response = response
+        message = """
+{h1}
+----ClientHttpError-----------------------------------------------------------------------
+{end}
+The Neptune server returned the status {fail}{status}{end}.
+
+The server response was:
+{fail}{response}{end}
+
+Verify the correctness of your call or contact Neptune support.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(status=status, response=response, **STYLES))
+
+
+class NeptuneApiException(NeptuneException):
+    pass
+
+
+class Forbidden(NeptuneApiException):
+    def __init__(self):
+        message = """
+{h1}
+----Forbidden-----------------------------------------------------------------------
+{end}
+You don't have permission to access the given resource.
+
+    - Verify that your API token is correct.
+      See: https://app.neptune.ai/get_my_api_token
+
+    - Verify that the provided project name is correct.
+      The correct project name should look like this: {correct}WORKSPACE_NAME/PROJECT_NAME{end}
+      It has two parts:
+          - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: the name specified for the project
+
+   - Ask your organization administrator to grant you necessary privileges to the project.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class Unauthorized(NeptuneApiException):
+    def __init__(self):
+        message = """
+{h1}
+----Unauthorized-----------------------------------------------------------------------
+{end}
+You don't have permission to access the given resource.
+
+    - Verify that your API token is correct.
+      See: https://app.neptune.ai/get_my_api_token
+
+    - Verify that the provided project name is correct.
+      The correct project name should look like this: {correct}WORKSPACE_NAME/PROJECT_NAME{end}
+      It has two parts:
+          - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: the name specified for the project
+
+   - Ask your organization administrator to grant you necessary privileges to the project.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class InternalServerError(NeptuneApiException):
+    def __init__(self, response):
+        message = """
+{h1}
+----InternalServerError-----------------------------------------------------------------------
+{end}
+The Neptune client library encountered an unexpected internal server error.
+
+The server response was:
+{fail}{response}{end}
+
+Please try again later or contact Neptune support.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(response=response, **STYLES))
+
+
+class NeptuneConnectionLostException(NeptuneException):
+    def __init__(self, cause: Exception):
+        self.cause = cause
+        message = """
+{h1}
+----NeptuneConnectionLostException---------------------------------------------------------
+{end}
+The connection to the Neptune server was lost.
+If you are using the asynchronous (default) connection mode, Neptune continues to locally track your metadata and continuously tries to re-establish a connection to the Neptune servers.
+If the connection is not re-established, you can upload your data later with the Neptune Command Line Interface tool:
+    {bash}neptune sync -p workspace_name/project_name{end}
+
+What should I do?
+    - Check if your computer is connected to the internet.
+    - If your connection is unstable, consider working in offline mode:
+        {python}run = neptune.init_run(mode="offline"){end}
+
+You can find detailed instructions on the following doc pages:
+    - https://docs.neptune.ai/api/connection_modes/#offline-mode
+    - https://docs.neptune.ai/api/neptune_sync/
+
+You may also want to check the following docs page:
+    - https://docs.neptune.ai/api/connection_modes/#connectivity-issues
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""  # noqa: E501
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneSSLVerificationError(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneSSLVerificationError-----------------------------------------------------------------------
+{end}
+
+The Neptune client was unable to verify your SSL Certificate.
+
+{bold}What could have gone wrong?{end}
+    - You are behind a proxy that inspects traffic to Neptune servers.
+        - Contact your network administrator
+    - The SSL/TLS certificate of your on-premises installation is not recognized due to a custom Certificate Authority (CA).
+        - To check, run the following command in your terminal:
+            {bash}curl https://<your_domain>/api/backend/echo {end}
+        - Where <your_domain> is the address that you use to access Neptune app, such as abc.com
+        - Contact your network administrator if you get the following output:
+            {fail}"curl: (60) server certificate verification failed..."{end}
+    - Your machine software is outdated.
+        - Minimal OS requirements:
+            - Windows >= XP SP3
+            - macOS >= 10.12.1
+            - Ubuntu >= 12.04
+            - Debian >= 8
+
+{bold}What can I do?{end}
+You can manually configure Neptune to skip all SSL checks. To do that,
+set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'.
+{bold}Note: This might mean that your connection is less secure{end}.
+
+Linux/Unix
+In your terminal run:
+    {bash}export NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+Windows
+In your terminal run:
+    {bash}set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+Jupyter notebook
+In your code cell:
+    {bash}%env NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+You may also want to check the following docs page:
+    - https://docs.neptune.ai/api/environment_variables/#neptune_allow_self_signed_certificate
+
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""  # noqa: E501
+        super().__init__(message.format(**STYLES))

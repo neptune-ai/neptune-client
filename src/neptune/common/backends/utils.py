@@ -36,12 +36,12 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
-from neptune.common.exceptions import NeptuneInvalidApiTokenException
-from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
-from neptune.new.exceptions import (
+from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
+from neptune.common.exceptions import (
     ClientHttpError,
     Forbidden,
     NeptuneConnectionLostException,
+    NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
     Unauthorized,
 )
