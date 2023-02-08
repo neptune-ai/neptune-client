@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 __all__ = [
-    "with_api_exceptions_handler",
     "verify_host_resolution",
     "create_swagger_client",
     "verify_client_version",
@@ -30,11 +29,9 @@ __all__ = [
 ]
 
 import dataclasses
-import itertools
 import logging
 import os
 import socket
-import time
 from functools import (
     lru_cache,
     wraps,
@@ -54,23 +51,9 @@ from urllib.parse import (
     urlparse,
 )
 
-import requests
 import urllib3
 from bravado.client import SwaggerClient
-from bravado.exception import (
-    BravadoConnectionError,
-    BravadoTimeoutError,
-    HTTPBadGateway,
-    HTTPClientError,
-    HTTPError,
-    HTTPForbidden,
-    HTTPGatewayTimeout,
-    HTTPInternalServerError,
-    HTTPRequestTimeout,
-    HTTPServiceUnavailable,
-    HTTPTooManyRequests,
-    HTTPUnauthorized,
-)
+from bravado.exception import HTTPError
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsResponseAdapter
 from bravado_core.formatter import SwaggerFormat
@@ -79,23 +62,14 @@ from requests import (
     Response,
     Session,
 )
-from urllib3.exceptions import NewConnectionError
 
-from neptune.common.exceptions import NeptuneInvalidApiTokenException
-from neptune.new.envs import (
-    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
-    NEPTUNE_RETRIES_TIMEOUT_ENV,
-)
+from neptune.common.backends.utils import with_api_exceptions_handler
+from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
     CannotResolveHostname,
-    ClientHttpError,
-    Forbidden,
     MetadataInconsistency,
     NeptuneClientUpgradeRequiredError,
-    NeptuneConnectionLostException,
     NeptuneFeatureNotAvailableException,
-    NeptuneSSLVerificationError,
-    Unauthorized,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -110,75 +84,6 @@ _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-
-MAX_RETRY_TIME = 30
-retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
-
-
-def with_api_exceptions_handler(func):
-    def wrapper(*args, **kwargs):
-        last_exception = None
-        start_time = time.monotonic()
-        for retry in itertools.count(0):
-            if time.monotonic() - start_time > retries_timeout:
-                break
-
-            try:
-                return func(*args, **kwargs)
-            except requests.exceptions.InvalidHeader as e:
-                if "X-Neptune-Api-Token" in e.args[0]:
-                    raise NeptuneInvalidApiTokenException()
-                raise
-            except requests.exceptions.SSLError as e:
-                raise NeptuneSSLVerificationError() from e
-            except (
-                BravadoConnectionError,
-                BravadoTimeoutError,
-                requests.exceptions.ConnectionError,
-                requests.exceptions.Timeout,
-                HTTPRequestTimeout,
-                HTTPServiceUnavailable,
-                HTTPGatewayTimeout,
-                HTTPBadGateway,
-                HTTPTooManyRequests,
-                HTTPInternalServerError,
-                NewConnectionError,
-            ) as e:
-                time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
-                last_exception = e
-                continue
-            except HTTPUnauthorized:
-                raise Unauthorized()
-            except HTTPForbidden:
-                raise Forbidden()
-            except HTTPClientError as e:
-                raise ClientHttpError(e.status_code, e.response.text) from e
-            except requests.exceptions.RequestException as e:
-                if e.response is None:
-                    raise
-                status_code = e.response.status_code
-                if status_code in (
-                    HTTPRequestTimeout.status_code,
-                    HTTPBadGateway.status_code,
-                    HTTPServiceUnavailable.status_code,
-                    HTTPGatewayTimeout.status_code,
-                    HTTPTooManyRequests.status_code,
-                    HTTPInternalServerError.status_code,
-                ):
-                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
-                    last_exception = e
-                    continue
-                elif status_code == HTTPUnauthorized.status_code:
-                    raise Unauthorized()
-                elif status_code == HTTPForbidden.status_code:
-                    raise Forbidden()
-                elif 400 <= status_code < 500:
-                    raise ClientHttpError(status_code, e.response.text) from e
-                else:
-                    raise
-        raise NeptuneConnectionLostException(last_exception) from last_exception
-
-    return wrapper
 
 
 @lru_cache(maxsize=None, typed=True)

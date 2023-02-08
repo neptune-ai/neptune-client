@@ -30,6 +30,7 @@ from typing import (
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
 from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.new.internal.backends.api_model import ClientConfig
@@ -42,7 +43,6 @@ from neptune.new.internal.backends.utils import (
     update_session_proxies,
     verify_client_version,
     verify_host_resolution,
-    with_api_exceptions_handler,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.version import version as neptune_client_version

@@ -48,6 +48,7 @@ from requests import (
 )
 
 from neptune.common.backends.api_model import MultipartConfig
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
@@ -78,7 +79,6 @@ from neptune.new.internal.backends.swagger_client_wrapper import (
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
-    with_api_exceptions_handler,
 )
 from neptune.new.internal.utils import (
     get_absolute_paths,

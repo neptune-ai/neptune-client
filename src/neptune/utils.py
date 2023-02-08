@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # flake8: noqa
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,
@@ -37,5 +38,4 @@ from neptune.common.utils import (
     merge_dataframes,
     update_session_proxies,
     validate_notebook_path,
-    with_api_exceptions_handler,
 )
