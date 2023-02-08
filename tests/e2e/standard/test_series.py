@@ -43,73 +43,78 @@ class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_log(self, container: MetadataContainer, series_type: str):
-        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
-            namespace.log(values[0])
-            namespace.log(values[1:])
+        with self.run_then_assert(container=container, series_type=series_type) as (namespace, values, steps):
+            for value, step in zip(values, steps):
+                namespace.log(value, step=step)
 
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_append(self, container: MetadataContainer, series_type: str):
-        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
-            for value in values:
-                namespace.append(value)
+        with self.run_then_assert(container=container, series_type=series_type) as (namespace, values, steps):
+            for value, step in zip(values, steps):
+                namespace.append(value, step=step)
 
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_extend(self, container: MetadataContainer, series_type: str):
-        with self.run_operations_then_assert(container=container, series_type=series_type) as (namespace, values):
-            namespace.extend([values[0]])
-            namespace.extend(values[1:])
+        with self.run_then_assert(container=container, series_type=series_type) as (namespace, values, steps):
+            namespace.extend([values[0]], steps=[steps[0]])
+            namespace.extend(values[1:], steps=steps[1:])
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_float_series_type_assign(self, container: MetadataContainer):
-        with self.run_operations_then_assert(container=container, series_type="floats") as (namespace, values):
-            namespace.assign(FloatSeries(values=values))
+        with self.run_then_assert(container=container, series_type="floats") as (namespace, values, steps):
+            namespace.assign(FloatSeries(values=values, steps=steps))
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_string_series_type_assign(self, container: MetadataContainer):
-        with self.run_operations_then_assert(container=container, series_type="strings") as (namespace, values):
-            namespace.assign(StringSeries(values=values))
+        with self.run_then_assert(container=container, series_type="strings") as (namespace, values, steps):
+            namespace.assign(StringSeries(values=values, steps=steps))
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_file_series_type_assign(self, container: MetadataContainer):
-        with self.run_operations_then_assert(container=container, series_type="files") as (namespace, values):
-            namespace.assign(FileSeries(values=values))
+        with self.run_then_assert(container=container, series_type="files") as (namespace, values, steps):
+            namespace.assign(FileSeries(values=values, steps=steps))
 
     @contextmanager
-    def run_operations_then_assert(self, container: MetadataContainer, series_type: str):
+    def run_then_assert(self, container: MetadataContainer, series_type: str):
         key = self.gen_key()
 
         if series_type == "floats":
             # given
             values = list(random.random() for _ in range(50))
+            steps = sorted(random.sample(range(1, 100), 50))
 
             # when
-            yield container[key], values
+            yield container[key], values, steps
             container.sync()
 
             # then
             assert container[key].fetch_last() == values[-1]
             assert list(container[key].fetch_values()["value"]) == values
+            assert list(container[key].fetch_values()["step"]) == steps
 
         elif series_type == "strings":
             # given
             values = list(fake.word() for _ in range(50))
+            steps = sorted(random.sample(range(1, 100), 50))
 
             # when
-            yield container[key], values
+            yield container[key], values, steps
             container.sync()
 
             # then
             assert container[key].fetch_last() == values[-1]
             assert list(container[key].fetch_values()["value"]) == values
+            assert list(container[key].fetch_values()["step"]) == steps
 
         elif series_type == "files":
             # given
             images = list(generate_image(size=2**n) for n in range(8, 12))
+            steps = sorted(random.sample(range(1, 100), 4))
 
             # when
-            yield container[key], images
+            yield container[key], images, steps
             container.sync()
 
             # then
