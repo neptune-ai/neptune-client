@@ -17,6 +17,7 @@ __all__ = [
     "InternalClientError",
     "NeptuneException",
     "NeptuneInvalidApiTokenException",
+    "NeptuneApiException",
     "MetadataInconsistency",
     "MissingFieldException",
     "TypeDoesNotSupportAttributeException",
@@ -24,6 +25,7 @@ __all__ = [
     "FileNotFound",
     "FileUploadError",
     "FileSetUploadError",
+    "ClientHttpError",
     "MetadataContainerNotFound",
     "ProjectNotFound",
     "RunNotFound",
@@ -52,6 +54,11 @@ __all__ = [
     "NeptuneClientUpgradeRequiredError",
     "NeptuneMissingRequiredInitParameter",
     "CannotResolveHostname",
+    "NeptuneSSLVerificationError",
+    "NeptuneConnectionLostException",
+    "InternalServerError",
+    "Unauthorized",
+    "Forbidden",
     "NeptuneOfflineModeException",
     "NeptuneOfflineModeFetchException",
     "NeptuneOfflineModeChangeStageException",
@@ -98,9 +105,16 @@ from neptune.common.envs import API_TOKEN_ENV_NAME
 # Backward compatibility import
 from neptune.common.exceptions import (
     STYLES,
+    ClientHttpError,
+    Forbidden,
     InternalClientError,
+    InternalServerError,
+    NeptuneApiException,
+    NeptuneConnectionLostException,
     NeptuneException,
     NeptuneInvalidApiTokenException,
+    NeptuneSSLVerificationError,
+    Unauthorized,
 )
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME

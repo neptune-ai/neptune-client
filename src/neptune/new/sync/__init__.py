@@ -44,13 +44,13 @@ __all__ = [
 ]
 
 from neptune.common.deprecation import warn_once
+from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.new.cli.commands import (
     ApiExperiment,
     CannotSynchronizeOfflineRunsWithoutProject,
     DiskQueue,
     HostedNeptuneBackend,
     NeptuneBackend,
-    NeptuneConnectionLostException,
     NeptuneException,
     Operation,
     Path,

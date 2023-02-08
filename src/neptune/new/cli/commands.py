@@ -31,7 +31,6 @@ from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.sync import SyncRunner
 from neptune.new.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
-    NeptuneConnectionLostException,
     ProjectNotFound,
     RunNotFound,
 )

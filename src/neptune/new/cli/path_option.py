@@ -24,7 +24,6 @@ from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
-    NeptuneConnectionLostException,
     ProjectNotFound,
     RunNotFound,
 )

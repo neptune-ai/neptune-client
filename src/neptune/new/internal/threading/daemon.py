@@ -20,7 +20,7 @@ import functools
 import threading
 import time
 
-from neptune.new.exceptions import NeptuneConnectionLostException
+from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.new.internal.utils.logger import logger
 
 

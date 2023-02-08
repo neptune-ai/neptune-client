@@ -37,6 +37,7 @@ import six
 from bravado.exception import HTTPNotFound
 
 from neptune.common import exceptions as common_exceptions
+from neptune.common.exceptions import ClientHttpError
 from neptune.common.experiments import Experiment
 from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import (
@@ -89,7 +90,6 @@ from neptune.new.attributes.constants import (
     MONITORING_TRACEBACK_ATTRIBUTE_PATH,
     SYSTEM_FAILED_ATTRIBUTE_PATH,
 )
-from neptune.new.exceptions import ClientHttpError
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.new.internal.backends.api_model import AttributeType

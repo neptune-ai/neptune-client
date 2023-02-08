@@ -28,6 +28,7 @@ from typing import (
     Sequence,
 )
 
+from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.utils import (
     get_metadata_container,
@@ -44,10 +45,7 @@ from neptune.new.constants import (
     OFFLINE_NAME_PREFIX,
 )
 from neptune.new.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
-from neptune.new.exceptions import (
-    CannotSynchronizeOfflineRunsWithoutProject,
-    NeptuneConnectionLostException,
-)
+from neptune.new.exceptions import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.new.internal.backends.api_model import (
     ApiExperiment,
     Project,

@@ -40,6 +40,7 @@ from bravado.exception import (
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
+    ClientHttpError,
     InternalClientError,
     NeptuneException,
 )
@@ -49,7 +50,6 @@ from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
-    ClientHttpError,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
     MetadataContainerNotFound,
