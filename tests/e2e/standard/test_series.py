@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import random
+import time
 from contextlib import contextmanager
 
 import pytest
@@ -36,7 +37,7 @@ from tests.e2e.utils import (
     tmp_context,
 )
 
-BASIC_SERIES_TYPES = ["strings"]  # , "floats", "files"]
+BASIC_SERIES_TYPES = ["strings", "floats", "files"]
 
 
 class TestSeries(BaseE2ETest):
@@ -83,49 +84,19 @@ class TestSeries(BaseE2ETest):
 
     @contextmanager
     def run_then_assert(self, container: MetadataContainer, series_type: str):
+        steps = sorted(random.sample(range(1, 100), 5))
+        timestamps = [
+            1675876469.0,
+            1675876470.0,
+            1675876471.0,
+            1675876472.0,
+            1675876473.0,
+        ]
         key = self.gen_key()
 
         if series_type == "floats":
             # given
-            n = 5
-            values = list(random.random() for _ in range(n))
-            steps = sorted(random.sample(range(1, 100), n))
-            timestamps = [
-                1675876469,
-                1675876470,
-                1675876471,
-                1675876472,
-                1675876473,
-            ]
-
-            # datetime(2023, 2, 8)
-
-            # when
-            yield container[key], values, steps, timestamps  # 1675811871.0 vs 1675815350.0
-            container.sync()
-
-            # then
-            assert container[key].fetch_last() == values[-1]
-            assert list(container[key].fetch_values()["value"]) == values
-            assert list(container[key].fetch_values()["step"]) == steps
-            assert (
-                list(map(lambda timestamp: timestamp.timestamp(), container[key].fetch_values()["timestamp"]))
-                == timestamps
-            )
-
-        elif series_type == "strings":
-            # given
-            n = 5
-            values = list(fake.word() for _ in range(n))
-            steps = sorted(random.sample(range(1, 100), n))
-            timestamps = [
-                1675876469,
-                1675876470,
-                1675876471,
-                1675876472,
-                1675876473,
-            ]
-            # random.random() * timedelta(days=1)).timetuple()
+            values = list(random.random() for _ in range(5))
 
             # when
             yield container[key], values, steps, timestamps
@@ -136,23 +107,35 @@ class TestSeries(BaseE2ETest):
             assert list(container[key].fetch_values()["value"]) == values
             assert list(container[key].fetch_values()["step"]) == steps
             assert (
-                list(map(lambda timestamp: timestamp.timestamp(), container[key].fetch_values()["timestamp"]))
+                list(map(lambda t: time.mktime(t.utctimetuple()), container[key].fetch_values()["timestamp"]))
+                == timestamps
+            )
+
+        elif series_type == "strings":
+            # given
+            values = list(fake.word() for _ in range(5))
+
+            # when
+            yield container[key], values, steps, timestamps
+
+            container.sync()
+
+            # then
+            assert container[key].fetch_last() == values[-1]
+            assert list(container[key].fetch_values()["value"]) == values
+            assert list(container[key].fetch_values()["step"]) == steps
+            assert (
+                list(map(lambda t: time.mktime(t.utctimetuple()), container[key].fetch_values()["timestamp"]))
                 == timestamps
             )
 
         elif series_type == "files":
             # given
-            images = list(generate_image(size=2**n) for n in range(8, 12))
-            steps = sorted(random.sample(range(1, 100), 4))
-            timestamps = [
-                1675876469,
-                1675876470,
-                1675876471,
-                1675876472,
-            ]
+            images = list(generate_image(size=2**n) for n in range(7, 12))
 
             # when
             yield container[key], images, steps, timestamps
+
             container.sync()
 
             # then
@@ -160,9 +143,9 @@ class TestSeries(BaseE2ETest):
                 container[key].download_last("last")
                 container[key].download("all")
 
-                with Image.open("last/3.png") as img:
+                with Image.open("last/4.png") as img:
                     assert img == image_to_png(image=images[-1])
 
-                for i in range(4):
+                for i in range(5):
                     with Image.open(f"all/{i}.png") as img:
                         assert img == image_to_png(image=images[i])
