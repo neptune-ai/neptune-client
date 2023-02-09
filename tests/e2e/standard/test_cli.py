@@ -24,6 +24,7 @@ from click.testing import CliRunner
 import neptune.new as neptune
 from neptune.common.exceptions import NeptuneException
 from neptune.new.cli import sync
+from neptune.new.types import File
 from src.neptune.new.cli.commands import clear
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -127,6 +128,11 @@ class TestSync(BaseE2ETest):
             key = self.gen_key()
             val = fake.word()
             run[key] = val
+
+            # and some file
+            key = self.gen_key()
+            val = File.from_content(b"dummybytes")
+            run[key].upload(val)
 
             # and stop it
             run.stop()
