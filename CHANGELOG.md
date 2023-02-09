@@ -1,3 +1,8 @@
+## neptune-client 0.16.18
+
+### Fixes
+- Do not use legacy wrapper in common package ([#1204](https://github.com/neptune-ai/neptune-client/pull/1204))
+
 ## neptune-client 0.16.17
 
 ### Features
