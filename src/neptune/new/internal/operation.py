@@ -227,7 +227,13 @@ class UploadFile(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> "UploadFile":
-        return UploadFile(data["path"], data["ext"], data["file_path"], data.get("clean_after_upload", False))
+        return UploadFile(
+            data["path"],
+            data["ext"],
+            data.get("file_path"),
+            data.get("tmp_file_name"),
+            data.get("clean_after_upload", False),
+        )
 
     @staticmethod
     def get_tmp_file_name(attribute_path: List[str], extension: str):

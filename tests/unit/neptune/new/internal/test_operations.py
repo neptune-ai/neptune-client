@@ -87,7 +87,9 @@ class TestOperations(unittest.TestCase):
                 TestOperations._random_path(),
                 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             ),
-            UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),
+            UploadFile(TestOperations._random_path(), "txt", file_path="file/path/f.txt"),
+            UploadFile(TestOperations._random_path(), "txt", file_path="file/path/f.txt", clean_after_upload=True),
+            UploadFile(TestOperations._random_path(), "txt", tmp_file_name="f.txt"),
             UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(
                 TestOperations._random_path(),
