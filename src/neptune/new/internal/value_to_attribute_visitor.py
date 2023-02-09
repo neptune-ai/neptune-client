@@ -55,7 +55,7 @@ from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value_visitor import ValueVisitor
 
 if TYPE_CHECKING:
-    from neptune.new import MetadataContainer
+    from neptune.new.metadata_containers import MetadataContainer
 
 
 class ValueToAttributeVisitor(ValueVisitor[Attribute]):

@@ -46,6 +46,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
@@ -83,7 +84,6 @@ from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWr
 from neptune.new.internal.backends.utils import (
     parse_validation_errors,
     ssl_verify,
-    with_api_exceptions_handler,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName

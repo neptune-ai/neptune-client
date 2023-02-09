@@ -23,7 +23,6 @@ from bravado_core.formatter import SwaggerFormat
 from packaging import version
 from six.moves import urllib
 
-from neptune.common.utils import with_api_exceptions_handler
 from neptune.legacy.exceptions import (
     CannotResolveHostname,
     DeprecatedApiToken,
@@ -33,6 +32,7 @@ from neptune.legacy.internal.api_clients.client_config import (
     ClientConfig,
     MultipartConfig,
 )
+from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ uuid_format = SwaggerFormat(
 class HostedNeptuneMixin:
     """Mixin containing operation common for both backend and leaderboard api clients"""
 
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def _get_swagger_client(self, url, http_client):
         return SwaggerClient.from_url(
             url,
@@ -65,7 +65,7 @@ class HostedNeptuneMixin:
     def _get_client_config_args(api_token):
         return dict(X_Neptune_Api_Token=api_token)
 
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
         client_config_args = self._get_client_config_args(api_token)
         config = backend_client.api.getClientConfig(**client_config_args).response().result

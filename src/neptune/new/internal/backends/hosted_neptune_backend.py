@@ -38,7 +38,9 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
+    ClientHttpError,
     InternalClientError,
     NeptuneException,
 )
@@ -48,7 +50,6 @@ from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
-    ClientHttpError,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
     MetadataContainerNotFound,
@@ -114,7 +115,6 @@ from neptune.new.internal.backends.utils import (
     MissingApiClient,
     build_operation_url,
     ssl_verify,
-    with_api_exceptions_handler,
 )
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
