@@ -45,7 +45,12 @@ class SyncOperationProcessor(OperationProcessor):
         return data_path
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        _, errors = self._backend.execute_operations(self._container_id, self._container_type, [op])
+        _, errors = self._backend.execute_operations(
+            container_id=self._container_id,
+            container_type=self._container_type,
+            operations=[op],
+            upload_path=self._operation_storage.upload_path,
+        )
         if errors:
             raise errors[0]
 

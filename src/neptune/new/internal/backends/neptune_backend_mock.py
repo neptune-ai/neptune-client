@@ -19,6 +19,7 @@ import os
 import uuid
 from collections import defaultdict
 from datetime import datetime
+from pathlib import Path
 from shutil import copyfile
 from typing import (
     Any,
@@ -282,16 +283,19 @@ class NeptuneBackendMock(NeptuneBackend):
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
+        upload_path: Path,
     ) -> Tuple[int, List[NeptuneException]]:
         result = []
         for op in operations:
             try:
-                self._execute_operation(container_id, container_type, op)
+                self._execute_operation(container_id, container_type, op, upload_path)
             except NeptuneException as e:
                 result.append(e)
         return len(operations), result
 
-    def _execute_operation(self, container_id: UniqueId, container_type: ContainerType, op: Operation) -> None:
+    def _execute_operation(
+        self, container_id: UniqueId, container_type: ContainerType, op: Operation, upload_path: Path
+    ) -> None:
         run = self._get_container(container_id, container_type)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
@@ -299,7 +303,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise MetadataInconsistency("{} is a namespace, not an attribute".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
-        visitor = NeptuneBackendMock.NewValueOpVisitor(self, op.path, val)
+        visitor = NeptuneBackendMock.NewValueOpVisitor(self, op.path, val, upload_path)
         new_val = visitor.visit(op)
         if new_val is not None:
             run.set(op.path, new_val)
@@ -589,11 +593,12 @@ class NeptuneBackendMock(NeptuneBackend):
             raise NotImplementedError
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
-        def __init__(self, backend, path: List[str], current_value: Optional[Value]):
+        def __init__(self, backend, path: List[str], current_value: Optional[Value], upload_path: Path):
             self._backend = backend
             self._path = path
             self._current_value = current_value
             self._artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            self._upload_path = upload_path
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Float):
@@ -640,7 +645,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File.from_path(path=op.file_path, extension=op.ext)
+            return File.from_path(path=op.get_absolute_path(self._upload_path), extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):

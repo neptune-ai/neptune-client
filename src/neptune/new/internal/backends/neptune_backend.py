@@ -16,6 +16,7 @@
 __all__ = ["NeptuneBackend"]
 
 import abc
+from pathlib import Path
 from typing import (
     Any,
     Iterable,
@@ -138,6 +139,7 @@ class NeptuneBackend:
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
+        upload_path: Path,
     ) -> Tuple[int, List[NeptuneException]]:
         pass
 

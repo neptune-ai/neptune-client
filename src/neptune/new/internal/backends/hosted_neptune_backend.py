@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import typing
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -443,6 +444,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
+        upload_path: Path,
     ) -> Tuple[int, List[NeptuneException]]:
         errors = []
 
@@ -466,6 +468,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 container_id=container_id,
                 container_type=container_type,
                 upload_operations=preprocessed_operations.upload_operations,
+                upload_path=upload_path,
             )
         )
 
@@ -502,6 +505,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         upload_operations: List[Operation],
+        upload_path: Path,
     ) -> List[NeptuneException]:
         errors = list()
 
@@ -522,7 +526,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
                     attribute=path_to_str(op.path),
-                    source=op.file_path,
+                    source=op.get_absolute_path(upload_path),
                     ext=op.ext,
                     multipart_config=multipart_config,
                 )
@@ -560,10 +564,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         upload_operations: List[Operation],
+        upload_path: Path,
     ) -> List[NeptuneException]:
         while True:
             try:
-                return self._execute_upload_operations(container_id, container_type, upload_operations)
+                return self._execute_upload_operations(container_id, container_type, upload_operations, upload_path)
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex

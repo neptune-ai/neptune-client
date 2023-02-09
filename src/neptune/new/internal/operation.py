@@ -29,7 +29,10 @@ from typing import (
     TypeVar,
 )
 
-from neptune.common.exceptions import InternalClientError
+from neptune.common.exceptions import (
+    InternalClientError,
+    NeptuneException,
+)
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.types.file_types import FileType
@@ -185,7 +188,9 @@ class AssignArtifact(Operation):
 class UploadFile(Operation):
 
     ext: str
-    file_path: str
+    file_path: str = None
+    tmp_file_name: str = None
+    # `clean_after_upload` is for backward compatibility and should be removed in the future
     clean_after_upload: bool = False
 
     @classmethod
@@ -197,29 +202,26 @@ class UploadFile(Operation):
                 file_path=os.path.abspath(value.path),
             )
         elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
-            tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
-            value._save(tmp_file_path)
-            operation = UploadFile(
-                path=attribute_path,
-                ext=value.extension,
-                file_path=os.path.abspath(tmp_file_path),
-                clean_after_upload=True,
-            )
+            tmp_file_name = cls.get_tmp_file_name(attribute_path, value.extension)
+            value._save(upload_path / tmp_file_name)
+            operation = UploadFile(path=attribute_path, ext=value.extension, tmp_file_name=tmp_file_name)
         else:
             raise ValueError(f"Unexpected FileType: {value.file_type}")
         return operation
 
     def clean(self):
-        if self.clean_after_upload:
+        if self.clean_after_upload or self.tmp_file_name:
             os.remove(self.file_path)
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        # TODO: check
         return visitor.visit_upload_file(self)
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
         ret["ext"] = self.ext
         ret["file_path"] = self.file_path
+        ret["tmp_file_name"] = self.tmp_file_name
         ret["clean_after_upload"] = self.clean_after_upload
         return ret
 
@@ -228,12 +230,20 @@ class UploadFile(Operation):
         return UploadFile(data["path"], data["ext"], data["file_path"], data.get("clean_after_upload", False))
 
     @staticmethod
-    def get_upload_path(attribute_path: List[str], extension: str, upload_path: Path):
+    def get_tmp_file_name(attribute_path: List[str], extension: str):
         now = datetime.now()
         tmp_file_name = (
             f"{'_'.join(attribute_path)}-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}.{extension}"
         )
-        return upload_path / tmp_file_name
+        return tmp_file_name
+
+    def get_absolute_path(self, upload_path: Path) -> str:
+        if self.file_path:
+            return self.file_path
+        elif self.tmp_file_name:
+            return str(upload_path / self.tmp_file_name)
+
+        raise NeptuneException("Expected 'file_path' or 'tmp_file_name' to be filled.")
 
 
 @dataclass
