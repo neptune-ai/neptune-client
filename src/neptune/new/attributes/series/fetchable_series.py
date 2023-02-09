@@ -49,8 +49,10 @@ class FetchableSeries(Generic[Row]):
             row: Dict[str, Union[str, float, datetime]] = dict()
             row["step"] = entry.step
             row["value"] = entry.value
+            import pytz
+
             if include_timestamp:
-                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
+                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000, tz=pytz.UTC)
             return row
 
         while offset < val.totalItemCount:
