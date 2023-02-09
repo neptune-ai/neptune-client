@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 1.0.0
+
+### Changes
+-
+
 ## neptune-client 0.16.18
 
 ### Fixes
