@@ -16,6 +16,7 @@
 import datetime
 import unittest
 import uuid
+from pathlib import Path
 from random import randint
 from time import time
 
@@ -64,13 +65,19 @@ class TestNeptuneBackendMock(unittest.TestCase):
             (model.id, ContainerType.MODEL),
             (model_version.id, ContainerType.MODEL_VERSION),
         ]
+        self.dummy_upload_path = Path("/dummy")
 
     def test_get_float_attribute(self):
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 digit = randint(1, 10**4)
-                self.backend.execute_operations(container_id, container_type, operations=[AssignFloat(["x"], digit)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=[AssignFloat(["x"], digit)],
+                    upload_path=self.dummy_upload_path,
+                )
 
                 # when
                 ret = self.backend.get_float_attribute(container_id, container_type, path=["x"])
@@ -83,7 +90,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 text = a_string()
-                self.backend.execute_operations(container_id, container_type, operations=[AssignString(["x"], text)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=[AssignString(["x"], text)],
+                    upload_path=self.dummy_upload_path,
+                )
 
                 # when
                 ret = self.backend.get_string_attribute(container_id, container_type, path=["x"])
@@ -97,7 +109,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 # given
                 now = datetime.datetime.now()
                 now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
-                self.backend.execute_operations(container_id, container_type, [AssignDatetime(["x"], now)])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignDatetime(["x"], now)], upload_path=self.dummy_upload_path
+                )
 
                 # when
                 ret = self.backend.get_datetime_attribute(container_id, container_type, ["x"])
@@ -121,6 +135,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -134,6 +149,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
 
                 # when
@@ -158,6 +174,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -171,6 +188,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
 
                 # when
@@ -183,7 +201,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AddStrings(["x"], {"abcx", "qwe"})])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AddStrings(["x"], {"abcx", "qwe"})],
+                    upload_path=self.dummy_upload_path,
+                )
 
                 # when
                 ret = self.backend.get_string_set_attribute(container_id, container_type, ["x"])
@@ -207,6 +230,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -220,6 +244,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
 
                 # when
@@ -257,6 +282,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -270,6 +296,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    upload_path=self.dummy_upload_path,
                 )
 
                 # when
@@ -295,7 +322,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -305,7 +334,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignFloat(["x"], 5)])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignFloat(["x"], 5)], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -315,7 +346,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -325,7 +358,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -335,7 +370,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -345,7 +382,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for (container_id, container_type) in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")], upload_path=self.dummy_upload_path
+                )
 
                 # then
                 with self.assertRaises(ContainerUUIDNotFound):
