@@ -214,7 +214,6 @@ class UploadFile(Operation):
             os.remove(self.file_path)
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        # TODO: check
         return visitor.visit_upload_file(self)
 
     def to_dict(self) -> dict:
