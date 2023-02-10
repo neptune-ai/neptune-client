@@ -20,7 +20,7 @@ repos:
     hooks:
       - id: insert-license
         files: ^src/neptune/new/.*\.py$
-        args: ["--license-filepath", "src/neptune/license_header.txt"]
+        args: ["--license-filepath", ".github/license_header.txt"]
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:
@@ -30,7 +30,7 @@ repos:
 exclude: |
   (?x)(
      ^tests/unit/data/|
-     ^src/neptune/license_header\.txt
+     ^.github/license_header\.txt
   )
 default_language_version:
     python: python3
