@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["version", "__version__"]
+
 import sys
+
+from packaging.version import parse
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import (
@@ -27,7 +31,9 @@ else:
     )
 
 try:
+    # NPT-12953: Rename to `neptune`
     __version__ = version("neptune-client")
+    version = parse(__version__)
 except PackageNotFoundError:
     # package is not installed
     pass
