@@ -37,7 +37,7 @@ from neptune.new.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGT
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 Val = StringSeriesVal
 Data = str

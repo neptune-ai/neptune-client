@@ -28,8 +28,8 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
-from neptune.new.metadata_containers import MetadataContainer
-from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers.metadata_containers_table import Table
 
 
 class Model(MetadataContainer):

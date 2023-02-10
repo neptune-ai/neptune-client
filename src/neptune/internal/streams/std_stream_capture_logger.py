@@ -21,7 +21,7 @@ from queue import Queue
 from typing import TextIO
 
 from neptune.logging import Logger as NeptuneLogger
-from neptune.new.metadata_containers import MetadataContainer
+from neptune.metadata_containers import MetadataContainer
 
 
 class StdStreamCaptureLogger:

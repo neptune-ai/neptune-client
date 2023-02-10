@@ -21,8 +21,8 @@ __all__ = [
     "Run",
 ]
 
-from neptune.new.metadata_containers.metadata_container import MetadataContainer
-from neptune.new.metadata_containers.model import Model
-from neptune.new.metadata_containers.model_version import ModelVersion
-from neptune.new.metadata_containers.project import Project
-from neptune.new.metadata_containers.run import Run
+from neptune.metadata_containers.metadata_container import MetadataContainer
+from neptune.metadata_containers.model import Model
+from neptune.metadata_containers.model_version import ModelVersion
+from neptune.metadata_containers.project import Project
+from neptune.metadata_containers.run import Run

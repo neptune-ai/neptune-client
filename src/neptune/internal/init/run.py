@@ -69,7 +69,7 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
-from neptune.new.metadata_containers import Run
+from neptune.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
 

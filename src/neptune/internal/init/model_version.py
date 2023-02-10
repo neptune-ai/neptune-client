@@ -40,7 +40,7 @@ from neptune.internal.operation_processors.factory import get_operation_processo
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.metadata_containers import (
+from neptune.metadata_containers import (
     Model,
     ModelVersion,
 )

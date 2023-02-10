@@ -42,7 +42,7 @@ from neptune.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:
     from neptune.attributes.attribute import Attribute
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 _attribute_type_to_attr_class_map = {
     AttributeType.FLOAT: Float,

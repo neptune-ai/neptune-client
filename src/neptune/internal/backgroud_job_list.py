@@ -25,7 +25,7 @@ from typing import (
 from neptune.internal.background_job import BackgroundJob
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 
 class BackgroundJobList(BackgroundJob):

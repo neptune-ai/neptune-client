@@ -37,13 +37,13 @@ from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.internal.state import ContainerState as RunState
+from neptune.metadata_containers import Run
 from neptune.new.exceptions import (
     InactiveRunException,
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
 )
 from neptune.new.handler import Handler
-from neptune.new.metadata_containers import Run
 from neptune.new.types import (
     Boolean,
     Integer,

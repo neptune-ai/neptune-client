@@ -110,7 +110,7 @@ from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
 from neptune.internal.utils.paths import path_to_str
-from neptune.new.metadata_containers import Model
+from neptune.metadata_containers import Model
 from neptune.new.types import (
     Boolean,
     Integer,

@@ -27,7 +27,7 @@ from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 
 class Attribute:

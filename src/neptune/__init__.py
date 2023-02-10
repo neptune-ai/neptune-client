@@ -44,7 +44,7 @@ from neptune.internal.init import (
     init_run,
 )
 from neptune.internal.utils.deprecation import deprecated
-from neptune.new.metadata_containers import Run
+from neptune.metadata_containers import Run
 from neptune.version import version
 
 

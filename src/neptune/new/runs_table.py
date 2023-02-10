@@ -31,12 +31,12 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-
-# backwards compatibility
-from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.metadata_containers.metadata_containers_table import (
+from neptune.metadata_containers.metadata_containers_table import (
     LeaderboardEntry,
     LeaderboardHandler,
 )
-from neptune.new.metadata_containers.metadata_containers_table import Table as RunsTable
-from neptune.new.metadata_containers.metadata_containers_table import TableEntry as RunsTableEntry
+from neptune.metadata_containers.metadata_containers_table import Table as RunsTable
+from neptune.metadata_containers.metadata_containers_table import TableEntry as RunsTableEntry
+
+# backwards compatibility
+from neptune.new.exceptions import MetadataInconsistency

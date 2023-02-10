@@ -68,7 +68,7 @@ from neptune.internal.utils.runningmode import (
 )
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
 from neptune.new.types.type_casting import cast_value
 

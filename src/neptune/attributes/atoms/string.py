@@ -26,7 +26,7 @@ from neptune.new.types.atoms.string import String as StringVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 
 class String(CopiableAtom):

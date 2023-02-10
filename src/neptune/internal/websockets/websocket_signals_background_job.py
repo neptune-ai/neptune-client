@@ -39,7 +39,7 @@ from neptune.internal.utils.logger import logger
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 _logger = logging.getLogger(__name__)
 

@@ -43,7 +43,7 @@ from neptune.internal.utils.paths import (
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 RunStructure = ContainerStructure  # backwards compatibility
 

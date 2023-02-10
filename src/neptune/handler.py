@@ -69,7 +69,7 @@ from neptune.new.types.type_casting import cast_value_for_extend
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
     NeptuneObject = NewType("NeptuneObject", MetadataContainer)
 

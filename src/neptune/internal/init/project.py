@@ -33,7 +33,7 @@ from neptune.internal.utils.deprecation import (
     deprecated,
     deprecated_parameter,
 )
-from neptune.new.metadata_containers import Project
+from neptune.metadata_containers import Project
 from neptune.new.types.mode import Mode
 
 

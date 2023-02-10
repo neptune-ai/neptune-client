@@ -39,7 +39,7 @@ from neptune.internal.threading.daemon import Daemon
 from neptune.new.types.series import FloatSeries
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 _logger = logging.getLogger(__name__)
 

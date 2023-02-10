@@ -25,7 +25,7 @@ from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
+    from neptune.metadata_containers import MetadataContainer
 
 _logger = logging.getLogger(__name__)
 

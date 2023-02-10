@@ -19,7 +19,7 @@ __all__ = [
     "Logger",
 ]
 
-from neptune.new.metadata_containers import MetadataContainer
+from neptune.metadata_containers import MetadataContainer
 
 
 class Logger(object):
