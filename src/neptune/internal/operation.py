@@ -36,9 +36,9 @@ from neptune.internal.types.file_types import FileType
 from neptune.new.types.atoms.file import File
 
 if TYPE_CHECKING:
+    from neptune.attributes.attribute import Attribute
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.operation_visitor import OperationVisitor
-    from neptune.new.attributes.attribute import Attribute
 
 Ret = TypeVar("Ret")
 T = TypeVar("T")
@@ -565,7 +565,7 @@ class CopyAttribute(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> "CopyAttribute":
-        from neptune.new.attributes.attribute import Attribute
+        from neptune.attributes.attribute import Attribute
 
         source_attr_cls = {cls.__name__: cls for cls in all_subclasses(Attribute) if cls.supports_copy}.get(
             data["source_attr_name"]

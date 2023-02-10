@@ -29,6 +29,15 @@ from typing import (
     Union,
 )
 
+from neptune.attributes import File
+from neptune.attributes.atoms.artifact import Artifact
+from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
+from neptune.attributes.file_set import FileSet
+from neptune.attributes.namespace import Namespace
+from neptune.attributes.series import FileSeries
+from neptune.attributes.series.float_series import FloatSeries
+from neptune.attributes.series.string_series import StringSeries
+from neptune.attributes.sets.string_set import StringSet
 from neptune.common.deprecation import warn_once
 
 # backwards compatibility
@@ -50,15 +59,6 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.attributes import File
-from neptune.new.attributes.atoms.artifact import Artifact
-from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
-from neptune.new.attributes.file_set import FileSet
-from neptune.new.attributes.namespace import Namespace
-from neptune.new.attributes.series import FileSeries
-from neptune.new.attributes.series.float_series import FloatSeries
-from neptune.new.attributes.series.string_series import StringSeries
-from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,

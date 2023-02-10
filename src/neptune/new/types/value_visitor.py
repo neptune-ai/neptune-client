@@ -22,7 +22,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.attributes.attribute import Attribute
+from neptune.attributes.attribute import Attribute
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.boolean import Boolean

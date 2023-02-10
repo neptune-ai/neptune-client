@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["RunState"]
+__all__ = ["GitRef"]
 
-from neptune.new.attributes.atoms.atom import Atom
+from neptune.attributes.atoms.atom import Atom
 
 
-class RunState(Atom):
+class GitRef(Atom):
     pass

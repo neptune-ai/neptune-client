@@ -28,6 +28,7 @@ from typing import (
     Union,
 )
 
+from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import LogOperation
 from neptune.internal.utils import (
     is_collection,
@@ -35,7 +36,6 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.iteration import get_batches
-from neptune.new.attributes.attribute import Attribute
 from neptune.new.types.series.series import Series as SeriesVal
 
 ValTV = TypeVar("ValTV", bound=SeriesVal)

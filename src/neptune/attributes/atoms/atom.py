@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitRef"]
+__all__ = ["Atom"]
 
-from neptune.new.attributes.atoms.atom import Atom
+from neptune.attributes.attribute import Attribute
 
 
-class GitRef(Atom):
+class Atom(Attribute):
     pass

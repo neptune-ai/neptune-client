@@ -20,14 +20,14 @@ from typing import (
     Optional,
 )
 
+from neptune.attributes.constants import (
+    MONITORING_STDERR_ATTRIBUTE_PATH,
+    MONITORING_STDOUT_ATTRIBUTE_PATH,
+)
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.streams.std_stream_capture_logger import (
     StderrCaptureLogger,
     StdoutCaptureLogger,
-)
-from neptune.new.attributes.constants import (
-    MONITORING_STDERR_ATTRIBUTE_PATH,
-    MONITORING_STDOUT_ATTRIBUTE_PATH,
 )
 
 if TYPE_CHECKING:

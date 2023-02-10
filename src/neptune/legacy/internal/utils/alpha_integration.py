@@ -16,6 +16,7 @@
 import abc
 from collections import namedtuple
 
+from neptune.attributes import constants as alpha_consts
 from neptune.internal import operation as alpha_operation
 from neptune.internal.backends.api_model import AttributeType as AlphaAttributeType
 
@@ -26,7 +27,6 @@ from neptune.legacy.internal.channels.channels import (
     ChannelType,
     ChannelValueType,
 )
-from neptune.new.attributes import constants as alpha_consts
 
 AlphaKeyValueProperty = namedtuple("AlphaKeyValueProperty", ["key", "value"])
 

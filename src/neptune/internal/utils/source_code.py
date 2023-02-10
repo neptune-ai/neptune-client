@@ -22,6 +22,7 @@ from typing import (
     Optional,
 )
 
+from neptune.attributes import constants as attr_consts
 from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import is_ipython
 from neptune.internal.utils import (
@@ -29,7 +30,6 @@ from neptune.internal.utils import (
     get_absolute_paths,
     get_common_root,
 )
-from neptune.new.attributes import constants as attr_consts
 from neptune.vendor.lib_programname import (
     empty_path,
     get_path_executed_script,

@@ -30,6 +30,7 @@ from typing import (
     Union,
 )
 
+from neptune.attributes.attribute import Attribute
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.utils.generic_attribute_mapper import (
     NoValue,
@@ -39,7 +40,6 @@ from neptune.internal.utils.paths import (
     parse_path,
     path_to_str,
 )
-from neptune.new.attributes.attribute import Attribute
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:

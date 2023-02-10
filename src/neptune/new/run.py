@@ -32,12 +32,11 @@ __all__ = [
     "Value",
 ]
 
-from neptune.internal.state import ContainerState as RunState
-
 # backwards compatibility
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import Namespace as NamespaceAttr
-from neptune.new.attributes.namespace import NamespaceBuilder
+from neptune.attributes.attribute import Attribute
+from neptune.attributes.namespace import Namespace as NamespaceAttr
+from neptune.attributes.namespace import NamespaceBuilder
+from neptune.internal.state import ContainerState as RunState
 from neptune.new.exceptions import (
     InactiveRunException,
     MetadataInconsistency,

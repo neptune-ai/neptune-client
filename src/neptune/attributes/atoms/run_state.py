@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Set"]
+__all__ = ["RunState"]
 
-from neptune.new.attributes.attribute import Attribute
+from neptune.attributes.atoms.atom import Atom
 
 
-class Set(Attribute):
+class RunState(Atom):
     pass

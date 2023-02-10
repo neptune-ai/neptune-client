@@ -13,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Boolean"]
+__all__ = ["Integer"]
 
 import typing
 
+from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
-from neptune.internal.operation import AssignBool
-from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.types.atoms.boolean import Boolean as BooleanVal
+from neptune.internal.operation import AssignInt
+from neptune.new.types.atoms.integer import Integer as IntegerVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
-class Boolean(CopiableAtom):
+class Integer(CopiableAtom):
     @staticmethod
-    def create_assignment_operation(path, value: bool):
-        return AssignBool(path, value)
+    def create_assignment_operation(path, value: int):
+        return AssignInt(path, value)
 
     @staticmethod
     def getter(
@@ -37,13 +37,13 @@ class Boolean(CopiableAtom):
         container_id: str,
         container_type: ContainerType,
         path: typing.List[str],
-    ) -> bool:
-        val = backend.get_bool_attribute(container_id, container_type, path)
+    ) -> int:
+        val = backend.get_int_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[BooleanVal, bool], wait: bool = False):
-        if not isinstance(value, BooleanVal):
-            value = BooleanVal(value)
+    def assign(self, value: typing.Union[IntegerVal, float, int], wait: bool = False):
+        if not isinstance(value, IntegerVal):
+            value = IntegerVal(value)
 
         with self._container.lock():
             self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait)

@@ -20,9 +20,7 @@ from typing import (
     List,
 )
 
-from neptune.common.exceptions import InternalClientError
-from neptune.internal.backends.api_model import AttributeType
-from neptune.new.attributes import (
+from neptune.attributes import (
     Artifact,
     Boolean,
     Datetime,
@@ -39,9 +37,11 @@ from neptune.new.attributes import (
     StringSeries,
     StringSet,
 )
+from neptune.common.exceptions import InternalClientError
+from neptune.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:
-    from neptune.new.attributes.attribute import Attribute
+    from neptune.attributes.attribute import Attribute
     from neptune.new.metadata_containers import MetadataContainer
 
 _attribute_type_to_attr_class_map = {

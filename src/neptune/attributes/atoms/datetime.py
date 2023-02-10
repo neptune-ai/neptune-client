@@ -13,23 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Integer"]
+__all__ = ["Datetime"]
 
 import typing
+from datetime import datetime
 
+from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
-from neptune.internal.operation import AssignInt
-from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.types.atoms.integer import Integer as IntegerVal
+from neptune.internal.operation import AssignDatetime
+from neptune.internal.utils import verify_type
+from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
-class Integer(CopiableAtom):
+class Datetime(CopiableAtom):
     @staticmethod
-    def create_assignment_operation(path, value: int):
-        return AssignInt(path, value)
+    def create_assignment_operation(path, value: datetime):
+        return AssignDatetime(path, value)
 
     @staticmethod
     def getter(
@@ -37,13 +39,15 @@ class Integer(CopiableAtom):
         container_id: str,
         container_type: ContainerType,
         path: typing.List[str],
-    ) -> int:
-        val = backend.get_int_attribute(container_id, container_type, path)
+    ) -> datetime:
+        val = backend.get_datetime_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[IntegerVal, float, int], wait: bool = False):
-        if not isinstance(value, IntegerVal):
-            value = IntegerVal(value)
-
+    def assign(self, value: typing.Union[DatetimeVal, datetime], wait: bool = False):
+        verify_type("value", value, (DatetimeVal, datetime))
+        if isinstance(value, DatetimeVal):
+            value = value.value
+        else:
+            value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
         with self._container.lock():
-            self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait)
+            self._enqueue_operation(self.create_assignment_operation(self._path, value), wait)

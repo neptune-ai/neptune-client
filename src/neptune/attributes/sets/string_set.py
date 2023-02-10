@@ -21,6 +21,7 @@ from typing import (
     Union,
 )
 
+from neptune.attributes.sets.set import Set
 from neptune.internal.operation import (
     AddStrings,
     ClearStringSet,
@@ -31,7 +32,6 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.new.attributes.sets.set import Set
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
 
 

@@ -26,17 +26,17 @@ from typing import (
 
 from websocket import WebSocketConnectionClosedException
 
+from neptune.attributes.constants import (
+    SIGNAL_TYPE_ABORT,
+    SIGNAL_TYPE_STOP,
+    SYSTEM_FAILED_ATTRIBUTE_PATH,
+)
 from neptune.common.websockets.reconnecting_websocket import ReconnectingWebsocket
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils import process_killer
 from neptune.internal.utils.logger import logger
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.new.attributes.constants import (
-    SIGNAL_TYPE_ABORT,
-    SIGNAL_TYPE_STOP,
-    SYSTEM_FAILED_ATTRIBUTE_PATH,
-)
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

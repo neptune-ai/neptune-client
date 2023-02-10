@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Atom"]
-
-from neptune.new.attributes.attribute import Attribute
+__all__ = ["NotebookRef"]
 
 
-class Atom(Attribute):
+from neptune.attributes.atoms.atom import Atom
+
+
+class NotebookRef(Atom):
     pass

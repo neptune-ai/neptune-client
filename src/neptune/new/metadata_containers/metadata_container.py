@@ -32,6 +32,10 @@ from typing import (
     Union,
 )
 
+from neptune.attributes import create_attribute_from_type
+from neptune.attributes.attribute import Attribute
+from neptune.attributes.namespace import Namespace as NamespaceAttr
+from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.exceptions import (
     InactiveModelException,
@@ -64,10 +68,6 @@ from neptune.internal.utils.runningmode import (
 )
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.attributes import create_attribute_from_type
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import Namespace as NamespaceAttr
-from neptune.new.attributes.namespace import NamespaceBuilder
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
 from neptune.new.types.type_casting import cast_value

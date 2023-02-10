@@ -19,6 +19,7 @@ import os
 import threading
 from typing import Optional
 
+from neptune.attributes import constants as attr_consts
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
@@ -39,7 +40,6 @@ from neptune.internal.operation_processors.factory import get_operation_processo
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.attributes import constants as attr_consts
 from neptune.new.metadata_containers import (
     Model,
     ModelVersion,
