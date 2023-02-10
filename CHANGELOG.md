@@ -3,6 +3,11 @@
 ### Changes
 -
 
+## [UNRELEASED] neptune-client 0.16.18
+
+### Fixes
+- Fix handling connection errors when refreshing oauth token ([#1204](https://github.com/neptune-ai/neptune-client/pull/1204))
+
 ## neptune-client 0.16.17
 
 ### Features
