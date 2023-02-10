@@ -17,4 +17,4 @@
 __all__ = ["SyncRunner"]
 
 # backwards compatibility
-from neptune.new.cli.sync import SyncRunner
+from neptune.cli.sync import SyncRunner

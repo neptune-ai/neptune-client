@@ -17,4 +17,4 @@
 __all__ = ["StatusRunner"]
 
 # backwards compatibility
-from neptune.new.cli.status import StatusRunner
+from neptune.cli.status import StatusRunner

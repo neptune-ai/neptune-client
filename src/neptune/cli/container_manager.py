@@ -23,6 +23,11 @@ from typing import (
     Tuple,
 )
 
+from neptune.cli.utils import (
+    get_metadata_container,
+    is_container_synced_and_remove_junk,
+    iterate_containers,
+)
 from neptune.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_DIRECTORY,
@@ -31,11 +36,6 @@ from neptune.constants import (
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.id_formats import UniqueId
-from neptune.new.cli.utils import (
-    get_metadata_container,
-    is_container_synced_and_remove_junk,
-    iterate_containers,
-)
 
 
 class ContainersManager(abc.ABC):

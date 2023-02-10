@@ -28,6 +28,16 @@ from typing import (
     Sequence,
 )
 
+from neptune.cli.abstract_backend_runner import AbstractBackendRunner
+from neptune.cli.utils import (
+    get_metadata_container,
+    get_offline_dirs,
+    get_project,
+    get_qualified_name,
+    is_container_synced_and_remove_junk,
+    iterate_containers,
+    split_dir_name,
+)
 from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.constants import (
     ASYNC_DIRECTORY,
@@ -48,16 +58,6 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 from neptune.internal.utils.logger import logger
-from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
-from neptune.new.cli.utils import (
-    get_metadata_container,
-    get_offline_dirs,
-    get_project,
-    get_qualified_name,
-    is_container_synced_and_remove_junk,
-    iterate_containers,
-    split_dir_name,
-)
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 

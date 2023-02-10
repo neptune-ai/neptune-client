@@ -24,6 +24,10 @@ from typing import (
 
 import click
 
+from neptune.cli.clear import ClearRunner
+from neptune.cli.path_option import path_option
+from neptune.cli.status import StatusRunner
+from neptune.cli.sync import SyncRunner
 from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
@@ -40,10 +44,6 @@ from neptune.internal.credentials import Credentials
 from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.operation import Operation  # noqa: F401
 from neptune.internal.utils.logger import logger
-from neptune.new.cli.clear import ClearRunner
-from neptune.new.cli.path_option import path_option
-from neptune.new.cli.status import StatusRunner
-from neptune.new.cli.sync import SyncRunner
 
 
 @click.command()

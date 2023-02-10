@@ -16,7 +16,7 @@
 
 __all__ = ["sync", "status"]
 
-from neptune.new.cli.commands import (
+from neptune.cli.commands import (
     status,
     sync,
 )

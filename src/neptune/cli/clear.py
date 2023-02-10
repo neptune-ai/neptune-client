@@ -22,14 +22,14 @@ from typing import Sequence
 
 import click
 
+from neptune.cli.abstract_backend_runner import AbstractBackendRunner
+from neptune.cli.container_manager import ContainersManager
+from neptune.cli.status import StatusRunner
+from neptune.cli.utils import get_offline_dirs
 from neptune.constants import SYNC_DIRECTORY
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.logger import logger
-from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
-from neptune.new.cli.container_manager import ContainersManager
-from neptune.new.cli.status import StatusRunner
-from neptune.new.cli.utils import get_offline_dirs
 
 
 class ClearRunner(AbstractBackendRunner):
