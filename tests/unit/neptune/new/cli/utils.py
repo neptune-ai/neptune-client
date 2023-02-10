@@ -48,7 +48,7 @@ def generate_get_metadata_container(registered_containers):
     return get_metadata_container
 
 
-def execute_operations(container_id, container_type, operations, upload_path):
+def execute_operations(container_id, container_type, operations, operation_storage):
     return len(operations), []
 
 
