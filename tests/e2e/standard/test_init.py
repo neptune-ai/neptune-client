@@ -17,8 +17,10 @@ import pytest
 
 import neptune
 from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
-from neptune.metadata_containers import Model
-from neptune.project import Project
+from neptune.metadata_containers import (
+    Model,
+    Project,
+)
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
