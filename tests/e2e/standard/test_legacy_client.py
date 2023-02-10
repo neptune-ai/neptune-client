@@ -3,7 +3,7 @@ from datetime import datetime
 import numpy
 from PIL import Image
 
-from neptune import Session
+from neptune.legacy import Session
 from tests.e2e.base import fake
 from tests.e2e.utils import tmp_context
 
