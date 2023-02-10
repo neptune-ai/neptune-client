@@ -89,6 +89,7 @@ __all__ = [
     "NeptuneModelKeyAlreadyExistsError",
     "NeptuneSynchronizationAlreadyStoppedException",
     "StreamAlreadyUsedException",
+    "NeptuneUserApiInputException",
 ]
 
 from neptune.exceptions import (
@@ -157,6 +158,7 @@ from neptune.exceptions import (
     NeptuneUnhandledArtifactTypeException,
     NeptuneUninitializedException,
     NeptuneUnsupportedArtifactFunctionalityException,
+    NeptuneUserApiInputException,
     NeptuneWrongInitParametersException,
     OperationNotSupported,
     PlotlyIncompatibilityException,

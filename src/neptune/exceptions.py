@@ -89,6 +89,7 @@ __all__ = [
     "NeptuneModelKeyAlreadyExistsError",
     "NeptuneSynchronizationAlreadyStoppedException",
     "StreamAlreadyUsedException",
+    "NeptuneUserApiInputException",
 ]
 
 from typing import (
