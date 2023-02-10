@@ -340,7 +340,7 @@ class NeptuneIncorrectImportException(NeptuneException):
 It seems you are trying to use the new Python API, but imported the legacy API.
 
 Simply update your import statement to:
-    {python}import neptune.new as neptune{end}
+    {python}import neptune{end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew

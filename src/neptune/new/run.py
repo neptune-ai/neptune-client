@@ -36,14 +36,14 @@ __all__ = [
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
-from neptune.internal.state import ContainerState as RunState
-from neptune.metadata_containers import Run
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     InactiveRunException,
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
 )
-from neptune.new.handler import Handler
+from neptune.handler import Handler
+from neptune.internal.state import ContainerState as RunState
+from neptune.metadata_containers import Run
 from neptune.types import (
     Boolean,
     Integer,

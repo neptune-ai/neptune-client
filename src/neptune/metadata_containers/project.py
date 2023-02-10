@@ -225,7 +225,7 @@ class Project(MetadataContainer):
             Use `to_pandas()` to convert the table to a pandas DataFrame.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
 
             >>> # Fetch project "jackie/sandbox"
             ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
@@ -291,7 +291,7 @@ class Project(MetadataContainer):
             Use `to_pandas()` to convert the table to a pandas DataFrame.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
 
             >>> # Fetch project "jackie/sandbox"
             ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
@@ -336,7 +336,7 @@ class Project(MetadataContainer):
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
                 This makes the call synchronous. Defaults to `False`.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
             >>> # Assign multiple fields from a dictionary
             ... general_info = {"brief": URL_TO_PROJECT_BRIEF, "deadline": "2049-06-30"}
@@ -361,7 +361,7 @@ class Project(MetadataContainer):
         Returns:
             `dict` containing all non-File Atom fields values.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
             >>> # Fetch all the project metrics
             >>> project_metrics = project["metrics"].fetch()
@@ -383,7 +383,7 @@ class Project(MetadataContainer):
                 If `None` will wait for all tracking calls to finish. Defaults to `True`.
         Examples:
             If you are initializing the connection from a script you don't need to call `.stop()`:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
             >>> # Your code
             ... pass
@@ -392,7 +392,7 @@ class Project(MetadataContainer):
             If you are initializing multiple connection from one script it is a good practice
             to .stop() the unneeded connections. You can also use Context Managers - Neptune
             will automatically call .stop() on the destruction of Project context:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> # If you are initializing multiple connections from the same script
             ... # stop the connection manually once not needed
             ... for project_name in projects:
@@ -441,7 +441,7 @@ class Project(MetadataContainer):
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
                 This makes the call synchronous. Defaults to `False`.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
             >>> # Delete a field along with it's data
             ... project.pop("datasets/v0.4")

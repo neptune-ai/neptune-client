@@ -31,12 +31,12 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tu
     Args:
         value (Any): A dictionary with values or a collection
     Example:
-        >>> import neptune.new as neptune
+        >>> import neptune
         >>> run = neptune.init_run()
         >>> complex_dict = {"tuple": ("hi", 1), "metric": 0.87}
         >>> run["complex_dict"] = complex_dict
         >>> # (as of 1.0.0) error - tuple is not a supported type
-        ... from neptune.new.utils import stringify_unsupported
+        ... from neptune.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
 
         For more information, see:

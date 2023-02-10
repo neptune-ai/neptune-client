@@ -52,7 +52,7 @@ class Run(MetadataContainer):
         * and much more
 
     Examples:
-        >>> import neptune.new as neptune
+        >>> import neptune
 
         >>> # Create new experiment
         ... run = neptune.init_run('my_workspace/my_project')
@@ -175,7 +175,7 @@ class Run(MetadataContainer):
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
                 This makes the call synchronous. Defaults to `False`.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
             >>> # Assign multiple fields from a dictionary
             ... params = {"max_epochs": 10, "optimizer": "Adam"}
@@ -201,7 +201,7 @@ class Run(MetadataContainer):
         Returns:
             `dict` containing all non-File Atom fields values.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> resumed_run = neptune.init_run(with_id="HEL-3")
             >>> params = resumed_run['model/parameters'].fetch()
             >>> run_data = resumed_run.fetch()
@@ -225,7 +225,7 @@ class Run(MetadataContainer):
                 If `None` will wait for all tracking calls to finish. Defaults to `True`.
         Examples:
             If you are creating tracked runs from the script you don't need to call `.stop()`:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
             >>> # Your training or monitoring code
             ... pass
@@ -235,7 +235,7 @@ class Run(MetadataContainer):
             to `.stop()` the finished tracked runs as every open run keeps an open connection with Neptune,
             monitors hardware usage, etc. You can also use Context Managers - Neptune will automatically call `.stop()`
             on the destruction of Run context:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> # If you are running consecutive training jobs from the same script
             ... # stop the tracked runs manually at the end of single training job
             ... for config in configs:
@@ -283,7 +283,7 @@ class Run(MetadataContainer):
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
                 This makes the call synchronous. Defaults to `True`.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
             >>> run['parameters/learninggg_rata'] = 0.3
             >>> # Delete a field along with it's data
@@ -318,7 +318,7 @@ class Run(MetadataContainer):
                 locally from memory, but will not wait for them to reach Neptune servers.
                 Defaults to `True`.
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> # Connect to a run from Worker #3
             ... worker_id = 3
             >>> run = neptune.init_run(with_id='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))

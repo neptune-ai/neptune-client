@@ -184,7 +184,7 @@ class File(Atom):
             ``File``: value object with converted image
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> from neptune.types import File
             >>> run = neptune.init_run()
 
@@ -225,7 +225,7 @@ class File(Atom):
             ``File``: value object with converted object.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> from neptune.types import File
             >>> run = neptune.init_run()
 
@@ -265,7 +265,7 @@ class File(Atom):
             ``File``: value object with pickled object.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> from neptune.types import File
             >>> run = neptune.init_run()
 

@@ -19,9 +19,9 @@ import logging
 import threading
 
 from neptune import Run
+from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.logging import Logger
-from neptune.new.run import RunState
 from neptune.version import version as neptune_client_version
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-python-logger"
@@ -40,7 +40,7 @@ class NeptuneHandler(logging.Handler):
 
     Examples:
         >>> import logging
-        >>> import neptune.new as neptune
+        >>> import neptune
         >>> from neptune.integrations.python_logger import NeptuneHandler
 
         >>> logger = logging.getLogger("root_experiment")
@@ -73,7 +73,7 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        if self._run._state == RunState.STARTED and not self._thread_local.inside_write:
+        if self._run._state == ContainerState.STARTED and not self._thread_local.inside_write:
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)

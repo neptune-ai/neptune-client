@@ -42,6 +42,11 @@ from neptune.common.deprecation import warn_once
 
 # backwards compatibility
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.exceptions import (
+    MissingFieldException,
+    NeptuneCannotChangeStageManually,
+    NeptuneUserApiInputException,
+)
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.utils import (
     is_collection,
@@ -59,11 +64,6 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.exceptions import (
-    MissingFieldException,
-    NeptuneCannotChangeStageManually,
-    NeptuneUserApiInputException,
-)
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
@@ -183,7 +183,7 @@ class Handler:
         Examples:
             Assigning values:
 
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
 
             >>> # You can both use the Python assign operator (=)
@@ -226,7 +226,7 @@ class Handler:
                 Defaults to `False`.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
 
             >>> # Upload example data
@@ -374,7 +374,7 @@ class Handler:
                 For details, see https://docs.neptune.ai/api/universal/#wait
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
             >>> for epoch in range(n_epochs):
             ...     ... # Your training loop
@@ -424,7 +424,7 @@ class Handler:
         Example:
             The following example reads a CSV file into a pandas DataFrame and extracts the values
             to create a Neptune series.
-            >>> import neptune.new as neptune
+            >>> import neptune
             >>> run = neptune.init_run()
             >>> for epoch in range(n_epochs):
             ...     df = pandas.read_csv("time_series.csv")

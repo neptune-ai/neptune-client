@@ -117,6 +117,10 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
+from neptune.envs import (
+    CUSTOM_RUN_ID_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
 from neptune.internal.backends.api_model import (
     Project,
     Workspace,
@@ -124,8 +128,6 @@ from neptune.internal.backends.api_model import (
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import replace_patch_version
-from neptune.new import envs
-from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 
 
 class MetadataInconsistency(NeptuneException):
@@ -393,7 +395,7 @@ You may also want to check the following docs pages:
             message=message,
             available_projects=available_projects,
             available_workspaces=available_workspaces,
-            env_project=envs.PROJECT_ENV_NAME,
+            env_project=PROJECT_ENV_NAME,
         )
 
 

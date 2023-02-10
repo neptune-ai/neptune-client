@@ -56,7 +56,7 @@ def get_last_run() -> Optional[Run]:
         ``Run``: object last created by neptune global object.
 
     Examples:
-        >>> import neptune.new as neptune
+        >>> import neptune
 
         >>> # Crate a new tracked run
         ... neptune.init_run(name='A new approach', source_files='**/*.py')

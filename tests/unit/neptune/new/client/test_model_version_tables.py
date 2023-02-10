@@ -13,29 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "MetadataInconsistency",
-    "AttributeType",
-    "AttributeWithProperties",
-    "NeptuneBackend",
-    "ContainerType",
-    "LeaderboardEntry",
-    "LeaderboardHandler",
-    "RunsTable",
-    "RunsTableEntry",
-]
 
-# backwards compatibility
-from neptune.exceptions import MetadataInconsistency
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    AttributeWithProperties,
-)
-from neptune.internal.backends.neptune_backend import NeptuneBackend
+import unittest
+from typing import List
+
+from neptune import init_model
 from neptune.internal.container_type import ContainerType
 from neptune.metadata_containers.metadata_containers_table import (
-    LeaderboardEntry,
-    LeaderboardHandler,
+    Table,
+    TableEntry,
 )
-from neptune.metadata_containers.metadata_containers_table import Table as RunsTable
-from neptune.metadata_containers.metadata_containers_table import TableEntry as RunsTableEntry
+from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
+
+
+class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
+    expected_container_type = ContainerType.MODEL_VERSION
+
+    def get_table(self, **kwargs) -> Table:
+        return init_model(
+            with_id="organization/project",
+            project="PRO-MOD",
+            mode="read-only",
+        ).fetch_model_versions_table(**kwargs)
+
+    def get_table_entries(self, table) -> List[TableEntry]:
+        return table.to_rows()

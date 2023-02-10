@@ -81,7 +81,7 @@ class Model(MetadataContainer):
             Use `to_pandas()` to convert it to a pandas DataFrame.
 
         Examples:
-            >>> import neptune.new as neptune
+            >>> import neptune
 
             >>> # Initialize model with the ID "CLS-FOREST"
             ... model = neptune.init_model(model="CLS-FOREST")
