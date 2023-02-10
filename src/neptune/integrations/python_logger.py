@@ -41,7 +41,7 @@ class NeptuneHandler(logging.Handler):
     Examples:
         >>> import logging
         >>> import neptune.new as neptune
-        >>> from neptune.new.integrations.python_logger import NeptuneHandler
+        >>> from neptune.integrations.python_logger import NeptuneHandler
 
         >>> logger = logging.getLogger("root_experiment")
         >>> logger.setLevel(logging.DEBUG)
