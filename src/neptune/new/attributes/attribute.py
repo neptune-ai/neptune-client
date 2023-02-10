@@ -21,12 +21,12 @@ from typing import (
 )
 
 from neptune.exceptions import TypeDoesNotSupportAttributeException
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.operation import Operation
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.internal.container_type import ContainerType
+    from neptune.internal.container_type import ContainerType
     from neptune.new.metadata_containers import MetadataContainer
 
 

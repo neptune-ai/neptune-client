@@ -22,8 +22,8 @@ from typing import (
     Union,
 )
 
-from neptune.new.internal.utils import is_collection
-from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
+from neptune.internal.utils import is_collection
+from neptune.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.series.series import Series
 
 if TYPE_CHECKING:

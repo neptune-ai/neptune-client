@@ -21,7 +21,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.internal.utils.paths import parse_path
+from neptune.internal.utils.paths import parse_path
 from neptune.new.types.value import Value
 
 if TYPE_CHECKING:

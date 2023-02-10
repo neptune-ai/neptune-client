@@ -32,6 +32,8 @@ __all__ = [
     "Value",
 ]
 
+from neptune.internal.state import ContainerState as RunState
+
 # backwards compatibility
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
@@ -42,7 +44,6 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.new.handler import Handler
-from neptune.new.internal.state import ContainerState as RunState
 from neptune.new.metadata_containers import Run
 from neptune.new.types import (
     Boolean,

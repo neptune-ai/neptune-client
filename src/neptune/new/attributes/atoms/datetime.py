@@ -18,14 +18,14 @@ __all__ = ["Datetime"]
 import typing
 from datetime import datetime
 
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import AssignDatetime
+from neptune.internal.utils import verify_type
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import AssignDatetime
-from neptune.new.internal.utils import verify_type
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class Datetime(CopiableAtom):

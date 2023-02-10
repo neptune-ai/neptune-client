@@ -17,13 +17,13 @@ __all__ = ["Integer"]
 
 import typing
 
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import AssignInt
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import AssignInt
 from neptune.new.types.atoms.integer import Integer as IntegerVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class Integer(CopiableAtom):

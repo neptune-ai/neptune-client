@@ -22,15 +22,15 @@ from typing import (
     Union,
 )
 
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.operation import (
+from neptune.internal.operation import (
     DeleteFiles,
     UploadFileSet,
 )
-from neptune.new.internal.utils import (
+from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
+from neptune.new.attributes.attribute import Attribute
 from neptune.new.types.file_set import FileSet as FileSetVal
 
 

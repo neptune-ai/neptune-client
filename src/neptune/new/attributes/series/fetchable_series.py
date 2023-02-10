@@ -24,7 +24,7 @@ from typing import (
     Union,
 )
 
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     FloatSeriesValues,
     StringSeriesValues,
 )

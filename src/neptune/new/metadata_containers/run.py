@@ -23,15 +23,15 @@ from typing import (
     Union,
 )
 
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import (
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.background_job import BackgroundJob
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import (
     SysId,
     UniqueId,
 )
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.internal.utils.deprecation import deprecated
+from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types.mode import Mode
 

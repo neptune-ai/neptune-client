@@ -17,15 +17,15 @@ __all__ = ["String"]
 
 import typing
 
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import AssignString
+from neptune.internal.utils.logger import logger
+from neptune.internal.utils.paths import path_to_str
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import AssignString
-from neptune.new.internal.utils.logger import logger
-from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.string import String as StringVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.metadata_containers import MetadataContainer
 
 

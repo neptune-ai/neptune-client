@@ -26,14 +26,14 @@ from typing import (
 )
 
 from neptune.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
     LeaderboardEntry,
 )
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.utils.paths import (
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.container_type import ContainerType
+from neptune.internal.utils.paths import (
     join_paths,
     parse_path,
 )

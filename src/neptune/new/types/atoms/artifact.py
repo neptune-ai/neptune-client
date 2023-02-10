@@ -22,7 +22,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.internal.artifacts.file_hasher import FileHasher
+from neptune.internal.artifacts.file_hasher import FileHasher
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:

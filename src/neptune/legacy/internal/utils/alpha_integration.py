@@ -16,17 +16,17 @@
 import abc
 from collections import namedtuple
 
+from neptune.internal import operation as alpha_operation
+from neptune.internal.backends.api_model import AttributeType as AlphaAttributeType
+
+# Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
+from neptune.internal.operation import ImageValue
 from neptune.legacy.exceptions import NeptuneException
 from neptune.legacy.internal.channels.channels import (
     ChannelType,
     ChannelValueType,
 )
 from neptune.new.attributes import constants as alpha_consts
-from neptune.new.internal import operation as alpha_operation
-from neptune.new.internal.backends.api_model import AttributeType as AlphaAttributeType
-
-# Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
-from neptune.new.internal.operation import ImageValue
 
 AlphaKeyValueProperty = namedtuple("AlphaKeyValueProperty", ["key", "value"])
 

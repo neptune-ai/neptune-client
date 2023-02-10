@@ -117,15 +117,15 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.new import envs
-from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     Project,
     Workspace,
 )
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.utils import replace_patch_version
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import QualifiedName
+from neptune.internal.utils import replace_patch_version
+from neptune.new import envs
+from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 
 
 class MetadataInconsistency(NeptuneException):

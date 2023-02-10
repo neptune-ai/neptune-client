@@ -28,14 +28,14 @@ from neptune.constants import (
     OFFLINE_DIRECTORY,
     SYNC_DIRECTORY,
 )
+from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.id_formats import UniqueId
 from neptune.new.cli.utils import (
     get_metadata_container,
     is_container_synced_and_remove_junk,
     iterate_containers,
 )
-from neptune.new.internal.backends.api_model import ApiExperiment
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.id_formats import UniqueId
 
 
 class ContainersManager(abc.ABC):

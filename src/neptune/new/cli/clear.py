@@ -23,13 +23,13 @@ from typing import Sequence
 import click
 
 from neptune.constants import SYNC_DIRECTORY
+from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.id_formats import UniqueId
+from neptune.internal.utils.logger import logger
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.container_manager import ContainersManager
 from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.utils import get_offline_dirs
-from neptune.new.internal.backends.api_model import ApiExperiment
-from neptune.new.internal.id_formats import UniqueId
-from neptune.new.internal.utils.logger import logger
 
 
 class ClearRunner(AbstractBackendRunner):

@@ -42,32 +42,32 @@ from neptune.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.handler import Handler
+from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.backends.nql import NQLQuery
+from neptune.internal.background_job import BackgroundJob
+from neptune.internal.container_structure import ContainerStructure
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import (
+    SysId,
+    UniqueId,
+)
+from neptune.internal.operation import DeleteAttribute
+from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.state import ContainerState
+from neptune.internal.utils import verify_type
+from neptune.internal.utils.logger import logger
+from neptune.internal.utils.paths import parse_path
+from neptune.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
+from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
+from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.namespace import NamespaceBuilder
-from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import NQLQuery
-from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.container_structure import ContainerStructure
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import (
-    SysId,
-    UniqueId,
-)
-from neptune.new.internal.operation import DeleteAttribute
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.internal.state import ContainerState
-from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.logger import logger
-from neptune.new.internal.utils.paths import parse_path
-from neptune.new.internal.utils.runningmode import (
-    in_interactive,
-    in_notebook,
-)
-from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
-from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
 from neptune.new.types.type_casting import cast_value

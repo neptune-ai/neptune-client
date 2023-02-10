@@ -35,7 +35,7 @@ from neptune.constants import (
     ANONYMOUS_API_TOKEN,
 )
 from neptune.exceptions import NeptuneUninitializedException
-from neptune.new.internal.init import (
+from neptune.internal.init import (
     get_project,
     init,
     init_model,
@@ -43,7 +43,7 @@ from neptune.new.internal.init import (
     init_project,
     init_run,
 )
-from neptune.new.internal.utils.deprecation import deprecated
+from neptune.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import Run
 from neptune.version import version
 

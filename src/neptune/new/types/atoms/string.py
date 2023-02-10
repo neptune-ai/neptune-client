@@ -22,7 +22,7 @@ from typing import (
 )
 
 from neptune.common.deprecation import warn_once
-from neptune.new.internal.utils import (
+from neptune.internal.utils import (
     is_string,
     is_stringify_value,
 )

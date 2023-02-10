@@ -18,17 +18,17 @@ __all__ = ["Artifact"]
 import pathlib
 import typing
 
-from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.internal.artifacts.types import (
+from neptune.internal.artifacts.types import (
     ArtifactDriver,
     ArtifactDriversMap,
     ArtifactFileData,
 )
-from neptune.new.internal.backends.api_model import OptionalFeatures
-from neptune.new.internal.operation import (
+from neptune.internal.backends.api_model import OptionalFeatures
+from neptune.internal.operation import (
     AssignArtifact,
     TrackFilesToArtifact,
 )
+from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 

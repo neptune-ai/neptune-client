@@ -16,13 +16,13 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from neptune.internal.utils import verify_type
 from neptune.management.exceptions import UnsupportedValue
 from neptune.management.internal.types import (
     ProjectMemberRole,
     ProjectVisibility,
     WorkspaceMemberRole,
 )
-from neptune.new.internal.utils import verify_type
 
 
 class ProjectVisibilityDTO(Enum):

@@ -25,14 +25,15 @@ __all__ = [
     "RunsTableEntry",
 ]
 
-# backwards compatibility
-from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
 )
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.container_type import ContainerType
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.container_type import ContainerType
+
+# backwards compatibility
+from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.metadata_containers.metadata_containers_table import (
     LeaderboardEntry,
     LeaderboardHandler,

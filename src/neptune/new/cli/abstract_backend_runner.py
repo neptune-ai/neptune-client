@@ -18,7 +18,7 @@ __all__ = ["AbstractBackendRunner"]
 
 import abc
 
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class AbstractBackendRunner(abc.ABC):

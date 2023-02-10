@@ -36,6 +36,18 @@ from neptune.constants import (
 )
 from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
 from neptune.exceptions import CannotSynchronizeOfflineRunsWithoutProject
+from neptune.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
+from neptune.internal.container_type import ContainerType
+from neptune.internal.disk_queue import DiskQueue
+from neptune.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
+from neptune.internal.operation import Operation
+from neptune.internal.utils.logger import logger
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.utils import (
     get_metadata_container,
@@ -46,18 +58,6 @@ from neptune.new.cli.utils import (
     iterate_containers,
     split_dir_name,
 )
-from neptune.new.internal.backends.api_model import (
-    ApiExperiment,
-    Project,
-)
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import (
-    QualifiedName,
-    UniqueId,
-)
-from neptune.new.internal.operation import Operation
-from neptune.new.internal.utils.logger import logger
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 

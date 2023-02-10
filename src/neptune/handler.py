@@ -33,6 +33,23 @@ from neptune.common.deprecation import warn_once
 
 # backwards compatibility
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.internal.artifacts.types import ArtifactFileData
+from neptune.internal.utils import (
+    is_collection,
+    is_dict_like,
+    is_float,
+    is_float_like,
+    is_string,
+    is_string_like,
+    is_stringify_value,
+    verify_collection_type,
+    verify_type,
+)
+from neptune.internal.utils.paths import (
+    join_paths,
+    parse_path,
+)
+from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
@@ -47,23 +64,6 @@ from neptune.new.exceptions import (
     NeptuneCannotChangeStageManually,
     NeptuneUserApiInputException,
 )
-from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.new.internal.utils import (
-    is_collection,
-    is_dict_like,
-    is_float,
-    is_float_like,
-    is_string,
-    is_string_like,
-    is_stringify_value,
-    verify_collection_type,
-    verify_type,
-)
-from neptune.new.internal.utils.paths import (
-    join_paths,
-    parse_path,
-)
-from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.type_casting import cast_value_for_extend
 from neptune.new.types.value_copy import ValueCopy

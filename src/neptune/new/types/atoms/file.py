@@ -25,14 +25,14 @@ from typing import (
     Union,
 )
 
-from neptune.new.internal.types.file_types import (
+from neptune.internal.types.file_types import (
     FileComposite,
     InMemoryComposite,
     LocalFileComposite,
     StreamComposite,
 )
-from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.images import (
+from neptune.internal.utils import verify_type
+from neptune.internal.utils.images import (
     get_html_content,
     get_image_content,
     get_pickle_content,

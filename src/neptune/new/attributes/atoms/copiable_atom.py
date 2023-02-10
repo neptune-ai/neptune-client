@@ -18,14 +18,14 @@ __all__ = ["CopiableAtom"]
 import abc
 import typing
 
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import CopyAttribute
+from neptune.internal.utils.paths import parse_path
 from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import CopyAttribute
-from neptune.new.internal.utils.paths import parse_path
 from neptune.new.types.value_copy import ValueCopy
 
 if typing.TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class CopiableAtom(Atom):

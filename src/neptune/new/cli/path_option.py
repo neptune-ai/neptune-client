@@ -27,13 +27,13 @@ from neptune.exceptions import (  # noqa: F401
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.internal.backends.api_model import (  # noqa: F401
+from neptune.internal.backends.api_model import (  # noqa: F401
     ApiExperiment,
     Project,
 )
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
-from neptune.new.internal.disk_queue import DiskQueue  # noqa: F401
-from neptune.new.internal.operation import Operation  # noqa: F401
+from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
+from neptune.internal.disk_queue import DiskQueue  # noqa: F401
+from neptune.internal.operation import Operation  # noqa: F401
 
 
 def get_neptune_path(ctx, param, path: str) -> Path:

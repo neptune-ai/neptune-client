@@ -21,7 +21,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.internal.utils import (
+from neptune.internal.utils import (
     is_collection,
     is_stringify_value,
 )

@@ -23,16 +23,16 @@ from typing import (
     Union,
 )
 
-from neptune.new.attributes.series.fetchable_series import FetchableSeries
-from neptune.new.attributes.series.series import Series
-from neptune.new.internal.backends.api_model import StringSeriesValues
-from neptune.new.internal.operation import (
+from neptune.internal.backends.api_model import StringSeriesValues
+from neptune.internal.operation import (
     ClearStringLog,
     LogStrings,
     Operation,
 )
-from neptune.new.internal.utils.logger import logger
-from neptune.new.internal.utils.paths import path_to_str
+from neptune.internal.utils.logger import logger
+from neptune.internal.utils.paths import path_to_str
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.attributes.series.series import Series
 from neptune.new.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 

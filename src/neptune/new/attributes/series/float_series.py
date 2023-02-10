@@ -21,17 +21,17 @@ from typing import (
     Union,
 )
 
-from neptune.new.attributes.series.fetchable_series import FetchableSeries
-from neptune.new.attributes.series.series import Series
-from neptune.new.internal.backends.api_model import FloatSeriesValues
-from neptune.new.internal.operation import (
+from neptune.internal.backends.api_model import FloatSeriesValues
+from neptune.internal.operation import (
     ClearFloatLog,
     ConfigFloatSeries,
     LogFloats,
     Operation,
 )
-from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.logger import logger
+from neptune.internal.utils import verify_type
+from neptune.internal.utils.logger import logger
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.attributes.series.series import Series
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 
 Val = FloatSeriesVal

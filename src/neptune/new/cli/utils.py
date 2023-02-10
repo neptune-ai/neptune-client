@@ -44,19 +44,19 @@ from neptune.exceptions import (
     MetadataContainerNotFound,
     ProjectNotFound,
 )
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     ApiExperiment,
     Project,
 )
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import (
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.container_type import ContainerType
+from neptune.internal.disk_queue import DiskQueue
+from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
-from neptune.new.internal.operation import Operation
-from neptune.new.internal.utils.logger import logger
+from neptune.internal.operation import Operation
+from neptune.internal.utils.logger import logger
 
 
 def get_metadata_container(

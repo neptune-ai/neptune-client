@@ -22,7 +22,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.internal.utils.stringify_value import extract_if_stringify_value
+from neptune.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:

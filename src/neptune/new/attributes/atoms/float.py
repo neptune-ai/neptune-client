@@ -17,13 +17,13 @@ __all__ = ["Float"]
 
 import typing
 
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import AssignFloat
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import AssignFloat
 from neptune.new.types.atoms.float import Float as FloatVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class Float(CopiableAtom):

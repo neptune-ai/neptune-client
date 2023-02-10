@@ -30,20 +30,20 @@ from neptune.exceptions import (  # noqa: F401
     ProjectNotFound,
     RunNotFound,
 )
+from neptune.internal.backends.api_model import (  # noqa: F401
+    ApiExperiment,
+    Project,
+)
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
+from neptune.internal.credentials import Credentials
+from neptune.internal.disk_queue import DiskQueue  # noqa: F401
+from neptune.internal.operation import Operation  # noqa: F401
+from neptune.internal.utils.logger import logger
 from neptune.new.cli.clear import ClearRunner
 from neptune.new.cli.path_option import path_option
 from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.sync import SyncRunner
-from neptune.new.internal.backends.api_model import (  # noqa: F401
-    ApiExperiment,
-    Project,
-)
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
-from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.disk_queue import DiskQueue  # noqa: F401
-from neptune.new.internal.operation import Operation  # noqa: F401
-from neptune.new.internal.utils.logger import logger
 
 
 @click.command()
