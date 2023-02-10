@@ -15,40 +15,4 @@
 #
 __all__ = ["stringify_unsupported"]
 
-from typing import (
-    Any,
-    List,
-    Mapping,
-    Tuple,
-    Union,
-)
-
-from neptune.new.internal.utils.stringify_value import StringifyValue
-
-
-def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tuple]:
-    """Helper function that converts unsupported values in a collection or dictionary to strings.
-    Args:
-        value (Any): A dictionary with values or a collection
-    Example:
-        >>> import neptune.new as neptune
-        >>> run = neptune.init_run()
-        >>> complex_dict = {"tuple": ("hi", 1), "metric": 0.87}
-        >>> run["complex_dict"] = complex_dict
-        >>> # (as of 1.0.0) error - tuple is not a supported type
-        ... from neptune.new.utils import stringify_unsupported
-        >>> run["complex_dict"] = stringify_unsupported(complex_dict)
-
-        For more information, see:
-        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
-    """
-    if isinstance(value, dict):
-        return {k: stringify_unsupported(v) for k, v in value.items()}
-
-    if isinstance(value, list):
-        return list(map(stringify_unsupported, value))
-
-    if isinstance(value, tuple):
-        return tuple(map(stringify_unsupported, value))
-
-    return StringifyValue(value=value)
+from neptune.utils import stringify_unsupported
