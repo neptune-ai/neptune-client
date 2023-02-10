@@ -24,11 +24,11 @@ from typing import (
     Optional,
 )
 
-from neptune.new.attributes.series.series import Series
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     FileNotFound,
     OperationNotSupported,
 )
+from neptune.new.attributes.series.series import Series
 from neptune.new.internal.operation import (
     ClearImageLog,
     ImageValue,

@@ -29,11 +29,11 @@ from typing import (
     Optional,
 )
 
-from neptune.new.constants import (
+from neptune.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
 )
-from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
+from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue

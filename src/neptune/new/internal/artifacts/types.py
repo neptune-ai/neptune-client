@@ -21,7 +21,7 @@ import pathlib
 import typing
 from dataclasses import dataclass
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneUnhandledArtifactSchemeException,
     NeptuneUnhandledArtifactTypeException,
 )

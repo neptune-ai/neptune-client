@@ -24,19 +24,19 @@ from typing import (
     Union,
 )
 
-from neptune.new.attributes import constants as attr_consts
-from neptune.new.envs import (
+from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
     MONITORING_NAMESPACE,
     NEPTUNE_NOTEBOOK_ID,
     NEPTUNE_NOTEBOOK_PATH,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeedExistingRunForReadOnlyMode,
     NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
+from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -167,7 +167,7 @@ def init_run(
 
         Creating a new run:
 
-        >>> import neptune.new as neptune
+        >>> import neptune
 
         >>> # Minimal invoke
         ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)

@@ -18,7 +18,7 @@ try:
     from kedro_neptune import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "kedro_neptune":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="kedro-neptune", framework_name="kedro"

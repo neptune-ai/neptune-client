@@ -21,7 +21,7 @@ import os
 import shutil
 from pathlib import Path
 
-from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
+from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.utils.logger import logger

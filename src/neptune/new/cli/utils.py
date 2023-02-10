@@ -38,9 +38,9 @@ from typing import (
 )
 
 from neptune.common.exceptions import NeptuneException
-from neptune.new.constants import OFFLINE_DIRECTORY
-from neptune.new.envs import PROJECT_ENV_NAME
-from neptune.new.exceptions import (
+from neptune.constants import OFFLINE_DIRECTORY
+from neptune.envs import PROJECT_ENV_NAME
+from neptune.exceptions import (
     MetadataContainerNotFound,
     ProjectNotFound,
 )

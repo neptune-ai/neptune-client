@@ -32,7 +32,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.exceptions import MalformedOperation
+from neptune.exceptions import MalformedOperation
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 

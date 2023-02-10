@@ -25,7 +25,7 @@ from typing import (
 )
 
 from neptune.common.exceptions import InternalClientError
-from neptune.new.exceptions import MetadataInconsistency
+from neptune.exceptions import MetadataInconsistency
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,

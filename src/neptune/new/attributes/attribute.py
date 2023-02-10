@@ -20,7 +20,7 @@ from typing import (
     List,
 )
 
-from neptune.new.exceptions import TypeDoesNotSupportAttributeException
+from neptune.exceptions import TypeDoesNotSupportAttributeException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy

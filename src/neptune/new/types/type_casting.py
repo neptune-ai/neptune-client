@@ -54,7 +54,7 @@ from neptune.new.types.value_copy import ValueCopy
 
 
 def cast_value(value: Any) -> Value:
-    from neptune.new.handler import Handler
+    from neptune.handler import Handler
 
     from_stringify_value = False
     if is_stringify_value(value):

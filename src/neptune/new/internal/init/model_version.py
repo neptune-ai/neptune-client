@@ -20,12 +20,12 @@ import threading
 from typing import Optional
 
 from neptune.common.exceptions import NeptuneException
-from neptune.new.attributes import constants as attr_consts
-from neptune.new.envs import CONNECTION_MODE
-from neptune.new.exceptions import (
+from neptune.envs import CONNECTION_MODE
+from neptune.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneMissingRequiredInitParameter,
 )
+from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup

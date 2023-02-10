@@ -21,7 +21,7 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneLocalStorageAccessException,
     NeptuneUnsupportedArtifactFunctionalityException,
 )

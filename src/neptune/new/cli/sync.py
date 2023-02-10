@@ -29,6 +29,13 @@ from typing import (
 )
 
 from neptune.common.exceptions import NeptuneConnectionLostException
+from neptune.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
+from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
+from neptune.exceptions import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.utils import (
     get_metadata_container,
@@ -39,13 +46,6 @@ from neptune.new.cli.utils import (
     iterate_containers,
     split_dir_name,
 )
-from neptune.new.constants import (
-    ASYNC_DIRECTORY,
-    OFFLINE_DIRECTORY,
-    OFFLINE_NAME_PREFIX,
-)
-from neptune.new.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
-from neptune.new.exceptions import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.new.internal.backends.api_model import (
     ApiExperiment,
     Project,

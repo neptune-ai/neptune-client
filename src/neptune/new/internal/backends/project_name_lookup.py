@@ -19,8 +19,8 @@ import logging
 import os
 from typing import Optional
 
-from neptune.new.envs import PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneMissingProjectNameException
+from neptune.envs import PROJECT_ENV_NAME
+from neptune.exceptions import NeptuneMissingProjectNameException
 from neptune.new.internal.backends.api_model import Project
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.id_formats import QualifiedName

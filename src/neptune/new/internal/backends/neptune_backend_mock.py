@@ -37,7 +37,7 @@ from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
     ModelVersionNotFound,

@@ -18,7 +18,7 @@ __all__ = ("SyncOperationProcessor",)
 from datetime import datetime
 from typing import Optional
 
-from neptune.new.constants import (
+from neptune.constants import (
     NEPTUNE_DATA_DIRECTORY,
     SYNC_DIRECTORY,
 )

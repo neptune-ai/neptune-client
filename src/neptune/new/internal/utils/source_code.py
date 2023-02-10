@@ -36,7 +36,7 @@ from neptune.vendor.lib_programname import (
 )
 
 if TYPE_CHECKING:
-    from neptune.new import Run
+    from neptune import Run
 
 
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:

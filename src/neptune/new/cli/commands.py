@@ -25,15 +25,15 @@ from typing import (
 import click
 
 from neptune.common.exceptions import NeptuneException  # noqa: F401
-from neptune.new.cli.clear import ClearRunner
-from neptune.new.cli.path_option import path_option
-from neptune.new.cli.status import StatusRunner
-from neptune.new.cli.sync import SyncRunner
-from neptune.new.exceptions import (  # noqa: F401
+from neptune.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
     ProjectNotFound,
     RunNotFound,
 )
+from neptune.new.cli.clear import ClearRunner
+from neptune.new.cli.path_option import path_option
+from neptune.new.cli.status import StatusRunner
+from neptune.new.cli.sync import SyncRunner
 from neptune.new.internal.backends.api_model import (  # noqa: F401
     ApiExperiment,
     Project,

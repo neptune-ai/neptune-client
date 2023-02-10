@@ -20,7 +20,7 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
 )

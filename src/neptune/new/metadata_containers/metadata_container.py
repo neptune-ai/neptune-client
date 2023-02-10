@@ -33,11 +33,7 @@ from typing import (
 )
 
 from neptune.common.exceptions import UNIX_STYLES
-from neptune.new.attributes import create_attribute_from_type
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import Namespace as NamespaceAttr
-from neptune.new.attributes.namespace import NamespaceBuilder
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     InactiveModelException,
     InactiveModelVersionException,
     InactiveProjectException,
@@ -45,7 +41,11 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
 )
-from neptune.new.handler import Handler
+from neptune.handler import Handler
+from neptune.new.attributes import create_attribute_from_type
+from neptune.new.attributes.attribute import Attribute
+from neptune.new.attributes.namespace import Namespace as NamespaceAttr
+from neptune.new.attributes.namespace import NamespaceBuilder
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.nql import NQLQuery

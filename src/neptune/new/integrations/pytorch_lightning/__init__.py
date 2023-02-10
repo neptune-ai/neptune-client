@@ -19,7 +19,7 @@ try:
     from pytorch_lightning.loggers import NeptuneLogger
 except ModuleNotFoundError as e:
     if e.name == "pytorch_lightning":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="pytorch-lightning",

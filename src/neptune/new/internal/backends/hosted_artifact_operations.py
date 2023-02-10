@@ -26,7 +26,7 @@ from typing import (
 from bravado.exception import HTTPNotFound
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     ArtifactNotFoundException,
     ArtifactUploadingError,
     NeptuneEmptyLocationException,

@@ -18,7 +18,7 @@ try:
     from neptune_fastai.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_fastai":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-fastai", framework_name="fastai"

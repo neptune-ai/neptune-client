@@ -33,7 +33,7 @@ from typing import (
 )
 
 from neptune.common.exceptions import NeptuneException
-from neptune.new.exceptions import StreamAlreadyUsedException
+from neptune.exceptions import StreamAlreadyUsedException
 from neptune.new.internal.utils import verify_type
 
 

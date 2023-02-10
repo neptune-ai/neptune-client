@@ -18,11 +18,11 @@ __all__ = ["NeptuneHandler"]
 import logging
 import threading
 
-from neptune.new import Run
+from neptune import Run
 from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
 from neptune.new.run import RunState
-from neptune.new.version import version as neptune_client_version
+from neptune.version import version as neptune_client_version
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-python-logger"
 

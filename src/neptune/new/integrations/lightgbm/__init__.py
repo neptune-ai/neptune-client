@@ -18,7 +18,7 @@ try:
     from neptune_lightgbm.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_lightgbm":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-lightgbm", framework_name="lightgbm"

@@ -18,7 +18,7 @@ try:
     from neptune_aws.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_aws":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-aws", framework_name="aws"

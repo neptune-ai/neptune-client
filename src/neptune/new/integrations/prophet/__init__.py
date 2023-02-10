@@ -18,7 +18,7 @@ try:
     from neptune_prophet.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_prophet":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-prophet", framework_name="prophet"

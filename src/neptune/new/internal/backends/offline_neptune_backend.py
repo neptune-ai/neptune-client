@@ -17,7 +17,7 @@ __all__ = ["OfflineNeptuneBackend"]
 
 from typing import List
 
-from neptune.new.exceptions import NeptuneOfflineModeFetchException
+from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ArtifactAttribute,

@@ -25,7 +25,7 @@ from typing import (
     Union,
 )
 
-from neptune.new.exceptions import MetadataInconsistency
+from neptune.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,

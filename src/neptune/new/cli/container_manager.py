@@ -23,15 +23,15 @@ from typing import (
     Tuple,
 )
 
+from neptune.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    SYNC_DIRECTORY,
+)
 from neptune.new.cli.utils import (
     get_metadata_container,
     is_container_synced_and_remove_junk,
     iterate_containers,
-)
-from neptune.new.constants import (
-    ASYNC_DIRECTORY,
-    OFFLINE_DIRECTORY,
-    SYNC_DIRECTORY,
 )
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend

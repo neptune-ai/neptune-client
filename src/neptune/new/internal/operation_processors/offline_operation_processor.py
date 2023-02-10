@@ -18,7 +18,7 @@ __all__ = ("OfflineOperationProcessor",)
 import threading
 from typing import Optional
 
-from neptune.new.constants import (
+from neptune.constants import (
     NEPTUNE_DATA_DIRECTORY,
     OFFLINE_DIRECTORY,
 )

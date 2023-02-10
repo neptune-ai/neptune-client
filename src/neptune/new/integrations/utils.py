@@ -17,10 +17,10 @@ __all__ = ["expect_not_an_experiment", "join_paths", "verify_type", "RunType"]
 
 from typing import Union
 
+from neptune import Run
 from neptune.common.experiments import LegacyExperiment as Experiment
-from neptune.new import Run
-from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
-from neptune.new.handler import Handler
+from neptune.exceptions import NeptuneLegacyIncompatibilityException
+from neptune.handler import Handler
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.paths import join_paths
 

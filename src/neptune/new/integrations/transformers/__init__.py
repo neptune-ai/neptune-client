@@ -20,7 +20,7 @@ try:
     from transformers.integrations import NeptuneCallback
 except ModuleNotFoundError as e:
     if e.name == "transformers":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="transformers",

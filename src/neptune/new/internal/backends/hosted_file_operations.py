@@ -67,7 +67,7 @@ from neptune.common.storage.storage_utils import (
     scan_unique_upload_entries,
     split_upload_files,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     FileUploadError,
     MetadataInconsistency,
     NeptuneLimitExceedException,

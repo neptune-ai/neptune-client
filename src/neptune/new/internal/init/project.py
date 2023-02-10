@@ -20,7 +20,7 @@ import threading
 from typing import Optional
 
 from neptune.common.exceptions import NeptuneException
-from neptune.new.envs import CONNECTION_MODE
+from neptune.envs import CONNECTION_MODE
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
@@ -117,7 +117,7 @@ def get_project(
 
     Examples:
 
-        >>> import neptune.new as neptune
+        >>> import neptune
 
         >>> # Fetch project 'jack/sandbox'
         ... project = neptune.get_project(project='jack/sandbox')

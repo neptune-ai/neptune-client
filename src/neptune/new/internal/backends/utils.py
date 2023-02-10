@@ -64,8 +64,8 @@ from requests import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.new.exceptions import (
+from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+from neptune.exceptions import (
     CannotResolveHostname,
     MetadataInconsistency,
     NeptuneClientUpgradeRequiredError,

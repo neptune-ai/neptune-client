@@ -18,7 +18,7 @@ __all__ = ["kill_me"]
 import os
 import signal
 
-from neptune.new.envs import NEPTUNE_SUBPROCESS_KILL_TIMEOUT
+from neptune.envs import NEPTUNE_SUBPROCESS_KILL_TIMEOUT
 
 try:
     import psutil

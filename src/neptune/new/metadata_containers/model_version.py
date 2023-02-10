@@ -15,8 +15,8 @@
 #
 __all__ = ["ModelVersion"]
 
+from neptune.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
-from neptune.new.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.new.metadata_containers import MetadataContainer

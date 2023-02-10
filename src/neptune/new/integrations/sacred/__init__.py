@@ -18,7 +18,7 @@ try:
     from neptune_sacred.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_sacred":
-        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-sacred", framework_name="sacred"

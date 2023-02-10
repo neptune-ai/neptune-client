@@ -21,6 +21,7 @@ from typing import (
     Type,
 )
 
+from neptune.exceptions import OperationNotSupported
 from neptune.new.attributes.atoms.artifact import Artifact as ArtifactAttr
 from neptune.new.attributes.atoms.boolean import Boolean as BooleanAttr
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
@@ -35,7 +36,6 @@ from neptune.new.attributes.series.file_series import FileSeries as ImageSeriesA
 from neptune.new.attributes.series.float_series import FloatSeries as FloatSeriesAttr
 from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
-from neptune.new.exceptions import OperationNotSupported
 from neptune.new.types import (
     Boolean,
     Integer,

@@ -24,13 +24,13 @@ from typing import (
     Optional,
 )
 
-from neptune.common.envs import API_TOKEN_ENV_NAME
-from neptune.common.exceptions import NeptuneInvalidApiTokenException
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
 )
-from neptune.new.exceptions import NeptuneMissingApiTokenException
+from neptune.common.envs import API_TOKEN_ENV_NAME
+from neptune.common.exceptions import NeptuneInvalidApiTokenException
+from neptune.exceptions import NeptuneMissingApiTokenException
 
 
 @dataclass(frozen=True)

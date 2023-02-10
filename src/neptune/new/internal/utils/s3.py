@@ -19,7 +19,7 @@ import os
 
 import boto3
 
-from neptune.new.envs import S3_ENDPOINT_URL
+from neptune.envs import S3_ENDPOINT_URL
 
 
 def get_boto_s3_client():

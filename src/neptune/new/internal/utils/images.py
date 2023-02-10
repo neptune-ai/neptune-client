@@ -40,7 +40,7 @@ from typing import Optional
 from packaging import version
 from pandas import DataFrame
 
-from neptune.new.exceptions import PlotlyIncompatibilityException
+from neptune.exceptions import PlotlyIncompatibilityException
 from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
