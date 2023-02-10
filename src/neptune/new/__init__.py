@@ -60,15 +60,8 @@ __all__ = [
 from neptune import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
-    NeptunePossibleLegacyUsageException,
-    NeptuneUninitializedException,
     Run,
     __version__,
-    append_tag,
-    append_tags,
-    create_experiment,
-    delete_artifacts,
-    get_experiment,
     get_last_run,
     get_project,
     init,
@@ -76,17 +69,35 @@ from neptune import (
     init_model_version,
     init_project,
     init_run,
-    log_artifact,
-    log_image,
-    log_metric,
-    log_text,
-    remove_property,
-    remove_tag,
-    send_artifact,
-    send_image,
-    send_metric,
-    send_text,
-    set_property,
-    stop,
-    types,
 )
+from neptune.exceptions import (
+    NeptunePossibleLegacyUsageException,
+    NeptuneUninitializedException,
+)
+
+
+def _raise_legacy_client_expected(*args, **kwargs):
+    raise NeptunePossibleLegacyUsageException()
+
+
+create_experiment = (
+    get_experiment
+) = (
+    append_tag
+) = (
+    append_tags
+) = (
+    remove_tag
+) = (
+    set_property
+) = (
+    remove_property
+) = (
+    send_metric
+) = (
+    log_metric
+) = (
+    send_text
+) = (
+    log_text
+) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected

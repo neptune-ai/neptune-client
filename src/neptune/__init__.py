@@ -14,11 +14,8 @@
 # limitations under the License.
 #
 __all__ = [
-    "types",
     "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
-    "NeptunePossibleLegacyUsageException",
-    "NeptuneUninitializedException",
     "get_project",
     "init",
     "init_model",
@@ -27,38 +24,17 @@ __all__ = [
     "init_run",
     "Run",
     "__version__",
-    "create_experiment",
-    "get_experiment",
-    "append_tag",
-    "append_tags",
-    "remove_tag",
-    "set_property",
-    "remove_property",
-    "send_metric",
-    "log_metric",
-    "send_text",
-    "log_text",
-    "send_image",
-    "log_image",
-    "send_artifact",
-    "delete_artifacts",
-    "log_artifact",
-    "stop",
     "get_last_run",
 ]
 
 from typing import Optional
 
 from neptune.common.patches import apply_patches
-from neptune.new import types
-from neptune.new.constants import (
+from neptune.constants import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
 )
-from neptune.new.exceptions import (
-    NeptunePossibleLegacyUsageException,
-    NeptuneUninitializedException,
-)
+from neptune.exceptions import NeptuneUninitializedException
 from neptune.new.internal.init import (
     get_project,
     init,
@@ -70,33 +46,6 @@ from neptune.new.internal.init import (
 from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import Run
 from neptune.version import version
-
-
-def _raise_legacy_client_expected(*args, **kwargs):
-    raise NeptunePossibleLegacyUsageException()
-
-
-create_experiment = (
-    get_experiment
-) = (
-    append_tag
-) = (
-    append_tags
-) = (
-    remove_tag
-) = (
-    set_property
-) = (
-    remove_property
-) = (
-    send_metric
-) = (
-    log_metric
-) = (
-    send_text
-) = (
-    log_text
-) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
 @deprecated()
