@@ -42,8 +42,8 @@ from attr import dataclass
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
 
-import neptune.new as neptune
-from neptune.new.internal.container_type import ContainerType
+import neptune
+from neptune.internal.container_type import ContainerType
 from tests.e2e.exceptions import MissingEnvironmentVariable
 
 

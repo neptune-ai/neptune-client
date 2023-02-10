@@ -19,8 +19,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from neptune.new.cli.utils import get_project
-from neptune.new.exceptions import ProjectNotFound
+from neptune.cli.utils import get_project
+from neptune.exceptions import ProjectNotFound
 
 
 @pytest.fixture(name="backend")

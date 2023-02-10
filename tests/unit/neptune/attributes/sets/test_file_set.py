@@ -17,12 +17,12 @@ import os
 
 from mock import MagicMock
 
-from neptune.new.attributes.file_set import FileSet
-from neptune.new.internal.operation import (
+from neptune.attributes.file_set import FileSet
+from neptune.internal.operation import (
     DeleteFiles,
     UploadFileSet,
 )
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFileSet(TestAttributeBase):

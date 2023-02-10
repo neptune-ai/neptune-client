@@ -18,12 +18,12 @@ from datetime import datetime
 
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.datetime import (
+from neptune.attributes.atoms.datetime import (
     Datetime,
     DatetimeVal,
 )
-from neptune.new.internal.operation import AssignDatetime
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from neptune.internal.operation import AssignDatetime
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestDatetime(TestAttributeBase):

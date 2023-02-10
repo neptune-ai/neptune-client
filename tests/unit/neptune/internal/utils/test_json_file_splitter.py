@@ -15,8 +15,8 @@
 #
 import unittest
 
-from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
-from tests.unit.neptune.new.utils.file_helpers import create_file
+from neptune.internal.utils.json_file_splitter import JsonFileSplitter
+from tests.unit.neptune.utils.file_helpers import create_file
 
 
 class TestJsonFileSplitter(unittest.TestCase):

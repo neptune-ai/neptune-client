@@ -18,11 +18,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from neptune.new.cli.sync import SyncRunner
-from neptune.new.cli.utils import get_qualified_name
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import Operation
-from tests.unit.neptune.new.cli.utils import (
+from neptune.cli.sync import SyncRunner
+from neptune.cli.utils import get_qualified_name
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import Operation
+from tests.unit.neptune.cli.utils import (
     execute_operations,
     generate_get_metadata_container,
     prepare_deprecated_run,

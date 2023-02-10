@@ -18,30 +18,30 @@ import unittest
 
 from mock import patch
 
-from neptune.common.exceptions import NeptuneException
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     init_project,
 )
-from neptune.new.envs import (
+from neptune.common.exceptions import NeptuneException
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import NeptuneMissingProjectNameException
-from neptune.new.internal.backends.api_model import (
+from neptune.exceptions import NeptuneMissingProjectNameException
+from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
 )
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from tests.unit.neptune.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+    "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
 )
-@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
     PROJECT_NAME = "organization/project"
 
@@ -81,7 +81,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(13, project["some/variable"].fetch())
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
@@ -92,7 +92,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
                 self.assertEqual(
                     caplog.output,
                     [
-                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "WARNING:neptune.internal.operation_processors.read_only_operation_processor:"
                         "Client in read-only mode, nothing will be saved to server."
                     ],
                 )

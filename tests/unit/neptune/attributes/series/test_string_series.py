@@ -18,8 +18,8 @@ from mock import (
     patch,
 )
 
-from neptune.new.attributes.series.string_series import StringSeries
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from neptune.attributes.series.string_series import StringSeries
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 
 @patch("time.time", new=TestAttributeBase._now)

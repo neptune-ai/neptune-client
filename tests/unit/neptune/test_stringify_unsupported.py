@@ -20,13 +20,13 @@ from pytest import (
     warns,
 )
 
+from neptune import init_run
 from neptune.common.deprecation import NeptuneDeprecationWarning
-from neptune.new import init_run
-from neptune.new.types import (
+from neptune.types import (
     Boolean,
     String,
 )
-from neptune.new.utils import stringify_unsupported
+from neptune.utils import stringify_unsupported
 
 
 class Obj:

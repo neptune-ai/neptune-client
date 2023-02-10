@@ -20,11 +20,11 @@ from contextlib import redirect_stdout
 from io import StringIO
 from unittest.mock import MagicMock
 
-from neptune.new.internal.streams.std_stream_capture_logger import (
+from neptune.internal.streams.std_stream_capture_logger import (
     StdoutCaptureLogger,
     StdStreamCaptureLogger,
 )
-from neptune.new.logging import Logger as NeptuneLogger
+from neptune.logging import Logger as NeptuneLogger
 
 
 class FakeLogger:

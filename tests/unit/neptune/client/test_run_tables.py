@@ -17,13 +17,13 @@
 import unittest
 from typing import List
 
-from neptune.new import init_project
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.metadata_containers.metadata_containers_table import (
+from neptune import init_project
+from neptune.internal.container_type import ContainerType
+from neptune.metadata_containers.metadata_containers_table import (
     Table,
     TableEntry,
 )
-from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
+from tests.unit.neptune.client.abstract_tables_test import AbstractTablesTestMixin
 
 
 class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):

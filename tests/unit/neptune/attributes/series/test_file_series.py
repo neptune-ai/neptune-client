@@ -24,17 +24,17 @@ from mock import (
     patch,
 )
 
-from neptune.new.attributes.series.file_series import FileSeries
-from neptune.new.exceptions import OperationNotSupported
-from neptune.new.internal.operation import (
+from neptune.attributes.series.file_series import FileSeries
+from neptune.exceptions import OperationNotSupported
+from neptune.internal.operation import (
     ClearImageLog,
     ImageValue,
     LogImages,
 )
-from neptune.new.internal.utils import base64_encode
-from neptune.new.types import File
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
-from tests.unit.neptune.new.utils.file_helpers import create_file
+from neptune.internal.utils import base64_encode
+from neptune.types import File
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
+from tests.unit.neptune.utils.file_helpers import create_file
 
 
 @patch("time.time", new=TestAttributeBase._now)
@@ -212,7 +212,7 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(OperationNotSupported):
                 attr.assign([stream])
 
-    @mock.patch("neptune.new.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
+    @mock.patch("neptune.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
     def test_image_limit(self):
         """Test if we prohibit logging images greater than mocked 1KB limit size"""
         # given

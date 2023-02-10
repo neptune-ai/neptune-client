@@ -32,16 +32,16 @@ from mock import (
 )
 
 from neptune.common.utils import IS_WINDOWS
-from neptune.new.internal.backends.api_model import ClientConfig
-from neptune.new.internal.backends.hosted_file_operations import (
+from neptune.internal.backends.api_model import ClientConfig
+from neptune.internal.backends.hosted_file_operations import (
     _get_content_disposition_filename,
     download_file_attribute,
     download_file_set_attribute,
     upload_file_attribute,
     upload_file_set_attribute,
 )
-from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin
-from tests.unit.neptune.new.utils.file_helpers import create_file
+from tests.unit.neptune.backend_test_mixin import BackendTestMixin
+from tests.unit.neptune.utils.file_helpers import create_file
 
 
 def set_expected_result(endpoint: MagicMock, value: dict):
@@ -95,8 +95,8 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         # then
         self.assertEqual(filename, "sample.file")
 
-    @patch("neptune.new.internal.backends.hosted_file_operations._store_response_as_file")
-    @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations._store_response_as_file")
+    @patch("neptune.internal.backends.hosted_file_operations._download_raw_data")
     def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
@@ -119,10 +119,10 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
-    @patch("neptune.new.internal.backends.hosted_file_operations._store_response_as_file")
-    @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations._store_response_as_file")
+    @patch("neptune.internal.backends.hosted_file_operations._download_raw_data")
     @patch(
-        "neptune.new.internal.backends.hosted_file_operations._get_download_url",
+        "neptune.internal.backends.hosted_file_operations._get_download_url",
         new=lambda _, _id: "some_url",
     )
     def test_download_file_set_attribute(self, download_raw, store_response_mock):
@@ -150,7 +150,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         self.multipart_config = client_config.multipart_config
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     def test_missing_files_or_directory(self, upload_raw_data_mock):
         # given
         exp_uuid = str(uuid.uuid4())
@@ -189,7 +189,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     def test_upload_small_file_attribute(self, upload_raw_data):
         # given
         exp_uuid = str(uuid.uuid4())
@@ -234,7 +234,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     def test_upload_big_file_attribute(self, upload_raw_data):
         # given
         exp_uuid = str(uuid.uuid4())
@@ -313,9 +313,9 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
     def test_upload_single_small_file_in_file_set_attribute(self, upload_raw_data):
@@ -361,9 +361,9 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
     def test_upload_single_big_file_in_file_set_attribute(self, upload_raw_data):
@@ -448,9 +448,9 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch("neptune.internal.backends.hosted_file_operations.upload_raw_data")
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
     def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):

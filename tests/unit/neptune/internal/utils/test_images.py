@@ -36,7 +36,7 @@ from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )
-from neptune.new.internal.utils.images import (
+from neptune.internal.utils.images import (
     get_html_content,
     get_image_content,
 )

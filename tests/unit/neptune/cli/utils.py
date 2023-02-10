@@ -18,17 +18,17 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-from neptune.new.cli.utils import get_qualified_name
-from neptune.new.constants import (
+from neptune.cli.utils import get_qualified_name
+from neptune.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.new.exceptions import MetadataContainerNotFound
-from neptune.new.internal.backends.api_model import ApiExperiment
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
-from tests.unit.neptune.new.utils.api_experiments_factory import (
+from neptune.exceptions import MetadataContainerNotFound
+from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.container_type import ContainerType
+from neptune.internal.disk_queue import DiskQueue
+from neptune.internal.utils.sync_offset_file import SyncOffsetFile
+from tests.unit.neptune.utils.api_experiments_factory import (
     api_metadata_container,
     api_run,
 )

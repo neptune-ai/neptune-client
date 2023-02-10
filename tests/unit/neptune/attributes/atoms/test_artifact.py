@@ -24,18 +24,18 @@ from mock import (
     call,
 )
 
-from neptune.new.attributes.atoms.artifact import Artifact
-from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
-from neptune.new.internal.artifacts.types import (
+from neptune.attributes.atoms.artifact import Artifact
+from neptune.exceptions import NeptuneUnhandledArtifactTypeException
+from neptune.internal.artifacts.types import (
     ArtifactDriver,
     ArtifactDriversMap,
     ArtifactFileData,
 )
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import TrackFilesToArtifact
-from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import TrackFilesToArtifact
+from neptune.internal.utils.paths import path_to_str
+from neptune.types.atoms.artifact import Artifact as ArtifactAttr
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestArtifact(TestAttributeBase):

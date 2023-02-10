@@ -21,10 +21,10 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import neptune.new as neptune
+import neptune
+from neptune.cli import sync
 from neptune.common.exceptions import NeptuneException
-from neptune.new.cli import sync
-from src.neptune.new.cli.commands import clear
+from src.neptune.cli.commands import clear
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,

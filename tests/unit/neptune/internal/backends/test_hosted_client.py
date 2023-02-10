@@ -30,6 +30,15 @@ from mock import (
     patch,
 )
 
+from neptune.internal.backends.hosted_client import (
+    _get_token_client,
+    create_artifacts_client,
+    create_backend_client,
+    create_http_client_with_auth,
+    create_leaderboard_client,
+    get_client_config,
+)
+from neptune.internal.backends.utils import verify_host_resolution
 from neptune.management import (
     MemberRole,
     add_project_member,
@@ -50,17 +59,8 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
-from neptune.new.internal.backends.hosted_client import (
-    _get_token_client,
-    create_artifacts_client,
-    create_backend_client,
-    create_http_client_with_auth,
-    create_leaderboard_client,
-    get_client_config,
-)
-from neptune.new.internal.backends.utils import verify_host_resolution
-from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin
-from tests.unit.neptune.new.utils import response_mock
+from tests.unit.neptune.backend_test_mixin import BackendTestMixin
+from tests.unit.neptune.utils import response_mock
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
@@ -68,8 +68,8 @@ API_TOKEN = (
 )
 
 
-@patch("neptune.new.internal.backends.hosted_client.RequestsClient", new=MagicMock())
-@patch("neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
+@patch("neptune.internal.backends.hosted_client.RequestsClient", new=MagicMock())
+@patch("neptune.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
 @patch("bravado.client.SwaggerClient.from_url")
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")

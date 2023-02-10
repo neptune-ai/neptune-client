@@ -31,37 +31,37 @@ from unittest.mock import patch
 
 import PIL
 
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     init_run,
 )
-from neptune.new.attributes.atoms.boolean import Boolean
-from neptune.new.attributes.atoms.datetime import Datetime
-from neptune.new.attributes.atoms.file import File
-from neptune.new.attributes.atoms.float import Float
-from neptune.new.attributes.atoms.integer import Integer
-from neptune.new.attributes.atoms.string import String
-from neptune.new.attributes.series import FileSeries
-from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.envs import (
+from neptune.attributes.atoms.boolean import Boolean
+from neptune.attributes.atoms.datetime import Datetime
+from neptune.attributes.atoms.file import File
+from neptune.attributes.atoms.float import Float
+from neptune.attributes.atoms.integer import Integer
+from neptune.attributes.atoms.string import String
+from neptune.attributes.series import FileSeries
+from neptune.attributes.sets.string_set import StringSet
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     FileNotFound,
     NeptuneUserApiInputException,
 )
-from neptune.new.types import File as FileVal
-from neptune.new.types.atoms.artifact import Artifact
-from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
-from neptune.new.types.atoms.float import Float as FloatVal
-from neptune.new.types.atoms.string import String as StringVal
-from neptune.new.types.namespace import Namespace as NamespaceVal
-from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
-from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
-from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
-from neptune.new.types.sets.string_set import StringSet as StringSetVal
-from tests.unit.neptune.new.utils.file_helpers import create_file
+from neptune.types import File as FileVal
+from neptune.types.atoms.artifact import Artifact
+from neptune.types.atoms.datetime import Datetime as DatetimeVal
+from neptune.types.atoms.float import Float as FloatVal
+from neptune.types.atoms.string import String as StringVal
+from neptune.types.namespace import Namespace as NamespaceVal
+from neptune.types.series.file_series import FileSeries as FileSeriesVal
+from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
+from neptune.types.series.string_series import StringSeries as StringSeriesVal
+from neptune.types.sets.string_set import StringSet as StringSetVal
+from tests.unit.neptune.utils.file_helpers import create_file
 
 
 class TestBaseAssign(unittest.TestCase):
@@ -164,17 +164,17 @@ class TestUpload(unittest.TestCase):
             self.assertIsInstance(exp.get_structure()["some"]["num"]["attr_name"], File)
 
             with TemporaryDirectory() as temp_dir:
-                with patch("neptune.new.internal.backends.neptune_backend_mock.os.path.abspath") as abspath_mock:
+                with patch("neptune.internal.backends.neptune_backend_mock.os.path.abspath") as abspath_mock:
                     abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + "/" + path)
                     exp["some/num/attr_name"].download()
                 with open(temp_dir + "/attr_name.bin", "rb") as file:
                     self.assertEqual(file.read(), data)
 
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
-    @patch("neptune.new.internal.backends.neptune_backend_mock.ZipFile.write")
+    @patch("neptune.internal.backends.neptune_backend_mock.ZipFile.write")
     def test_save_files_download(self, zip_write_mock):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/artifacts"].upload_files("path/to/file.txt")

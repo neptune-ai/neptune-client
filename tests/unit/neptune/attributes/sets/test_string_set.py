@@ -18,16 +18,16 @@ from mock import (
     call,
 )
 
-from neptune.new.attributes.sets.string_set import (
+from neptune.attributes.sets.string_set import (
     StringSet,
     StringSetVal,
 )
-from neptune.new.internal.operation import (
+from neptune.internal.operation import (
     AddStrings,
     ClearStringSet,
     RemoveStrings,
 )
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestStringSet(TestAttributeBase):

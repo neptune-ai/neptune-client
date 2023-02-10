@@ -24,8 +24,8 @@ from neptune.common.deprecation import (
     NeptuneDeprecationWarning,
     warn_once,
 )
-from neptune.new.exceptions import NeptuneParametersCollision
-from neptune.new.internal.utils.deprecation import (
+from neptune.exceptions import NeptuneParametersCollision
+from neptune.internal.utils.deprecation import (
     deprecated,
     deprecated_parameter,
 )

@@ -30,7 +30,7 @@ from torch.utils.data import (
     Dataset,
 )
 
-import neptune.new as neptune
+import neptune
 from tests.e2e.base import BaseE2ETest
 
 LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"

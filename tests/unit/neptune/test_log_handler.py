@@ -17,15 +17,15 @@ import logging
 import os
 import unittest
 
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     init_run,
 )
-from neptune.new.envs import (
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.integrations.python_logger import NeptuneHandler
+from neptune.integrations.python_logger import NeptuneHandler
 
 
 class TestLogHandler(unittest.TestCase):

@@ -16,9 +16,9 @@
 
 import uuid
 
-from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.new.internal.operation import (
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
+from neptune.internal.operation import (
     AddStrings,
     AssignFloat,
     AssignString,
@@ -34,7 +34,7 @@ from neptune.new.internal.operation import (
     TrackFilesToArtifact,
     UploadFileSet,
 )
-from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from tests.unit.neptune.attributes.test_attribute_base import TestAttributeBase
 
 FLog = LogFloats.ValueType
 SLog = LogStrings.ValueType

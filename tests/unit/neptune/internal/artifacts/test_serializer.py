@@ -15,7 +15,7 @@
 #
 import unittest
 
-from neptune.new.internal.artifacts.types import ArtifactMetadataSerializer
+from neptune.internal.artifacts.types import ArtifactMetadataSerializer
 
 
 class TestArtifactMetadataSerializer(unittest.TestCase):
