@@ -36,6 +36,7 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
+import neptune.exceptions as alpha_exceptions
 from neptune.common import exceptions as common_exceptions
 from neptune.common.exceptions import ClientHttpError
 from neptune.common.storage.storage_utils import normalize_file_name
@@ -84,7 +85,6 @@ from neptune.legacy.model import (
     LeaderboardEntry,
 )
 from neptune.legacy.notebook import Notebook
-from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
 from neptune.new.attributes.constants import (
     MONITORING_TRACEBACK_ATTRIBUTE_PATH,
