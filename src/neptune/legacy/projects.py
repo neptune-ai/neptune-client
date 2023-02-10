@@ -25,7 +25,6 @@ import click
 import pandas as pd
 import six
 
-from neptune.common.experiments import Experiment
 from neptune.common.utils import (
     as_list,
     discover_git_repo_location,
@@ -37,6 +36,7 @@ from neptune.legacy.envs import (
     NOTEBOOK_PATH_ENV_NAME,
 )
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
+from neptune.legacy.experiments import Experiment
 from neptune.legacy.internal.abort import DefaultAbortImpl
 from neptune.legacy.internal.notebooks.notebooks import create_checkpoint
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation

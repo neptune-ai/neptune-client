@@ -38,7 +38,6 @@ from bravado.exception import HTTPNotFound
 
 from neptune.common import exceptions as common_exceptions
 from neptune.common.exceptions import ClientHttpError
-from neptune.common.experiments import Experiment
 from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import (
     NoopObject,
@@ -61,6 +60,7 @@ from neptune.legacy.exceptions import (
     FileNotFound,
     NeptuneException,
 )
+from neptune.legacy.experiments import Experiment
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 from neptune.legacy.internal.channels.channels import (

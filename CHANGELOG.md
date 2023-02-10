@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune-client 1.0.0
 
 ### Changes
--
+- Removed `neptune.*` legacy modules ([#1206](https://github.com/neptune-ai/neptune-client/pull/1206))
 
 ## neptune-client 0.16.18
 

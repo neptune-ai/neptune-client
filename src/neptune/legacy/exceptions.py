@@ -13,7 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.exceptions import STYLES
+__all__ = [
+    "EMPTY_STYLES",
+    "STYLES",
+    "UNIX_STYLES",
+    "WINDOWS_STYLES",
+    "FileNotFound",
+    "InvalidNotebookPath",
+    "NeptuneIncorrectProjectQualifiedNameException",
+    "NeptuneMissingProjectQualifiedNameException",
+    "NotADirectory",
+    "NotAFile",
+]
+from neptune.common.exceptions import (
+    EMPTY_STYLES,
+    STYLES,
+    UNIX_STYLES,
+    WINDOWS_STYLES,
+    FileNotFound,
+    InvalidNotebookPath,
+    NeptuneIncorrectProjectQualifiedNameException,
+    NeptuneMissingProjectQualifiedNameException,
+    NotADirectory,
+    NotAFile,
+)
 from neptune.legacy import envs
 
 
@@ -43,28 +66,6 @@ You may also want to check the following docs pages:
             **STYLES
         )
         super(NeptuneUninitializedException, self).__init__(message)
-
-
-class FileNotFound(NeptuneException):
-    def __init__(self, path):
-        super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
-
-
-class NotAFile(NeptuneException):
-    def __init__(self, path):
-        super(NotAFile, self).__init__("Path {} is not a file.".format(path))
-
-
-class NotADirectory(NeptuneException):
-    def __init__(self, path):
-        super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
-
-
-class InvalidNotebookPath(NeptuneException):
-    def __init__(self, path):
-        super(InvalidNotebookPath, self).__init__(
-            "File {} is not a valid notebook. Should end with .ipynb.".format(path)
-        )
 
 
 class NoChannelValue(NeptuneException):
@@ -160,77 +161,6 @@ You may also want to check the following docs pages:
 """
         super(NeptuneMissingApiTokenException, self).__init__(
             message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
-        )
-
-
-class NeptuneMissingProjectQualifiedNameException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneMissingProjectQualifiedNameException-------------------------------------------------------------------------
-{end}
-Neptune client couldn't find your project name.
-
-There are two options two add it:
-    - specify it in your code
-    - set an environment variable in your operating system.
-
-{h2}CODE{end}
-Pass it to {bold}neptune.init(){end} via {bold}project_qualified_name{end} argument:
-    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
-
-{h2}ENVIRONMENT VARIABLE{end}
-or export or set an environment variable depending on your operating system:
-
-    {correct}Linux/Unix{end}
-    In your terminal run:
-       {bash}export {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
-
-    {correct}Windows{end}
-    In your CMD run:
-       {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
-
-and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){end}:
-    {python}neptune.init(api_token='YOUR_API_TOKEN'){end}
-
-You may also want to check the following docs pages:
-    - https://docs-legacy.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-
-{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
-"""
-        super(NeptuneMissingProjectQualifiedNameException, self).__init__(
-            message.format(env_project=envs.PROJECT_ENV_NAME, **STYLES)
-        )
-
-
-class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
-    def __init__(self, project_qualified_name):
-        message = """
-{h1}
-----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
-{end}
-Project qualified name {fail}"{project_qualified_name}"{end} you specified was incorrect.
-
-The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
-It has two parts:
-    - {correct}WORKSPACE{end}: which can be your username or your organization name
-    - {correct}PROJECT_NAME{end}: which is the actual project name you chose
-
-For example, a project {correct}neptune-ai/credit-default-prediction{end} parts are:
-    - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
-    - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
-
-The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credit-default-prediction
-
-You may also want to check the following docs pages:
-    - https://docs-legacy.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-
-{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
-"""
-        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(
-            message.format(project_qualified_name=project_qualified_name, **STYLES)
         )
 
 

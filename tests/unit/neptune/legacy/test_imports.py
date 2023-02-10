@@ -18,7 +18,7 @@
 # flake8: noqa
 import unittest
 
-from neptune.api_exceptions import (
+from neptune.legacy.api_exceptions import (
     ChannelAlreadyExists,
     ChannelDoesNotExist,
     ChannelNotFound,
@@ -42,13 +42,13 @@ from neptune.api_exceptions import (
     Unauthorized,
     WorkspaceNotFound,
 )
-from neptune.backend import (
+from neptune.legacy.backend import (
     ApiClient,
     BackendApiClient,
     LeaderboardApiClient,
 )
-from neptune.checkpoint import Checkpoint
-from neptune.exceptions import (
+from neptune.legacy.checkpoint import Checkpoint
+from neptune.legacy.exceptions import (
     CannotResolveHostname,
     DeleteArtifactUnsupportedInAlphaException,
     DeprecatedApiToken,
@@ -73,8 +73,21 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
     UnsupportedInAlphaException,
 )
-from neptune.experiments import Experiment
-from neptune.git_info import GitInfo
+from neptune.legacy.experiments import Experiment
+from neptune.legacy.git_info import GitInfo
+from neptune.legacy.model import (
+    ChannelWithLastValue,
+    LeaderboardEntry,
+    Point,
+    Points,
+)
+from neptune.legacy.notebook import Notebook
+from neptune.legacy.oauth import (
+    NeptuneAuth,
+    NeptuneAuthenticator,
+)
+from neptune.legacy.projects import Project
+from neptune.legacy.sessions import Session
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -91,20 +104,6 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
-from neptune.model import (
-    ChannelWithLastValue,
-    LeaderboardEntry,
-    Point,
-    Points,
-)
-from neptune.notebook import Notebook
-from neptune.oauth import (
-    NeptuneAuth,
-    NeptuneAuthenticator,
-)
-from neptune.projects import Project
-from neptune.sessions import Session
-from neptune.utils import NoopObject
 
 
 class TestImports(unittest.TestCase):
