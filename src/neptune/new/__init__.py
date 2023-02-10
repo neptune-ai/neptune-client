@@ -24,7 +24,6 @@ You may also want to check `Neptune docs page`_.
    https://docs.neptune.ai/api/neptune
 """
 __all__ = [
-    "types",
     "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "NeptunePossibleLegacyUsageException",
