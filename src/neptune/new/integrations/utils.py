@@ -17,7 +17,7 @@ __all__ = ["expect_not_an_experiment", "join_paths", "verify_type", "RunType"]
 
 from typing import Union
 
-from neptune.common.experiments import Experiment
+from neptune.common.experiments import LegacyExperiment as Experiment
 from neptune.new import Run
 from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
 from neptune.new.handler import Handler

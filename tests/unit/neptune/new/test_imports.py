@@ -454,7 +454,6 @@ from neptune.new.types.value_visitor import (
     Value,
     ValueVisitor,
 )
-from neptune.notebook import Notebook
 
 
 class TestImports(unittest.TestCase):
