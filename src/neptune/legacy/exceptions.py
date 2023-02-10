@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.exceptions import STYLES
+# flake8: noqa
+from neptune.common.exceptions import (
+    EMPTY_STYLES,
+    STYLES,
+    UNIX_STYLES,
+    WINDOWS_STYLES,
+)
 from neptune.legacy import envs
 
 
