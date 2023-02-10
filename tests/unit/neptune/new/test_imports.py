@@ -26,7 +26,6 @@ from neptune.attributes.atoms.datetime import Datetime
 from neptune.attributes.atoms.file import File
 from neptune.attributes.atoms.float import Float
 from neptune.attributes.atoms.git_ref import GitRef
-from neptune.attributes.atoms.integer import Integer
 from neptune.attributes.atoms.notebook_ref import NotebookRef
 from neptune.attributes.atoms.run_state import RunState
 from neptune.attributes.atoms.string import String
@@ -124,7 +123,6 @@ from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.file import File
 from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.git_ref import GitRef
-from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.atoms.notebook_ref import NotebookRef
 from neptune.new.attributes.atoms.run_state import RunState
 from neptune.new.attributes.atoms.string import String
@@ -207,7 +205,6 @@ from neptune.new.run import (
     Float,
     Handler,
     InactiveRunException,
-    Integer,
     MetadataInconsistency,
     Namespace,
     NamespaceAttr,
