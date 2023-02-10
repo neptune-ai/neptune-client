@@ -15,4 +15,4 @@
 #
 __all__ = ["Logger"]
 
-from neptune.new.logging.logger import Logger
+from neptune.logging.logger import Logger

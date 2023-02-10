@@ -20,7 +20,7 @@ import threading
 
 from neptune import Run
 from neptune.internal.utils import verify_type
-from neptune.new.logging import Logger
+from neptune.logging import Logger
 from neptune.new.run import RunState
 from neptune.version import version as neptune_client_version
 

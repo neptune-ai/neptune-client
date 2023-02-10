@@ -20,7 +20,7 @@ import threading
 from queue import Queue
 from typing import TextIO
 
-from neptune.new.logging import Logger as NeptuneLogger
+from neptune.logging import Logger as NeptuneLogger
 from neptune.new.metadata_containers import MetadataContainer
 
 
