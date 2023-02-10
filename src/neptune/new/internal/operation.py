@@ -60,7 +60,7 @@ class Operation(abc.ABC):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass
 
-    def clean(self):
+    def clean(self, upload_path: Path):
         pass
 
     def to_dict(self) -> dict:
@@ -209,9 +209,9 @@ class UploadFile(Operation):
             raise ValueError(f"Unexpected FileType: {value.file_type}")
         return operation
 
-    def clean(self):
+    def clean(self, upload_path: Path):
         if self.clean_after_upload or self.tmp_file_name:
-            os.remove(self.file_path)
+            os.remove(self.get_absolute_path(upload_path))
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_upload_file(self)

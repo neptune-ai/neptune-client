@@ -130,9 +130,9 @@ class TestSync(BaseE2ETest):
             run[key] = val
 
             # and some file
-            key = self.gen_key()
-            val = File.from_content(b"dummybytes")
-            run[key].upload(val)
+            key2 = self.gen_key()
+            val2 = File.from_content(b"dummybytes")
+            run[key2].upload(val2)
 
             # and stop it
             run.stop()
@@ -148,6 +148,9 @@ class TestSync(BaseE2ETest):
 
             run2 = neptune.init_run(with_id=sys_id, project=environment.project)
             assert run2[key].fetch() == val
+            run2[key2].download()
+            with open(f"{tmp}/{key2.split('/')[-1]}.bin", "rb") as file:
+                assert file.read() == b"dummybytes"
             run2.stop()
 
     @pytest.mark.parametrize("container_type", ["run"])

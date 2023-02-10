@@ -493,7 +493,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             assign_artifact_operations,
             preprocessed_operations.other_operations,
         ):
-            op.clean()
+            op.clean(upload_path=upload_path)
 
         return (
             operations_preprocessor.processed_ops_count + dropped_count,
