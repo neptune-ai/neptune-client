@@ -13,16 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-"""``neptune`` is a global object that you can use to start new tracked runs or re-connect to already existing ones.
-
-It also provides some convenience functionalities like obtaining the last created run.
-
-You may also want to check `Neptune docs page`_.
-
-.. _Neptune docs page:
-   https://docs.neptune.ai/api/neptune
-"""
+# flake8: noqa
 __all__ = [
     "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
@@ -56,6 +47,8 @@ __all__ = [
     "get_last_run",
 ]
 
+import sys
+
 from neptune import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -69,10 +62,17 @@ from neptune import (
     init_project,
     init_run,
 )
+from neptune.attributes import *
+from neptune.cli import *
 from neptune.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneUninitializedException,
 )
+from neptune.integrations import *
+from neptune.logging import *
+from neptune.metadata_containers import *
+from neptune.new._compatibility import CompatibilityImporter
+from neptune.types import *
 
 
 def _raise_legacy_client_expected(*args, **kwargs):
@@ -100,3 +100,6 @@ create_experiment = (
 ) = (
     log_text
 ) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
+
+
+sys.meta_path.append(CompatibilityImporter())

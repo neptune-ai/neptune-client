@@ -18,6 +18,7 @@
 # flake8: noqa
 import unittest
 
+# ---------------- neptune ----------------------
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.atoms.atom import Atom
 from neptune.attributes.atoms.boolean import Boolean
@@ -98,6 +99,8 @@ from neptune.exceptions import (
 from neptune.handler import Handler
 from neptune.integrations.python_logger import NeptuneHandler
 from neptune.logging.logger import Logger
+
+# ------------- management ---------------
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -194,22 +197,6 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.integrations.python_logger import NeptuneHandler
 from neptune.new.logging.logger import Logger
-from neptune.new.management.exceptions import (
-    AccessRevokedOnDeletion,
-    AccessRevokedOnMemberRemoval,
-    BadRequestException,
-    ConflictingWorkspaceName,
-    InvalidProjectName,
-    ManagementOperationFailure,
-    MissingWorkspaceName,
-    ProjectAlreadyExists,
-    ProjectNotFound,
-    ProjectsLimitReached,
-    UnsupportedValue,
-    UserAlreadyHasAccess,
-    UserNotExistsOrWithoutAccess,
-    WorkspaceNotFound,
-)
 
 # ------------ Legacy neptune.new subpackage -------------
 from neptune.new.project import Project
@@ -254,46 +241,6 @@ from neptune.new.sync import (
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.types.atoms.artifact import Artifact
-from neptune.new.types.atoms.atom import Atom
-from neptune.new.types.atoms.boolean import Boolean
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.file import File
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.git_ref import GitRef
-from neptune.new.types.atoms.integer import Integer
-from neptune.new.types.atoms.string import String
-from neptune.new.types.file_set import FileSet
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.series.file_series import FileSeries
-from neptune.new.types.series.float_series import FloatSeries
-from neptune.new.types.series.series import Series
-from neptune.new.types.series.series_value import SeriesValue
-from neptune.new.types.series.string_series import StringSeries
-from neptune.new.types.sets.set import Set
-from neptune.new.types.sets.string_set import StringSet
-from neptune.new.types.value import Value
-from neptune.new.types.value_visitor import ValueVisitor
-from neptune.types.atoms.artifact import Artifact
-from neptune.types.atoms.atom import Atom
-from neptune.types.atoms.boolean import Boolean
-from neptune.types.atoms.datetime import Datetime
-from neptune.types.atoms.file import File
-from neptune.types.atoms.float import Float
-from neptune.types.atoms.git_ref import GitRef
-from neptune.types.atoms.integer import Integer
-from neptune.types.atoms.string import String
-from neptune.types.file_set import FileSet
-from neptune.types.namespace import Namespace
-from neptune.types.series.file_series import FileSeries
-from neptune.types.series.float_series import FloatSeries
-from neptune.types.series.series import Series
-from neptune.types.series.series_value import SeriesValue
-from neptune.types.series.string_series import StringSeries
-from neptune.types.sets.set import Set
-from neptune.types.sets.string_set import StringSet
-from neptune.types.value import Value
-from neptune.types.value_visitor import ValueVisitor
 
 
 class TestImports(unittest.TestCase):
