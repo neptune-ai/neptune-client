@@ -20,7 +20,7 @@ import typing
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignBool
-from neptune.new.types.atoms.boolean import Boolean as BooleanVal
+from neptune.types.atoms.boolean import Boolean as BooleanVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

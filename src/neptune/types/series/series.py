@@ -21,10 +21,10 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.types.value import Value
+from neptune.types.value import Value
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 

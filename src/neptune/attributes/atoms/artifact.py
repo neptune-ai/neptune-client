@@ -29,7 +29,7 @@ from neptune.internal.operation import (
     AssignArtifact,
     TrackFilesToArtifact,
 )
-from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
+from neptune.types.atoms.artifact import Artifact as ArtifactVal
 
 
 class Artifact(Atom):

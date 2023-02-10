@@ -23,21 +23,21 @@ from typing import (
 )
 
 from neptune.attributes.attribute import Attribute
-from neptune.new.types.atoms import GitRef
-from neptune.new.types.atoms.artifact import Artifact
-from neptune.new.types.atoms.boolean import Boolean
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.file import File
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.integer import Integer
-from neptune.new.types.atoms.string import String
-from neptune.new.types.file_set import FileSet
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.series.file_series import FileSeries
-from neptune.new.types.series.float_series import FloatSeries
-from neptune.new.types.series.string_series import StringSeries
-from neptune.new.types.sets.string_set import StringSet
-from neptune.new.types.value import Value
+from neptune.types.atoms import GitRef
+from neptune.types.atoms.artifact import Artifact
+from neptune.types.atoms.boolean import Boolean
+from neptune.types.atoms.datetime import Datetime
+from neptune.types.atoms.file import File
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.integer import Integer
+from neptune.types.atoms.string import String
+from neptune.types.file_set import FileSet
+from neptune.types.namespace import Namespace
+from neptune.types.series.file_series import FileSeries
+from neptune.types.series.float_series import FloatSeries
+from neptune.types.series.string_series import StringSeries
+from neptune.types.sets.string_set import StringSet
+from neptune.types.value import Value
 
 Ret = TypeVar("Ret")
 

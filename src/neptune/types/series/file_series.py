@@ -24,11 +24,11 @@ from typing import (
 from neptune.internal.utils import is_collection
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.stringify_value import extract_if_stringify_value
-from neptune.new.types import File
-from neptune.new.types.series.series import Series
+from neptune.types import File
+from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 

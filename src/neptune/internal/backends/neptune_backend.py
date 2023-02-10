@@ -56,7 +56,7 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.new.types.atoms import GitRef
+from neptune.types.atoms import GitRef
 
 
 class NeptuneBackend:

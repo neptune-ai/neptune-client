@@ -31,7 +31,7 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.new.types.file_set import FileSet as FileSetVal
+from neptune.types.file_set import FileSet as FileSetVal
 
 
 class FileSet(Attribute):

@@ -13,36 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Boolean"]
+__all__ = ["Datetime"]
 
 from dataclasses import dataclass
+from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     TypeVar,
 )
 
 from neptune.internal.utils.stringify_value import extract_if_stringify_value
-from neptune.new.types.atoms.atom import Atom
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class Boolean(Atom):
+class Datetime(Atom):
+    value: datetime
 
-    value: bool
-
-    def __init__(self, value):
-        self.value = bool(extract_if_stringify_value(value))
+    def __init__(self, value: datetime):
+        value = extract_if_stringify_value(value)
+        self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_boolean(self)
+        return visitor.visit_datetime(self)
 
     def __str__(self):
-        return "Boolean({})".format(str(self.value))
-
-    def __bool__(self):
-        return self.value
+        return "Datetime({})".format(str(self.value))

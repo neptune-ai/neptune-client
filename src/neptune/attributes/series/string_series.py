@@ -33,8 +33,8 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import path_to_str
-from neptune.new.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
-from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
+from neptune.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
+from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer

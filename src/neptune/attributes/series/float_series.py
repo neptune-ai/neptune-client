@@ -32,7 +32,7 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.logger import logger
-from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
+from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 
 Val = FloatSeriesVal
 Data = Union[float, int]

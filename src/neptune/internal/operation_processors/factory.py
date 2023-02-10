@@ -21,7 +21,7 @@ import threading
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor

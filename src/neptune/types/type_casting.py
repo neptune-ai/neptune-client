@@ -34,23 +34,23 @@ from neptune.internal.utils import (
     is_string_like,
     is_stringify_value,
 )
-from neptune.new.types import (
+from neptune.types import (
     Boolean,
     File,
     Integer,
 )
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.string import String
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.series import (
+from neptune.types.atoms.datetime import Datetime
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.string import String
+from neptune.types.namespace import Namespace
+from neptune.types.series import (
     FileSeries,
     FloatSeries,
     StringSeries,
 )
-from neptune.new.types.series.series import Series
-from neptune.new.types.value import Value
-from neptune.new.types.value_copy import ValueCopy
+from neptune.types.series.series import Series
+from neptune.types.value import Value
+from neptune.types.value_copy import ValueCopy
 
 
 def cast_value(value: Any) -> Value:

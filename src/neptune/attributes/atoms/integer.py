@@ -20,7 +20,7 @@ import typing
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignInt
-from neptune.new.types.atoms.integer import Integer as IntegerVal
+from neptune.types.atoms.integer import Integer as IntegerVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

@@ -42,7 +42,7 @@ from neptune.internal.operation_processors.operation_processor import OperationP
 from neptune.internal.utils import as_list
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 
 class Project(MetadataContainer):

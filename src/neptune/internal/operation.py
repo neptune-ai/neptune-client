@@ -33,7 +33,7 @@ from neptune.common.exceptions import InternalClientError
 from neptune.exceptions import MalformedOperation
 from neptune.internal.container_type import ContainerType
 from neptune.internal.types.file_types import FileType
-from neptune.new.types.atoms.file import File
+from neptune.types.atoms.file import File
 
 if TYPE_CHECKING:
     from neptune.attributes.attribute import Attribute

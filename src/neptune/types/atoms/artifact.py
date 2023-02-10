@@ -23,10 +23,10 @@ from typing import (
 )
 
 from neptune.internal.artifacts.file_hasher import FileHasher
-from neptune.new.types.atoms.atom import Atom
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 

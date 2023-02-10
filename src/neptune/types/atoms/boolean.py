@@ -13,39 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitRef"]
+__all__ = ["Boolean"]
 
 from dataclasses import dataclass
-from datetime import datetime
 from typing import (
     TYPE_CHECKING,
-    List,
-    Optional,
     TypeVar,
 )
 
-from neptune.new.types.atoms.atom import Atom
+from neptune.internal.utils.stringify_value import extract_if_stringify_value
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class GitRef(Atom):
+class Boolean(Atom):
 
-    commit_id: str
-    message: str
-    author_name: str
-    author_email: str
-    commit_date: datetime
-    dirty: bool
-    branch: Optional[str]
-    remotes: Optional[List[str]]
+    value: bool
+
+    def __init__(self, value):
+        self.value = bool(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_git_ref(self)
+        return visitor.visit_boolean(self)
 
     def __str__(self):
-        return "GitRef({})".format(str(self.commit_id))
+        return "Boolean({})".format(str(self.value))
+
+    def __bool__(self):
+        return self.value

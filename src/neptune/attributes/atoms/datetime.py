@@ -22,7 +22,7 @@ from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignDatetime
 from neptune.internal.utils import verify_type
-from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
+from neptune.types.atoms.datetime import Datetime as DatetimeVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

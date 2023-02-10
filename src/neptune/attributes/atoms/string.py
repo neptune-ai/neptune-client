@@ -22,7 +22,7 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignString
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import path_to_str
-from neptune.new.types.atoms.string import String as StringVal
+from neptune.types.atoms.string import String as StringVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

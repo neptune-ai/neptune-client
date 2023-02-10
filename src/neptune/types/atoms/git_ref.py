@@ -13,23 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Atom"]
+__all__ = ["GitRef"]
 
-import abc
+from dataclasses import dataclass
+from datetime import datetime
 from typing import (
     TYPE_CHECKING,
+    List,
+    Optional,
     TypeVar,
 )
 
-from neptune.new.types.value import Value
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
-class Atom(Value):
-    @abc.abstractmethod
+@dataclass
+class GitRef(Atom):
+
+    commit_id: str
+    message: str
+    author_name: str
+    author_email: str
+    commit_date: datetime
+    dirty: bool
+    branch: Optional[str]
+    remotes: Optional[List[str]]
+
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+        return visitor.visit_git_ref(self)
+
+    def __str__(self):
+        return "GitRef({})".format(str(self.commit_id))

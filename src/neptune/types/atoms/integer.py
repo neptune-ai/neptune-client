@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["String"]
+__all__ = ["Integer"]
 
 from dataclasses import dataclass
 from typing import (
@@ -21,39 +21,28 @@ from typing import (
     TypeVar,
 )
 
-from neptune.common.deprecation import warn_once
-from neptune.internal.utils import (
-    is_string,
-    is_stringify_value,
-)
-from neptune.new.types.atoms.atom import Atom
+from neptune.internal.utils.stringify_value import extract_if_stringify_value
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class String(Atom):
+class Integer(Atom):
 
-    value: str
+    value: int
 
     def __init__(self, value):
-        if is_stringify_value(value):
-            value = str(value.value)
-
-        if not is_string(value):
-            warn_once(
-                message="The object you're logging will be implicitly cast to a string."
-                " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `String(str(object))` or `String(repr(object))` instead."
-            )
-
-        self.value = str(value)
+        self.value = int(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_string(self)
+        return visitor.visit_integer(self)
 
     def __str__(self):
-        return "String({})".format(str(self.value))
+        return "Integer({})".format(str(self.value))
+
+    def __int__(self):
+        return self.value

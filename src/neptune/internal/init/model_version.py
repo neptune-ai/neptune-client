@@ -44,7 +44,7 @@ from neptune.metadata_containers import (
     Model,
     ModelVersion,
 )
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 
 @deprecated_parameter(deprecated_kwarg_name="version", required_kwarg_name="with_id")

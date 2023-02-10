@@ -38,8 +38,8 @@ from neptune.internal.operation import (
 from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_encode
 from neptune.internal.utils.limits import image_size_exceeds_limit_for_logging
-from neptune.new.types import File
-from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
+from neptune.types import File
+from neptune.types.series.file_series import FileSeries as FileSeriesVal
 
 Val = FileSeriesVal
 Data = File

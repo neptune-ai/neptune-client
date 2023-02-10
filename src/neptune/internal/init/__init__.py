@@ -33,7 +33,7 @@ from neptune.internal.init.project import (
 )
 from neptune.internal.init.run import init_run
 from neptune.internal.utils.deprecation import deprecated
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 RunMode = Mode
 

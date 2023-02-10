@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Namespace"]
+__all__ = ["String"]
 
 from dataclasses import dataclass
 from typing import (
@@ -21,24 +21,39 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.types.value import Value
+from neptune.common.deprecation import warn_once
+from neptune.internal.utils import (
+    is_string,
+    is_stringify_value,
+)
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class Namespace(Value):
+class String(Atom):
 
-    value: dict
+    value: str
 
     def __init__(self, value):
-        self.value = value
+        if is_stringify_value(value):
+            value = str(value.value)
+
+        if not is_string(value):
+            warn_once(
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `String(str(object))` or `String(repr(object))` instead."
+            )
+
+        self.value = str(value)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_namespace(self)
+        return visitor.visit_string(self)
 
     def __str__(self):
-        return "Namespace({})".format(str(self.value))
+        return "String({})".format(str(self.value))

@@ -36,7 +36,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.iteration import get_batches
-from neptune.new.types.series.series import Series as SeriesVal
+from neptune.types.series.series import Series as SeriesVal
 
 ValTV = TypeVar("ValTV", bound=SeriesVal)
 DataTV = TypeVar("DataTV")

@@ -45,7 +45,7 @@ class FileType(enum.Enum):
 
 class FileComposite(abc.ABC):
     """
-    Composite class defining behaviour of neptune.new.types.atoms.file.File
+    Composite class defining behaviour of neptune.types.atoms.file.File
     """
 
     file_type: FileType = None

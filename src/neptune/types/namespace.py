@@ -13,21 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Value"]
+__all__ = ["Namespace"]
 
-import abc
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     TypeVar,
 )
 
+from neptune.types.value import Value
+
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
-class Value:
-    @abc.abstractmethod
+@dataclass
+class Namespace(Value):
+
+    value: dict
+
+    def __init__(self, value):
+        self.value = value
+
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+        return visitor.visit_namespace(self)
+
+    def __str__(self):
+        return "Namespace({})".format(str(self.value))

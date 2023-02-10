@@ -22,7 +22,7 @@ from neptune.attributes.atoms.atom import Atom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import CopyAttribute
 from neptune.internal.utils.paths import parse_path
-from neptune.new.types.value_copy import ValueCopy
+from neptune.types.value_copy import ValueCopy
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

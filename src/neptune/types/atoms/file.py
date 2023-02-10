@@ -44,10 +44,10 @@ from neptune.internal.utils.images import (
     is_pil_image,
     is_plotly_figure,
 )
-from neptune.new.types.atoms.atom import Atom
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
@@ -185,7 +185,7 @@ class File(Atom):
 
         Examples:
             >>> import neptune.new as neptune
-            >>> from neptune.new.types import File
+            >>> from neptune.types import File
             >>> run = neptune.init_run()
 
             Convert NumPy array to File value object and upload it
@@ -226,7 +226,7 @@ class File(Atom):
 
         Examples:
             >>> import neptune.new as neptune
-            >>> from neptune.new.types import File
+            >>> from neptune.types import File
             >>> run = neptune.init_run()
 
             Convert Pandas DataFrame to File value object and upload it
@@ -266,7 +266,7 @@ class File(Atom):
 
         Examples:
             >>> import neptune.new as neptune
-            >>> from neptune.new.types import File
+            >>> from neptune.types import File
             >>> run = neptune.init_run()
 
             Pickle model object and upload it

@@ -43,7 +43,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import Model
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 
 @deprecated_parameter(deprecated_kwarg_name="model", required_kwarg_name="with_id")

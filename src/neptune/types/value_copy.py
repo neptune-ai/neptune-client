@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Float"]
+__all__ = ["ValueCopy"]
 
 from dataclasses import dataclass
 from typing import (
@@ -21,28 +21,31 @@ from typing import (
     TypeVar,
 )
 
-from neptune.internal.utils.stringify_value import extract_if_stringify_value
-from neptune.new.types.atoms.atom import Atom
+from neptune.internal.utils.paths import parse_path
+from neptune.types.value import Value
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.metadata_containers import Handler
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class Float(Atom):
+class ValueCopy(Value):
 
-    value: float
+    source_handler: "Handler"
 
-    def __init__(self, value):
-        self.value = float(extract_if_stringify_value(value))
+    def __init__(self, source_handler: "Handler"):
+        self.source_handler = source_handler
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_float(self)
+        source_path = self.source_handler._path
+        source_attr = self.source_handler._container.get_attribute(source_path)
+        if source_attr and source_attr.supports_copy:
+            return visitor.copy_value(source_type=type(source_attr), source_path=parse_path(source_path))
+        else:
+            raise Exception(f"{type(source_attr).__name__} doesn't support copying")
 
     def __str__(self):
-        return "Float({})".format(str(self.value))
-
-    def __float__(self):
-        return self.value
+        return "Copy({})".format(str(self.source_handler))

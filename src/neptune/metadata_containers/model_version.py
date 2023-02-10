@@ -20,7 +20,7 @@ from neptune.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.metadata_containers import MetadataContainer
-from neptune.new.types.model_version_stage import ModelVersionStage
+from neptune.types.model_version_stage import ModelVersionStage
 
 
 class ModelVersion(MetadataContainer):

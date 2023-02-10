@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Integer"]
+__all__ = ["Float"]
 
 from dataclasses import dataclass
 from typing import (
@@ -22,27 +22,27 @@ from typing import (
 )
 
 from neptune.internal.utils.stringify_value import extract_if_stringify_value
-from neptune.new.types.atoms.atom import Atom
+from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
-    from neptune.new.types.value_visitor import ValueVisitor
+    from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 @dataclass
-class Integer(Atom):
+class Float(Atom):
 
-    value: int
+    value: float
 
     def __init__(self, value):
-        self.value = int(extract_if_stringify_value(value))
+        self.value = float(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        return visitor.visit_integer(self)
+        return visitor.visit_float(self)
 
     def __str__(self):
-        return "Integer({})".format(str(self.value))
+        return "Float({})".format(str(self.value))
 
-    def __int__(self):
+    def __float__(self):
         return self.value

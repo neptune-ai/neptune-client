@@ -33,7 +33,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.utils.deprecation import deprecated
 from neptune.metadata_containers import MetadataContainer
-from neptune.new.types.mode import Mode
+from neptune.types.mode import Mode
 
 
 class Run(MetadataContainer):

@@ -20,7 +20,7 @@ from typing import Optional
 from neptune.attributes.atoms.atom import Atom
 from neptune.internal.operation import UploadFile
 from neptune.internal.utils import verify_type
-from neptune.new.types.atoms.file import File as FileVal
+from neptune.types.atoms.file import File as FileVal
 
 
 class File(Atom):

@@ -64,9 +64,9 @@ from neptune.new.exceptions import (
     NeptuneCannotChangeStageManually,
     NeptuneUserApiInputException,
 )
-from neptune.new.types.atoms.file import File as FileVal
-from neptune.new.types.type_casting import cast_value_for_extend
-from neptune.new.types.value_copy import ValueCopy
+from neptune.types.atoms.file import File as FileVal
+from neptune.types.type_casting import cast_value_for_extend
+from neptune.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
@@ -238,7 +238,7 @@ class Handler:
 
             Explicitely create File value object
 
-            >>> from neptune.new.types import File
+            >>> from neptune.types import File
             >>> run["dataset/data_sample"].upload(File("sample_data.csv"))
 
         You may also want to check `upload docs page`_.

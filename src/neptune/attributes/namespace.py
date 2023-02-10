@@ -40,7 +40,7 @@ from neptune.internal.utils.paths import (
     parse_path,
     path_to_str,
 )
-from neptune.new.types.namespace import Namespace as NamespaceVal
+from neptune.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
