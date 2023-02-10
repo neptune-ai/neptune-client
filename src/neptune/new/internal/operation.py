@@ -35,6 +35,7 @@ from neptune.common.exceptions import (
 )
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.types.file_types import FileType
 from neptune.new.types.atoms.file import File
 
@@ -60,7 +61,7 @@ class Operation(abc.ABC):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass
 
-    def clean(self, upload_path: Path):
+    def clean(self, operation_storage: OperationStorage):
         pass
 
     def to_dict(self) -> dict:
@@ -209,9 +210,9 @@ class UploadFile(Operation):
             raise ValueError(f"Unexpected FileType: {value.file_type}")
         return operation
 
-    def clean(self, upload_path: Path):
+    def clean(self, operation_storage: OperationStorage):
         if self.clean_after_upload or self.tmp_file_name:
-            os.remove(self.get_absolute_path(upload_path))
+            os.remove(self.get_absolute_path(operation_storage))
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_upload_file(self)
@@ -242,11 +243,11 @@ class UploadFile(Operation):
         )
         return tmp_file_name
 
-    def get_absolute_path(self, upload_path: Path) -> str:
+    def get_absolute_path(self, operation_storage: OperationStorage) -> str:
         if self.file_path:
             return self.file_path
         elif self.tmp_file_name:
-            return str(upload_path / self.tmp_file_name)
+            return str(operation_storage.upload_path / self.tmp_file_name)
 
         raise NeptuneException("Expected 'file_path' or 'tmp_file_name' to be filled.")
 

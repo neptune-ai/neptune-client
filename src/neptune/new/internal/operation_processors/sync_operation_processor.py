@@ -49,7 +49,7 @@ class SyncOperationProcessor(OperationProcessor):
             container_id=self._container_id,
             container_type=self._container_type,
             operations=[op],
-            upload_path=self._operation_storage.upload_path,
+            operation_storage=self._operation_storage,
         )
         if errors:
             raise errors[0]

@@ -20,7 +20,6 @@ import logging
 import os
 import re
 import typing
-from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -131,6 +130,7 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.new.internal.utils.paths import path_to_str
@@ -444,7 +444,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
-        upload_path: Path,
+        operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
         errors = []
 
@@ -468,7 +468,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 container_id=container_id,
                 container_type=container_type,
                 upload_operations=preprocessed_operations.upload_operations,
-                upload_path=upload_path,
+                operation_storage=operation_storage,
             )
         )
 
@@ -493,7 +493,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             assign_artifact_operations,
             preprocessed_operations.other_operations,
         ):
-            op.clean(upload_path=upload_path)
+            op.clean(operation_storage=operation_storage)
 
         return (
             operations_preprocessor.processed_ops_count + dropped_count,
@@ -505,7 +505,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         upload_operations: List[Operation],
-        upload_path: Path,
+        operation_storage: OperationStorage,
     ) -> List[NeptuneException]:
         errors = list()
 
@@ -526,7 +526,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
                     attribute=path_to_str(op.path),
-                    source=op.get_absolute_path(upload_path),
+                    source=op.get_absolute_path(operation_storage),
                     ext=op.ext,
                     multipart_config=multipart_config,
                 )
@@ -564,11 +564,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         upload_operations: List[Operation],
-        upload_path: Path,
+        operation_storage: OperationStorage,
     ) -> List[NeptuneException]:
         while True:
             try:
-                return self._execute_upload_operations(container_id, container_type, upload_operations, upload_path)
+                return self._execute_upload_operations(
+                    container_id, container_type, upload_operations, operation_storage
+                )
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex

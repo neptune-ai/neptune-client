@@ -256,7 +256,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     container_id=self._processor._container_id,
                     container_type=self._processor._container_type,
                     operations=batch,
-                    upload_path=self._processor._operation_storage.upload_path,
+                    operation_storage=self._processor._operation_storage,
                 )
                 version_to_ack += processed_count
                 batch = batch[processed_count:]

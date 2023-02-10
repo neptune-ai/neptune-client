@@ -81,7 +81,7 @@ class SyncRunner(AbstractBackendRunner):
         container_id: UniqueId,
         container_type: ContainerType,
     ) -> None:
-        operation_storage = OperationStorage(str(execution_path))
+        operation_storage = OperationStorage(execution_path)
         with DiskQueue(
             dir_path=operation_storage.data_path,
             to_dict=lambda x: x.to_dict(),
@@ -104,7 +104,7 @@ class SyncRunner(AbstractBackendRunner):
                             container_id=container_id,
                             container_type=container_type,
                             operations=batch,
-                            upload_path=operation_storage.upload_path,
+                            operation_storage=operation_storage,
                         )
                         version_to_ack += processed_count
                         batch = batch[processed_count:]

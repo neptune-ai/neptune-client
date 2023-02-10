@@ -16,7 +16,6 @@
 import socket
 import unittest
 import uuid
-from pathlib import Path
 from unittest.mock import call
 
 from bravado.exception import (
@@ -58,6 +57,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
 )
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.utils import base64_encode
 from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.unit.neptune.new.utils import response_mock
@@ -87,7 +87,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         create_artifacts_client.cache_clear()
 
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
-        self.dummy_upload_path = Path("/dummy")
+        self.dummy_operation_storage = OperationStorage("./dummy_storage")
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -138,7 +138,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             file_path="other/file/path.txt",
                         ),
                     ],
-                    upload_path=self.dummy_upload_path,
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # then
@@ -253,7 +253,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             file_path="/path/to/some_image.jpeg",
                         ),
                     ],
-                    upload_path=self.dummy_upload_path,
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # then
@@ -336,7 +336,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             entries=[("/path/to/file2", None)],
                         ),
                     ],
-                    upload_path=self.dummy_upload_path,
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # then
@@ -428,7 +428,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             entries=[("/path/to/file2", None)],
                         ),
                     ],
-                    upload_path=self.dummy_upload_path,
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # then
@@ -556,7 +556,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         operations=[
                             LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
                         ],
-                        upload_path=self.dummy_upload_path,
+                        operation_storage=self.dummy_operation_storage,
                     )
 
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -581,5 +581,5 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         operations=[
                             LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
                         ],
-                        upload_path=self.dummy_upload_path,
+                        operation_storage=self.dummy_operation_storage,
                     )

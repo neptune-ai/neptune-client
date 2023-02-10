@@ -16,7 +16,6 @@
 __all__ = ["NeptuneBackend"]
 
 import abc
-from pathlib import Path
 from typing import (
     Any,
     Iterable,
@@ -56,6 +55,7 @@ from neptune.new.internal.id_formats import (
     UniqueId,
 )
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 
@@ -139,7 +139,7 @@ class NeptuneBackend:
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
-        upload_path: Path,
+        operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
         pass
 
