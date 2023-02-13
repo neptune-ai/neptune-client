@@ -20,7 +20,6 @@ from datetime import datetime
 from neptune import (
     ANONYMOUS,
     Run,
-    init,
     init_model,
     init_model_version,
     init_project,
@@ -62,9 +61,6 @@ class TestExperiment(unittest.TestCase):
         kwargs = {"mode": "debug"}
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
-
-        with init(**kwargs) as run:
-            yield run
 
         with init_run(**kwargs) as run:
             yield run

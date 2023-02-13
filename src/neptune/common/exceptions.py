@@ -96,7 +96,7 @@ There are two options to add it:
     - set as an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
+Pass the token to the {bold}init_run(){end} function via the {bold}api_token{end} argument:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
@@ -110,7 +110,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
+and skip the {bold}api_token{end} argument of the {bold}init_run(){end} function:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs page:

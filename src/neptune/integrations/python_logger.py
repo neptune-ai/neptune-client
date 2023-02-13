@@ -31,7 +31,7 @@ class NeptuneHandler(logging.Handler):
     """Handler that sends the log records created by the logger to Neptune
 
     Args:
-        run (Run): An existing run reference (as returned by `neptune.init`)
+        run (Run): An existing run reference (as returned by `neptune.init_run`)
             Logger will send messages as a `StringSeries` field on this run.
         level (int, optional): Log level of the handler. Defaults to `logging.NOTSET`,
             which logs everything that matches logger's level.
