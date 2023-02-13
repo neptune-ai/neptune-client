@@ -369,7 +369,7 @@ There are two options two add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass it to the {bold}init(){end} method via the {bold}project{end} argument:
+Pass it to the {bold}init_run(){end} function via the {bold}project{end} argument:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
@@ -383,7 +383,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
-and skip the {bold}project{end} argument of the {bold}init(){end} method:
+and skip the {bold}project{end} argument of the {bold}init_run(){end} function:
     {python}neptune.init_run(){end}
 
 You may also want to check the following docs pages:
@@ -490,7 +490,7 @@ There are two options to add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
+Pass the token to the {bold}init_run(){end} function via the {bold}api_token{end} argument:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
@@ -504,7 +504,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
+and skip the {bold}api_token{end} argument of the {bold}init_run(){end} function:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
@@ -689,7 +689,7 @@ The Neptune client library was not able to resolve hostname {underline}{host}{en
 What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer is supposed to be using a proxy to access the internet.
-      If so, you may want to use the {python}proxies{end} parameter of the {python}init(){end} method.
+      If so, you may want to use the {python}proxies{end} parameter of the {python}init_run(){end} function.
       See https://docs.neptune.ai/api/universal/#proxies
       and https://requests.readthedocs.io/en/latest/user/advanced/#proxies
     - Check the status of Neptune services: https://status.neptune.ai/
