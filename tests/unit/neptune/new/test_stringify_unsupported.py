@@ -104,7 +104,7 @@ class TestStringifyUnsupported:
             run["stringified"] = stringify_unsupported(values)
 
         with assert_no_warnings():
-            run["regular"] = [str(Obj()), str(Obj()), str(Obj())]
+            run["regular"] = repr([Obj(), Obj(), Obj()])
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 

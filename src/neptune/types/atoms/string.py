@@ -18,10 +18,16 @@ __all__ = ["String"]
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    Optional,
     TypeVar,
+    Union,
 )
 
-from neptune.internal.utils import is_stringify_value
+from neptune.internal.utils import (
+    is_stringify_value,
+    verify_type,
+)
+from neptune.internal.utils.stringify_value import StringifyValue
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -35,11 +41,13 @@ class String(Atom):
 
     value: str
 
-    def __init__(self, value):
+    def __init__(self, value: Optional[Union[str, StringifyValue]]):
+        verify_type("value", value, (str, type(None), StringifyValue))
+
         self.value = str(value.value) if is_stringify_value(value) else value
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "String({})".format(str(self.value))
