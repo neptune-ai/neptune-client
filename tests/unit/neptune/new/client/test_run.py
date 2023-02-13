@@ -20,8 +20,6 @@ from mock import patch
 
 from neptune import (
     ANONYMOUS,
-    Run,
-    get_last_run,
     init_run,
 )
 from neptune.attributes.atoms import String
@@ -30,10 +28,7 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import (
-    MissingFieldException,
-    NeptuneUninitializedException,
-)
+from neptune.exceptions import MissingFieldException
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -162,18 +157,3 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
-
-    def test_last_exp_is_raising_exception_when_non_initialized(self):
-        # given uninitialized run
-        Run.last_run = None
-
-        # expect: raises NeptuneUninitializedException
-        with self.assertRaises(NeptuneUninitializedException):
-            get_last_run()
-
-    def test_last_exp_is_the_latest_initialized(self):
-        # given two initialized runs
-        with init_run() as exp1, init_run() as exp2:
-            # expect: `neptune.latest_run` to be the latest initialized one
-            self.assertIsNot(exp1, get_last_run())
-            self.assertIs(exp2, get_last_run())
