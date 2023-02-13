@@ -30,7 +30,7 @@ class File(Atom):
         operation = UploadFile.of_file(
             value=value,
             attribute_path=self._path,
-            upload_path=self._container._op_processor._operation_storage.upload_path,
+            operation_storage=self._container._op_processor._operation_storage,
         )
 
         with self._container.lock():

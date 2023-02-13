@@ -17,7 +17,6 @@ import abc
 import os
 from dataclasses import dataclass
 from datetime import datetime
-from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -195,7 +194,7 @@ class UploadFile(Operation):
     clean_after_upload: bool = False
 
     @classmethod
-    def of_file(cls, value: File, attribute_path: List[str], upload_path: Path):
+    def of_file(cls, value: File, attribute_path: List[str], operation_storage: OperationStorage):
         if value.file_type is FileType.LOCAL_FILE:
             operation = UploadFile(
                 path=attribute_path,
@@ -204,7 +203,7 @@ class UploadFile(Operation):
             )
         elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
             tmp_file_name = cls.get_tmp_file_name(attribute_path, value.extension)
-            value._save(upload_path / tmp_file_name)
+            value._save(operation_storage.upload_path / tmp_file_name)
             operation = UploadFile(path=attribute_path, ext=value.extension, tmp_file_name=tmp_file_name)
         else:
             raise ValueError(f"Unexpected FileType: {value.file_type}")
