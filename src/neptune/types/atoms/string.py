@@ -21,11 +21,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.common.deprecation import warn_once
-from neptune.internal.utils import (
-    is_string,
-    is_stringify_value,
-)
+from neptune.internal.utils import is_stringify_value
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -40,17 +36,7 @@ class String(Atom):
     value: str
 
     def __init__(self, value):
-        if is_stringify_value(value):
-            value = str(value.value)
-
-        if not is_string(value):
-            warn_once(
-                message="The object you're logging will be implicitly cast to a string."
-                " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `String(str(object))` or `String(repr(object))` instead."
-            )
-
-        self.value = str(value)
+        self.value = str(value.value) if is_stringify_value(value) else value
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string(self)

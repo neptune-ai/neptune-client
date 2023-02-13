@@ -220,21 +220,9 @@ class TestSeries(unittest.TestCase):
 
     def test_log_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            dict_value = {"key-a": "value-a", "key-b": "value-b"}
+            dict_value = str({"key-a": "value-a", "key-b": "value-b"})
             exp["some/num/val"].log(dict_value)
             self.assertEqual(exp["some"]["num"]["val"].fetch_last(), str(dict_value))
-
-    def test_log_complex_input(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["train/listOfDicts"].log([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])
-            exp["train/listOfListsOfDicts"].log(
-                [[{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}], [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}]]
-            )
-
-            self.assertEqual(exp["train"]["listOfDicts"].fetch_last(), "{'1a': 2, '1b': 2}")
-            self.assertEqual(
-                exp["train"]["listOfListsOfDicts"].fetch_last(), "[{'2a': 21, '2b': 21}, {'2a': 22, '2b': 22}]"
-            )
 
     def test_append(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -319,29 +307,6 @@ class TestSeries(unittest.TestCase):
             self.assertEqual(exp["some"]["num"]["val"]["key-a"].fetch_last(), "value-aa")
             self.assertEqual(exp["some"]["num"]["val"]["key-b"].fetch_last(), "value-bb")
             self.assertEqual(exp["some"]["num"]["val"]["key-c"].fetch_last(), "ccc")
-
-    def test_extend_dict_in_list(self):
-        """We expect that everything which is inside Collection is mapped to atoms"""
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["train/listOfDicts"].extend([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])  # inside list -> mapped to str
-            exp["train/listOfDictOfDicts"].extend(
-                [
-                    {"key-a": {"a1": 11, "a2": 22}},  # inside list -> mapped to str
-                    {"key-b": {"b1": 33, "b2": 44}},
-                    {"key-a": {"xx": 11, "yy": 22}},
-                ]
-            )
-            exp["train/listOfListsOfDicts"].extend(
-                [
-                    [{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}],  # inside list -> mapped to str
-                    [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}],
-                ]
-            )
-            self.assertEqual(exp["train"]["listOfDicts"].fetch_last(), "{'1a': 2, '1b': 2}")
-            self.assertEqual(exp["train"]["listOfDictOfDicts"].fetch_last(), "{'key-a': {'xx': 11, 'yy': 22}}")
-            self.assertEqual(
-                exp["train"]["listOfListsOfDicts"].fetch_last(), "[{'2a': 21, '2b': 21}, {'2a': 22, '2b': 22}]"
-            )
 
     def test_extend_nested(self):
         """We expect that we are able to log arbitrary tre structure"""
@@ -500,7 +465,7 @@ class TestNamespace(unittest.TestCase):
     def test_argparse_namespace(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = argparse.Namespace(
-                foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55)
+                foo="bar", baz=42, nested=argparse.Namespace(nested_attr=str([1, 2, 3]), num=55)
             )
             self.assertEqual(exp["params/foo"].fetch(), "bar")
             self.assertEqual(exp["params/baz"].fetch(), 42)
@@ -698,34 +663,6 @@ class TestOtherBehaviour(unittest.TestCase):
             with self.assertRaises(ValueError):
                 exp["attr"].extend([4, "234a"])
 
-    def test_string_like_types(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["attr1"] = "234"
-            exp["attr1"] = self.FloatLike(12356)
-            self.assertEqual(exp["attr1"].fetch(), "TestOtherBehaviour.FloatLike(value=12356)")
-
-            exp["attr2"].log("xxx")
-            exp["attr2"].log(["345", self.FloatLike(34), 4, 13.0])
-            self.assertEqual(exp["attr2"].fetch_last(), "13.0")
-
-    def test_append_string_like_types(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["attr1"] = "234"
-            exp["attr1"] = self.FloatLike(12356)
-            self.assertEqual(exp["attr1"].fetch(), "TestOtherBehaviour.FloatLike(value=12356)")
-            exp["attr2"].append("xxx")
-            exp["attr2"].append("345")
-            exp["attr2"].append(self.FloatLike(34))
-            exp["attr2"].append(4)
-            exp["attr2"].append(13.0)
-            self.assertEqual(exp["attr2"].fetch_last(), "13.0")
-
-    def test_extend_string_like_types(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["attr"].extend(["kebab"])
-            exp["attr"].extend(["345", self.FloatLike(34), 4, 13.0])
-            self.assertEqual(exp["attr"].fetch_last(), "13.0")
-
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {
@@ -743,25 +680,12 @@ class TestOtherBehaviour(unittest.TestCase):
     def test_convertable_to_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = argparse.Namespace(
-                foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55)
+                foo="bar", baz=42, nested=argparse.Namespace(nested_attr=str([1, 2, 3]), num=55)
             )
             self.assertEqual(exp["params/foo"].fetch(), "bar")
             self.assertEqual(exp["params/baz"].fetch(), 42)
             self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
             self.assertEqual(exp["params/nested/num"].fetch(), 55)
-
-    def test_object(self):
-        class Dog:
-            def __init__(self, name, fierceness):
-                self.name = name
-                self.fierceness = fierceness
-
-            def __str__(self):
-                return f"{self.name} goes " + "Woof! " * self.fierceness
-
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["burek"] = Dog("Burek", 3)
-            self.assertEqual(exp["burek"].fetch(), "Burek goes Woof! Woof! Woof! ")
 
     def test_representation(self):
         with init_run(mode="debug", flush_period=0.5) as exp:

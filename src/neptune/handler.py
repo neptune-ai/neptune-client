@@ -38,10 +38,6 @@ from neptune.attributes.series import FileSeries
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.attributes.series.string_series import StringSeries
 from neptune.attributes.sets.string_set import StringSet
-from neptune.common.deprecation import warn_once
-
-# backwards compatibility
-from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
@@ -54,7 +50,6 @@ from neptune.internal.utils import (
     is_float,
     is_float_like,
     is_string,
-    is_string_like,
     is_stringify_value,
     verify_collection_type,
     verify_type,
@@ -329,15 +324,7 @@ class Handler:
                     attr = FileSeries(self._container, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
-                elif is_string_like(first_value):
-                    if not from_stringify_value:
-                        warn_once(
-                            message="The object you're logging will be implicitly cast to a string."
-                            " We'll end support of this behavior in `neptune-client==1.0.0`."
-                            " To log the object as a string, use `.log(str(object))` or"
-                            " `.log(stringify_unsupported(collection))` for collections and dictionaries."
-                            " For details, see https://docs.neptune.ai/setup/neptune-client_1-0_release_changes"
-                        )
+                elif from_stringify_value:
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))

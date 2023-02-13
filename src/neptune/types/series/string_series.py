@@ -36,10 +36,7 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 def extract_value(value: Any) -> str:
-    if is_stringify_value(value):
-        value = str(value.value)
-
-    return str(value)
+    return str(value.value) if is_stringify_value(value) else value
 
 
 class StringSeries(Series):

@@ -67,7 +67,7 @@ class NeptuneHandler(logging.Handler):
         self._logger = Logger(run, path)
         self._thread_local = threading.local()
 
-        self._run[INTEGRATION_VERSION_KEY] = neptune_client_version
+        self._run[INTEGRATION_VERSION_KEY] = str(neptune_client_version)
 
     def emit(self, record: logging.LogRecord) -> None:
         if not hasattr(self._thread_local, "inside_write"):

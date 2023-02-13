@@ -17,11 +17,11 @@ from contextlib import contextmanager
 
 from pytest import (
     fixture,
+    raises,
     warns,
 )
 
 from neptune import init_run
-from neptune.common.deprecation import NeptuneDeprecationWarning
 from neptune.types import (
     Boolean,
     String,
@@ -38,8 +38,9 @@ class Obj:
 
 
 @contextmanager
-def assert_deprecation_warning():
-    yield warns(expected_warning=NeptuneDeprecationWarning)
+def assert_unsupported_error():
+    with raises(TypeError):
+        yield
 
 
 @contextmanager
@@ -58,255 +59,312 @@ def run():
 
 class TestStringifyUnsupported:
     def test_assign__custom_object(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = Obj()
+        with assert_unsupported_error():
+            run["unsupported"] = Obj()
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(Obj())
+            run["stringified"] = stringify_unsupported(Obj())
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = str(Obj())
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__custom_object__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = Obj()
-            run["with_warning"] = Obj(name="b")
+        with assert_unsupported_error():
+            run["unsupported"] = Obj()
+            run["unsupported"] = Obj(name="b")
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(Obj())
-            run["no_warning"] = stringify_unsupported(Obj(name="b"))
+            run["stringified"] = stringify_unsupported(Obj())
+            run["stringified"] = stringify_unsupported(Obj(name="b"))
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = str(Obj())
+            run["regular"] = str(Obj(name="b"))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__float(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = 4.0
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported(4.0)
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(4.0)
+            run["regular"] = 4.0
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__array(self, run):
         values = [Obj(), Obj(), Obj()]
 
-        with assert_deprecation_warning():
-            run["with_warning"] = values
+        with assert_unsupported_error():
+            run["unsupported"] = values
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(values)
+            run["stringified"] = stringify_unsupported(values)
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = [str(Obj()), str(Obj()), str(Obj())]
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__array_inside_dict(self, run):
         values = [Obj(), Obj(), Obj()]
 
-        with assert_deprecation_warning():
-            run["with_warning"] = {"array": values}
+        with assert_unsupported_error():
+            run["unsupported"] = {"array": values}
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported({"array": values})
+            run["stringified"] = stringify_unsupported({"array": values})
 
-        assert run["with_warning"]["array"].fetch() == run["no_warning"]["array"].fetch()
+        with assert_no_warnings():
+            run["regular"] = {"array": str([str(Obj()), str(Obj()), str(Obj())])}
+
+        assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
 
     def test_assign__float__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = 4.0
-            run["with_warning"] = 5.3
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported(4.0)
+            run["stringified"] = stringify_unsupported(5.3)
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(4.0)
-            run["no_warning"] = stringify_unsupported(5.3)
+            run["regular"] = 4.0
+            run["regular"] = 5.3
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String("Nothing to be worry about")
+        with assert_no_warnings():
+            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported("Nothing to be worry about"))
+            run["regular"] = String("Nothing to be worry about")
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String("Nothing to be worry about")
-            run["with_warning"] = String("... or maybe")
+        with assert_no_warnings():
+            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
+            run["stringified"] = String(stringify_unsupported("... or maybe"))
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported("Nothing to be worry about"))
-            run["no_warning"] = String(stringify_unsupported("... or maybe"))
+            run["regular"] = String("Nothing to be worry about")
+            run["regular"] = String("... or maybe")
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__custom_object(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String(Obj())
+        with assert_unsupported_error():
+            run["unsupported"] = String(Obj())
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported(Obj()))
+            run["stringified"] = String(stringify_unsupported(Obj()))
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = String(str(Obj()))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__custom_object__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String(Obj())
-            run["with_warning"] = String(Obj(name="B"))
+        with assert_unsupported_error():
+            run["unsupported"] = String(Obj())
+            run["unsupported"] = String(Obj(name="B"))
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported(Obj()))
-            run["no_warning"] = String(stringify_unsupported(Obj(name="B")))
+            run["stringified"] = String(stringify_unsupported(Obj()))
+            run["stringified"] = String(stringify_unsupported(Obj(name="B")))
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = String(str(Obj()))
+            run["regular"] = String(str(Obj(name="B")))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__float(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String(4.0)
+        with assert_unsupported_error():
+            run["unsupported"] = String(4.0)
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported(4.0))
+            run["stringified"] = String(stringify_unsupported(4.0))
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = str(4.0)
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__float__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = String(4.0)
-            run["with_warning"] = String(5.3)
+        with assert_unsupported_error():
+            run["unsupported"] = String(4.0)
+            run["unsupported"] = String(5.3)
 
         with assert_no_warnings():
-            run["no_warning"] = String(stringify_unsupported(4.0))
-            run["no_warning"] = String(stringify_unsupported(5.3))
+            run["stringified"] = String(stringify_unsupported(4.0))
+            run["stringified"] = String(stringify_unsupported(5.3))
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = String(str(4.0))
+            run["regular"] = String(str(5.3))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__tuple(self, run):
         values = (Obj(), Obj(), Obj())
 
-        with assert_deprecation_warning():
-            run["with_warning"] = values
+        with assert_unsupported_error():
+            run["unsupported"] = values
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(values)
+            run["stringified"] = stringify_unsupported(values)
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = str((str(Obj()), str(Obj()), str(Obj())))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__tuple_inside_dict(self, run):
         values = (Obj(), Obj(), Obj())
 
-        with assert_deprecation_warning():
-            run["with_warning"] = {"tuple": values}
+        with assert_unsupported_error():
+            run["unsupported"] = {"tuple": values}
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported({"tuple": values})
+            run["stringified"] = stringify_unsupported({"tuple": values})
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = {"tuple": str((str(Obj()), str(Obj()), str(Obj())))}
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__dict(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+        with assert_unsupported_error():
+            run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(
+            run["stringified"] = stringify_unsupported(
                 {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
             )
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__dict__reassign(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
-            run["with_warning"] = {"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}}
+        with assert_unsupported_error():
+            run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            run["unsupported"] = {"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}}
 
         with assert_no_warnings():
-            run["no_warning"] = stringify_unsupported(
+            run["stringified"] = stringify_unsupported(
                 {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
             )
-            run["no_warning"] = stringify_unsupported({"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}})
+            run["stringified"] = stringify_unsupported({"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}})
 
-        assert run["with_warning"].fetch() == run["no_warning"].fetch()
+        with assert_no_warnings():
+            run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            run["regular"] = {"a": str(Obj(name="B")), "d": 12, "e": {"f": Boolean(False)}}
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_log__custom_object(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].log(Obj())
+        with assert_unsupported_error():
+            run["unsupported"].log(Obj())
 
         with assert_no_warnings():
-            run["no_warning"].log(stringify_unsupported(Obj()))
+            run["stringified"].log(stringify_unsupported(Obj()))
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        with assert_no_warnings():
+            run["regular"].log(str(Obj()))
+
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_log__list_of_custom_objects(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
-            run["with_warning"].log(Obj())
-            run["with_warning"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
+        with assert_unsupported_error():
+            run["unsupported"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
+            run["unsupported"].log(Obj())
+            run["unsupported"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
 
         with assert_no_warnings():
-            run["no_warning"].log(stringify_unsupported([Obj(), Obj(), Obj(), Obj(), Obj()]))
-            run["no_warning"].log(stringify_unsupported(Obj()))
-            run["no_warning"].log(stringify_unsupported([Obj(), Obj(), Obj(), Obj(), Obj()]))
+            run["stringified"].log(stringify_unsupported([Obj(), Obj(), Obj(), Obj(), Obj()]))
+            run["stringified"].log(stringify_unsupported(Obj()))
+            run["stringified"].log(stringify_unsupported([Obj(), Obj(), Obj(), Obj(), Obj()]))
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        with assert_no_warnings():
+            run["regular"].log([str(Obj()), str(Obj()), str(Obj()), str(Obj()), str(Obj())])
+            run["regular"].log(str(Obj()))
+            run["regular"].log([str(Obj()), str(Obj()), str(Obj()), str(Obj()), str(Obj())])
+
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_log__float(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].log([1.0, 2.0, 3.0, 4.0, 5.0])
+        with assert_no_warnings():
+            run["stringified"].log(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
 
         with assert_no_warnings():
-            run["no_warning"].log(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
+            run["regular"].log([1.0, 2.0, 3.0, 4.0, 5.0])
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_extend__float(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].extend([1.0, 2.0, 3.0, 4.0, 5.0])
+        with assert_no_warnings():
+            run["stringified"].extend(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
 
         with assert_no_warnings():
-            run["no_warning"].extend(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
+            run["regular"].extend([1.0, 2.0, 3.0, 4.0, 5.0])
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_extend__dict(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].extend({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
+        with assert_unsupported_error():
+            run["unsupported"].extend({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
 
         with assert_no_warnings():
-            run["no_warning"].extend(
+            run["stringified"].extend(
                 stringify_unsupported({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
             )
 
-        assert run["with_warning/zz"].fetch_values().equals(run["no_warning/zz"].fetch_values())
-        assert run["with_warning/bb"].fetch_values().equals(run["no_warning/bb"].fetch_values())
+        with assert_no_warnings():
+            run["regular"].extend(
+                {"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [str(Obj()), str(Obj()), str(Obj()), str(Obj()), str(Obj())]}
+            )
+
+        assert run["regular/zz"].fetch_values().equals(run["stringified/zz"].fetch_values())
+        assert run["regular/bb"].fetch_values().equals(run["stringified/bb"].fetch_values())
 
     def test_append__float(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].append(1.0)
-            run["with_warning"].append(2.0)
+        with assert_no_warnings():
+            run["stringified"].append(stringify_unsupported(1.0))
+            run["stringified"].append(stringify_unsupported(2.0))
 
         with assert_no_warnings():
-            run["no_warning"].append(stringify_unsupported(1.0))
-            run["no_warning"].append(stringify_unsupported(2.0))
+            run["regular"].append(1.0)
+            run["regular"].append(2.0)
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_append__custom_object(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].append(Obj())
-            run["with_warning"].append(Obj())
+        with assert_unsupported_error():
+            run["unsupported"].append(Obj())
+            run["unsupported"].append(Obj())
 
         with assert_no_warnings():
-            run["no_warning"].append(stringify_unsupported(Obj()))
-            run["no_warning"].append(stringify_unsupported(Obj()))
+            run["stringified"].append(stringify_unsupported(Obj()))
+            run["stringified"].append(stringify_unsupported(Obj()))
 
-        assert run["with_warning"].fetch_values().equals(run["no_warning"].fetch_values())
+        with assert_no_warnings():
+            run["regular"].append(str(Obj()))
+            run["regular"].append(str(Obj()))
+
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_append__dict(self, run):
-        with assert_deprecation_warning():
-            run["with_warning"].append({"zz": 1.0})
-            run["with_warning"].append({"zz": 2.0, "bb": 3.0})
+        with assert_no_warnings():
+            run["stringified"].append(stringify_unsupported({"zz": 1.0}))
+            run["stringified"].append(stringify_unsupported({"zz": 2.0, "bb": 3.0}))
 
         with assert_no_warnings():
-            run["no_warning"].append(stringify_unsupported({"zz": 1.0}))
-            run["no_warning"].append(stringify_unsupported({"zz": 2.0, "bb": 3.0}))
+            run["regular"].append({"zz": 1.0})
+            run["regular"].append({"zz": 2.0, "bb": 3.0})
 
-        assert run["with_warning/zz"].fetch_values().equals(run["no_warning/zz"].fetch_values())
-        assert run["with_warning/bb"].fetch_values().equals(run["no_warning/bb"].fetch_values())
+        assert run["regular/zz"].fetch_values().equals(run["stringified/zz"].fetch_values())
+        assert run["regular/bb"].fetch_values().equals(run["stringified/bb"].fetch_values())
