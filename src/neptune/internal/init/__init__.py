@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 __all__ = [
-    "init",
     "init_model",
     "init_model_version",
     "init_project",
@@ -28,12 +27,6 @@ from neptune.internal.init.model import init_model
 from neptune.internal.init.model_version import init_model_version
 from neptune.internal.init.project import init_project
 from neptune.internal.init.run import init_run
-from neptune.internal.utils.deprecation import deprecated
 from neptune.types.mode import Mode
 
 RunMode = Mode
-
-
-@deprecated(alternative="init_run")
-def init(*args, **kwargs):
-    return init_run(*args, **kwargs)
