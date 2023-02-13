@@ -5,6 +5,7 @@
 - Removed `neptune.*` legacy modules ([#1206](https://github.com/neptune-ai/neptune-client/pull/1206))
 - Removed `get_project` function ([#1214](https://github.com/neptune-ai/neptune-client/pull/1214))
 - Removed `init` function ([#1216](https://github.com/neptune-ai/neptune-client/pull/1216))
+- Removed `get_last_run` function ([#1217](https://github.com/neptune-ai/neptune-client/pull/1217))
 
 ## neptune-client 0.16.18
 
