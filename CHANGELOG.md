@@ -2,6 +2,7 @@
 
 ### Fixes
 - Fix handling connection errors when refreshing oauth token ([#1204](https://github.com/neptune-ai/neptune-client/pull/1204))
+- Fix syncing offline runs with file upload ([#1211](https://github.com/neptune-ai/neptune-client/pull/1211))
 
 ## neptune-client 0.16.17
 
