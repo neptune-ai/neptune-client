@@ -33,7 +33,7 @@ class Obj:
     def __init__(self, name: str = "A"):
         self._name = name
 
-    def __str__(self):
+    def __repr__(self):
         return f"Object(name={self._name})"
 
 
@@ -118,7 +118,7 @@ class TestStringifyUnsupported:
             run["stringified"] = stringify_unsupported({"array": values})
 
         with assert_no_warnings():
-            run["regular"] = {"array": str([str(Obj()), str(Obj()), str(Obj())])}
+            run["regular"] = {"array": str([Obj(), Obj(), Obj()])}
 
         assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
 
@@ -217,7 +217,7 @@ class TestStringifyUnsupported:
             run["stringified"] = stringify_unsupported(values)
 
         with assert_no_warnings():
-            run["regular"] = str((str(Obj()), str(Obj()), str(Obj())))
+            run["regular"] = str((Obj(), Obj(), Obj()))
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
@@ -231,7 +231,7 @@ class TestStringifyUnsupported:
             run["stringified"] = stringify_unsupported({"tuple": values})
 
         with assert_no_warnings():
-            run["regular"] = {"tuple": str((str(Obj()), str(Obj()), str(Obj())))}
+            run["regular"] = {"tuple": str((Obj(), Obj(), Obj()))}
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 

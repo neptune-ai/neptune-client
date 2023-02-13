@@ -83,8 +83,8 @@ def cast_value(value: Any) -> Value:
         return Float(value)
     elif is_dict_like(value):
         return Namespace(value)
-    elif from_stringify_value or (is_collection(value) and all(is_stringify_value(elem) for elem in value)):
-        return String(repr(value))
+    elif (is_collection(value) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
+        return String(str(value))
     else:
         raise TypeError("Value of unsupported type {}".format(type(value)))
 
