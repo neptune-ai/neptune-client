@@ -42,7 +42,6 @@ __all__ = [
     "delete_artifacts",
     "log_artifact",
     "stop",
-    "get_last_run",
 ]
 
 import sys
@@ -52,7 +51,6 @@ from neptune import (
     ANONYMOUS_API_TOKEN,
     Run,
     __version__,
-    get_last_run,
     init_model,
     init_model_version,
     init_project,
