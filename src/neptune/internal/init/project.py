@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["init_project", "get_project"]
+__all__ = ["init_project"]
 
 import os
 import threading
@@ -29,10 +29,7 @@ from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.utils import verify_type
-from neptune.internal.utils.deprecation import (
-    deprecated,
-    deprecated_parameter,
-)
+from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.metadata_containers import Project
 from neptune.types.mode import Mode
 
@@ -92,42 +89,3 @@ def init_project(
 
     npt_project._startup(debug_mode=mode == Mode.DEBUG)
     return npt_project
-
-
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
-@deprecated(alternative='init_project(mode="read-only")')
-def get_project(
-    project: Optional[str] = None,
-    api_token: Optional[str] = None,
-    proxies: Optional[dict] = None,
-) -> Project:
-    """Get a project with given `name`.
-
-    Args:
-        project(str, optional): Name of a project in a form of namespace/project_name. Defaults to `None`.
-            If None, the value of `NEPTUNE_PROJECT` environment variable will be taken.
-        api_token(str, optional): User’s API token. Defaults to `None`.
-            If None, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
-            .. note::
-                It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
-                API token in plain text in your source code.
-
-    Returns:
-        ``Project``: object that can be used to interact with the project as a whole like fetching data from Runs table.
-
-    Examples:
-
-        >>> import neptune
-
-        >>> # Fetch project 'jack/sandbox'
-        ... project = neptune.get_project(project='jack/sandbox')
-
-        >>> # Fetch all Runs metadata as Pandas DataFrame
-        ... runs_table_df = project.fetch_runs_table().to_pandas()
-
-    You may also want to check `init_project docs page`_.
-
-    .. _init_project docs page:
-       https://docs.neptune.ai/api/neptune/#init_project
-    """
-    return init_project(project=project, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies)

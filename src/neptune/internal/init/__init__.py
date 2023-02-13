@@ -17,7 +17,6 @@ __all__ = [
     "init",
     "init_model",
     "init_model_version",
-    "get_project",
     "init_project",
     "init_run",
     "Mode",
@@ -27,10 +26,7 @@ __all__ = [
 
 from neptune.internal.init.model import init_model
 from neptune.internal.init.model_version import init_model_version
-from neptune.internal.init.project import (
-    get_project,
-    init_project,
-)
+from neptune.internal.init.project import init_project
 from neptune.internal.init.run import init_run
 from neptune.internal.utils.deprecation import deprecated
 from neptune.types.mode import Mode

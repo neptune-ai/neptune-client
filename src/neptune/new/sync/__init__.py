@@ -36,7 +36,6 @@ __all__ = [
     "SyncRunner",
     "get_metadata_container",
     "get_offline_dirs",
-    "get_project",
     "get_qualified_name",
     "is_container_synced_and_remove_junk",
     "iterate_containers",
@@ -66,7 +65,6 @@ from neptune.new.sync.sync import SyncRunner
 from neptune.new.sync.utils import (
     get_metadata_container,
     get_offline_dirs,
-    get_project,
     get_qualified_name,
     is_container_synced_and_remove_junk,
     iterate_containers,
