@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune-client 1.0.0
 
 ### Changes
-- Deprecate automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))
+- Disabled automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))
 - Moved modules from `neptune.new` to `neptune` with compatibility imports and marked `neptune.new` as deprecated ([#1213](https://github.com/neptune-ai/neptune-client/pull/1213))
 - Removed `neptune.*` legacy modules ([#1206](https://github.com/neptune-ai/neptune-client/pull/1206))
 
