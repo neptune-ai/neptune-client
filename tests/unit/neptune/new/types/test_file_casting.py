@@ -19,7 +19,7 @@ import numpy
 from bokeh.plotting import figure
 from PIL import Image
 
-from neptune.new.types import (
+from neptune.types import (
     Datetime,
     File,
     Float,
@@ -27,8 +27,8 @@ from neptune.new.types import (
     Integer,
     String,
 )
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.type_casting import cast_value
+from neptune.types.namespace import Namespace
+from neptune.types.type_casting import cast_value
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

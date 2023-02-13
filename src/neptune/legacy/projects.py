@@ -328,7 +328,7 @@ class Project(object):
                         then no information about git is displayed in experiment details in Neptune web application.
 
             hostname (:obj:`str`, optional, default is ``None``):
-                If ``None``, neptune automatically get `hostname` information.
+                If ``None``, neptune.legacy automatically get `hostname` information.
                 User can also set `hostname` directly by passing :obj:`str`.
 
         Returns:

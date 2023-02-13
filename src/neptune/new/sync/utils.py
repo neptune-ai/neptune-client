@@ -25,7 +25,7 @@ __all__ = [
 ]
 
 # backwards compatibility
-from neptune.new.cli.utils import (
+from neptune.cli.utils import (
     get_metadata_container,
     get_offline_dirs,
     get_project,

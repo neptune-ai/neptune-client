@@ -18,7 +18,7 @@ from mock import (
     patch,
 )
 
-from neptune.new.attributes.series.string_series import StringSeries
+from neptune.attributes.series.string_series import StringSeries
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

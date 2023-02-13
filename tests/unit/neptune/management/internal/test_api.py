@@ -19,15 +19,15 @@ from unittest.mock import call
 
 from mock import patch
 
+from neptune import ANONYMOUS
 from neptune.common.envs import API_TOKEN_ENV_NAME
+from neptune.envs import PROJECT_ENV_NAME
+from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.management import trash_objects
-from neptune.new import ANONYMOUS
-from neptune.new.envs import PROJECT_ENV_NAME
-from neptune.new.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
-@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestTrashObjects(unittest.TestCase):
     PROJECT_NAME = "organization/project"
 

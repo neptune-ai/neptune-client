@@ -33,23 +33,23 @@ __all__ = [
 ]
 
 # backwards compatibility
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import Namespace as NamespaceAttr
-from neptune.new.attributes.namespace import NamespaceBuilder
-from neptune.new.exceptions import (
+from neptune.attributes.attribute import Attribute
+from neptune.attributes.namespace import Namespace as NamespaceAttr
+from neptune.attributes.namespace import NamespaceBuilder
+from neptune.exceptions import (
     InactiveRunException,
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
 )
-from neptune.new.handler import Handler
-from neptune.new.internal.state import ContainerState as RunState
-from neptune.new.metadata_containers import Run
-from neptune.new.types import (
+from neptune.handler import Handler
+from neptune.internal.state import ContainerState as RunState
+from neptune.metadata_containers import Run
+from neptune.types import (
     Boolean,
     Integer,
 )
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.string import String
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.value import Value
+from neptune.types.atoms.datetime import Datetime
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.string import String
+from neptune.types.namespace import Namespace
+from neptune.types.value import Value

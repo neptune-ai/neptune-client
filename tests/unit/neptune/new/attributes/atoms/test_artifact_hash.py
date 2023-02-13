@@ -15,9 +15,9 @@
 #
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.artifact import Artifact
-from neptune.new.internal.operation import AssignArtifact
-from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
+from neptune.attributes.atoms.artifact import Artifact
+from neptune.internal.operation import AssignArtifact
+from neptune.types.atoms.artifact import Artifact as ArtifactVal
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

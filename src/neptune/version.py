@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2023, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["version", "__version__"]
+
 import sys
+
+from packaging.version import parse
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import (
@@ -27,7 +31,9 @@ else:
     )
 
 try:
+    # NPT-12953: Rename to `neptune`
     __version__ = version("neptune-client")
+    version = parse(__version__)
 except PackageNotFoundError:
     # package is not installed
     pass
