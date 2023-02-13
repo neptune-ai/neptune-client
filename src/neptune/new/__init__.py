@@ -64,6 +64,7 @@ from neptune import (
 )
 from neptune.attributes import *
 from neptune.cli import *
+from neptune.common.deprecation import warn_once
 from neptune.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneUninitializedException,
@@ -103,3 +104,9 @@ create_experiment = (
 
 
 sys.meta_path.append(CompatibilityImporter())
+
+warn_once(
+    message="You're importing neptune client via deprecated `neptune.new`"
+    " module and it will be removed in a future."
+    " Try to import it directly from `neptune`."
+)
