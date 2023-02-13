@@ -16,6 +16,7 @@
 
 __all__ = [
     "get_metadata_container",
+    "get_project",
     "get_qualified_name",
     "is_container_synced_and_remove_junk",
     "get_offline_dirs",
@@ -27,6 +28,7 @@ __all__ = [
 from neptune.cli.utils import (
     get_metadata_container,
     get_offline_dirs,
+    get_project,
     get_qualified_name,
     is_container_synced_and_remove_junk,
     iterate_containers,
