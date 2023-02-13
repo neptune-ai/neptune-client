@@ -15,7 +15,7 @@
 #
 import unittest
 
-from neptune.new.internal.backends.nql import (
+from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,

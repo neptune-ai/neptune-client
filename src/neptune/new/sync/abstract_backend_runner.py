@@ -17,4 +17,4 @@
 __all__ = ["AbstractBackendRunner"]
 
 # backwards compatibility
-from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
+from neptune.cli.abstract_backend_runner import AbstractBackendRunner

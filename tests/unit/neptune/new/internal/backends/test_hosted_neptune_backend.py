@@ -29,14 +29,14 @@ from mock import (
 )
 from packaging.version import Version
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     CannotResolveHostname,
     FileUploadError,
     MetadataInconsistency,
     NeptuneClientUpgradeRequiredError,
     NeptuneLimitExceedException,
 )
-from neptune.new.internal.backends.hosted_client import (
+from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
     create_artifacts_client,
@@ -45,20 +45,20 @@ from neptune.new.internal.backends.hosted_client import (
     create_leaderboard_client,
     get_client_config,
 )
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-from neptune.new.internal.backends.utils import verify_host_resolution
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.operation import (
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
+from neptune.internal.backends.utils import verify_host_resolution
+from neptune.internal.container_type import ContainerType
+from neptune.internal.credentials import Credentials
+from neptune.internal.operation import (
     AssignString,
     LogFloats,
     TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
 )
-from neptune.new.internal.utils import base64_encode
-from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin
+from neptune.internal.utils import base64_encode
+from tests.unit.neptune.backend_test_mixin import BackendTestMixin
 from tests.unit.neptune.new.utils import response_mock
 
 API_TOKEN = (
@@ -69,8 +69,8 @@ API_TOKEN = (
 credentials = Credentials.from_token(API_TOKEN)
 
 
-@patch("neptune.new.internal.backends.hosted_client.RequestsClient", new=MagicMock())
-@patch("neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
+@patch("neptune.internal.backends.hosted_client.RequestsClient", new=MagicMock())
+@patch("neptune.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
 @patch("bravado.client.SwaggerClient.from_url")
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")
@@ -87,7 +87,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
 
-    @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
@@ -216,7 +216,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     result,
                 )
 
-    @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
@@ -283,7 +283,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     any_order=True,
                 )
 
-    @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
+    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_new_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
         # given
@@ -371,7 +371,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     any_order=True,
                 )
 
-    @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
+    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
         # given
@@ -466,7 +466,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
     @patch(
-        "neptune.new.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -478,7 +478,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.new.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -493,7 +493,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self.assertTrue("minimum required version is >=0.5.14" in str(ex.exception))
 
     @patch(
-        "neptune.new.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -505,7 +505,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.new.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))

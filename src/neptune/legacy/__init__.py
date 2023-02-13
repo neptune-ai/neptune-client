@@ -148,7 +148,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackendApiClient
+                from neptune.legacy import HostedNeptuneBackendApiClient
                 neptune.init(backend=HostedNeptuneBackendApiClient(proxies=...))
 
         backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
@@ -159,7 +159,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackendApiClient
+                from neptune.legacy import HostedNeptuneBackendApiClient
                 neptune.init(backend=HostedNeptuneBackendApiClient(...))
 
             Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
@@ -167,7 +167,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import OfflineApiClient
+                from neptune.legacy import OfflineApiClient
                 neptune.init(backend=OfflineApiClient())
 
             .. note::

@@ -36,6 +36,12 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
+import neptune.exceptions as alpha_exceptions
+from neptune.attributes import constants as alpha_consts
+from neptune.attributes.constants import (
+    MONITORING_TRACEBACK_ATTRIBUTE_PATH,
+    SYSTEM_FAILED_ATTRIBUTE_PATH,
+)
 from neptune.common import exceptions as common_exceptions
 from neptune.common.exceptions import ClientHttpError
 from neptune.common.storage.storage_utils import normalize_file_name
@@ -43,6 +49,27 @@ from neptune.common.utils import (
     NoopObject,
     assure_directory_exists,
 )
+from neptune.internal import operation as alpha_operation
+from neptune.internal.backends import hosted_file_operations as alpha_hosted_file_operations
+from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.backends.operation_api_name_visitor import OperationApiNameVisitor as AlphaOperationApiNameVisitor
+from neptune.internal.backends.operation_api_object_converter import (
+    OperationApiObjectConverter as AlphaOperationApiObjectConverter,
+)
+from neptune.internal.backends.utils import handle_server_raw_response_messages
+from neptune.internal.operation import (
+    AssignBool,
+    AssignString,
+    ConfigFloatSeries,
+    LogFloats,
+    LogStrings,
+)
+from neptune.internal.utils import (
+    base64_decode,
+    base64_encode,
+)
+from neptune.internal.utils import paths as alpha_path_utils
+from neptune.internal.utils.paths import parse_path
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,
     ExperimentOperationErrors,
@@ -84,35 +111,6 @@ from neptune.legacy.model import (
     LeaderboardEntry,
 )
 from neptune.legacy.notebook import Notebook
-from neptune.new import exceptions as alpha_exceptions
-from neptune.new.attributes import constants as alpha_consts
-from neptune.new.attributes.constants import (
-    MONITORING_TRACEBACK_ATTRIBUTE_PATH,
-    SYSTEM_FAILED_ATTRIBUTE_PATH,
-)
-from neptune.new.internal import operation as alpha_operation
-from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
-from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.internal.backends.operation_api_name_visitor import (
-    OperationApiNameVisitor as AlphaOperationApiNameVisitor,
-)
-from neptune.new.internal.backends.operation_api_object_converter import (
-    OperationApiObjectConverter as AlphaOperationApiObjectConverter,
-)
-from neptune.new.internal.backends.utils import handle_server_raw_response_messages
-from neptune.new.internal.operation import (
-    AssignBool,
-    AssignString,
-    ConfigFloatSeries,
-    LogFloats,
-    LogStrings,
-)
-from neptune.new.internal.utils import (
-    base64_decode,
-    base64_encode,
-)
-from neptune.new.internal.utils import paths as alpha_path_utils
-from neptune.new.internal.utils.paths import parse_path
 
 _logger = logging.getLogger(__name__)
 

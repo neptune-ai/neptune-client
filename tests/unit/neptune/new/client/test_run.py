@@ -18,35 +18,35 @@ import unittest
 
 from mock import patch
 
-from neptune.common.utils import IS_WINDOWS
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     Run,
     get_last_run,
     init_run,
 )
-from neptune.new.attributes.atoms import String
-from neptune.new.envs import (
+from neptune.attributes.atoms import String
+from neptune.common.utils import IS_WINDOWS
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     MissingFieldException,
     NeptuneUninitializedException,
 )
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
 )
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_run
 
 AN_API_RUN = api_run()
 
 
-@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @staticmethod
     def call_init(**kwargs):
@@ -58,15 +58,15 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
         new=lambda _, container_id, expected_container_type: AN_API_RUN,
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
@@ -77,7 +77,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 self.assertEqual(
                     caplog.output,
                     [
-                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "WARNING:neptune.internal.operation_processors.read_only_operation_processor:"
                         "Client in read-only mode, nothing will be saved to server."
                     ],
                 )
@@ -86,11 +86,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
         new=lambda _, container_id, expected_container_type: AN_API_RUN,
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
     )
     def test_resume(self):
@@ -98,17 +98,17 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp._id, AN_API_RUN.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
-    @patch("neptune.new.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
-    @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
+    @patch("neptune.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
     @patch(
-        "neptune.new.internal.utils.os.path.abspath",
+        "neptune.internal.utils.os.path.abspath",
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
-    @patch("neptune.new.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
+    @patch("neptune.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
         with init_run(mode="debug") as exp:
@@ -127,7 +127,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
     @patch("neptune.vendor.lib_programname.sys.argv", ["main.py"])
-    @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
+    @patch("neptune.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         with init_run(mode="debug") as exp:
             with self.assertRaises(MissingFieldException):
@@ -145,15 +145,15 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
-    @patch("neptune.new.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
-    @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
-    @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
+    @patch("neptune.internal.utils.source_code.get_common_root", new=lambda _: None)
+    @patch("neptune.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
-        "neptune.new.internal.utils.glob",
+        "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
     )
     @patch(
-        "neptune.new.internal.utils.os.path.abspath",
+        "neptune.internal.utils.os.path.abspath",
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     def test_entrypoint_without_common_root(self):

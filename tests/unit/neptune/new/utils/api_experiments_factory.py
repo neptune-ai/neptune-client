@@ -26,9 +26,9 @@ import string
 import uuid
 from random import randint
 
-from neptune.new.internal.backends.api_model import ApiExperiment
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import (
+from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import (
     SysId,
     UniqueId,
 )

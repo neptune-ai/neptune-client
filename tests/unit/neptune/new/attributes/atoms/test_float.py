@@ -15,11 +15,11 @@
 #
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.float import (
+from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
 )
-from neptune.new.internal.operation import AssignFloat
+from neptune.internal.operation import AssignFloat
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

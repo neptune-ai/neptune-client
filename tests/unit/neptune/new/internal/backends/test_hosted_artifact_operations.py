@@ -21,10 +21,10 @@ from mock import (
     patch,
 )
 
-from neptune.new.exceptions import ArtifactUploadingError
-from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.new.internal.backends.api_model import ArtifactModel
-from neptune.new.internal.backends.hosted_artifact_operations import (
+from neptune.exceptions import ArtifactUploadingError
+from neptune.internal.artifacts.types import ArtifactFileData
+from neptune.internal.backends.api_model import ArtifactModel
+from neptune.internal.backends.hosted_artifact_operations import (
     track_to_existing_artifact,
     track_to_new_artifact,
 )
@@ -44,9 +44,9 @@ class TestHostedArtifactOperations(unittest.TestCase):
         self.project_id = str(uuid.uuid4())
         self.parent_identifier = str(uuid.uuid4())
 
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations.create_new_artifact")
+    @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
+    @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
+    @patch("neptune.internal.backends.hosted_artifact_operations.create_new_artifact")
     def test_track_to_new_artifact_calls_creation(
         self, create_new_artifact, _extract_file_list, _compute_artifact_hash
     ):
@@ -75,10 +75,10 @@ class TestHostedArtifactOperations(unittest.TestCase):
             default_request_params={},
         )
 
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations.create_new_artifact")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations.upload_artifact_files_metadata")
+    @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
+    @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
+    @patch("neptune.internal.backends.hosted_artifact_operations.create_new_artifact")
+    @patch("neptune.internal.backends.hosted_artifact_operations.upload_artifact_files_metadata")
     def test_track_to_new_artifact_calls_upload(
         self,
         upload_artifact_files_metadata,
@@ -113,8 +113,8 @@ class TestHostedArtifactOperations(unittest.TestCase):
             default_request_params={},
         )
 
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
+    @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
+    @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
     def test_track_to_new_artifact_raises_exception(self, _extract_file_list, _compute_artifact_hash):
         # given
         swagger_mock = self._get_swagger_mock()
@@ -132,9 +132,9 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 default_request_params={},
             )
 
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations.create_artifact_version")
+    @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
+    @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
+    @patch("neptune.internal.backends.hosted_artifact_operations.create_artifact_version")
     def test_track_to_existing_artifact_calls_version(
         self, create_artifact_version, _extract_file_list, _compute_artifact_hash
     ):
@@ -163,8 +163,8 @@ class TestHostedArtifactOperations(unittest.TestCase):
             default_request_params={},
         )
 
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
-    @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
+    @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
+    @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
     def test_track_to_existing_artifact_raises_exception(self, _extract_file_list, _compute_artifact_hash):
         # given
         swagger_mock = self._get_swagger_mock()

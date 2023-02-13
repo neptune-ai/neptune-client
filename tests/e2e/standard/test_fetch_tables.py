@@ -19,8 +19,8 @@ import uuid
 
 import pytest
 
-import neptune.new as neptune
-from neptune.new.metadata_containers import Model
+import neptune
+from neptune.metadata_containers import Model
 from tests.e2e.base import (
     BaseE2ETest,
     fake,

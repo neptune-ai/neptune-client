@@ -169,7 +169,7 @@ packages = [
 "Documentation" = "https://docs.neptune.ai/"
 
 [tool.poetry.scripts]
-neptune = "neptune.new.cli.__main__:main"
+neptune = "neptune.cli.__main__:main"
 
 [tool.black]
 line-length = 120

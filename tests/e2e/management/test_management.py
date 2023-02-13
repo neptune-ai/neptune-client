@@ -18,6 +18,8 @@ from typing import Dict
 
 import pytest
 
+from neptune import init_model_version
+from neptune.internal.container_type import ContainerType
 from neptune.management import (
     add_project_member,
     add_project_service_account,
@@ -34,8 +36,6 @@ from neptune.management import (
 )
 from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
-from neptune.new import init_model_version
-from neptune.new.internal.container_type import ContainerType
 from tests.e2e.base import (
     BaseE2ETest,
     fake,
