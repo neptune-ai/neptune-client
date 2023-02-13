@@ -16,7 +16,6 @@
 __all__ = [
     "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
-    "get_project",
     "init",
     "init_model",
     "init_model_version",
@@ -36,7 +35,6 @@ from neptune.constants import (
 )
 from neptune.exceptions import NeptuneUninitializedException
 from neptune.internal.init import (
-    get_project,
     init,
     init_model,
     init_model_version,
