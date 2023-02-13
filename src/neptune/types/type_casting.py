@@ -25,7 +25,6 @@ from typing import (
 
 from neptune.internal.utils import (
     is_bool,
-    is_collection,
     is_dict_like,
     is_float,
     is_float_like,
@@ -83,7 +82,7 @@ def cast_value(value: Any) -> Value:
         return Float(value)
     elif is_dict_like(value):
         return Namespace(value)
-    elif (is_collection(value) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
+    elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
         return String(str(value))
     else:
         raise TypeError("Value of unsupported type {}".format(type(value)))
