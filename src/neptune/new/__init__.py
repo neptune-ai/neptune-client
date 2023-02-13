@@ -18,7 +18,6 @@ __all__ = [
     "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "NeptunePossibleLegacyUsageException",
-    "NeptuneUninitializedException",
     "init_model",
     "init_model_version",
     "init_project",
@@ -59,10 +58,7 @@ from neptune import (
 from neptune.attributes import *
 from neptune.cli import *
 from neptune.common.deprecation import warn_once
-from neptune.exceptions import (
-    NeptunePossibleLegacyUsageException,
-    NeptuneUninitializedException,
-)
+from neptune.exceptions import NeptunePossibleLegacyUsageException
 from neptune.integrations import *
 from neptune.logging import *
 from neptune.metadata_containers import *
