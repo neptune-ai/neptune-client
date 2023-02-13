@@ -16,6 +16,7 @@
 
 from unittest.mock import MagicMock
 
+import mock
 import pytest
 
 from neptune.new.cli.sync import SyncRunner
@@ -70,9 +71,15 @@ def test_sync_all_runs(tmp_path, mocker, capsys, backend, sync_runner, container
     assert f"Synchronising {get_qualified_name(synced_container)}" not in captured.out
 
     # and
-    backend.execute_operations.has_calls(
-        [
-            mocker.call(unsynced_container.id, ContainerType.RUN, ["op-1", "op-2"]),
+    assert backend.execute_operations.called_once()
+    backend.execute_operations.assert_has_calls(
+        calls=[
+            mocker.call(
+                container_id=unsynced_container.id,
+                container_type=container_type,
+                operations=["op-1", "op-2"],
+                operation_storage=mock.ANY,
+            ),
         ],
         any_order=True,
     )
@@ -103,9 +110,14 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     ) in captured.out
 
     # and
-    backend.execute_operations.has_calls(
+    backend.execute_operations.assert_has_calls(
         [
-            mocker.call(offline_run.id, ContainerType.RUN, ["op-1", "op-2"]),
+            mocker.call(
+                container_id=offline_run.id,
+                container_type=ContainerType.RUN,
+                operations=["op-0", "op-1", "op-2"],
+                operation_storage=mock.ANY,
+            ),
         ],
         any_order=True,
     )
@@ -169,17 +181,13 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     assert "Synchronising {}".format(get_qualified_name(unsync_exp)) not in captured.out
 
     # and
-    backend.execute_operations.has_calls(
+    backend.execute_operations.assert_has_calls(
         [
             mocker.call(
-                sync_exp.id,
-                ContainerType.RUN,
-                operations=["op-1", "op-2"],
-            ),
-            mocker.call(
-                offline_run.id,
-                ContainerType.RUN,
+                container_id=offline_run.id,
+                container_type=ContainerType.RUN,
                 operations=["op-0", "op-1", "op-2"],
+                operation_storage=mock.ANY,
             ),
         ],
         any_order=True,
@@ -220,17 +228,19 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     assert "Synchronization of run {} completed.".format(get_qualified_name(offline_old_run)) in captured.out
 
     # and
-    backend.execute_operations.has_calls(
+    backend.execute_operations.assert_has_calls(
         [
             mocker.call(
-                deprecated_unsynced_run.id,
-                ContainerType.RUN,
+                container_id=deprecated_unsynced_run.id,
+                container_type=ContainerType.RUN,
                 operations=["op-1", "op-2"],
+                operation_storage=mock.ANY,
             ),
             mocker.call(
-                offline_old_run.id,
-                ContainerType.RUN,
+                container_id=offline_old_run.id,
+                container_type=ContainerType.RUN,
                 operations=["op-0", "op-1", "op-2"],
+                operation_storage=mock.ANY,
             ),
         ],
         any_order=True,

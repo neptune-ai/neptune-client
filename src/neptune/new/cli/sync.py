@@ -57,6 +57,7 @@ from neptune.new.internal.id_formats import (
     UniqueId,
 )
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.utils.logger import logger
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
@@ -80,8 +81,9 @@ class SyncRunner(AbstractBackendRunner):
         container_id: UniqueId,
         container_type: ContainerType,
     ) -> None:
+        operation_storage = OperationStorage(execution_path)
         with DiskQueue(
-            dir_path=execution_path,
+            dir_path=operation_storage.data_path,
             to_dict=lambda x: x.to_dict(),
             from_dict=Operation.from_dict,
             lock=threading.RLock(),
@@ -102,6 +104,7 @@ class SyncRunner(AbstractBackendRunner):
                             container_id=container_id,
                             container_type=container_type,
                             operations=batch,
+                            operation_storage=operation_storage,
                         )
                         version_to_ack += processed_count
                         batch = batch[processed_count:]

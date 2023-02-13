@@ -45,6 +45,7 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogStrings,
 )
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from tests.unit.neptune.legacy.random_utils import a_string
 
 
@@ -64,13 +65,19 @@ class TestNeptuneBackendMock(unittest.TestCase):
             (model.id, ContainerType.MODEL),
             (model_version.id, ContainerType.MODEL_VERSION),
         ]
+        self.dummy_operation_storage = OperationStorage("./dummy_storage")
 
     def test_get_float_attribute(self):
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 digit = randint(1, 10**4)
-                self.backend.execute_operations(container_id, container_type, operations=[AssignFloat(["x"], digit)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=[AssignFloat(["x"], digit)],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # when
                 ret = self.backend.get_float_attribute(container_id, container_type, path=["x"])
@@ -83,7 +90,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 text = a_string()
-                self.backend.execute_operations(container_id, container_type, operations=[AssignString(["x"], text)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=[AssignString(["x"], text)],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # when
                 ret = self.backend.get_string_attribute(container_id, container_type, path=["x"])
@@ -97,7 +109,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 # given
                 now = datetime.datetime.now()
                 now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
-                self.backend.execute_operations(container_id, container_type, [AssignDatetime(["x"], now)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignDatetime(["x"], now)],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # when
                 ret = self.backend.get_datetime_attribute(container_id, container_type, ["x"])
@@ -121,6 +138,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -134,6 +152,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
@@ -158,6 +177,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -171,6 +191,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
@@ -183,7 +204,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AddStrings(["x"], {"abcx", "qwe"})])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AddStrings(["x"], {"abcx", "qwe"})],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # when
                 ret = self.backend.get_string_set_attribute(container_id, container_type, ["x"])
@@ -207,6 +233,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -220,6 +247,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
@@ -257,6 +285,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
                 self.backend.execute_operations(
                     container_id,
@@ -270,6 +299,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                             ],
                         )
                     ],
+                    operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
@@ -295,7 +325,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignString(["x"], "abc")],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -305,7 +340,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignFloat(["x"], 5)])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignFloat(["x"], 5)],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -315,7 +355,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignString(["x"], "abc")],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -325,7 +370,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignString(["x"], "abc")],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -335,7 +385,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignString(["x"], "abc")],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(MetadataInconsistency):
@@ -345,7 +400,12 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         for (container_id, container_type) in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(container_id, container_type, [AssignString(["x"], "abc")])
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
+                    [AssignString(["x"], "abc")],
+                    operation_storage=self.dummy_operation_storage,
+                )
 
                 # then
                 with self.assertRaises(ContainerUUIDNotFound):
