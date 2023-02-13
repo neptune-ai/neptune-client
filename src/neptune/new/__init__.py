@@ -106,7 +106,7 @@ create_experiment = (
 sys.meta_path.append(CompatibilityImporter())
 
 warn_once(
-    message="You're importing neptune client via deprecated `neptune.new`"
-    " module and it will be removed in a future."
-    " Try to import it directly from `neptune`."
+    message="You're importing the Neptune client library via the deprecated"
+    " `neptune.new` module, which will be removed in a future release."
+    " Import directly from `neptune` instead."
 )
