@@ -66,7 +66,6 @@ __all__ = [
     "NeptuneCannotChangeStageManually",
     "OperationNotSupported",
     "NeptuneLegacyProjectException",
-    "NeptuneUninitializedException",
     "NeptuneIntegrationNotInstalledException",
     "NeptuneLimitExceedException",
     "NeptuneFieldCountLimitExceedException",
@@ -786,28 +785,6 @@ You can find documentation for the legacy neptune Python API here:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(project=project, **STYLES))
-
-
-class NeptuneUninitializedException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneUninitializedException----------------------------------------------------
-{end}
-You must initialize the Neptune client library before you can access `get_last_run`.
-
-Looks like you forgot to add:
-    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
-
-before you ran:
-    {python}neptune.get_last_run(){end}
-
-You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/neptune/#get_last_run
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(**STYLES))
 
 
 class NeptuneIntegrationNotInstalledException(NeptuneException):
