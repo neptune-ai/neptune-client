@@ -9,7 +9,7 @@
 - Removed `get_last_run` function ([#1217](https://github.com/neptune-ai/neptune-client/pull/1217))
 - Removed `run` parameter from `init_run` function ([#1218](https://github.com/neptune-ai/neptune-client/pull/1218))
 - Removed `model` parameter from `init_model` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
-- Removed `version` parameter from `init_model_version function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
+- Removed `version` parameter from `init_model_version` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
 
 ## neptune-client 0.16.18
 
