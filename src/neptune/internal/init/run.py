@@ -65,6 +65,10 @@ from neptune.internal.utils.git import (
 )
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
@@ -94,9 +98,9 @@ def init_run(
     description: Optional[str] = None,
     tags: Optional[Union[List[str], str]] = None,
     source_files: Optional[Union[List[str], str]] = None,
-    capture_stdout: bool = True,
-    capture_stderr: bool = True,
-    capture_hardware_metrics: bool = True,
+    capture_stdout: Optional[bool] = None,
+    capture_stderr: Optional[bool] = None,
+    capture_hardware_metrics: Optional[bool] = None,
     fail_on_exception: bool = True,
     monitoring_namespace: Optional[str] = None,
     flush_period: float = DEFAULT_FLUSH_PERIOD,
@@ -216,13 +220,13 @@ def init_run(
     verify_type("mode", mode, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("description", description, (str, type(None)))
-    verify_type("capture_stdout", capture_stdout, bool)
-    verify_type("capture_stderr", capture_stderr, bool)
-    verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
+    verify_type("capture_stdout", capture_stdout, (bool, type(None)))
+    verify_type("capture_stderr", capture_stderr, (bool, type(None)))
+    verify_type("capture_hardware_metrics", capture_hardware_metrics, (bool, type(None)))
     verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
-    verify_type("capture_traceback", capture_hardware_metrics, bool)
+    verify_type("capture_traceback", capture_traceback, bool)
     if tags is not None:
         if isinstance(tags, str):
             tags = [tags]
@@ -241,6 +245,15 @@ def init_run(
     hostname = get_hostname() if with_id is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
     monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
+
+    if capture_stdout is None:
+        capture_stdout = capture_only_if_non_interactive()
+
+    if capture_stderr is None:
+        capture_stderr = capture_only_if_non_interactive()
+
+    if capture_hardware_metrics is None:
+        capture_hardware_metrics = capture_only_if_non_interactive()
 
     if with_id and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
@@ -295,15 +308,20 @@ def init_run(
     if mode != Mode.READ_ONLY:
         if capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
+
         if capture_stderr:
             background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
+
         if capture_hardware_metrics:
             background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+
+        if capture_traceback:
+            background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+
         websockets_factory = backend.websockets_factory(project_obj.id, api_run.id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-        if capture_traceback:
-            background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(
@@ -363,3 +381,9 @@ def _create_notebook_checkpoint(
     if notebook_id is not None and notebook_path is not None:
         checkpoint_id = create_checkpoint(backend=backend, notebook_id=notebook_id, notebook_path=notebook_path)
     return notebook_id, checkpoint_id
+
+
+def capture_only_if_non_interactive() -> bool:
+    if in_interactive() or in_notebook():
+        return False
+    return True

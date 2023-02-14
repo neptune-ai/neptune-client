@@ -308,13 +308,12 @@ class MetadataContainer(AbstractContextManager):
         self.start()
 
         if not debug_mode and self._mode not in {Mode.READ_ONLY}:
-            if in_interactive() or in_notebook():
+            if (in_interactive() or in_notebook()) and self.container_type == ContainerType.RUN:
                 logger.info(
-                    "Remember to stop your %s once you’ve finished logging your metadata (%s)."
-                    " It will be stopped automatically only when the notebook"
-                    " kernel/interactive console is terminated.",
+                    "You're in an interactive environment, to reduce monitoring time consumption some"
+                    " background monitoring capabilities were turned off. To restore them initialize your %s"
+                    " with `capture_stdout`, `capture_stderr` and `capture_hardware_metrics` set to `True`.",
                     self.container_type.value,
-                    self._docs_url_stop,
                 )
 
         uncaught_exception_handler.activate()
