@@ -28,7 +28,10 @@ from typing import (
     TypeVar,
 )
 
-from neptune.common.exceptions import InternalClientError
+from neptune.common.exceptions import (
+    InternalClientError,
+    NeptuneException,
+)
 from neptune.exceptions import MalformedOperation
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation_processors.operation_storage import OperationStorage

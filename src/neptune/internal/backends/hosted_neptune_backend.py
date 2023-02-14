@@ -134,6 +134,7 @@ from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
+from neptune.management.exceptions import ObjectNotFound
 from neptune.types.atoms import GitRef
 from neptune.version import version as neptune_client_version
 
