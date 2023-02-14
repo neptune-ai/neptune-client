@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 __all__ = ["init_run"]
+
 import os
 import threading
 import typing
@@ -63,6 +64,7 @@ from neptune.internal.utils.git import (
     discover_git_repo_location,
     get_git_info,
 )
+from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
@@ -242,9 +244,15 @@ def init_run(
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
     name = DEFAULT_NAME if with_id is None and name is None else name
     description = "" if with_id is None and description is None else description
-    hostname = get_hostname() if with_id is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
-    monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
+
+    hostname = get_hostname()
+    pid = os.getpid()
+    tid = threading.get_ident()
+
+    monitoring_namespace = (
+        monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or generate_monitoring_namespace(hostname, pid, tid)
+    )
 
     if capture_stdout is None:
         capture_stdout = capture_only_if_non_interactive()
@@ -343,12 +351,24 @@ def init_run(
     if mode != Mode.READ_ONLY:
         if name is not None:
             _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
+
         if description is not None:
             _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
+
         if hostname is not None:
-            _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+            _run[f"{monitoring_namespace}/hostname"] = hostname
+            if with_id is None:
+                _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+
+        if pid is not None:
+            _run[f"{monitoring_namespace}/pid"] = str(pid)
+
+        if tid is not None:
+            _run[f"{monitoring_namespace}/tid"] = str(tid)
+
         if tags is not None:
             _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+
         if with_id is None:
             _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
@@ -387,3 +407,7 @@ def capture_only_if_non_interactive() -> bool:
     if in_interactive() or in_notebook():
         return False
     return True
+
+
+def generate_monitoring_namespace(*descriptors):
+    return f"monitoring/{generate_hash(*descriptors)}"
