@@ -148,7 +148,7 @@ class TestExperiment(unittest.TestCase):
                             "str": "imagine",
                             "float": 3.14,
                             "datetime": now,
-                            "list": list(range(10)),
+                            "list": str(list(range(10))),
                         },
                     }
                 )
