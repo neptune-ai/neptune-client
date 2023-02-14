@@ -59,7 +59,7 @@ from neptune.internal.operation import (
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_encode
-from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin
+from tests.unit.neptune.backend_test_mixin import BackendTestMixin
 from tests.unit.neptune.new.utils import response_mock
 
 API_TOKEN = (

@@ -45,7 +45,7 @@ from neptune.internal.operation import (
     LogFloats,
     LogStrings,
 )
-from neptune.new.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import OperationStorage
 from tests.unit.neptune.legacy.random_utils import a_string
 
 
