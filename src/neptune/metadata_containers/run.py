@@ -78,8 +78,6 @@ class Run(MetadataContainer):
        https://docs.neptune.ai/api/run
     """
 
-    last_run = None  # "static" instance of recently created Run
-
     container_type = ContainerType.RUN
 
     LEGACY_METHODS = (
@@ -133,8 +131,6 @@ class Run(MetadataContainer):
             sys_id=sys_id,
         )
         self.monitoring_namespace = monitoring_namespace
-
-        Run.last_run = self
 
     @property
     def _docs_url_stop(self) -> str:
