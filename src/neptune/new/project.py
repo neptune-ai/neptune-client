@@ -17,4 +17,4 @@
 # backwards compatibility
 __all__ = ["Project"]
 
-from neptune.new.metadata_containers import Project
+from neptune.metadata_containers import Project

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2023, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,41 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# flake8: noqa
+__all__ = [
+    "ANONYMOUS",
+    "ANONYMOUS_API_TOKEN",
+    "init_model",
+    "init_model_version",
+    "init_project",
+    "init_run",
+    "Run",
+    "__version__",
+]
+
+
 from neptune.common.patches import apply_patches
-from neptune.legacy import (
+from neptune.constants import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
-    InvalidNeptuneBackend,
-    NeptuneIncorrectImportException,
-    NeptuneUninitializedException,
-    Project,
-    Session,
-    append_tag,
-    append_tags,
-    assure_project_qualified_name,
-    backend_factory,
-    create_experiment,
-    delete_artifacts,
-    get_experiment,
-    init,
-    log_artifact,
-    log_image,
-    log_metric,
-    log_text,
-    project,
-    remove_property,
-    remove_tag,
-    send_artifact,
-    send_image,
-    send_metric,
-    send_text,
-    session,
-    set_project,
-    set_property,
-    stop,
 )
-from neptune.version import __version__
+from neptune.internal.init import (
+    init_model,
+    init_model_version,
+    init_project,
+    init_run,
+)
+from neptune.metadata_containers import Run
+from neptune.version import version
+
+__version__ = str(version)
+
 
 # Apply patches of external libraries
 apply_patches()

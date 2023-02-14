@@ -19,15 +19,15 @@ from mock import (
     patch,
 )
 
-from neptune.new.attributes.series.float_series import (
+from neptune.attributes.series.float_series import (
     FloatSeries,
     FloatSeriesVal,
 )
-from neptune.new.attributes.series.string_series import (
+from neptune.attributes.series.string_series import (
     StringSeries,
     StringSeriesVal,
 )
-from neptune.new.internal.operation import (
+from neptune.internal.operation import (
     ClearFloatLog,
     ClearStringLog,
     ConfigFloatSeries,

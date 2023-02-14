@@ -30,6 +30,7 @@ from neptune.common.utils import (
     NoopObject,
     update_session_proxies,
 )
+from neptune.internal.backends.hosted_client import NeptuneResponseAdapter
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,
@@ -46,7 +47,6 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_alpha_leaderb
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 from neptune.legacy.projects import Project
-from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 
 _logger = logging.getLogger(__name__)
 

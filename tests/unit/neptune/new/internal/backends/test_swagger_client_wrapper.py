@@ -16,7 +16,7 @@
 import unittest
 from unittest.mock import MagicMock
 
-from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
+from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 
 
 class TestSwaggerClientWrapper(unittest.TestCase):

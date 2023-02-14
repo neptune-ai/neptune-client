@@ -24,15 +24,15 @@ from zipfile import ZipFile
 
 import pytest
 
-from neptune.new.internal.backends import hosted_file_operations
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends import hosted_file_operations
+from neptune.internal.backends.api_model import (
     MultipartConfig,
     OptionalFeatures,
 )
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.types.file_types import FileType
-from neptune.new.metadata_containers import MetadataContainer
-from neptune.new.types import (
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.types.file_types import FileType
+from neptune.metadata_containers import MetadataContainer
+from neptune.types import (
     File,
     FileSet,
 )

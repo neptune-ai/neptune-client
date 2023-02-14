@@ -1,3 +1,14 @@
+## [UNRELEASED] neptune-client 1.0.0
+
+### Changes
+- Disabled automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))
+- Moved modules from `neptune.new` to `neptune` with compatibility imports and marked `neptune.new` as deprecated ([#1213](https://github.com/neptune-ai/neptune-client/pull/1213))
+- Removed `neptune.*` legacy modules ([#1206](https://github.com/neptune-ai/neptune-client/pull/1206))
+- Removed `get_project` function ([#1214](https://github.com/neptune-ai/neptune-client/pull/1214))
+- Removed `init` function ([#1216](https://github.com/neptune-ai/neptune-client/pull/1216))
+- Removed `get_last_run` function ([#1217](https://github.com/neptune-ai/neptune-client/pull/1217))
+- Removed `run` parameter from `init_run` function ([#1218](https://github.com/neptune-ai/neptune-client/pull/1218))
+
 ## neptune-client 0.16.18
 
 ### Fixes

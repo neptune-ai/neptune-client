@@ -5,7 +5,7 @@ from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
-import neptune.new as neptune
+import neptune
 from tests.e2e.base import BaseE2ETest
 
 zenml = pytest.importorskip("zenml")

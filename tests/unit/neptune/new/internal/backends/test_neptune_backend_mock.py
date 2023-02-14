@@ -19,11 +19,11 @@ import uuid
 from random import randint
 from time import time
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
 )
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,
     FloatPointValue,
@@ -35,9 +35,9 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     StringSetAttribute,
 )
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import (
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.container_type import ContainerType
+from neptune.internal.operation import (
     AddStrings,
     AssignDatetime,
     AssignFloat,
@@ -45,7 +45,7 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogStrings,
 )
-from neptune.new.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import OperationStorage
 from tests.unit.neptune.legacy.random_utils import a_string
 
 

@@ -23,7 +23,7 @@ from pathlib import (
 
 import pytest
 
-from neptune.new.metadata_containers import MetadataContainer
+from neptune.metadata_containers import MetadataContainer
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,

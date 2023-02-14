@@ -15,7 +15,7 @@
 #
 import unittest
 
-from neptune.new.internal.utils.iteration import get_batches
+from neptune.internal.utils.iteration import get_batches
 
 
 class TestIterationUtils(unittest.TestCase):

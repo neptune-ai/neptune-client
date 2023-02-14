@@ -16,9 +16,9 @@
 
 import uuid
 
-from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.new.internal.operation import (
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
+from neptune.internal.operation import (
     AddStrings,
     AssignFloat,
     AssignString,

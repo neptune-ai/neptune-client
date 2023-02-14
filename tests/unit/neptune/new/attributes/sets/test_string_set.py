@@ -18,11 +18,11 @@ from mock import (
     call,
 )
 
-from neptune.new.attributes.sets.string_set import (
+from neptune.attributes.sets.string_set import (
     StringSet,
     StringSetVal,
 )
-from neptune.new.internal.operation import (
+from neptune.internal.operation import (
     AddStrings,
     ClearStringSet,
     RemoveStrings,

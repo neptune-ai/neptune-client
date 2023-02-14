@@ -17,11 +17,11 @@ import pathlib
 import unittest
 from urllib.parse import urlparse
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneUnhandledArtifactSchemeException,
     NeptuneUnhandledArtifactTypeException,
 )
-from neptune.new.internal.artifacts.types import (
+from neptune.internal.artifacts.types import (
     ArtifactDriver,
     ArtifactDriversMap,
     ArtifactFileData,

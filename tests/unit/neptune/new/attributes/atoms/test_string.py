@@ -15,11 +15,11 @@
 #
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.string import (
+from neptune.attributes.atoms.string import (
     String,
     StringVal,
 )
-from neptune.new.internal.operation import AssignString
+from neptune.internal.operation import AssignString
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

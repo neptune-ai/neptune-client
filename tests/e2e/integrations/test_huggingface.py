@@ -33,7 +33,7 @@ from transformers.integrations import (
 )
 from transformers.utils import logging
 
-from neptune.new import init_run
+from neptune import init_run
 from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import (
     catch_time,

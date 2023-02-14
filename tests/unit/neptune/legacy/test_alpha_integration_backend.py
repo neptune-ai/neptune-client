@@ -32,7 +32,7 @@ from neptune.legacy.internal.channels.channels import (
     ChannelType,
     ChannelValue,
 )
-from tests.unit.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
+from tests.unit.neptune.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG"
@@ -54,7 +54,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         new=MagicMock,
     )
     @mock.patch(
-        "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator",
+        "neptune.internal.backends.hosted_client.NeptuneAuthenticator",
         new=MagicMock,
     )
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
