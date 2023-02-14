@@ -28,10 +28,7 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import (
-    NeptuneParametersCollision,
-    NeptuneWrongInitParametersException,
-)
+from neptune.exceptions import NeptuneWrongInitParametersException
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -104,8 +101,6 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(with_id=None, key=None)
-        with self.assertRaises(NeptuneParametersCollision):
-            init_model(model="foo", with_id="foo")
 
     def test_name_parameter(self):
         with init_model(key="TRY", name="some_name") as exp:
