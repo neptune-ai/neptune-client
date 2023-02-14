@@ -59,7 +59,6 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.internal.utils.git import (
     discover_git_repo_location,
     get_git_info,
@@ -85,7 +84,6 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
-@deprecated_parameter(deprecated_kwarg_name="run", required_kwarg_name="with_id")
 def init_run(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
@@ -158,7 +156,6 @@ def init_run(
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
             Tracked metadata will be stored in the 'monitoring/traceback' namespace.
-        run: ID of an existing run to resume. Deprecated - see with_id.
 
     Returns:
         Run object that is used to manage the tracked run and log metadata to it.
