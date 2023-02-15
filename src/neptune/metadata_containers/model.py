@@ -84,7 +84,7 @@ class Model(MetadataContainer):
             >>> import neptune
 
             >>> # Initialize model with the ID "CLS-FOREST"
-            ... model = neptune.init_model(model="CLS-FOREST")
+            ... model = neptune.init_model(with_id="CLS-FOREST")
 
             >>> # Fetch the metadata of all model versions as a pandas DataFrame
             ... model_versions_df = model.fetch_model_versions_table().to_pandas()

@@ -30,7 +30,6 @@ from neptune.envs import (
 )
 from neptune.exceptions import (
     NeptuneOfflineModeChangeStageException,
-    NeptuneParametersCollision,
     NeptuneWrongInitParametersException,
 )
 from neptune.internal.backends.api_model import (
@@ -128,10 +127,6 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             with init_model_version(with_id=None, model=None):
-                pass
-
-        with self.assertRaises(NeptuneParametersCollision):
-            with init_model_version(version="foo", with_id="foo"):
                 pass
 
     def test_change_stage(self):
