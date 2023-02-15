@@ -41,8 +41,8 @@ class Attribute:
     def __getattr__(self, attr):
         raise TypeDoesNotSupportAttributeException(type_=type(self), attribute=attr)
 
-    def _enqueue_operation(self, operation: Operation, wait: bool):
-        self._container._op_processor.enqueue_operation(operation, wait)
+    def _enqueue_operation(self, operation: Operation, *, wait: bool):
+        self._container._op_processor.enqueue_operation(operation, wait=wait)
 
     @property
     def _backend(self) -> NeptuneBackend:

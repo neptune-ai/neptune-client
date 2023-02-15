@@ -267,9 +267,9 @@ class MetadataContainer(AbstractContextManager):
         verify_type("path", path, str)
         self._get_root_handler().pop(path, wait=wait)
 
-    def _pop_impl(self, parsed_path: List[str], wait: bool):
+    def _pop_impl(self, parsed_path: List[str], *, wait: bool):
         self._structure.pop(parsed_path)
-        self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
+        self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait=wait)
 
     def lock(self) -> threading.RLock:
         return self._lock

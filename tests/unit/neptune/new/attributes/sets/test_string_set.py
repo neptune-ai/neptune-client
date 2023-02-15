@@ -45,7 +45,7 @@ class TestStringSet(TestAttributeBase):
         var.assign(value, wait=wait)
         self.assertEqual(2, processor.enqueue_operation.call_count)
         processor.enqueue_operation.assert_has_calls(
-            [call(ClearStringSet(path), False), call(AddStrings(path, expected), wait)]
+            [call(ClearStringSet(path), wait=False), call(AddStrings(path, expected), wait=wait)]
         )
 
     def test_assign_empty(self):
@@ -57,7 +57,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.assign(StringSetVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait=wait)
 
     def test_assign_type_error(self):
         values = [{5.0}, {"text"}, {}, [5.0], ["text"], [], 55, "string", None]
@@ -74,7 +74,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.add(["a", "bb", "ccc"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"a", "bb", "ccc"}), wait)
+        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"a", "bb", "ccc"}), wait=wait)
 
     def test_add_single_value(self):
         processor = MagicMock()
@@ -85,7 +85,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.add("ccc", wait=wait)
-        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"ccc"}), wait)
+        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"ccc"}), wait=wait)
 
     def test_remove(self):
         processor = MagicMock()
@@ -96,7 +96,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.remove(["a", "bb", "ccc"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait)
+        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait=wait)
 
     def test_remove_single_value(self):
         processor = MagicMock()
@@ -107,7 +107,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.remove("bb", wait=wait)
-        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"bb"}), wait)
+        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"bb"}), wait=wait)
 
     def test_clear(self):
         processor = MagicMock()
@@ -118,7 +118,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.clear(wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait=wait)
 
     def test_get(self):
         exp, path = self._create_run(), self._random_path()

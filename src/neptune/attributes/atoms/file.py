@@ -34,7 +34,7 @@ class File(Atom):
         )
 
         with self._container.lock():
-            self._enqueue_operation(operation, wait)
+            self._enqueue_operation(operation, wait=wait)
 
     def upload(self, value, *, wait: bool = False) -> None:
         self.assign(FileVal.create_from(value), wait=wait)

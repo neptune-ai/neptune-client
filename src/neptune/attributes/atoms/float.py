@@ -46,4 +46,4 @@ class Float(CopiableAtom):
             value = FloatVal(value)
 
         with self._container.lock():
-            self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait)
+            self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait=wait)

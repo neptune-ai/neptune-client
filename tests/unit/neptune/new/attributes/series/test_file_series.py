@@ -83,7 +83,7 @@ class TestFileSeries(TestAttributeBase):
                     )
                 ],
             ),
-            wait,
+            wait=wait,
         )
 
     def test_assign_content(self):
@@ -102,7 +102,7 @@ class TestFileSeries(TestAttributeBase):
         # then
         op_processor.enqueue_operation.assert_has_calls(
             [
-                call(ClearImageLog(path), False),
+                call(ClearImageLog(path), wait=False),
                 call(
                     LogImages(
                         path,
@@ -114,7 +114,7 @@ class TestFileSeries(TestAttributeBase):
                             )
                         ],
                     ),
-                    wait,
+                    wait=wait,
                 ),
             ]
         )
@@ -161,7 +161,7 @@ class TestFileSeries(TestAttributeBase):
                 )
                 return call(
                     log_operation,
-                    wait,
+                    wait=wait,
                 )
 
             op_processor.enqueue_operation.assert_has_calls(

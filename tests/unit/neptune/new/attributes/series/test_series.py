@@ -56,9 +56,9 @@ class TestSeries(TestAttributeBase):
         self.assertEqual(3, processor.enqueue_operation.call_count)
         processor.enqueue_operation.assert_has_calls(
             [
-                call(ConfigFloatSeries(path, min=0, max=100, unit="%"), False),
-                call(ClearFloatLog(path), False),
-                call(LogFloats(path, expected), wait),
+                call(ConfigFloatSeries(path, min=0, max=100, unit="%"), wait=False),
+                call(ClearFloatLog(path), wait=False),
+                call(LogFloats(path, expected), wait=wait),
             ]
         )
 
@@ -71,7 +71,7 @@ class TestSeries(TestAttributeBase):
         )
         var = StringSeries(exp, path)
         var.assign(StringSeriesVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringLog(path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearStringLog(path), wait=wait)
 
     def test_log(self):
         value_and_expected = [
@@ -112,7 +112,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait=wait)
 
     def test_log_with_step(self):
         value_step_and_expected = [
@@ -132,7 +132,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, step=step, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait=wait)
 
     def test_log_with_timestamp(self):
         value_step_and_expected = [
@@ -149,7 +149,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, timestamp=ts, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait=wait)
 
     def test_log_value_errors(self):
         processor = MagicMock()
@@ -174,4 +174,4 @@ class TestSeries(TestAttributeBase):
         )
         var = FloatSeries(exp, path)
         var.clear(wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait=wait)

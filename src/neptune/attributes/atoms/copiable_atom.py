@@ -31,7 +31,7 @@ if typing.TYPE_CHECKING:
 class CopiableAtom(Atom):
     supports_copy = True
 
-    def copy(self, value: ValueCopy, wait: bool = False):
+    def copy(self, value: ValueCopy, *, wait: bool = False):
         with self._container.lock():
             source_path = value.source_handler._path
             source_attr = value.source_handler._get_attribute()
@@ -43,7 +43,7 @@ class CopiableAtom(Atom):
                     source_path=parse_path(source_path),
                     source_attr_cls=source_attr.__class__,
                 ),
-                wait,
+                wait=wait,
             )
 
     @staticmethod

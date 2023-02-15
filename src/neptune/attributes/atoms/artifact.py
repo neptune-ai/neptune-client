@@ -43,7 +43,7 @@ class Artifact(Atom):
             raise TypeError("Value of unsupported type {}".format(type(value)))
 
         with self._container.lock():
-            self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
+            self._enqueue_operation(AssignArtifact(self._path, value.hash), wait=wait)
 
     def fetch(self) -> ArtifactVal:
         self._check_feature()
@@ -79,5 +79,5 @@ class Artifact(Atom):
                     self._container._project_id,
                     [(path, destination)],
                 ),
-                wait,
+                wait=wait,
             )

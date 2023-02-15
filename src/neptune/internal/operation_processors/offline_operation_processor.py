@@ -45,7 +45,7 @@ class OfflineOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         return f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{container_type.create_dir_name(container_id)}"
 
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
+    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
 
     def wait(self):

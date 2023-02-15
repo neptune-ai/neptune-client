@@ -133,7 +133,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         with self._container.lock():
             for op in ops:
-                self._enqueue_operation(op, wait)
+                self._enqueue_operation(op, wait=wait)
 
     def extend(
         self,
@@ -161,9 +161,9 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         with self._container.lock():
             for op in ops:
-                self._enqueue_operation(op, wait)
+                self._enqueue_operation(op, wait=wait)
 
     def _clear_impl(self, wait: bool = False) -> None:
         op = self._get_clear_operation()
         with self._container.lock():
-            self._enqueue_operation(op, wait)
+            self._enqueue_operation(op, wait=wait)
