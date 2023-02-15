@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 __all__ = [
-    "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "init_model",
     "init_model_version",
@@ -26,10 +25,7 @@ __all__ = [
 
 
 from neptune.common.patches import apply_patches
-from neptune.constants import (
-    ANONYMOUS,
-    ANONYMOUS_API_TOKEN,
-)
+from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.internal.init import (
     init_model,
     init_model_version,

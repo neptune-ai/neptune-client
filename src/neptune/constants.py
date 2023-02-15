@@ -14,10 +14,8 @@
 # limitations under the License.
 #
 __all__ = [
-    "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "NEPTUNE_DATA_DIRECTORY",
-    "NEPTUNE_RUNS_DIRECTORY",
     "OFFLINE_DIRECTORY",
     "ASYNC_DIRECTORY",
     "SYNC_DIRECTORY",
@@ -26,7 +24,6 @@ __all__ = [
 
 """Constants used by Neptune"""
 
-ANONYMOUS = "ANONYMOUS"
 
 ANONYMOUS_API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS"
@@ -34,8 +31,6 @@ ANONYMOUS_API_TOKEN = (
 )
 
 NEPTUNE_DATA_DIRECTORY = ".neptune"
-# backwards compat
-NEPTUNE_RUNS_DIRECTORY = NEPTUNE_DATA_DIRECTORY
 
 OFFLINE_DIRECTORY = "offline"
 ASYNC_DIRECTORY = "async"
