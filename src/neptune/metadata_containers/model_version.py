@@ -52,10 +52,6 @@ class ModelVersion(MetadataContainer):
             model_id=self["sys/model_id"].fetch(),
         )
 
-    @property
-    def _metadata_url(self) -> str:
-        return self.get_url().rstrip("/") + "/metadata"
-
     def change_stage(self, stage: str):
         mapped_stage = ModelVersionStage(stage)
 
