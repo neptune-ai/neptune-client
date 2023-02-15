@@ -51,8 +51,8 @@ class Model(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_url(
             model_id=self._id,
             workspace=self._workspace,
@@ -62,7 +62,7 @@ class Model(MetadataContainer):
 
     @property
     def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
+        return self.get_url().rstrip("/") + "/metadata"
 
     def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.

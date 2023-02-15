@@ -146,11 +146,6 @@ class MetadataContainer(AbstractContextManager):
 
     @property
     @abc.abstractmethod
-    def _url(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def _metadata_url(self) -> str:
         raise NotImplementedError
 
@@ -297,9 +292,10 @@ class MetadataContainer(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
+    @abc.abstractmethod
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
-        return self._url
+        raise NotImplementedError
 
     def _startup(self, debug_mode):
         if not debug_mode:

@@ -90,8 +90,8 @@ class Project(MetadataContainer):
     def _label(self) -> str:
         return f"{self._workspace}/{self._project_name}"
 
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_project_url(
             project_id=self._id,
             workspace=self._workspace,
@@ -100,7 +100,7 @@ class Project(MetadataContainer):
 
     @property
     def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
+        return self.get_url().rstrip("/") + "/metadata"
 
     @staticmethod
     def _prepare_nql_query(ids, states, owners, tags):

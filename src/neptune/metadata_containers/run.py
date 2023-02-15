@@ -143,10 +143,10 @@ class Run(MetadataContainer):
     @deprecated(alternative="get_url")
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser"""
-        return self._url
+        return self.get_url()
 
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(
             run_id=self._id,
             workspace=self._workspace,
@@ -156,7 +156,7 @@ class Run(MetadataContainer):
 
     @property
     def _metadata_url(self) -> str:
-        return self._url
+        return self.get_url()
 
     @property
     def _short_id(self) -> str:
