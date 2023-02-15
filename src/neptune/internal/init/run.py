@@ -143,25 +143,27 @@ def init_run(
             Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
             all Python files from the current directory.
             If None is passed, the Python file from which the run was created will be uploaded.
-        TODO: capture_stdout: Whether to log the stdout of the run. Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
-        TODO: capture_stderr:  Whether to log the stderr of the run. Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
-        TODO: capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
+        capture_stdout: Whether to log the stdout of the run. Defaults to True.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+        capture_stderr:  Whether to log the stderr of the run. Defaults to True.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+        capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
             Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
         fail_on_exception: Whether to register an uncaught exception handler to this process and,
             in case of an exception, set the 'sys/failed' field of the run to True.
             An exception is always logged.
-        TODO: monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
-            Defaults to 'monitoring'.
+        monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
+            Defaults to 'monitoring/<hash>', where the hash is generated based on environment information,
+            to ensure that it's unique for each process.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
             Defaults to 5 (every 5 seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
             For more information, see the 'Proxies' section in the Requests documentation.
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
-            TODO: Tracked metadata will be stored in the 'monitoring/traceback' namespace.
+            The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
+            'monitoring_namespace' parameter).
 
     Returns:
         Run object that is used to manage the tracked run and log metadata to it.
