@@ -46,7 +46,6 @@ import sys
 
 from neptune import (
     ANONYMOUS_API_TOKEN,
-    Run,
     __version__,
     init_model,
     init_model_version,
@@ -60,6 +59,7 @@ from neptune.exceptions import NeptunePossibleLegacyUsageException
 from neptune.integrations import *
 from neptune.logging import *
 from neptune.metadata_containers import *
+from neptune.metadata_containers import Run
 from neptune.new._compatibility import CompatibilityImporter
 from neptune.types import *
 

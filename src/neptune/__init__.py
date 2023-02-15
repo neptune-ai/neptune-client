@@ -19,7 +19,6 @@ __all__ = [
     "init_model_version",
     "init_project",
     "init_run",
-    "Run",
     "__version__",
 ]
 
@@ -32,7 +31,6 @@ from neptune.internal.init import (
     init_project,
     init_run,
 )
-from neptune.metadata_containers import Run
 from neptune.version import version
 
 __version__ = str(version)
