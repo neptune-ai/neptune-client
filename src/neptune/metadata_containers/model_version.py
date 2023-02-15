@@ -42,8 +42,8 @@ class ModelVersion(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_version_url(
             model_version_id=self._id,
             workspace=self._workspace,
@@ -54,7 +54,7 @@ class ModelVersion(MetadataContainer):
 
     @property
     def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
+        return self.get_url().rstrip("/") + "/metadata"
 
     def change_stage(self, stage: str):
         mapped_stage = ModelVersionStage(stage)
