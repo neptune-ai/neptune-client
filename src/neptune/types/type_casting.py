@@ -37,6 +37,7 @@ from neptune.types import (
     File,
     Integer,
 )
+from neptune.exceptions import UnsupportedType
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
@@ -84,9 +85,8 @@ def cast_value(value: Any) -> Value:
         return Namespace(value)
     elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
         return String(str(value))
-    else:
-        # TODO: Change to exception
-        raise TypeError("Value of unsupported type {}".format(type(value)))
+
+    raise UnsupportedType(type_str=str(type(value)))
 
 
 def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Union[Series, Namespace]:
@@ -115,6 +115,5 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
         return FloatSeries(values=values)
     elif from_stringify_value:
         return StringSeries(values=values)
-    else:
-        # TODO: Change to exception
-        raise TypeError("Value of unsupported type List[{}]".format(type(sample_val)))
+
+    raise UnsupportedType(type_str=f"List[{type(sample_val)}]")

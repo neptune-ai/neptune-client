@@ -89,6 +89,7 @@ __all__ = [
     "NeptuneSynchronizationAlreadyStoppedException",
     "StreamAlreadyUsedException",
     "NeptuneUserApiInputException",
+    "UnsupportedType",
 ]
 
 from typing import (
@@ -1176,3 +1177,18 @@ For more, see https://docs.neptune.ai/api/field_types/#from_stream
 class NeptuneUserApiInputException(NeptuneException):
     def __init__(self, message):
         super().__init__(message)
+
+
+class UnsupportedType(NeptuneException, TypeError):
+    def __init__(self, type_str: str):
+        message = """
+{h1}
+----UnsupportedType-------------------------------------------------------------
+{end}
+The type of the object you're logging is not supported by Neptune ({type_str}).
+
+For more, see https://docs.neptune.ai/help/value_of_unsupported_type
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(type_str=type_str, **STYLES))
