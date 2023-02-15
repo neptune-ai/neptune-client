@@ -43,14 +43,12 @@ __all__ = [
     "split_dir_name",
 ]
 
-from neptune.common.deprecation import warn_once
-from neptune.new.cli.commands import (
+from neptune.cli.commands import (
     ApiExperiment,
     CannotSynchronizeOfflineRunsWithoutProject,
     DiskQueue,
     HostedNeptuneBackend,
     NeptuneBackend,
-    NeptuneConnectionLostException,
     NeptuneException,
     Operation,
     Path,
@@ -60,6 +58,8 @@ from neptune.new.cli.commands import (
     status,
     sync,
 )
+from neptune.common.deprecation import warn_once
+from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.status import StatusRunner
 from neptune.new.sync.sync import SyncRunner
@@ -76,5 +76,5 @@ from neptune.new.sync.utils import (
 warn_once(
     message="You're using a legacy neptune.new.sync package."
     " It will be removed since `neptune-client==1.0.0`."
-    " Please use neptune.new.cli"
+    " Please use neptune.cli"
 )

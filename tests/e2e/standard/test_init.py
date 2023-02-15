@@ -15,10 +15,12 @@
 #
 import pytest
 
-import neptune.new as neptune
-from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
-from neptune.new.metadata_containers import Model
-from neptune.new.project import Project
+import neptune
+from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
+from neptune.metadata_containers import (
+    Model,
+    Project,
+)
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.attributes.constants import (
+from neptune.attributes.constants import (
     SIGNAL_TYPE_ABORT,
     SIGNAL_TYPE_STOP,
 )

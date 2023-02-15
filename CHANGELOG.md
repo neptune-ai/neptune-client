@@ -1,3 +1,23 @@
+## [UNRELEASED] neptune-client 1.0.0
+
+### Changes
+- Disabled automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))
+- Moved modules from `neptune.new` to `neptune` with compatibility imports and marked `neptune.new` as deprecated ([#1213](https://github.com/neptune-ai/neptune-client/pull/1213))
+- Removed `neptune.*` legacy modules ([#1206](https://github.com/neptune-ai/neptune-client/pull/1206))
+- Removed `get_project` function ([#1214](https://github.com/neptune-ai/neptune-client/pull/1214))
+- Removed `init` function ([#1216](https://github.com/neptune-ai/neptune-client/pull/1216))
+- Removed `get_last_run` function ([#1217](https://github.com/neptune-ai/neptune-client/pull/1217))
+- Removed `run` parameter from `init_run` function ([#1218](https://github.com/neptune-ai/neptune-client/pull/1218))
+- Removed `model` parameter from `init_model` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
+- Removed `version` parameter from `init_model_version` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
+- Monitoring is off by default for interactive Python kernels ([#1219](https://github.com/neptune-ai/neptune-client/pull/1219))
+
+## neptune-client 0.16.18
+
+### Fixes
+- Fix handling connection errors when refreshing oauth token ([#1204](https://github.com/neptune-ai/neptune-client/pull/1204))
+- Fix syncing offline runs with file upload ([#1211](https://github.com/neptune-ai/neptune-client/pull/1211))
+
 ## neptune-client 0.16.17
 
 ### Features

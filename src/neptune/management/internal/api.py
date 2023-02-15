@@ -46,7 +46,28 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.envs import API_TOKEN_ENV_NAME
+from neptune.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    create_backend_client,
+    create_http_client_with_auth,
+    create_leaderboard_client,
+)
+from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
+from neptune.internal.backends.utils import (
+    parse_validation_errors,
+    ssl_verify,
+)
+from neptune.internal.credentials import Credentials
+from neptune.internal.id_formats import QualifiedName
+from neptune.internal.utils import (
+    verify_collection_type,
+    verify_type,
+)
+from neptune.internal.utils.deprecation import deprecated_parameter
+from neptune.internal.utils.iteration import get_batches
+from neptune.internal.utils.logger import logger
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -73,27 +94,6 @@ from neptune.management.internal.utils import (
     extract_project_and_workspace,
     normalize_project_name,
 )
-from neptune.new.internal.backends.hosted_client import (
-    DEFAULT_REQUEST_KWARGS,
-    create_backend_client,
-    create_http_client_with_auth,
-    create_leaderboard_client,
-)
-from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-from neptune.new.internal.backends.utils import (
-    parse_validation_errors,
-    ssl_verify,
-    with_api_exceptions_handler,
-)
-from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.utils import (
-    verify_collection_type,
-    verify_type,
-)
-from neptune.new.internal.utils.deprecation import deprecated_parameter
-from neptune.new.internal.utils.iteration import get_batches
-from neptune.new.internal.utils.logger import logger
 
 TRASH_BATCH_SIZE = 100
 

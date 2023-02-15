@@ -20,7 +20,7 @@ from abc import abstractmethod
 from io import StringIO
 from unittest.mock import Mock
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
     NeptuneOfflineModeFetchException,

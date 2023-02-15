@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2023, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,29 +13,39 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# flake8: noqa
-from neptune.common.utils import (
-    IS_MACOS,
-    IS_WINDOWS,
-    NoopObject,
-    align_channels_on_x,
-    as_list,
-    assure_directory_exists,
-    assure_project_qualified_name,
-    discover_git_repo_location,
-    file_contains,
-    get_channel_name_stems,
-    get_git_info,
-    glob,
-    in_docker,
-    is_float,
-    is_ipython,
-    is_nan_or_inf,
-    is_notebook,
-    map_keys,
-    map_values,
-    merge_dataframes,
-    update_session_proxies,
-    validate_notebook_path,
-    with_api_exceptions_handler,
+__all__ = ["stringify_unsupported"]
+
+from typing import (
+    Any,
+    List,
+    Mapping,
+    Tuple,
+    Union,
 )
+
+from neptune.internal.utils.stringify_value import StringifyValue
+
+
+def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tuple]:
+    """Helper function that converts unsupported values in a collection or dictionary to strings.
+    Args:
+        value (Any): A dictionary with values or a collection
+    Example:
+        >>> import neptune
+        >>> run = neptune.init_run()
+        >>> complex_dict = {"tuple": ("hi", 1), "metric": 0.87}
+        >>> run["complex_dict"] = complex_dict
+        >>> # (as of 1.0.0) error - tuple is not a supported type
+        ... from neptune.utils import stringify_unsupported
+        >>> run["complex_dict"] = stringify_unsupported(complex_dict)
+
+        For more information, see:
+        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
+    """
+    if isinstance(value, dict):
+        return {k: stringify_unsupported(v) for k, v in value.items()}
+
+    if isinstance(value, list):
+        return list(map(stringify_unsupported, value))
+
+    return StringifyValue(value=value)

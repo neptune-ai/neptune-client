@@ -20,14 +20,14 @@ from datetime import datetime
 import pytest
 from faker import Faker
 
+from neptune import init_project
+from neptune.internal.utils.s3 import get_boto_s3_client
 from neptune.management import (
     add_project_member,
     add_project_service_account,
     create_project,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.new import init_project
-from neptune.new.internal.utils.s3 import get_boto_s3_client
 from tests.e2e.utils import (
     Environment,
     RawEnvironment,

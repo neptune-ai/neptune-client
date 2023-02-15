@@ -24,20 +24,20 @@ from unittest.mock import PropertyMock
 
 from mock import MagicMock
 
-from neptune.common.utils import IS_WINDOWS
-from neptune.new.attributes.atoms.file import (
+from neptune.attributes.atoms.file import (
     File,
     FileVal,
 )
-from neptune.new.attributes.file_set import (
+from neptune.attributes.file_set import (
     FileSet,
     FileSetVal,
 )
-from neptune.new.internal.operation import (
+from neptune.common.utils import IS_WINDOWS
+from neptune.internal.operation import (
     UploadFile,
     UploadFileSet,
 )
-from neptune.new.internal.types.file_types import FileType
+from neptune.internal.types.file_types import FileType
 from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -45,12 +45,12 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
-        def get_tmp_uploaded_file(tmp_upload_dir):
+        def get_tmp_uploaded_file_name(tmp_upload_dir):
             """Get tmp file to uploaded from `upload_path`
             - here's assumption that we upload only one file per one path in test"""
             uploaded_files = os.listdir(tmp_upload_dir)
             assert len(uploaded_files) == 1
-            return f"{tmp_upload_dir}/{uploaded_files[0]}"
+            return uploaded_files[0]
 
         a_text = "Some text stream"
         a_binary = b"Some binary stream"
@@ -64,13 +64,13 @@ class TestFile(TestAttributeBase):
             (
                 FileVal.from_stream(StringIO(a_text)),
                 lambda attribute_path, tmp_uploaded_file: UploadFile(
-                    attribute_path, ext="txt", file_path=tmp_uploaded_file, clean_after_upload=True
+                    attribute_path, ext="txt", tmp_file_name=tmp_uploaded_file
                 ),
             ),
             (
                 FileVal.from_stream(BytesIO(a_binary)),
                 lambda attribute_path, tmp_uploaded_file: UploadFile(
-                    attribute_path, ext="bin", file_path=tmp_uploaded_file, clean_after_upload=True
+                    attribute_path, ext="bin", tmp_file_name=tmp_uploaded_file
                 ),
             ),
         ]
@@ -88,7 +88,7 @@ class TestFile(TestAttributeBase):
                 var.assign(value, wait=wait)
 
                 if value.file_type is not FileType.LOCAL_FILE:
-                    tmp_uploaded_file = get_tmp_uploaded_file(tmp_upload_dir)
+                    tmp_uploaded_file = get_tmp_uploaded_file_name(tmp_upload_dir)
                     self.assertTrue(os.path.exists(tmp_uploaded_file))
                 else:
                     tmp_uploaded_file = None

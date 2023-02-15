@@ -29,8 +29,8 @@ from neptune.common.oauth import NeptuneAuthenticator
 from neptune.common.utils import (
     NoopObject,
     update_session_proxies,
-    with_api_exceptions_handler,
 )
+from neptune.internal.backends.hosted_client import NeptuneResponseAdapter
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,
@@ -45,14 +45,14 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_alpha_leaderb
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
+from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 from neptune.legacy.projects import Project
-from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 
 _logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
         self._old_leaderboard_client = None
         self._new_leaderboard_client = None
@@ -142,7 +142,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def proxies(self):
         return self._proxies
 
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
             response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
@@ -160,7 +160,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
 
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def get_projects(self, namespace):
         try:
             r = self.backend_swagger_client.api.listProjects(organizationIdentifier=namespace).response()
@@ -176,7 +176,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
         return self._new_leaderboard_client
 
-    @with_api_exceptions_handler
+    @legacy_with_api_exceptions_handler
     def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):
         return NeptuneAuthenticator(api_token, backend_client, ssl_verify, proxies)
 

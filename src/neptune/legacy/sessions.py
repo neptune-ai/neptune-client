@@ -39,7 +39,7 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackendApiClient
+                from neptune.legacy import Session, HostedNeptuneBackendApiClient
                 session = Session(backend=HostedNeptuneBackendApiClient(...))
 
             Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
@@ -47,7 +47,7 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, OfflineApiClient
+                from neptune.legacy import Session, OfflineApiClient
                 session = Session(backend=OfflineApiClient())
 
         api_token (:obj:`str`, optional, default is ``None``):
@@ -60,7 +60,7 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session
+                from neptune.legacy import Session
                 session = Session.with_default_backend(api_token='...')
 
         proxies (:obj:`str`, optional, default is ``None``):
@@ -75,7 +75,7 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackendApiClient
+                from neptune.legacy import Session, HostedNeptuneBackendApiClient
                 session = Session(backend=HostedNeptuneBackendApiClient(proxies=...))
 
     Examples:
@@ -84,21 +84,21 @@ class Session(object):
 
         .. code:: python3
 
-            from neptune import Session
+            from neptune.legacy import Session
             session = Session.with_default_backend()
 
         Create session and pass ``api_token``
 
         .. code:: python3
 
-            from neptune import Session
+            from neptune.legacy import Session
             session = Session.with_default_backend(api_token='...')
 
         Create an offline session
 
         .. code:: python3
 
-            from neptune import Session, OfflineApiClient
+            from neptune.legacy import Session, OfflineApiClient
             session = Session(backend=OfflineApiClient())
 
     """
@@ -135,7 +135,7 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session
+                from neptune.legacy import Session
                 session = Session.with_default_backend()
 
         """

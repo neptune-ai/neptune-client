@@ -18,29 +18,28 @@ import unittest
 
 from mock import patch
 
-from neptune.common.exceptions import NeptuneException
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     init_model_version,
 )
-from neptune.new.attributes import String
-from neptune.new.envs import (
+from neptune.attributes import String
+from neptune.common.exceptions import NeptuneException
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneOfflineModeChangeStageException,
-    NeptuneParametersCollision,
     NeptuneWrongInitParametersException,
 )
-from neptune.new.internal.backends.api_model import (
+from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
     StringAttribute,
 )
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.container_type import ContainerType
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import (
     api_model,
@@ -52,12 +51,12 @@ AN_API_MODEL_VERSION = api_model_version()
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+    "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
     new=lambda _, container_id, expected_container_type: AN_API_MODEL
     if expected_container_type == ContainerType.MODEL
     else AN_API_MODEL_VERSION,
 )
-@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @staticmethod
     def call_init(**kwargs):
@@ -73,18 +72,18 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             init_model_version(model="PRO-MOD", mode="offline")
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
             Attribute("some/variable", AttributeType.INT),
             Attribute("sys/model_id", AttributeType.STRING),
         ],
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
         new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_read_only_mode(self):
@@ -95,7 +94,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
                 self.assertEqual(
                     caplog.output,
                     [
-                        "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                        "WARNING:neptune.internal.operation_processors.read_only_operation_processor:"
                         "Client in read-only mode, nothing will be saved to server."
                     ],
                 )
@@ -104,14 +103,14 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
             Attribute("test", AttributeType.STRING),
             Attribute("sys/model_id", AttributeType.STRING),
         ],
     )
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
         new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_resume(self):
@@ -128,10 +127,6 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             with init_model_version(with_id=None, model=None):
-                pass
-
-        with self.assertRaises(NeptuneParametersCollision):
-            with init_model_version(version="foo", with_id="foo"):
                 pass
 
     def test_change_stage(self):

@@ -24,8 +24,8 @@ from mock import (
     patch,
 )
 
-from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import ArtifactFileData
+from neptune.internal.artifacts.file_hasher import FileHasher
+from neptune.internal.artifacts.types import ArtifactFileData
 
 
 class TestFileHasher(unittest.TestCase):

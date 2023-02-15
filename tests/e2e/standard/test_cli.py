@@ -21,10 +21,11 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-import neptune.new as neptune
+import neptune
+from neptune.cli import sync
+from neptune.cli.commands import clear
 from neptune.common.exceptions import NeptuneException
-from neptune.new.cli import sync
-from src.neptune.new.cli.commands import clear
+from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -128,6 +129,11 @@ class TestSync(BaseE2ETest):
             val = fake.word()
             run[key] = val
 
+            # and some file
+            key2 = self.gen_key()
+            val2 = File.from_content(b"dummybytes")
+            run[key2].upload(val2)
+
             # and stop it
             run.stop()
 
@@ -142,6 +148,9 @@ class TestSync(BaseE2ETest):
 
             run2 = neptune.init_run(with_id=sys_id, project=environment.project)
             assert run2[key].fetch() == val
+            run2[key2].download()
+            with open(f"{tmp}/{key2.split('/')[-1]}.bin", "rb") as file:
+                assert file.read() == b"dummybytes"
             run2.stop()
 
     @pytest.mark.parametrize("container_type", ["run"])

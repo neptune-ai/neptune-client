@@ -17,9 +17,9 @@
 import unittest
 from typing import List
 
-from neptune.new import init_model
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.metadata_containers.metadata_containers_table import (
+from neptune import init_model
+from neptune.internal.container_type import ContainerType
+from neptune.metadata_containers.metadata_containers_table import (
     Table,
     TableEntry,
 )

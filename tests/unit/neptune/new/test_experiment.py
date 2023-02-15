@@ -17,20 +17,19 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import (
+from neptune import (
     ANONYMOUS,
     Run,
-    init,
     init_model,
     init_model_version,
     init_project,
     init_run,
 )
-from neptune.new.envs import (
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     InactiveModelException,
     InactiveModelVersionException,
     InactiveProjectException,
@@ -38,14 +37,14 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
-from neptune.new.metadata_containers import (
+from neptune.metadata_containers import (
     Model,
     ModelVersion,
     Project,
 )
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.string import String
-from neptune.new.types.series import (
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.string import String
+from neptune.types.series import (
     FloatSeries,
     StringSeries,
 )
@@ -62,9 +61,6 @@ class TestExperiment(unittest.TestCase):
         kwargs = {"mode": "debug"}
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
-
-        with init(**kwargs) as run:
-            yield run
 
         with init_run(**kwargs) as run:
             yield run
@@ -152,7 +148,7 @@ class TestExperiment(unittest.TestCase):
                             "str": "imagine",
                             "float": 3.14,
                             "datetime": now,
-                            "list": list(range(10)),
+                            "list": str(list(range(10))),
                         },
                     }
                 )

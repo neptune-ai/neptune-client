@@ -22,8 +22,8 @@ from mock import (
     patch,
 )
 
-from neptune.projects import Project
-from neptune.sessions import Session
+from neptune.legacy.projects import Project
+from neptune.legacy.sessions import Session
 from tests.unit.neptune.legacy.api_objects_factory import a_project
 
 

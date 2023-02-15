@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["PROJECT_ENV_NAME", "API_TOKEN_ENV_NAME", "NOTEBOOK_ID_ENV_NAME", "NOTEBOOK_PATH_ENV_NAME", "BACKEND"]
 
-
-PROJECT_ENV_NAME = "NEPTUNE_PROJECT"
-
-API_TOKEN_ENV_NAME = "NEPTUNE_API_TOKEN"
-
-NOTEBOOK_ID_ENV_NAME = "NEPTUNE_NOTEBOOK_ID"
-
-NOTEBOOK_PATH_ENV_NAME = "NEPTUNE_NOTEBOOK_PATH"
-
-BACKEND = "NEPTUNE_BACKEND"
+from neptune.common.envs import (
+    API_TOKEN_ENV_NAME,
+    BACKEND,
+    NOTEBOOK_ID_ENV_NAME,
+    NOTEBOOK_PATH_ENV_NAME,
+    PROJECT_ENV_NAME,
+)

@@ -20,12 +20,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from neptune.new.exceptions import (
+from neptune.exceptions import (
     NeptuneLocalStorageAccessException,
     NeptuneUnsupportedArtifactFunctionalityException,
 )
-from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
-from neptune.new.internal.artifacts.types import (
+from neptune.internal.artifacts.drivers.local import LocalArtifactDriver
+from neptune.internal.artifacts.types import (
     ArtifactDriversMap,
     ArtifactFileData,
     ArtifactFileType,

@@ -24,30 +24,30 @@ from mock import (
     patch,
 )
 
-from neptune.new import ANONYMOUS
-from neptune.new.envs import (
+from neptune import ANONYMOUS
+from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.api_model import (
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
     AttributeWithProperties,
     LeaderboardEntry,
 )
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.metadata_containers.metadata_containers_table import (
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.metadata_containers.metadata_containers_table import (
     Table,
     TableEntry,
 )
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+    "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute(path="test", type=AttributeType.STRING)],
 )
-@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class AbstractTablesTestMixin:
     expected_container_type = None
 

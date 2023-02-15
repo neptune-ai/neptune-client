@@ -18,7 +18,7 @@ import random
 
 import pytest
 
-import neptune.new as neptune
+import neptune
 from tests.e2e.base import (
     BaseE2ETest,
     fake,
