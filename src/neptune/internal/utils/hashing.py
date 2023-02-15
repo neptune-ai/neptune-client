@@ -18,7 +18,9 @@ __all__ = ["generate_hash"]
 import hashlib
 
 
-def generate_hash(*descriptors, max_length: int = 8):
+def generate_hash(*descriptors, length: int = 8):
     combined = "_".join(map(str, descriptors))
-    hexadecimal = hashlib.sha256(combined.encode(), usedforsecurity=False).hexdigest()
-    return hexadecimal[-max_length:]
+
+    hasher = hashlib.sha256(usedforsecurity=False)
+    hasher.update(combined.encode())
+    return hasher.hexdigest()[-length:]
