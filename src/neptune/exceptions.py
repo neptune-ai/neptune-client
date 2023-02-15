@@ -1187,8 +1187,6 @@ class UnsupportedType(NeptuneException, TypeError):
 {end}
 The type of the object you're logging is not supported by Neptune ({type_str}).
 
-For more, see https://docs.neptune.ai/help/value_of_unsupported_type
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs.neptune.ai/help/value_of_unsupported_type
 """
         super().__init__(message.format(type_str=type_str, **STYLES))
