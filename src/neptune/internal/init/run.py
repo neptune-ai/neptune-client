@@ -143,17 +143,17 @@ def init_run(
             Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
             all Python files from the current directory.
             If None is passed, the Python file from which the run was created will be uploaded.
-        capture_stdout: Whether to log the stdout of the run. Defaults to True.
+        TODO: capture_stdout: Whether to log the stdout of the run. Defaults to True.
             The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
-        capture_stderr:  Whether to log the stderr of the run. Defaults to True.
+        TODO: capture_stderr:  Whether to log the stderr of the run. Defaults to True.
             The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
-        capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
+        TODO: capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
             Defaults to True.
             The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
         fail_on_exception: Whether to register an uncaught exception handler to this process and,
             in case of an exception, set the 'sys/failed' field of the run to True.
             An exception is always logged.
-        monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
+        TODO: monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
             Defaults to 'monitoring'.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
             Defaults to 5 (every 5 seconds).
@@ -161,7 +161,7 @@ def init_run(
             For more information, see the 'Proxies' section in the Requests documentation.
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
-            Tracked metadata will be stored in the 'monitoring/traceback' namespace.
+            TODO: Tracked metadata will be stored in the 'monitoring/traceback' namespace.
 
     Returns:
         Run object that is used to manage the tracked run and log metadata to it.
