@@ -30,7 +30,7 @@ from neptune.envs import (
 from neptune.integrations.python_logger import NeptuneHandler
 
 
-@patch("neptune.internal.init.run.generate_hash", lambda *vals: "some_hash")
+@patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
 class TestLogHandler(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

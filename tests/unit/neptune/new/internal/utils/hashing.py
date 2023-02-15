@@ -31,8 +31,8 @@ class TestHashGenerator:
         descriptors = [randint(0, 1024), "".join(choices(ascii_uppercase + digits, k=8))]
 
         # when
-        hash1 = generate_hash(*descriptors)
-        hash2 = generate_hash(*descriptors)
+        hash1 = generate_hash(*descriptors, length=8)
+        hash2 = generate_hash(*descriptors, length=8)
 
         # then
         assert hash1 == hash2
@@ -42,7 +42,7 @@ class TestHashGenerator:
         unique_descriptors = set((randint(0, 1024), "".join(choices(ascii_uppercase + digits, k=8))) for _ in range(10))
 
         # when
-        unique_hashes = set(generate_hash(*descriptors) for descriptors in unique_descriptors)
+        unique_hashes = set(generate_hash(*descriptors, length=8) for descriptors in unique_descriptors)
 
         # then
         assert len(unique_descriptors) == len(unique_hashes)

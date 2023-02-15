@@ -200,7 +200,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
-    @patch("neptune.internal.init.run.generate_hash", lambda *vals: "some_hash")
+    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.internal.init.run.TracebackJob")
     @patch("neptune.internal.init.run.HardwareMetricReportingJob")
     @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
@@ -212,7 +212,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with("monitoring/some_hash/traceback", True)
 
-    @patch("neptune.internal.init.run.generate_hash", lambda *vals: "some_hash")
+    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.internal.init.run.get_hostname", lambda *vals: "localhost")
     @patch("neptune.internal.init.run.os.getpid", lambda *vals: 1234)
     @patch("neptune.internal.init.run.threading.get_ident", lambda: 56789)
