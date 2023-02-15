@@ -327,6 +327,7 @@ class Handler:
                 elif from_stringify_value:
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
+                    # TODO: Change to exception
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
 
                 self._container.set_attribute(self._path, attr)

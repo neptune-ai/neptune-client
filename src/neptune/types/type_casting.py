@@ -85,6 +85,7 @@ def cast_value(value: Any) -> Value:
     elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
         return String(str(value))
     else:
+        # TODO: Change to exception
         raise TypeError("Value of unsupported type {}".format(type(value)))
 
 
@@ -115,4 +116,5 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
     elif from_stringify_value:
         return StringSeries(values=values)
     else:
+        # TODO: Change to exception
         raise TypeError("Value of unsupported type List[{}]".format(type(sample_val)))
