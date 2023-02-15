@@ -43,7 +43,6 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F4
 from neptune.internal.credentials import Credentials
 from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.operation import Operation  # noqa: F401
-from neptune.internal.utils.logger import logger
 
 
 @click.command()
@@ -74,13 +73,6 @@ def status(path: Path) -> None:
 @click.command()
 @path_option
 @click.option(
-    "--run",
-    "runs_names",
-    multiple=True,
-    metavar="<run-name>",
-    help="[deprecated] run name (workspace/project/short-id or UUID for offline runs) to synchronize.",
-)
-@click.option(
     "--object",
     "object_names",
     multiple=True,
@@ -104,14 +96,13 @@ def status(path: Path) -> None:
 )
 def sync(
     path: Path,
-    runs_names: List[str],
     object_names: List[str],
     project_name: Optional[str],
     offline_only: Optional[bool],
 ):
     """Synchronizes objects with unsent data with the server.
 
-    Neptune stores object data on disk in '.neptune' directories. In case a object executes offline
+    Neptune stores object data on disk in '.neptune' directories. In case an object executes offline
     or network is unavailable as the run executes, object data can be synchronized
     with the server with this command line utility.
 
@@ -151,14 +142,6 @@ def sync(
 
     backend = HostedNeptuneBackend(Credentials.from_token())
     sync_runner = SyncRunner(backend=backend)
-
-    if runs_names:
-        logger.warning(
-            "WARNING: --run parameter is deprecated and will be removed in the future, please start using --object"
-        )
-        # prefer object_names, obviously
-        object_names = set(object_names)
-        object_names.update(runs_names)
 
     if offline_only:
         if object_names:
