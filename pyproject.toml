@@ -133,7 +133,6 @@ repository = "https://github.com/neptune-ai/neptune-client"
 homepage = "https://neptune.ai/"
 documentation = "https://docs.neptune.ai/"
 include = ["CHANGELOG.md"]
-exclude = ["src/neptune/license_header.txt"]
 license = "Apache License 2.0"
 name = "neptune-client"
 readme = "README.md"
