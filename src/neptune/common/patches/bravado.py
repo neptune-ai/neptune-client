@@ -75,6 +75,6 @@ def _run_post_processing(spec):
 
 # Issue: https://github.com/Yelp/bravado-core/issues/388
 # Bravado currently makes additional requests to `json-schema.org` in order to gather mission schemas
-# This makes `neptune-client` unable to run without internet connection or with a many security policies
+# This makes `neptune` unable to run without internet connection or with a many security policies
 def patch():
     bravado_core.model._run_post_processing = _run_post_processing

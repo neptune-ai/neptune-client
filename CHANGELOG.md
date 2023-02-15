@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 1.0.0
+## [UNRELEASED] neptune 1.0.0
 
 ### Changes
 - Disabled automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))

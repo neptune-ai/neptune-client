@@ -638,7 +638,7 @@ Your version of the Neptune client library ({current_version}) is no longer supp
  server. The minimum required version is {required_version}.
 
 In order to update the Neptune client library, run the following command in your terminal:
-    {bash}pip install -U neptune-client{end}
+    {bash}pip install -U neptune{end}
 Or if you are using Conda, run the following instead:
     {bash}conda update -c conda-forge neptune-client{end}
 
@@ -798,7 +798,7 @@ Looks like integration {integration_package_name} wasn't installed.
 To install, run:
     {bash}pip install {integration_package_name}{end}
 Or:
-    {bash}pip install "neptune-client[{framework_name}]"{end}
+    {bash}pip install "neptune[{framework_name}]"{end}
 
 You may also want to check the following docs page:
     - https://docs.neptune.ai/integrations
