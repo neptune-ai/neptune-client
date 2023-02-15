@@ -140,6 +140,48 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
+    @patch("neptune.internal.init.run.in_interactive", new=lambda: True)
+    @patch("neptune.internal.init.run.TracebackJob")
+    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
+    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
+    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    def test_monitoring_disabled_in_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
+        with init_run(mode="debug", monitoring_namespace="monitoring"):
+            assert not stdout_job.called
+            assert not stderr_job.called
+            assert not hardware_job.called
+            traceback_job.assert_called_once_with("monitoring/traceback", True)
+
+    @patch("neptune.internal.init.run.in_interactive", new=lambda: False)
+    @patch("neptune.internal.init.run.TracebackJob")
+    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
+    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
+    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    def test_monitoring_enabled_in_non_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
+        with init_run(mode="debug", monitoring_namespace="monitoring"):
+            stdout_job.assert_called_once_with(attribute_name="monitoring/stdout")
+            stderr_job.assert_called_once_with(attribute_name="monitoring/stderr")
+            hardware_job.assert_called_once_with(attribute_namespace="monitoring")
+            traceback_job.assert_called_once_with("monitoring/traceback", True)
+
+    @patch("neptune.internal.init.run.in_interactive", new=lambda: True)
+    @patch("neptune.internal.init.run.TracebackJob")
+    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
+    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
+    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    def test_monitoring_in_interactive_explicitly_enabled(self, stdout_job, stderr_job, hardware_job, traceback_job):
+        with init_run(
+            mode="debug",
+            monitoring_namespace="monitoring",
+            capture_stdout=True,
+            capture_stderr=True,
+            capture_hardware_metrics=True,
+        ):
+            stdout_job.assert_called_once_with(attribute_name="monitoring/stdout")
+            stderr_job.assert_called_once_with(attribute_name="monitoring/stderr")
+            hardware_job.assert_called_once_with(attribute_namespace="monitoring")
+            traceback_job.assert_called_once_with("monitoring/traceback", True)
+
     @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.internal.utils.source_code.get_common_root", new=lambda _: None)
     @patch("neptune.internal.init.run.os.path.isfile", new=lambda file: "." in file)
