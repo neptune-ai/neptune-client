@@ -19,8 +19,8 @@ import hashlib
 
 
 def generate_hash(*descriptors, length: int = 8):
-    combined = "_".join(map(str, descriptors))
+    hasher = hashlib.sha256()
+    for descriptor in descriptors:
+        hasher.update(str(descriptor).encode())
 
-    hasher = hashlib.sha256(usedforsecurity=False)
-    hasher.update(combined.encode())
     return hasher.hexdigest()[-length:]
