@@ -36,7 +36,7 @@ from neptune.types.sets.string_set import StringSet as StringSetVal
 
 
 class StringSet(Set):
-    def assign(self, value: StringSetVal, wait: bool = False):
+    def assign(self, value: StringSetVal, *, wait: bool = False):
         verify_type("value", value, StringSetVal)
         with self._container.lock():
             if not value.values:
@@ -45,17 +45,17 @@ class StringSet(Set):
                 self._enqueue_operation(ClearStringSet(self._path), wait=False)
                 self._enqueue_operation(AddStrings(self._path, value.values), wait=wait)
 
-    def add(self, values: Union[str, Iterable[str]], wait: bool = False):
+    def add(self, values: Union[str, Iterable[str]], *, wait: bool = False):
         values = self._to_proper_value_type(values)
         with self._container.lock():
             self._enqueue_operation(AddStrings(self._path, set(values)), wait)
 
-    def remove(self, values: Union[str, Iterable[str]], wait: bool = False):
+    def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False):
         values = self._to_proper_value_type(values)
         with self._container.lock():
             self._enqueue_operation(RemoveStrings(self._path, set(values)), wait)
 
-    def clear(self, wait: bool = False):
+    def clear(self, *, wait: bool = False):
         with self._container.lock():
             self._enqueue_operation(ClearStringSet(self._path), wait)
 

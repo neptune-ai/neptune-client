@@ -36,7 +36,7 @@ class Artifact(Atom):
     def _check_feature(self):
         self._container._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
-    def assign(self, value: ArtifactVal, wait: bool = False):
+    def assign(self, value: ArtifactVal, *, wait: bool = False):
         self._check_feature()
         # this function should be used only with ArtifactVal
         if not isinstance(value, ArtifactVal):
@@ -70,7 +70,7 @@ class Artifact(Atom):
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files(self, path: str, destination: str = None, wait: bool = False):
+    def track_files(self, path: str, *, destination: str = None, wait: bool = False):
         self._check_feature()
         with self._container.lock():
             self._enqueue_operation(

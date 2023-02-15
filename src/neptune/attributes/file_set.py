@@ -35,7 +35,7 @@ from neptune.types.file_set import FileSet as FileSetVal
 
 
 class FileSet(Attribute):
-    def assign(self, value: Union[FileSetVal, str, Iterable[str]], wait: bool = False) -> None:
+    def assign(self, value: Union[FileSetVal, str, Iterable[str]], *, wait: bool = False) -> None:
         verify_type("value", value, (FileSetVal, str, Iterable))
         if isinstance(value, FileSetVal):
             value = value.file_globs
@@ -45,14 +45,14 @@ class FileSet(Attribute):
             verify_collection_type("value", value, str)
         self._enqueue_upload_operation(value, reset=True, wait=wait)
 
-    def upload_files(self, globs: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def upload_files(self, globs: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         if isinstance(globs, str):
             globs = [globs]
         else:
             verify_collection_type("globs", globs, str)
         self._enqueue_upload_operation(globs, reset=False, wait=wait)
 
-    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def delete_files(self, paths: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         if isinstance(paths, str):
             paths = [paths]
         else:

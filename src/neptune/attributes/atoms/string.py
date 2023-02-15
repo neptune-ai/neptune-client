@@ -51,7 +51,7 @@ class String(CopiableAtom):
         val = backend.get_string_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[StringVal, str], wait: bool = False):
+    def assign(self, value: typing.Union[StringVal, str], *, wait: bool = False):
         if not isinstance(value, StringVal):
             value = StringVal(value)
 

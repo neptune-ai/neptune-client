@@ -91,9 +91,10 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
 
 
 def init_run(
+    with_id: Optional[str] = None,
+    *,
     project: Optional[str] = None,
     api_token: Optional[str] = None,
-    with_id: Optional[str] = None,
     custom_run_id: Optional[str] = None,
     mode: Optional[str] = None,
     name: Optional[str] = None,

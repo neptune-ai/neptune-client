@@ -174,7 +174,7 @@ class MetadataContainer(AbstractContextManager):
         self.pop(path)
 
     @ensure_not_stopped
-    def assign(self, value, wait: bool = False) -> None:
+    def assign(self, value, *, wait: bool = False) -> None:
         self._get_root_handler().assign(value, wait)
 
     @ensure_not_stopped
@@ -190,7 +190,7 @@ class MetadataContainer(AbstractContextManager):
         self._bg_job.start(self)
         self._state = ContainerState.STARTED
 
-    def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
+    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         verify_type("seconds", seconds, (float, int, type(None)))
         if self._state != ContainerState.STARTED:
             return
@@ -263,7 +263,7 @@ class MetadataContainer(AbstractContextManager):
         return self.get_attribute(path) is not None
 
     @ensure_not_stopped
-    def pop(self, path: str, wait: bool = False) -> None:
+    def pop(self, path: str, *, wait: bool = False) -> None:
         verify_type("path", path, str)
         self._get_root_handler().pop(path, wait)
 
@@ -274,14 +274,14 @@ class MetadataContainer(AbstractContextManager):
     def lock(self) -> threading.RLock:
         return self._lock
 
-    def wait(self, disk_only=False) -> None:
+    def wait(self, *, disk_only=False) -> None:
         with self._lock:
             if disk_only:
                 self._op_processor.flush()
             else:
                 self._op_processor.wait()
 
-    def sync(self, wait: bool = True) -> None:
+    def sync(self, *, wait: bool = True) -> None:
         with self._lock:
             if wait:
                 self._op_processor.wait()

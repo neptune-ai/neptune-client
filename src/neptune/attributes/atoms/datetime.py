@@ -43,7 +43,7 @@ class Datetime(CopiableAtom):
         val = backend.get_datetime_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[DatetimeVal, datetime], wait: bool = False):
+    def assign(self, value: typing.Union[DatetimeVal, datetime], *, wait: bool = False):
         verify_type("value", value, (DatetimeVal, datetime))
         if isinstance(value, DatetimeVal):
             value = value.value

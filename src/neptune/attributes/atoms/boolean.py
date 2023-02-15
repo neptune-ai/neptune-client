@@ -41,7 +41,7 @@ class Boolean(CopiableAtom):
         val = backend.get_bool_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[BooleanVal, bool], wait: bool = False):
+    def assign(self, value: typing.Union[BooleanVal, bool], *, wait: bool = False):
         if not isinstance(value, BooleanVal):
             value = BooleanVal(value)
 

@@ -64,7 +64,7 @@ class Model(MetadataContainer):
     def _metadata_url(self) -> str:
         return self._url.rstrip("/") + "/metadata"
 
-    def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
 
         Args:

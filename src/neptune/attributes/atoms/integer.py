@@ -41,7 +41,7 @@ class Integer(CopiableAtom):
         val = backend.get_int_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[IntegerVal, float, int], wait: bool = False):
+    def assign(self, value: typing.Union[IntegerVal, float, int], *, wait: bool = False):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)
 
