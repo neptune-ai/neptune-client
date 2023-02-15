@@ -51,13 +51,13 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 **Step 2:** Install Neptune client library
 
 ```bash
-pip install neptune-client
+pip install neptune
 ```
 
 **Step 3:** Add experiment tracking snippet to your code
 
 ```python
-import neptune.new as neptune
+import neptune
 
 run = neptune.init_run("Me/MyProject")
 run["parameters"] = {"lr": 0.1, "dropout": 0.4}
