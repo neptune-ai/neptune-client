@@ -15,7 +15,6 @@
 #
 # flake8: noqa
 __all__ = [
-    "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "NeptunePossibleLegacyUsageException",
     "init_model",
@@ -46,7 +45,6 @@ __all__ = [
 import sys
 
 from neptune import (
-    ANONYMOUS,
     ANONYMOUS_API_TOKEN,
     Run,
     __version__,

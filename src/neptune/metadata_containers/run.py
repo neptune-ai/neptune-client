@@ -158,10 +158,6 @@ class Run(MetadataContainer):
     def _metadata_url(self) -> str:
         return self.get_url()
 
-    @property
-    def _short_id(self) -> str:
-        return self._sys_id
-
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
         You can use this method to quickly log all run's parameters.

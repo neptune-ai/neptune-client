@@ -19,7 +19,7 @@ from unittest.mock import call
 
 from mock import patch
 
-from neptune import ANONYMOUS
+from neptune import ANONYMOUS_API_TOKEN
 from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
@@ -33,7 +33,7 @@ class TestTrashObjects(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @classmethod
     def setUp(cls) -> None:

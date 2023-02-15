@@ -24,7 +24,7 @@ from mock import (
     patch,
 )
 
-from neptune import ANONYMOUS
+from neptune import ANONYMOUS_API_TOKEN
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -61,7 +61,7 @@ class AbstractTablesTestMixin:
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @classmethod
     def setUp(cls) -> None:
