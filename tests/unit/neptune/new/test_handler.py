@@ -32,7 +32,7 @@ from unittest.mock import patch
 import PIL
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     init_run,
 )
 from neptune.attributes.atoms.boolean import Boolean
@@ -68,7 +68,7 @@ class TestBaseAssign(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_assign_operator(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -142,7 +142,7 @@ class TestUpload(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_save_download_text_stream_to_given_destination(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -192,7 +192,7 @@ class TestSeries(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_assign_series(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -385,7 +385,7 @@ class TestSet(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_append_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -440,7 +440,7 @@ class TestNamespace(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -552,7 +552,7 @@ class TestDelete(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_pop(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -582,7 +582,7 @@ class TestArtifacts(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_artifacts(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -602,7 +602,7 @@ class TestOtherBehaviour(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_assign_distinct_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:

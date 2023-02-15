@@ -18,7 +18,7 @@ import unittest
 from datetime import datetime
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     Run,
     init_model,
     init_model_version,
@@ -54,7 +54,7 @@ class TestExperiment(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @classmethod
     def get_experiments(cls, flush_period=None):

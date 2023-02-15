@@ -20,7 +20,7 @@ import unittest
 from mock import patch
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     init_run,
 )
 from neptune.envs import (
@@ -35,7 +35,7 @@ class TestLogHandler(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def _log_messages(self, logger):
         logger.error("error message")

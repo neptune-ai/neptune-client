@@ -19,7 +19,7 @@ import unittest
 from mock import patch
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     init_run,
 )
 from neptune.attributes.atoms import String
@@ -50,7 +50,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
