@@ -45,6 +45,7 @@ from neptune.exceptions import (
     UnsupportedType,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
+from neptune.internal.types.type_casting import cast_value_for_extend
 from neptune.internal.utils import (
     is_collection,
     is_dict_like,
@@ -61,7 +62,6 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.types.atoms.file import File as FileVal
-from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:

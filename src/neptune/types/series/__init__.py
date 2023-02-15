@@ -20,6 +20,6 @@ __all__ = [
     "StringSeries",
 ]
 
-from .file_series import FileSeries
-from .float_series import FloatSeries
-from .string_series import StringSeries
+from neptune.types.series.file_series import FileSeries
+from neptune.types.series.float_series import FloatSeries
+from neptune.types.series.string_series import StringSeries

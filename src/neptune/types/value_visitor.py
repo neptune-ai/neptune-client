@@ -16,27 +16,32 @@
 __all__ = ["ValueVisitor"]
 
 import abc
-import typing
 from typing import (
     Generic,
+    List,
+    Type,
     TypeVar,
 )
 
 from neptune.attributes.attribute import Attribute
-from neptune.types.atoms import GitRef
-from neptune.types.atoms.artifact import Artifact
-from neptune.types.atoms.boolean import Boolean
-from neptune.types.atoms.datetime import Datetime
-from neptune.types.atoms.file import File
-from neptune.types.atoms.float import Float
-from neptune.types.atoms.integer import Integer
-from neptune.types.atoms.string import String
-from neptune.types.file_set import FileSet
-from neptune.types.namespace import Namespace
-from neptune.types.series.file_series import FileSeries
-from neptune.types.series.float_series import FloatSeries
-from neptune.types.series.string_series import StringSeries
-from neptune.types.sets.string_set import StringSet
+from neptune.types.atoms import (
+    Artifact,
+    Boolean,
+    Datetime,
+    File,
+    FileSet,
+    Float,
+    GitRef,
+    Integer,
+    Namespace,
+    String,
+)
+from neptune.types.series import (
+    FileSeries,
+    FloatSeries,
+    StringSeries,
+)
+from neptune.types.sets import StringSet
 from neptune.types.value import Value
 
 Ret = TypeVar("Ret")
@@ -103,5 +108,5 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def copy_value(self, source_type: typing.Type[Attribute], source_path: typing.List[str]) -> Ret:
+    def copy_value(self, source_type: Type[Attribute], source_path: List[str]) -> Ret:
         pass

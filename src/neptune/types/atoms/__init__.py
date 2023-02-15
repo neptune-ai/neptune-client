@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "File",
-    "Float",
-    "GitRef",
-    "String",
-]
+__all__ = ["Artifact", "Boolean", "Datetime", "File", "Float", "GitRef", "Integer", "String"]
 
-from .file import File
-from .float import Float
-from .git_ref import GitRef
-from .string import String
+from neptune.types.atoms.artifact import Artifact
+from neptune.types.atoms.boolean import Boolean
+from neptune.types.atoms.datetime import Datetime
+from neptune.types.atoms.file import File
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.git_ref import GitRef
+from neptune.types.atoms.integer import Integer
+from neptune.types.atoms.string import String

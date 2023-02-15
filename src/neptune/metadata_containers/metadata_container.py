@@ -55,6 +55,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
+from neptune.internal.types.type_casting import cast_value
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
@@ -66,7 +67,6 @@ from neptune.internal.utils.uncaught_exception_handler import instance as uncaug
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
-from neptune.types.type_casting import cast_value
 
 
 def ensure_not_stopped(fun):
