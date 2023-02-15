@@ -37,7 +37,7 @@ class File(Atom):
             self._enqueue_operation(operation, wait)
 
     def upload(self, value, *, wait: bool = False) -> None:
-        self.assign(FileVal.create_from(value), wait)
+        self.assign(FileVal.create_from(value), wait=wait)
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))

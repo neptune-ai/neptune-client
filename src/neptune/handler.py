@@ -208,7 +208,7 @@ class Handler:
             else:
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
-                attr.process_assignment(value, wait)
+                attr.process_assignment(value, wait=wait)
 
     @check_protected_paths
     def upload(self, value, *, wait: bool = False) -> None:
@@ -249,7 +249,7 @@ class Handler:
             if attr is None:
                 attr = File(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.upload(value, wait)
+            attr.upload(value, wait=wait)
 
     @check_protected_paths
     def upload_files(self, value: Union[str, Iterable[str]], *, wait: bool = False) -> None:
@@ -263,7 +263,7 @@ class Handler:
             if attr is None:
                 attr = FileSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.upload_files(value, wait)
+            attr.upload_files(value, wait=wait)
 
     @check_protected_paths
     def log(
@@ -379,7 +379,7 @@ class Handler:
             timestamp = [timestamp]
 
         value = ExtendUtils.validate_and_transform_to_extend_format(value)
-        self.extend(value, step, timestamp, wait, **kwargs)
+        self.extend(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
     def extend(
@@ -455,10 +455,10 @@ class Handler:
             if attr is None:
                 attr = StringSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.add(values, wait)
+            attr.add(values, wait=wait)
 
     @check_protected_paths
-    def pop(self, path: str = None, wait: bool = False) -> None:
+    def pop(self, path: str = None, *, wait: bool = False) -> None:
         with self._container.lock():
             handler = self
             if path:
@@ -473,9 +473,9 @@ class Handler:
             attribute = self._container.get_attribute(path)
             if isinstance(attribute, Namespace):
                 for child_path in list(attribute):
-                    handler.pop(child_path, wait)
+                    handler.pop(child_path, wait=wait)
             else:
-                self._container._pop_impl(parse_path(path), wait)
+                self._container._pop_impl(parse_path(path), wait=wait)
 
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:

@@ -61,6 +61,6 @@ class Attribute:
 
     def process_assignment(self, value, wait=False):
         if isinstance(value, ValueCopy):
-            return self.copy(value, wait)
+            return self.copy(value, wait=wait)
         else:
-            return self.assign(value, wait)
+            return self.assign(value, wait=wait)

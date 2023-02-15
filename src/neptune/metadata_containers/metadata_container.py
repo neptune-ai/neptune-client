@@ -175,7 +175,7 @@ class MetadataContainer(AbstractContextManager):
 
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
-        self._get_root_handler().assign(value, wait)
+        self._get_root_handler().assign(value, wait=wait)
 
     @ensure_not_stopped
     def fetch(self) -> dict:
@@ -247,7 +247,7 @@ class MetadataContainer(AbstractContextManager):
             neptune_value = cast_value(value)
             attr = ValueToAttributeVisitor(self, parse_path(path)).visit(neptune_value)
             self.set_attribute(path, attr)
-            attr.process_assignment(neptune_value, wait)
+            attr.process_assignment(neptune_value, wait=wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
@@ -265,7 +265,7 @@ class MetadataContainer(AbstractContextManager):
     @ensure_not_stopped
     def pop(self, path: str, *, wait: bool = False) -> None:
         verify_type("path", path, str)
-        self._get_root_handler().pop(path, wait)
+        self._get_root_handler().pop(path, wait=wait)
 
     def _pop_impl(self, parsed_path: List[str], wait: bool):
         self._structure.pop(parsed_path)
