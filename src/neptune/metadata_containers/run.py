@@ -23,6 +23,7 @@ from typing import (
     Union,
 )
 
+from neptune.exceptions import InactiveRunException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_type import ContainerType
@@ -31,6 +32,7 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.state import ContainerState
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
 
@@ -131,13 +133,13 @@ class Run(MetadataContainer):
         )
         self.monitoring_namespace = monitoring_namespace
 
+    def _raise_if_stopped(self):
+        if self._state == ContainerState.STOPPED:
+            raise InactiveRunException(label=self._sys_id)
+
     @property
     def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api/run#stop"
-
-    @property
-    def _label(self) -> str:
-        return self._sys_id
 
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""

@@ -93,7 +93,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: "NeptuneObject", path: str):
+    def __init__(self, container: "MetadataContainer", path: str):
         super().__init__()
         self._container = container
         self._path = path
