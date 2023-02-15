@@ -23,8 +23,8 @@ from typing import (
 )
 
 from neptune.internal.utils import is_collection
-from neptune.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.types.series.series import Series
+from neptune.types.stringify_value import extract_if_stringify_value
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor

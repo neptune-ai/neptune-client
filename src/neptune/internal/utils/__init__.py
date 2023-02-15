@@ -51,7 +51,7 @@ from typing import (
     Union,
 )
 
-from neptune.internal.utils.stringify_value import StringifyValue
+from neptune.types.stringify_value import StringifyValue
 
 T = TypeVar("T")
 
