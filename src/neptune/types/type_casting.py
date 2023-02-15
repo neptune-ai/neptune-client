@@ -23,6 +23,7 @@ from typing import (
     Union,
 )
 
+from neptune.exceptions import UnsupportedType
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,
@@ -37,7 +38,6 @@ from neptune.types import (
     File,
     Integer,
 )
-from neptune.exceptions import UnsupportedType
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
