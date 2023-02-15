@@ -59,14 +59,14 @@ def environment():
     time.sleep(10)
 
     add_project_member(
-        name=created_project_identifier,
+        project=created_project_identifier,
         username=user,
         role="contributor",
         api_token=admin_token,
     )
 
     add_project_service_account(
-        name=created_project_identifier,
+        project=created_project_identifier,
         service_account_name=service_account_name,
         role="contributor",
         api_token=admin_token,
