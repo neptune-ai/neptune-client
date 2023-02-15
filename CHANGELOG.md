@@ -13,6 +13,7 @@
 - Monitoring is off by default for interactive Python kernels ([#1219](https://github.com/neptune-ai/neptune-client/pull/1219))
 - Removed `name` parameter from `init_project` function and `management` API ([#1227](https://github.com/neptune-ai/neptune-client/pull/1227))
 - Monitoring namespace based on hostname, process id and thread id ([#1222](https://github.com/neptune-ai/neptune-client/pull/1222))
+- Removed deprecated `--run` option from `neptune sync` command ([#1231](https://github.com/neptune-ai/neptune-client/pull/1231))
 
 ## neptune-client 0.16.18
 
