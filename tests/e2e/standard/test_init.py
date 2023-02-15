@@ -63,7 +63,7 @@ class TestInitRun(BaseE2ETest):
 
 class TestInitProject(BaseE2ETest):
     def test_resuming_project(self, environment):
-        exp = neptune.init_project(name=environment.project)
+        exp = neptune.init_project(project=environment.project)
 
         key = self.gen_key()
         val = fake.word()
@@ -72,11 +72,11 @@ class TestInitProject(BaseE2ETest):
 
         exp.stop()
 
-        exp2 = neptune.init_project(name=environment.project)
+        exp2 = neptune.init_project(project=environment.project)
         assert exp2[key].fetch() == val
 
     def test_init_and_readonly(self, environment):
-        project: Project = neptune.init_project(name=environment.project)
+        project: Project = neptune.init_project(project=environment.project)
 
         key = f"{self.gen_key()}-" + "-".join((fake.word() for _ in range(4)))
         val = fake.word()
@@ -84,7 +84,7 @@ class TestInitProject(BaseE2ETest):
         project.sync()
         project.stop()
 
-        read_only_project = neptune.init_project(mode="read-only", name=environment.project)
+        read_only_project = neptune.init_project(mode="read-only", project=environment.project)
         read_only_project.sync()
 
         assert set(read_only_project.get_structure()["sys"]) == {

@@ -30,7 +30,7 @@ class TestModelTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL
 
     def get_table(self, **kwargs) -> Table:
-        return init_project(name="organization/project", mode="read-only").fetch_models_table(**kwargs)
+        return init_project(project="organization/project", mode="read-only").fetch_models_table(**kwargs)
 
     def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()

@@ -157,7 +157,7 @@ def initialize_container(container_type, project, **extra_args):
         container_type = container_type.value
 
     if container_type == "project":
-        return neptune.init_project(name=project, **extra_args)
+        return neptune.init_project(project=project, **extra_args)
 
     if container_type == "run":
         return neptune.init_run(project=project, **extra_args)
@@ -178,7 +178,7 @@ def initialize_container(container_type, project, **extra_args):
 def reinitialize_container(sys_id: str, container_type: str, project: str, **kwargs):
     if container_type == "project":
         # exactly same as initialize_container(project), for convenience
-        return neptune.init_project(name=project, **kwargs)
+        return neptune.init_project(project=project, **kwargs)
 
     if container_type == "run":
         return neptune.init_run(with_id=sys_id, project=project, **kwargs)
