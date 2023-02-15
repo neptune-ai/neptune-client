@@ -16,6 +16,7 @@
 - Removed deprecated `--run` option from `neptune sync` command ([#1231](https://github.com/neptune-ai/neptune-client/pull/1231))
 - Removed `Run._short_id` property ([#1234](https://github.com/neptune-ai/neptune-client/pull/1234))
 - Removed `get_run_url` method ([#1238](https://github.com/neptune-ai/neptune-client/pull/1238))
+- Removed `neptune.new.sync` module ([#1240](https://github.com/neptune-ai/neptune-client/pull/1240))
 
 ## neptune-client 0.16.18
 
