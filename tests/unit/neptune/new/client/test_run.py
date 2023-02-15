@@ -199,3 +199,25 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
+
+    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
+    @patch("neptune.internal.init.run.TracebackJob")
+    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
+    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
+    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    def test_monitoring_namespace_based_on_hash(self, stdout_job, stderr_job, hardware_job, traceback_job):
+        with init_run(mode="debug"):
+            stdout_job.assert_called_once_with(attribute_name="monitoring/some_hash/stdout")
+            stderr_job.assert_called_once_with(attribute_name="monitoring/some_hash/stderr")
+            hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
+            traceback_job.assert_called_once_with("monitoring/some_hash/traceback", True)
+
+    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
+    @patch("neptune.internal.init.run.get_hostname", lambda *vals: "localhost")
+    @patch("neptune.internal.init.run.os.getpid", lambda *vals: 1234)
+    @patch("neptune.internal.init.run.threading.get_ident", lambda: 56789)
+    def test_that_hostname_and_process_info_were_logged(self):
+        with init_run(mode="debug") as exp:
+            assert exp["monitoring/some_hash/hostname"].fetch() == "localhost"
+            assert exp["monitoring/some_hash/pid"].fetch() == "1234"
+            assert exp["monitoring/some_hash/tid"].fetch() == "56789"

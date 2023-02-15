@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 __all__ = ["init_run"]
+
 import os
 import threading
 import typing
@@ -63,6 +64,7 @@ from neptune.internal.utils.git import (
     discover_git_repo_location,
     get_git_info,
 )
+from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
@@ -142,24 +144,26 @@ def init_run(
             all Python files from the current directory.
             If None is passed, the Python file from which the run was created will be uploaded.
         capture_stdout: Whether to log the stdout of the run. Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
         capture_stderr:  Whether to log the stderr of the run. Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
         capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
             Defaults to True.
-            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+            The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
         fail_on_exception: Whether to register an uncaught exception handler to this process and,
             in case of an exception, set the 'sys/failed' field of the run to True.
             An exception is always logged.
         monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
-            Defaults to 'monitoring'.
+            Defaults to 'monitoring/<hash>', where the hash is generated based on environment information,
+            to ensure that it's unique for each process.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
             Defaults to 5 (every 5 seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
             For more information, see the 'Proxies' section in the Requests documentation.
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
-            Tracked metadata will be stored in the 'monitoring/traceback' namespace.
+            The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
+            'monitoring_namespace' parameter).
 
     Returns:
         Run object that is used to manage the tracked run and log metadata to it.
@@ -242,9 +246,15 @@ def init_run(
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
     name = DEFAULT_NAME if with_id is None and name is None else name
     description = "" if with_id is None and description is None else description
-    hostname = get_hostname() if with_id is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
-    monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
+
+    hostname = get_hostname()
+    pid = os.getpid()
+    tid = threading.get_ident()
+
+    monitoring_namespace = (
+        monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or generate_monitoring_namespace(hostname, pid, tid)
+    )
 
     if capture_stdout is None:
         capture_stdout = capture_only_if_non_interactive()
@@ -343,12 +353,24 @@ def init_run(
     if mode != Mode.READ_ONLY:
         if name is not None:
             _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
+
         if description is not None:
             _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
+
         if hostname is not None:
-            _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+            _run[f"{monitoring_namespace}/hostname"] = hostname
+            if with_id is None:
+                _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+
+        if pid is not None:
+            _run[f"{monitoring_namespace}/pid"] = str(pid)
+
+        if tid is not None:
+            _run[f"{monitoring_namespace}/tid"] = str(tid)
+
         if tags is not None:
             _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+
         if with_id is None:
             _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
@@ -387,3 +409,7 @@ def capture_only_if_non_interactive() -> bool:
     if in_interactive() or in_notebook():
         return False
     return True
+
+
+def generate_monitoring_namespace(*descriptors):
+    return f"monitoring/{generate_hash(*descriptors, length=8)}"
