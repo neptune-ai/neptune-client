@@ -11,6 +11,7 @@
 - Removed `model` parameter from `init_model` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
 - Removed `version` parameter from `init_model_version` function ([#1223](https://github.com/neptune-ai/neptune-client/pull/1223))
 - Monitoring is off by default for interactive Python kernels ([#1219](https://github.com/neptune-ai/neptune-client/pull/1219))
+- Removed `name` param from `init_project` and `management.api` ([#1227](https://github.com/neptune-ai/neptune-client/pull/1227))
 
 ## neptune-client 0.16.18
 
