@@ -222,20 +222,6 @@ from neptune.new.runs_table import (
     RunsTable,
     RunsTableEntry,
 )
-from neptune.new.sync import (
-    ApiExperiment,
-    CannotSynchronizeOfflineRunsWithoutProject,
-    DiskQueue,
-    HostedNeptuneBackend,
-    NeptuneBackend,
-    NeptuneConnectionLostException,
-    NeptuneException,
-    Operation,
-    Path,
-    Project,
-    ProjectNotFound,
-    RunNotFound,
-)
 
 
 class TestImports(unittest.TestCase):
