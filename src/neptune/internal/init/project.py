@@ -29,12 +29,10 @@ from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.utils import verify_type
-from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.metadata_containers import Project
 from neptune.types.mode import Mode
 
 
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def init_project(
     *,
     project: Optional[str] = None,

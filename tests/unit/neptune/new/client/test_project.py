@@ -47,7 +47,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     @staticmethod
     def call_init(**kwargs):
-        return init_project(name=TestClientProject.PROJECT_NAME, **kwargs)
+        return init_project(project=TestClientProject.PROJECT_NAME, **kwargs)
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -60,7 +60,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
-            with init_project(name=self.PROJECT_NAME, mode="offline"):
+            with init_project(project=self.PROJECT_NAME, mode="offline"):
                 pass
 
     def test_no_project_name(self):
@@ -85,7 +85,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        with init_project(name=self.PROJECT_NAME, mode="read-only") as project:
+        with init_project(project=self.PROJECT_NAME, mode="read-only") as project:
             with self.assertLogs() as caplog:
                 project["some/variable"] = 13
                 project["some/other_variable"] = 11

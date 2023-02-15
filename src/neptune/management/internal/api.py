@@ -65,7 +65,6 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.internal.utils.deprecation import deprecated_parameter
 from neptune.internal.utils.iteration import get_batches
 from neptune.internal.utils.logger import logger
 from neptune.management.exceptions import (
@@ -260,7 +259,6 @@ def _create_project(backend_client, project_qualified_name: str, params: dict):
         raise ProjectsLimitReached() from e
 
 
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 @with_api_exceptions_handler
 def delete_project(project: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
     """Deletes a project from a Neptune workspace.
@@ -304,7 +302,6 @@ def delete_project(project: str, workspace: Optional[str] = None, api_token: Opt
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def add_project_member(
     project: str,
     username: str,
@@ -376,7 +373,6 @@ def add_project_member(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def get_project_member_list(
     project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
@@ -422,7 +418,6 @@ def get_project_member_list(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def remove_project_member(
     project: str,
     username: str,
@@ -481,7 +476,6 @@ def remove_project_member(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="workspace")
 def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists members of a Neptune workspace.
 
@@ -538,7 +532,6 @@ def _get_raw_workspace_service_account_list(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="workspace")
 def get_workspace_service_account_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
@@ -568,7 +561,6 @@ def get_workspace_service_account_list(workspace: str, api_token: Optional[str] 
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def get_project_service_account_list(
     project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
@@ -616,7 +608,6 @@ def get_project_service_account_list(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def add_project_service_account(
     project: str,
     service_account_name: str,
@@ -701,7 +692,6 @@ def add_project_service_account(
 
 
 @with_api_exceptions_handler
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def remove_project_service_account(
     project: str,
     service_account_name: str,
@@ -772,7 +762,6 @@ def remove_project_service_account(
         ) from e
 
 
-@deprecated_parameter(deprecated_kwarg_name="name", required_kwarg_name="project")
 def trash_objects(
     project: str,
     ids: Union[str, Iterable[str]],
