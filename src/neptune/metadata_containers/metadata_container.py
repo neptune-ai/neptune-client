@@ -124,11 +124,6 @@ class MetadataContainer(AbstractContextManager):
     def _raise_if_stopped(self):
         raise NotImplementedError
 
-    @property
-    @abc.abstractmethod
-    def _docs_url_stop(self) -> str:
-        raise NotImplementedError
-
     def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
         return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))

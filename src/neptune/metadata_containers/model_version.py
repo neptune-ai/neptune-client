@@ -38,10 +38,6 @@ class ModelVersion(MetadataContainer):
 
     container_type = ContainerType.MODEL_VERSION
 
-    @property
-    def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api/model_version#stop"
-
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelVersionException(label=self._sys_id)
