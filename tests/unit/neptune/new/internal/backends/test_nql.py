@@ -54,10 +54,10 @@ class TestNQL(unittest.TestCase):
                     name="sys/state",
                     type=NQLAttributeType.EXPERIMENT_STATE,
                     operator=NQLAttributeOperator.EQUALS,
-                    value="running",
+                    value="Active",
                 )
             ),
-            '(`sys/state`:experimentState = "running")',
+            '(`sys/state`:experimentState = "Active")',
         )
         self.assertEqual(
             str(

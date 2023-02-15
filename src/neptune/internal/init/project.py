@@ -34,8 +34,8 @@ from neptune.types.mode import Mode
 
 
 def init_project(
-    *,
     project: Optional[str] = None,
+    *,
     api_token: Optional[str] = None,
     mode: Optional[str] = None,
     flush_period: float = DEFAULT_FLUSH_PERIOD,
