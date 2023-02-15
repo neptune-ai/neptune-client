@@ -197,7 +197,7 @@ class MetadataContainer(AbstractContextManager):
 
         if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
             logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self._url.rstrip("/") + "/metadata")
+            logger.info(self.get_url().rstrip("/") + "/metadata")
         self._backend.close()
         self._state = ContainerState.STOPPED
 
