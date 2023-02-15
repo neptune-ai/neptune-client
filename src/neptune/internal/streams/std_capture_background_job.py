@@ -20,10 +20,6 @@ from typing import (
     Optional,
 )
 
-from neptune.attributes.constants import (
-    MONITORING_STDERR_ATTRIBUTE_PATH,
-    MONITORING_STDOUT_ATTRIBUTE_PATH,
-)
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.streams.std_stream_capture_logger import (
     StderrCaptureLogger,
@@ -35,7 +31,7 @@ if TYPE_CHECKING:
 
 
 class StdoutCaptureBackgroundJob(BackgroundJob):
-    def __init__(self, attribute_name: str = MONITORING_STDOUT_ATTRIBUTE_PATH):
+    def __init__(self, attribute_name: str):
         self._attribute_name = attribute_name
         self._logger = None
 
@@ -50,7 +46,7 @@ class StdoutCaptureBackgroundJob(BackgroundJob):
 
 
 class StderrCaptureBackgroundJob(BackgroundJob):
-    def __init__(self, attribute_name: str = MONITORING_STDERR_ATTRIBUTE_PATH):
+    def __init__(self, attribute_name: str):
         self._attribute_name = attribute_name
         self._logger = None
 
