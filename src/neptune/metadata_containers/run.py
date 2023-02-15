@@ -31,7 +31,6 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.utils.deprecation import deprecated
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
 
@@ -139,11 +138,6 @@ class Run(MetadataContainer):
     @property
     def _label(self) -> str:
         return self._sys_id
-
-    @deprecated(alternative="get_url")
-    def get_run_url(self) -> str:
-        """Returns the URL the run can be accessed with in the browser"""
-        return self.get_url()
 
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""

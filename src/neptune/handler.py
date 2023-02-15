@@ -113,7 +113,7 @@ class Handler:
         self[key].assign(value)
 
     def __getattr__(self, item: str):
-        run_level_methods = {"exists", "get_structure", "get_run_url", "print_structure", "stop", "sync", "wait"}
+        run_level_methods = {"exists", "get_structure", "print_structure", "stop", "sync", "wait"}
 
         if item in run_level_methods:
             raise AttributeError(
