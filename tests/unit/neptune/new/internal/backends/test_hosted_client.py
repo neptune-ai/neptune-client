@@ -128,7 +128,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_members = get_workspace_member_list(name="org2", api_token=API_TOKEN)
+        returned_members = get_workspace_member_list(workspace="org2", api_token=API_TOKEN)
 
         # then:
         self.assertEqual({"tester1": "member", "tester2": "admin"}, returned_members)
@@ -143,7 +143,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_members = get_workspace_member_list(name="org2", api_token=API_TOKEN)
+        returned_members = get_workspace_member_list(workspace="org2", api_token=API_TOKEN)
 
         # then:
         self.assertEqual({}, returned_members)
@@ -156,7 +156,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(WorkspaceNotFound):
-            get_workspace_member_list(name="org2", api_token=API_TOKEN)
+            get_workspace_member_list(workspace="org2", api_token=API_TOKEN)
 
     def test_project_members(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -172,7 +172,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_members = get_project_member_list(name="org/proj", api_token=API_TOKEN)
+        returned_members = get_project_member_list(project="org/proj", api_token=API_TOKEN)
 
         # then:
         self.assertEqual(
@@ -190,7 +190,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_members = get_project_member_list(name="org/proj", api_token=API_TOKEN)
+        returned_members = get_project_member_list(project="org/proj", api_token=API_TOKEN)
 
         # then:
         self.assertEqual({}, returned_members)
@@ -203,7 +203,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(ProjectNotFound):
-            get_project_member_list(name="org/proj", api_token=API_TOKEN)
+            get_project_member_list(project="org/proj", api_token=API_TOKEN)
 
     def test_delete_project_not_exists(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -213,7 +213,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(ProjectNotFound):
-            delete_project(name="org/proj", api_token=API_TOKEN)
+            delete_project(project="org/proj", api_token=API_TOKEN)
 
     def test_delete_project_permissions(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -223,7 +223,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(AccessRevokedOnDeletion):
-            delete_project(name="org/proj", api_token=API_TOKEN)
+            delete_project(project="org/proj", api_token=API_TOKEN)
 
     def test_create_project_already_exists(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -330,7 +330,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(ProjectNotFound):
             add_project_member(
-                name="org/proj",
+                project="org/proj",
                 username="tester",
                 role=MemberRole.VIEWER,
                 api_token=API_TOKEN,
@@ -342,7 +342,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(UnsupportedValue):
             add_project_member(
-                name="org/proj",
+                project="org/proj",
                 username="tester",
                 role="unknown_role",
                 api_token=API_TOKEN,
@@ -357,7 +357,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(UserAlreadyHasAccess):
             add_project_member(
-                name="org/proj",
+                project="org/proj",
                 username="tester",
                 role=MemberRole.VIEWER,
                 api_token=API_TOKEN,
@@ -373,7 +373,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(ProjectNotFound):
-            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
+            remove_project_member(project="org/proj", username="tester", api_token=API_TOKEN)
 
     def test_remove_project_member_no_user(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -385,7 +385,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(UserNotExistsOrWithoutAccess):
-            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
+            remove_project_member(project="org/proj", username="tester", api_token=API_TOKEN)
 
     def test_remove_project_member_permissions(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -397,4 +397,4 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         with self.assertRaises(AccessRevokedOnMemberRemoval):
-            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
+            remove_project_member(project="org/proj", username="tester", api_token=API_TOKEN)

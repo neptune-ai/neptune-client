@@ -228,7 +228,7 @@ class Project(MetadataContainer):
             >>> import neptune
 
             >>> # Fetch project "jackie/sandbox"
-            ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
+            ... project = neptune.init_project(mode="read-only", project="jackie/sandbox")
 
             >>> # Fetch the metadata of all runs as a pandas DataFrame
             ... runs_table_df = project.fetch_runs_table().to_pandas()
@@ -294,7 +294,7 @@ class Project(MetadataContainer):
             >>> import neptune
 
             >>> # Fetch project "jackie/sandbox"
-            ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
+            ... project = neptune.init_project(mode="read-only", project="jackie/sandbox")
 
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
@@ -337,7 +337,7 @@ class Project(MetadataContainer):
                 This makes the call synchronous. Defaults to `False`.
         Examples:
             >>> import neptune
-            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
+            >>> project = neptune.init_project(project="MY_WORKSPACE/MY_PROJECT")
             >>> # Assign multiple fields from a dictionary
             ... general_info = {"brief": URL_TO_PROJECT_BRIEF, "deadline": "2049-06-30"}
             >>> project["general"] = general_info
@@ -362,7 +362,7 @@ class Project(MetadataContainer):
             `dict` containing all non-File Atom fields values.
         Examples:
             >>> import neptune
-            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
+            >>> project = neptune.init_project(project="MY_WORKSPACE/MY_PROJECT")
             >>> # Fetch all the project metrics
             >>> project_metrics = project["metrics"].fetch()
         You may also want to check `fetch docs page`_.
@@ -384,7 +384,7 @@ class Project(MetadataContainer):
         Examples:
             If you are initializing the connection from a script you don't need to call `.stop()`:
             >>> import neptune
-            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
+            >>> project = neptune.init_project(project="MY_WORKSPACE/MY_PROJECT")
             >>> # Your code
             ... pass
             ... # If you are executing Python script .stop()
@@ -396,13 +396,13 @@ class Project(MetadataContainer):
             >>> # If you are initializing multiple connections from the same script
             ... # stop the connection manually once not needed
             ... for project_name in projects:
-            ...   project = neptune.init_project(name=project_name)
+            ...   project = neptune.init_project(project=project_name)
             ...   # Your code
             ...   pass
             ...   project.stop()
             >>> # You can also use with statement and context manager
             ... for project_name in projects:
-            ...   with neptune.init_project(name=project_name) as project:
+            ...   with neptune.init_project(project=project_name) as project:
             ...     # Your code
             ...     pass
             ...     # .stop() is automatically called
@@ -442,7 +442,7 @@ class Project(MetadataContainer):
                 This makes the call synchronous. Defaults to `False`.
         Examples:
             >>> import neptune
-            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
+            >>> project = neptune.init_project(project="MY_WORKSPACE/MY_PROJECT")
             >>> # Delete a field along with it's data
             ... project.pop("datasets/v0.4")
             >>> # .pop() can be invoked directly on fields and namespaces

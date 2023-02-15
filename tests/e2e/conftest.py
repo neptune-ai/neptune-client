@@ -59,14 +59,14 @@ def environment():
     time.sleep(10)
 
     add_project_member(
-        name=created_project_identifier,
+        project=created_project_identifier,
         username=user,
         role="contributor",
         api_token=admin_token,
     )
 
     add_project_service_account(
-        name=created_project_identifier,
+        project=created_project_identifier,
         service_account_name=service_account_name,
         role="contributor",
         api_token=admin_token,
@@ -82,7 +82,7 @@ def environment():
         service_account=raw_env.service_account_name,
     )
 
-    project = init_project(name=created_project_identifier, api_token=admin_token)
+    project = init_project(project=created_project_identifier, api_token=admin_token)
     project["finished"] = datetime.now()
     project.stop()
 
@@ -122,4 +122,4 @@ def common_tag():
 
 @pytest.fixture(scope="session")
 def project(environment):
-    yield init_project(mode="read-only", name=environment.project, api_token=environment.user_token)
+    yield init_project(mode="read-only", project=environment.project, api_token=environment.user_token)
