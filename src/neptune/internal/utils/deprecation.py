@@ -30,8 +30,7 @@ def deprecated(*, alternative: Optional[str] = None):
 
             warn_once(
                 message=f"`{func.__name__}` is deprecated{additional_info}."
-                f" We'll end support of it in `neptune-client==1.0.0`."
-                " For details, see https://docs.neptune.ai/setup/neptune-client_1-0_release_changes"
+                f" We'll end support of it in next major release."
             )
 
             return func(*args, **kwargs)
@@ -51,7 +50,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
 
                 warn_once(
                     message=f"Parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
-                    " We'll end support of it in `neptune-client==1.0.0`."
+                    " We'll end support of it in next major release."
                 )
 
                 kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]

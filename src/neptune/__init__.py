@@ -33,10 +33,7 @@ from neptune.internal.init import (
     init_run,
 )
 from neptune.metadata_containers import Run
-from neptune.version import version
-
-__version__ = str(version)
-
+from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
