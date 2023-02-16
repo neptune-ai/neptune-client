@@ -15,7 +15,6 @@
 #
 __all__ = ["Project"]
 
-import threading
 from typing import (
     Iterable,
     Optional,
@@ -23,7 +22,6 @@ from typing import (
 )
 
 from neptune.exceptions import InactiveProjectException
-from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -31,18 +29,11 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
-from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import (
-    SysId,
-    UniqueId,
-)
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import as_list
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.types.mode import Mode
 
 
 class Project(MetadataContainer):
@@ -55,32 +46,6 @@ class Project(MetadataContainer):
     """
 
     container_type = ContainerType.PROJECT
-
-    def __init__(
-        self,
-        *,
-        id_: UniqueId,
-        mode: Mode,
-        backend: NeptuneBackend,
-        op_processor: OperationProcessor,
-        background_job: BackgroundJob,
-        lock: threading.RLock,
-        workspace: str,
-        project_name: str,
-        sys_id: SysId,
-    ):
-        super().__init__(
-            id_=id_,
-            mode=mode,
-            backend=backend,
-            op_processor=op_processor,
-            background_job=background_job,
-            lock=lock,
-            project_id=id_,
-            project_name=project_name,
-            workspace=workspace,
-            sys_id=sys_id,
-        )
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:

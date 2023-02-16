@@ -29,6 +29,10 @@ __all__ = [
 
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
+from neptune.internal.init.model import init_model
+from neptune.internal.init.model_version import init_model_version
+from neptune.internal.init.project import init_project
+from neptune.internal.init.run import init_run
 from neptune.metadata_containers import (
     Model,
     ModelVersion,
@@ -38,10 +42,11 @@ from neptune.metadata_containers import (
 from neptune.version import version
 
 __version__ = str(version)
-init_model = Model
-init_model_version = ModelVersion
-init_project = Project
-init_run = Run
+
+# TODO: init_model = Model
+# TODO: init_model_version = ModelVersion
+# TODO: init_project = Project
+# TODO: init_run = Run
 
 
 # Apply patches of external libraries

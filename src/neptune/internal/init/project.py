@@ -80,6 +80,7 @@ def init_project(
         workspace=project_obj.workspace,
         project_name=project_obj.name,
         sys_id=project_obj.sys_id,
+        project_id=project_obj.id,
     )
 
     if mode != Mode.OFFLINE:
