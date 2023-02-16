@@ -6,7 +6,8 @@ build-backend = "poetry.core.masonry.api"
 python = "^3.7"
 
 # Renmaed Python package
-neptune = ">=1.0.0"
+# TODO: neptune = ">=1.0.0"
+neptune = { git = "https://github.com/neptune-ai/neptune-client.git" }
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
