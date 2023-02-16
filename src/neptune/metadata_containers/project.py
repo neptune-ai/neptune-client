@@ -24,6 +24,7 @@ from typing import (
     Union,
 )
 
+from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import (
     NQLAggregator,
@@ -39,6 +40,7 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.state import ContainerState
 from neptune.internal.utils import as_list
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
@@ -82,25 +84,21 @@ class Project(MetadataContainer):
             sys_id=sys_id,
         )
 
+    def _raise_if_stopped(self):
+        if self._state == ContainerState.STOPPED:
+            raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
+
     @property
     def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api/project#stop"
 
-    @property
-    def _label(self) -> str:
-        return f"{self._workspace}/{self._project_name}"
-
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_project_url(
             project_id=self._id,
             workspace=self._workspace,
             project_name=self._project_name,
         )
-
-    @property
-    def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
 
     @staticmethod
     def _prepare_nql_query(ids, states, owners, tags):

@@ -23,6 +23,7 @@ from typing import (
     Union,
 )
 
+from neptune.exceptions import InactiveRunException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_type import ContainerType
@@ -31,7 +32,7 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.utils.deprecation import deprecated
+from neptune.internal.state import ContainerState
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
 
@@ -132,35 +133,22 @@ class Run(MetadataContainer):
         )
         self.monitoring_namespace = monitoring_namespace
 
+    def _raise_if_stopped(self):
+        if self._state == ContainerState.STOPPED:
+            raise InactiveRunException(label=self._sys_id)
+
     @property
     def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api/run#stop"
 
-    @property
-    def _label(self) -> str:
-        return self._sys_id
-
-    @deprecated(alternative="get_url")
-    def get_run_url(self) -> str:
-        """Returns the URL the run can be accessed with in the browser"""
-        return self._url
-
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(
             run_id=self._id,
             workspace=self._workspace,
             project_name=self._project_name,
             sys_id=self._sys_id,
         )
-
-    @property
-    def _metadata_url(self) -> str:
-        return self._url
-
-    @property
-    def _short_id(self) -> str:
-        return self._sys_id
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.

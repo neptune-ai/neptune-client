@@ -16,9 +16,13 @@
 __all__ = ["ModelVersion"]
 
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
-from neptune.exceptions import NeptuneOfflineModeChangeStageException
+from neptune.exceptions import (
+    InactiveModelVersionException,
+    NeptuneOfflineModeChangeStageException,
+)
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
+from neptune.internal.state import ContainerState
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.model_version_stage import ModelVersionStage
 
@@ -38,12 +42,12 @@ class ModelVersion(MetadataContainer):
     def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api/model_version#stop"
 
-    @property
-    def _label(self) -> str:
-        return self._sys_id
+    def _raise_if_stopped(self):
+        if self._state == ContainerState.STOPPED:
+            raise InactiveModelVersionException(label=self._sys_id)
 
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_version_url(
             model_version_id=self._id,
             workspace=self._workspace,
@@ -51,10 +55,6 @@ class ModelVersion(MetadataContainer):
             sys_id=self._sys_id,
             model_id=self["sys/model_id"].fetch(),
         )
-
-    @property
-    def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
 
     def change_stage(self, stage: str):
         mapped_stage = ModelVersionStage(stage)

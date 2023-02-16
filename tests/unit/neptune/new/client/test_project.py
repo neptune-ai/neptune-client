@@ -19,7 +19,7 @@ import unittest
 from mock import patch
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     init_project,
 )
 from neptune.common.exceptions import NeptuneException
@@ -51,7 +51,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @classmethod
     def setUp(cls) -> None:

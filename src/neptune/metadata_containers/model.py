@@ -20,6 +20,7 @@ from typing import (
     Optional,
 )
 
+from neptune.exceptions import InactiveModelException
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -28,6 +29,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
+from neptune.internal.state import ContainerState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
 
@@ -43,26 +45,22 @@ class Model(MetadataContainer):
 
     container_type = ContainerType.MODEL
 
+    def _raise_if_stopped(self):
+        if self._state == ContainerState.STOPPED:
+            raise InactiveModelException(label=self._sys_id)
+
     @property
     def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api/model#stop"
 
-    @property
-    def _label(self) -> str:
-        return self._sys_id
-
-    @property
-    def _url(self) -> str:
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_url(
             model_id=self._id,
             workspace=self._workspace,
             project_name=self._project_name,
             sys_id=self._sys_id,
         )
-
-    @property
-    def _metadata_url(self) -> str:
-        return self._url.rstrip("/") + "/metadata"
 
     def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
