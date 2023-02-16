@@ -20,6 +20,9 @@ __all__ = [
     "init_project",
     "init_run",
     "Run",
+    "Model",
+    "ModelVersion",
+    "Project",
     "__version__",
 ]
 
