@@ -137,10 +137,6 @@ class Run(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
 
-    @property
-    def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api/run#stop"
-
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(

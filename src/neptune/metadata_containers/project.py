@@ -88,10 +88,6 @@ class Project(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
 
-    @property
-    def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api/project#stop"
-
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_project_url(
