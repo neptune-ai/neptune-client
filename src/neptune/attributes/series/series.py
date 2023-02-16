@@ -48,7 +48,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         cls.max_batch_size = max_batch_size
         cls.operation_cls = operation_cls
 
-    def clear(self, wait: bool = False) -> None:
+    def clear(self, *, wait: bool = False) -> None:
         self._clear_impl(wait)
 
     def _get_log_operations_from_value(
@@ -89,7 +89,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def _is_value_type(self, value) -> bool:
         pass
 
-    def assign(self, value, wait: bool = False) -> None:
+    def assign(self, value, *, wait: bool = False) -> None:
         if not self._is_value_type(value):
             value = self._data_to_value(value)
         clear_op = self._get_clear_operation()
@@ -133,11 +133,12 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         with self._container.lock():
             for op in ops:
-                self._enqueue_operation(op, wait)
+                self._enqueue_operation(op, wait=wait)
 
     def extend(
         self,
         values: Collection[DataTV],
+        *,
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
@@ -160,9 +161,9 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         with self._container.lock():
             for op in ops:
-                self._enqueue_operation(op, wait)
+                self._enqueue_operation(op, wait=wait)
 
     def _clear_impl(self, wait: bool = False) -> None:
         op = self._get_clear_operation()
         with self._container.lock():
-            self._enqueue_operation(op, wait)
+            self._enqueue_operation(op, wait=wait)

@@ -119,7 +119,7 @@ def _get_leaderboard_client(api_token: Optional[str] = None) -> SwaggerClientWra
     return create_leaderboard_client(client_config=client_config, http_client=http_client)
 
 
-def get_project_list(api_token: Optional[str] = None) -> List[str]:
+def get_project_list(*, api_token: Optional[str] = None) -> List[str]:
     """Lists projects that the account has access to.
 
     Args:
@@ -157,6 +157,7 @@ def _get_projects(backend_client, params) -> List:
 
 def create_project(
     name: str,
+    *,
     key: Optional[str] = None,
     workspace: Optional[str] = None,
     visibility: str = ProjectVisibility.PRIVATE,
@@ -260,7 +261,7 @@ def _create_project(backend_client, project_qualified_name: str, params: dict):
 
 
 @with_api_exceptions_handler
-def delete_project(project: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
+def delete_project(project: str, *, workspace: Optional[str] = None, api_token: Optional[str] = None):
     """Deletes a project from a Neptune workspace.
 
     To delete projects, the user must be a workspace admin.
@@ -306,6 +307,7 @@ def add_project_member(
     project: str,
     username: str,
     role: str,
+    *,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ):
@@ -374,7 +376,7 @@ def add_project_member(
 
 @with_api_exceptions_handler
 def get_project_member_list(
-    project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+    project: str, *, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
     """Lists members of a Neptune project.
 
@@ -421,6 +423,7 @@ def get_project_member_list(
 def remove_project_member(
     project: str,
     username: str,
+    *,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ):
@@ -476,7 +479,7 @@ def remove_project_member(
 
 
 @with_api_exceptions_handler
-def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
+def get_workspace_member_list(workspace: str, *, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists members of a Neptune workspace.
 
     Args:
@@ -532,7 +535,7 @@ def _get_raw_workspace_service_account_list(
 
 
 @with_api_exceptions_handler
-def get_workspace_service_account_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
+def get_workspace_service_account_list(workspace: str, *, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
     Args:
@@ -562,7 +565,7 @@ def get_workspace_service_account_list(workspace: str, api_token: Optional[str] 
 
 @with_api_exceptions_handler
 def get_project_service_account_list(
-    project: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+    project: str, *, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
     """Lists service accounts assigned to a Neptune project.
 
@@ -612,6 +615,7 @@ def add_project_service_account(
     project: str,
     service_account_name: str,
     role: str,
+    *,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ):
@@ -695,6 +699,7 @@ def add_project_service_account(
 def remove_project_service_account(
     project: str,
     service_account_name: str,
+    *,
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ):
@@ -765,6 +770,7 @@ def remove_project_service_account(
 def trash_objects(
     project: str,
     ids: Union[str, Iterable[str]],
+    *,
     workspace: str = None,
     api_token: str = None,
 ) -> None:

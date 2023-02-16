@@ -37,7 +37,7 @@ class FetchableSeries(Generic[Row]):
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
 
-    def fetch_values(self, include_timestamp=True):
+    def fetch_values(self, *, include_timestamp=True):
         import pandas as pd
 
         limit = 1000

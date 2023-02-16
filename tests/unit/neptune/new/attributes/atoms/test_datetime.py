@@ -46,7 +46,7 @@ class TestDatetime(TestAttributeBase):
             )
             var = Datetime(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignDatetime(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(AssignDatetime(path, expected), wait=wait)
 
     def test_assign_type_error(self):
         values = [55, None]

@@ -47,8 +47,8 @@ from neptune.types.mode import Mode
 
 
 def init_model_version(
-    *,
     with_id: Optional[str] = None,
+    *,
     name: Optional[str] = None,
     model: Optional[str] = None,
     project: Optional[str] = None,

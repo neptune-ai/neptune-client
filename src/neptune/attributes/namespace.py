@@ -72,6 +72,7 @@ class Namespace(Attribute, MutableMapping):
     def extend(
         self,
         value: Union[Any, Iterable[Any]],
+        *,
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
@@ -80,7 +81,7 @@ class Namespace(Attribute, MutableMapping):
         if not isinstance(value, NamespaceVal):
             value = NamespaceVal(value)
         for k, v in value.value.items():
-            self._container[f"{self._str_path}/{k}"].extend(v, steps, timestamps, wait, **kwargs)
+            self._container[f"{self._str_path}/{k}"].extend(v, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     def to_dict(self) -> Dict[str, Any]:
         result = {}
@@ -91,14 +92,14 @@ class Namespace(Attribute, MutableMapping):
                 result[key] = value
         return result
 
-    def assign(self, value: Union[NamespaceVal, dict, Mapping], wait: bool = False):
+    def assign(self, value: Union[NamespaceVal, dict, Mapping], *, wait: bool = False):
         if isinstance(value, argparse.Namespace):
             value = NamespaceVal(vars(value))
         elif not isinstance(value, NamespaceVal):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():
-            self._container[f"{self._str_path}/{k}"].assign(v, wait)
+            self._container[f"{self._str_path}/{k}"].assign(v, wait=wait)
 
     def _collect_atom_values(self, attribute_dict) -> dict:
         result = {}

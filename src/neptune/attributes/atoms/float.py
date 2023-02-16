@@ -41,9 +41,9 @@ class Float(CopiableAtom):
         val = backend.get_float_attribute(container_id, container_type, path)
         return val.value
 
-    def assign(self, value: typing.Union[FloatVal, float, int], wait: bool = False):
+    def assign(self, value: typing.Union[FloatVal, float, int], *, wait: bool = False):
         if not isinstance(value, FloatVal):
             value = FloatVal(value)
 
         with self._container.lock():
-            self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait)
+            self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait=wait)

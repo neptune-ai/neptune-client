@@ -39,7 +39,7 @@ class TestString(TestAttributeBase):
             )
             var = String(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait=wait)
 
     def test_get(self):
         exp, path = self._create_run(), self._random_path()

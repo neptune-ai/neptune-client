@@ -161,7 +161,7 @@ class Handler:
         return self._container
 
     @check_protected_paths
-    def assign(self, value, wait: bool = False) -> None:
+    def assign(self, value, *, wait: bool = False) -> None:
         """Assigns the provided value to the field.
 
         Available for following field types (`Field types docs page`_):
@@ -209,10 +209,10 @@ class Handler:
             else:
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
-                attr.process_assignment(value, wait)
+                attr.process_assignment(value, wait=wait)
 
     @check_protected_paths
-    def upload(self, value, wait: bool = False) -> None:
+    def upload(self, value, *, wait: bool = False) -> None:
         """Uploads provided file under specified field path.
 
         Args:
@@ -250,10 +250,10 @@ class Handler:
             if attr is None:
                 attr = File(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.upload(value, wait)
+            attr.upload(value, wait=wait)
 
     @check_protected_paths
-    def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def upload_files(self, value: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         if is_collection(value):
             verify_collection_type("value", value, str)
         else:
@@ -264,7 +264,7 @@ class Handler:
             if attr is None:
                 attr = FileSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.upload_files(value, wait)
+            attr.upload_files(value, wait=wait)
 
     @check_protected_paths
     def log(
@@ -337,6 +337,7 @@ class Handler:
     def append(
         self,
         value: Union[dict, Any],
+        *,
         step: Optional[float] = None,
         timestamp: Optional[float] = None,
         wait: bool = False,
@@ -379,12 +380,13 @@ class Handler:
             timestamp = [timestamp]
 
         value = ExtendUtils.validate_and_transform_to_extend_format(value)
-        self.extend(value, step, timestamp, wait, **kwargs)
+        self.extend(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
     def extend(
         self,
         values: ExtendDictT,
+        *,
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
@@ -432,7 +434,7 @@ class Handler:
             attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     @check_protected_paths
-    def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def add(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Adds the provided tag or tags to the run's tags.
 
         Args:
@@ -454,10 +456,10 @@ class Handler:
             if attr is None:
                 attr = StringSet(self._container, parse_path(self._path))
                 self._container.set_attribute(self._path, attr)
-            attr.add(values, wait)
+            attr.add(values, wait=wait)
 
     @check_protected_paths
-    def pop(self, path: str = None, wait: bool = False) -> None:
+    def pop(self, path: str = None, *, wait: bool = False) -> None:
         with self._container.lock():
             handler = self
             if path:
@@ -472,12 +474,12 @@ class Handler:
             attribute = self._container.get_attribute(path)
             if isinstance(attribute, Namespace):
                 for child_path in list(attribute):
-                    handler.pop(child_path, wait)
+                    handler.pop(child_path, wait=wait)
             else:
-                self._container._pop_impl(parse_path(path), wait)
+                self._container._pop_impl(parse_path(path), wait=wait)
 
     @check_protected_paths
-    def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Removes the provided tag or tags from the set.
 
         Args:
@@ -494,7 +496,7 @@ class Handler:
         return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
 
     @check_protected_paths
-    def clear(self, wait: bool = False):
+    def clear(self, *, wait: bool = False):
         """Removes all tags from the `StringSet`.
 
         Args:
@@ -544,7 +546,7 @@ class Handler:
         """
         return self._pass_call_to_attr(function_name="fetch_last")
 
-    def fetch_values(self, include_timestamp: Optional[bool] = True):
+    def fetch_values(self, *, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune servers.
 
         Available for following field types (`Field types docs page`_):
@@ -564,7 +566,7 @@ class Handler:
         return self._pass_call_to_attr(function_name="fetch_values", include_timestamp=include_timestamp)
 
     @check_protected_paths
-    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def delete_files(self, paths: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
 
         Args:
@@ -652,7 +654,7 @@ class Handler:
         return getattr(self._get_attribute(), function_name)(**kwargs)
 
     @check_protected_paths
-    def track_files(self, path: str, destination: str = None, wait: bool = False) -> None:
+    def track_files(self, path: str, *, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.

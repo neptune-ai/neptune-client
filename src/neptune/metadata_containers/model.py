@@ -58,7 +58,7 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
 
         Args:

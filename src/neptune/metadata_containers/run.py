@@ -146,7 +146,7 @@ class Run(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    def assign(self, value, wait: bool = False) -> None:
+    def assign(self, value, *, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
         You can use this method to quickly log all run's parameters.
         Args:
@@ -193,7 +193,7 @@ class Run(MetadataContainer):
         """
         return MetadataContainer.fetch(self)
 
-    def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
+    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the tracked run and kills the synchronization thread.
         `.stop()` will be automatically called when a script that created the run finishes or on the destruction
         of Neptune context.
@@ -256,7 +256,7 @@ class Run(MetadataContainer):
         """
         return MetadataContainer.print_structure(self)
 
-    def pop(self, path: str, wait: bool = False) -> None:
+    def pop(self, path: str, *, wait: bool = False) -> None:
         """Removes the field stored under the path completely and all data associated with it.
         Args:
             path (str): Path of the field to be removed.
@@ -279,7 +279,7 @@ class Run(MetadataContainer):
         """
         return MetadataContainer.pop(self, path=path, wait=wait)
 
-    def wait(self, disk_only=False) -> None:
+    def wait(self, *, disk_only=False) -> None:
         """Wait for all the tracking calls to finish.
         Args:
             disk_only (bool, optional, default is False): If `True` the process will only wait for data to be saved
@@ -291,7 +291,7 @@ class Run(MetadataContainer):
         """
         return MetadataContainer.wait(self, disk_only=disk_only)
 
-    def sync(self, wait: bool = True) -> None:
+    def sync(self, *, wait: bool = True) -> None:
         """Synchronizes local representation of the run with Neptune servers.
         Args:
             wait (bool, optional, default is True): If `True` the process will only wait for data to be saved

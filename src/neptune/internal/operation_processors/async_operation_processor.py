@@ -98,7 +98,7 @@ class AsyncOperationProcessor(OperationProcessor):
     def _handle_fork_in_child(self):
         self._drop_operations = True
 
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
+    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         if self._drop_operations:
             return
         self._last_version = self._queue.put(op)

@@ -44,7 +44,7 @@ class SyncOperationProcessor(OperationProcessor):
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return data_path
 
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
+    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(
             container_id=self._container_id,
             container_type=self._container_type,

@@ -150,7 +150,7 @@ class TestArtifact(TestAttributeBase):
                         self.exp._project_id,
                         [(source_location, destination)],
                     ),
-                    self.wait,
+                    wait=self.wait,
                 ),
                 call(
                     TrackFilesToArtifact(
@@ -158,7 +158,7 @@ class TestArtifact(TestAttributeBase):
                         self.exp._project_id,
                         [(source_location2, destination2)],
                     ),
-                    self.wait,
+                    wait=self.wait,
                 ),
             ]
         )

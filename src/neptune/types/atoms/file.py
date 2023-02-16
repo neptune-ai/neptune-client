@@ -93,7 +93,7 @@ class File(Atom):
         return visitor.visit_file(self)
 
     @staticmethod
-    def from_path(path: str, extension: Optional[str] = None) -> "File":
+    def from_path(path: str, *, extension: Optional[str] = None) -> "File":
         """Creates a File value object from a given path.
 
         Equivalent to `File(path)`, but you can specify the extension separately.
@@ -114,7 +114,7 @@ class File(Atom):
         return File(file_composite=file_composite)
 
     @staticmethod
-    def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
+    def from_content(content: Union[str, bytes], *, extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text content.
 
         In the case of text content, UTF-8 encoding will be used.
@@ -141,7 +141,7 @@ class File(Atom):
         return File(file_composite=file_composite)
 
     @staticmethod
-    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
+    def from_stream(stream: IOBase, *, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text streams.
 
         Note that you can only log content from the same stream once.

@@ -53,7 +53,7 @@ class FloatSeries(
         verify_type("max", max, (float, int))
         verify_type("unit", unit, str)
         with self._container.lock():
-            self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
+            self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait=wait)
 
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)

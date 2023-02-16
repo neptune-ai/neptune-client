@@ -76,7 +76,7 @@ class TestUpload(BaseE2ETest):
 
             file = File.from_path(filename)
         elif file_type is FileType.IN_MEMORY:
-            file = File.from_content(content, extension)
+            file = File.from_content(content, extension=extension)
         elif file_type is FileType.STREAM:
             file = File.from_stream(io.BytesIO(content), extension=extension)
         else:

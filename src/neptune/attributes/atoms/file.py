@@ -24,7 +24,7 @@ from neptune.types.atoms.file import File as FileVal
 
 
 class File(Atom):
-    def assign(self, value: FileVal, wait: bool = False) -> None:
+    def assign(self, value: FileVal, *, wait: bool = False) -> None:
         verify_type("value", value, FileVal)
 
         operation = UploadFile.of_file(
@@ -34,10 +34,10 @@ class File(Atom):
         )
 
         with self._container.lock():
-            self._enqueue_operation(operation, wait)
+            self._enqueue_operation(operation, wait=wait)
 
-    def upload(self, value, wait: bool = False) -> None:
-        self.assign(FileVal.create_from(value), wait)
+    def upload(self, value, *, wait: bool = False) -> None:
+        self.assign(FileVal.create_from(value), wait=wait)
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))

@@ -176,6 +176,7 @@ class Project(MetadataContainer):
 
     def fetch_runs_table(
         self,
+        *,
         id: Optional[Union[str, Iterable[str]]] = None,
         state: Optional[Union[str, Iterable[str]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
@@ -268,7 +269,7 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
-    def fetch_models_table(self, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve models stored in the project.
 
         Args:
@@ -321,7 +322,7 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
-    def assign(self, value, wait: bool = False) -> None:
+    def assign(self, value, *, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
         You can use this method to log multiple pieces of information with one command.
         Args:
@@ -365,7 +366,7 @@ class Project(MetadataContainer):
         """
         return MetadataContainer.fetch(self)
 
-    def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
+    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the connection to the project and kills the synchronization thread.
         `.stop()` will be automatically called when a script that initialized the connection finishes
         or on the destruction of Neptune context.
@@ -428,7 +429,7 @@ class Project(MetadataContainer):
         """
         return MetadataContainer.print_structure(self)
 
-    def pop(self, path: str, wait: bool = False) -> None:
+    def pop(self, path: str, *, wait: bool = False) -> None:
         """Removes the field or whole namespace stored under the path completely and all data associated with them.
         Args:
             path (str): Path of the field or namespace to be removed.
@@ -455,7 +456,7 @@ class Project(MetadataContainer):
         """
         return MetadataContainer.pop(self, path=path, wait=wait)
 
-    def wait(self, disk_only=False) -> None:
+    def wait(self, *, disk_only=False) -> None:
         """Wait for all the tracking calls to finish.
         Args:
             disk_only (bool, optional, default is False): If `True` the process will only wait for data to be saved
@@ -467,7 +468,7 @@ class Project(MetadataContainer):
         """
         return MetadataContainer.wait(self, disk_only=disk_only)
 
-    def sync(self, wait: bool = True) -> None:
+    def sync(self, *, wait: bool = True) -> None:
         """Synchronizes local representation of the project with Neptune servers.
         Args:
             wait (bool, optional, default is True): If `True` the process will only wait for data to be saved

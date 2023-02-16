@@ -36,7 +36,7 @@ class TestArtifactHash(TestAttributeBase):
                 var._path,
                 ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
             ),
-            False,
+            wait=False,
         )
         self.assertEqual(
             ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
@@ -51,7 +51,7 @@ class TestArtifactHash(TestAttributeBase):
                 var._path,
                 ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
             ),
-            False,
+            wait=False,
         )
         self.assertEqual(
             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
