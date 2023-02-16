@@ -129,11 +129,6 @@ class MetadataContainer(AbstractContextManager):
     def _docs_url_stop(self) -> str:
         raise NotImplementedError
 
-    @property
-    @abc.abstractmethod
-    def _metadata_url(self) -> str:
-        raise NotImplementedError
-
     def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
         return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))
@@ -187,7 +182,7 @@ class MetadataContainer(AbstractContextManager):
 
         if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
             logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self._metadata_url)
+            logger.info(self.get_url().rstrip("/") + "/metadata")
         self._backend.close()
         self._state = ContainerState.STOPPED
 

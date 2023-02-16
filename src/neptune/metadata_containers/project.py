@@ -100,10 +100,6 @@ class Project(MetadataContainer):
             project_name=self._project_name,
         )
 
-    @property
-    def _metadata_url(self) -> str:
-        return self.get_url().rstrip("/") + "/metadata"
-
     @staticmethod
     def _prepare_nql_query(ids, states, owners, tags):
         query_items = [
