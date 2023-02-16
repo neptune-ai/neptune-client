@@ -42,6 +42,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import as_list
+from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
@@ -131,7 +132,7 @@ class Project(MetadataContainer):
                             name="sys/state",
                             type=NQLAttributeType.EXPERIMENT_STATE,
                             operator=NQLAttributeOperator.EQUALS,
-                            value=state,
+                            value=RunState(state).to_api(),
                         )
                         for state in states
                     ],
@@ -194,8 +195,8 @@ class Project(MetadataContainer):
                 Matching any element of the list is sufficient to pass the criterion.
                 Defaults to `None`.
             state: Run state, or list of states.
-                Example: `"running"` or `["idle", "running"]`.
-                Possible values: "idle", "running".
+                Example: `"Active"` or `["Inactive", "Active"]`.
+                Possible values: "Inactive", "Active".
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
             owner: Username of the run owner, or a list of owners.
@@ -241,7 +242,7 @@ class Project(MetadataContainer):
             You can also filter the runs table by state, owner, tag, or a combination of these:
 
             >>> # Fetch only inactive runs
-            ... runs_table_df = project.fetch_runs_table(state="idle").to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="Inactive").to_pandas()
 
             >>> # Fetch only runs created by CI service
             ... runs_table_df = project.fetch_runs_table(owner="my_company_ci_service").to_pandas()
@@ -250,7 +251,7 @@ class Project(MetadataContainer):
             ... runs_table_df = project.fetch_runs_table(tag=["Exploration", "Optuna"]).to_pandas()
 
             >>> # You can combine conditions. Runs satisfying all conditions will be fetched
-            ... runs_table_df = project.fetch_runs_table(state="idle", tag="Exploration").to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="Inactive", tag="Exploration").to_pandas()
 
         You may also want to check the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_runs_table

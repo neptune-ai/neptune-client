@@ -37,6 +37,7 @@ from neptune.internal.utils.paths import (
     join_paths,
     parse_path,
 )
+from neptune.internal.utils.run_state import RunState
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class TableEntry:
             if attr.path == path:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
-                    return attr.properties.value
+                    return RunState.from_api(attr.properties.value).value
                 if _type in (
                     AttributeType.FLOAT,
                     AttributeType.INT,
@@ -182,7 +183,7 @@ class Table:
             _type = attribute.type
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
-                return _properties.value
+                return RunState.from_api(_properties.value).value
             if _type in (
                 AttributeType.FLOAT,
                 AttributeType.INT,

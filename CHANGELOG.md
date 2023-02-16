@@ -19,6 +19,7 @@
 - Removed `get_run_url` method ([#1238](https://github.com/neptune-ai/neptune-client/pull/1238))
 - Removed `neptune.new.sync` module ([#1240](https://github.com/neptune-ai/neptune-client/pull/1240))
 - Added exception for unsupported types ([#1229](https://github.com/neptune-ai/neptune-client/pull/1229))
+- Change run status to Active / Inactive ([#1233](https://github.com/neptune-ai/neptune-client/pull/1233))
 
 ## neptune-client 0.16.18
 

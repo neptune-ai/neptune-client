@@ -170,7 +170,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def _create_container(self, container_id: UniqueId, container_type: ContainerType, sys_id: SysId):
         container = self._containers.setdefault((container_id, container_type), ContainerStructure[Value, dict]())
         container.set(["sys", "id"], String(str(sys_id)))
-        container.set(["sys", "state"], String("running"))
+        container.set(["sys", "state"], String("Active"))
         container.set(["sys", "owner"], String("offline_user"))
         container.set(["sys", "size"], Float(0))
         container.set(["sys", "tags"], StringSet(set()))

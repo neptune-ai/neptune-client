@@ -115,7 +115,7 @@ class AbstractTablesTestMixin:
         df = self.get_table().to_pandas()
 
         # then
-        self.assertEqual("idle", df["run/state"][1])
+        self.assertEqual("Inactive", df["run/state"][1])
         self.assertEqual(12.5, df["float"][1])
         self.assertEqual("some text", df["string"][1])
         self.assertEqual(now, df["datetime"][1])
@@ -152,8 +152,8 @@ class AbstractTablesTestMixin:
         table_entry = self.get_table_entries(table=self.get_table())[0]
 
         # then
-        self.assertEqual("idle", table_entry["run/state"].get())
-        self.assertEqual("idle", table_entry["run"]["state"].get())
+        self.assertEqual("Inactive", table_entry["run/state"].get())
+        self.assertEqual("Inactive", table_entry["run"]["state"].get())
         self.assertEqual(12.5, table_entry["float"].get())
         self.assertEqual("some text", table_entry["string"].get())
         self.assertEqual(now, table_entry["datetime"].get())
