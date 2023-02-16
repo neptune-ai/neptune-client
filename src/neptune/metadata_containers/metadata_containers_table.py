@@ -37,7 +37,7 @@ from neptune.internal.utils.paths import (
     join_paths,
     parse_path,
 )
-from neptune.metadata_containers.run_state import RunState
+from neptune.internal.utils.run_state import RunState
 
 logger = logging.getLogger(__name__)
 
