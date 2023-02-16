@@ -42,6 +42,7 @@ from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
     NeptuneUserApiInputException,
+    UnsupportedType,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.utils import (
@@ -327,7 +328,7 @@ class Handler:
                 elif from_stringify_value:
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
-                    raise TypeError("Value of unsupported type {}".format(type(first_value)))
+                    raise UnsupportedType(type_str=str(type(first_value)))
 
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
