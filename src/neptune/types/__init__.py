@@ -30,7 +30,7 @@ __all__ = [
 ]
 
 
-from neptune.types.atoms import (
+from .atoms import (
     Artifact,
     Boolean,
     Datetime,
@@ -40,10 +40,10 @@ from neptune.types.atoms import (
     Integer,
     String,
 )
-from neptune.types.file_set import FileSet
-from neptune.types.series import (
+from .file_set import FileSet
+from .series import (
     FileSeries,
     FloatSeries,
     StringSeries,
 )
-from neptune.types.sets import StringSet
+from .sets import StringSet

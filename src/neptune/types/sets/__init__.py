@@ -15,4 +15,4 @@
 #
 __all__ = ["StringSet"]
 
-from neptune.types.sets.string_set import StringSet
+from .string_set import StringSet
