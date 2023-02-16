@@ -23,11 +23,11 @@ from typing import (
     Union,
 )
 
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_stringify_value,
     verify_type,
 )
-from neptune.internal.utils.stringify_value import StringifyValue
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:

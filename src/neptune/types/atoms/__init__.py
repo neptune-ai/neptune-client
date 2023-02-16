@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "File",
-    "Float",
-    "GitRef",
-    "String",
-]
+__all__ = ["Artifact", "Boolean", "Datetime", "File", "Float", "GitRef", "Integer", "String"]
 
+from .artifact import Artifact
+from .boolean import Boolean
+from .datetime import Datetime
 from .file import File
 from .float import Float
 from .git_ref import GitRef
+from .integer import Integer
 from .string import String

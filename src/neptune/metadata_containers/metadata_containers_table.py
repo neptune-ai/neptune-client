@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["TableEntry", "LeaderboardHandler", "Table"]
+__all__ = ["Table"]
 
 import logging
 from datetime import datetime

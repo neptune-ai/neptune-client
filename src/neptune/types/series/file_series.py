@@ -21,9 +21,9 @@ from typing import (
     TypeVar,
 )
 
+from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
 from neptune.internal.utils.logger import logger
-from neptune.internal.utils.stringify_value import extract_if_stringify_value
 from neptune.types import File
 from neptune.types.series.series import Series
 

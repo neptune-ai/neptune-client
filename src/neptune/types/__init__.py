@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 __all__ = [
+    "Artifact",
     "Boolean",
     "Datetime",
     "File",
@@ -23,22 +23,27 @@ __all__ = [
     "Integer",
     "String",
     "FileSet",
+    "StringSet",
     "FileSeries",
     "FloatSeries",
     "StringSeries",
-    "StringSet",
 ]
 
 
-from .atoms.boolean import Boolean
-from .atoms.datetime import Datetime
-from .atoms.file import File
-from .atoms.float import Float
-from .atoms.git_ref import GitRef
-from .atoms.integer import Integer
-from .atoms.string import String
+from .atoms import (
+    Artifact,
+    Boolean,
+    Datetime,
+    File,
+    Float,
+    GitRef,
+    Integer,
+    String,
+)
 from .file_set import FileSet
-from .series.file_series import FileSeries
-from .series.float_series import FloatSeries
-from .series.string_series import StringSeries
-from .sets.string_set import StringSet
+from .series import (
+    FileSeries,
+    FloatSeries,
+    StringSeries,
+)
+from .sets import StringSet

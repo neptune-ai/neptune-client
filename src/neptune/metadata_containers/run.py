@@ -171,7 +171,7 @@ class Run(MetadataContainer):
         .. _assign docs page:
             https://docs.neptune.ai/api/run#assign
         """
-        return MetadataContainer.assign(self, value=value, wait=wait)
+        return super().assign(value=value, wait=wait)
 
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
@@ -191,7 +191,7 @@ class Run(MetadataContainer):
         .. _fetch docs page:
             https://docs.neptune.ai/api/run#fetch
         """
-        return MetadataContainer.fetch(self)
+        return super().fetch()
 
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the tracked run and kills the synchronization thread.
@@ -237,7 +237,7 @@ class Run(MetadataContainer):
         .. _stop docs page:
             https://docs.neptune.ai/api/run#stop
         """
-        return MetadataContainer.stop(self, seconds=seconds)
+        return super().stop(seconds=seconds)
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns a run's metadata structure in form of a dictionary.
@@ -248,13 +248,13 @@ class Run(MetadataContainer):
         Returns:
             ``dict``: with the run's metadata structure.
         """
-        return MetadataContainer.get_structure(self)
+        return super().get_structure()
 
     def print_structure(self) -> None:
         """Pretty prints the structure of the run's metadata.
         Paths are ordered lexicographically and the whole structure is neatly colored.
         """
-        return MetadataContainer.print_structure(self)
+        return super().print_structure()
 
     def pop(self, path: str, *, wait: bool = False) -> None:
         """Removes the field stored under the path completely and all data associated with it.
@@ -277,7 +277,7 @@ class Run(MetadataContainer):
         .. _pop docs page:
            https://docs.neptune.ai/api/run#pop
         """
-        return MetadataContainer.pop(self, path=path, wait=wait)
+        return super().pop(path=path, wait=wait)
 
     def wait(self, *, disk_only=False) -> None:
         """Wait for all the tracking calls to finish.
@@ -289,7 +289,7 @@ class Run(MetadataContainer):
         .. _wait docs page:
             https://docs.neptune.ai/api/run#wait
         """
-        return MetadataContainer.wait(self, disk_only=disk_only)
+        return super().wait(disk_only=disk_only)
 
     def sync(self, *, wait: bool = True) -> None:
         """Synchronizes local representation of the run with Neptune servers.
@@ -310,4 +310,4 @@ class Run(MetadataContainer):
         .. _sync docs page:
             https://docs.neptune.ai/api/run#sync
         """
-        return MetadataContainer.sync(self, wait=wait)
+        return super().sync(wait=wait)
