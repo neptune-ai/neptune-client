@@ -1,4 +1,4 @@
-name: Test Compatibility Package
+name: Compatibility Package
 
 on:
   workflow_dispatch:
