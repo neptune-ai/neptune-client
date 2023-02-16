@@ -134,9 +134,9 @@ homepage = "https://neptune.ai/"
 documentation = "https://docs.neptune.ai/"
 include = ["CHANGELOG.md"]
 license = "Apache License 2.0"
-name = "neptune-client"
+name = "neptune"
 readme = "README.md"
-version = "0.0.0"
+version = "1.0.0"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",

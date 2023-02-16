@@ -31,8 +31,7 @@ else:
     )
 
 try:
-    # NPT-12953: Rename to `neptune`
-    __version__ = version("neptune-client")
+    __version__ = version("neptune")
     version = parse(__version__)
 except PackageNotFoundError:
     # package is not installed

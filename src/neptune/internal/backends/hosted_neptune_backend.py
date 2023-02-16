@@ -667,7 +667,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             if ignored_attributes:
                 _logger.warning(
-                    "Ignored following attributes (unknown type): %s.\n" "Try to upgrade `neptune-client.",
+                    "Ignored following attributes (unknown type): %s.\n" "Try to upgrade `neptune`.",
                     ignored_attributes,
                 )
 

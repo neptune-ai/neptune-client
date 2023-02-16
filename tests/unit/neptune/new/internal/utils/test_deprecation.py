@@ -54,7 +54,7 @@ class TestDeprecatedParameter:
     def test_deprecated_replaced(self):
         with pytest.deprecated_call(
             match="Parameter `deprecated_param` is deprecated, use `new_param` instead. We'll end support of it in "
-            "`neptune-client==1.0.0`."
+            "next major release."
         ):
             value = fun_with_deprecated_param(deprecated_param=42)
             assert value == 42
@@ -73,7 +73,7 @@ class TestDeprecatedParameter:
     def test_deprecated_func_without_alternative(self):
         with pytest.deprecated_call(
             match="`deprecated_func` is deprecated and will be removed. We'll end support of "
-            "it in `neptune-client==1.0.0`."
+            "it in next major release."
         ):
             deprecated_func()
 
@@ -81,7 +81,7 @@ class TestDeprecatedParameter:
         with pytest.deprecated_call(
             match="`deprecated_func_with_alternative` is deprecated, "
             "use `non_deprecated_func` instead. We'll end support of it in "
-            "`neptune-client==1.0.0`."
+            "next major release."
         ):
             deprecated_func_with_alternative()
 
