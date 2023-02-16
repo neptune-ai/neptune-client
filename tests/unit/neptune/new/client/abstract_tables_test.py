@@ -71,7 +71,7 @@ class AbstractTablesTestMixin:
     @staticmethod
     def build_attributes_leaderboard(now: datetime):
         attributes = []
-        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="Inactive")))
+        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="idle")))
         attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
         attributes.append(AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text")))
         attributes.append(AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now)))

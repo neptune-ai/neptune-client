@@ -41,7 +41,6 @@ def init_project(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Project:
-    # TODO: change * when NPT-12952 is merged
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("mode", mode, (str, type(None)))

@@ -44,6 +44,7 @@ from neptune.internal.state import ContainerState
 from neptune.internal.utils import as_list
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.run_state import RunState
 from neptune.types.mode import Mode
 
 
@@ -124,6 +125,7 @@ class Project(MetadataContainer):
             )
 
         if states:
+            api_states = list(map(lambda s: RunState(s).to_api(), states))
             query_items.append(
                 NQLQueryAggregate(
                     items=[
@@ -131,9 +133,9 @@ class Project(MetadataContainer):
                             name="sys/state",
                             type=NQLAttributeType.EXPERIMENT_STATE,
                             operator=NQLAttributeOperator.EQUALS,
-                            value=state,
+                            value=api_state,
                         )
-                        for state in states
+                        for api_state in api_states
                     ],
                     aggregator=NQLAggregator.OR,
                 )

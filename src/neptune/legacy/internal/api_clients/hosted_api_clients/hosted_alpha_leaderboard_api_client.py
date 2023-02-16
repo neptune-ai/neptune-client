@@ -1009,7 +1009,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         min_running_time=None,
     ):
         if states is not None:
-            states = [state if state == "Active" else "Inactive" for state in states]
+            states = [state if state == "running" else "idle" for state in states]
         try:
 
             def get_portion(limit, offset):
