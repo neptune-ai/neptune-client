@@ -93,7 +93,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: "NeptuneObject", path: str):
+    def __init__(self, container: "MetadataContainer", path: str):
         super().__init__()
         self._container = container
         self._path = path
@@ -113,7 +113,7 @@ class Handler:
         self[key].assign(value)
 
     def __getattr__(self, item: str):
-        run_level_methods = {"exists", "get_structure", "get_run_url", "print_structure", "stop", "sync", "wait"}
+        run_level_methods = {"exists", "get_structure", "print_structure", "stop", "sync", "wait"}
 
         if item in run_level_methods:
             raise AttributeError(

@@ -19,7 +19,7 @@ import unittest
 from mock import patch
 
 from neptune import (
-    ANONYMOUS,
+    ANONYMOUS_API_TOKEN,
     init_model_version,
 )
 from neptune.attributes import String
@@ -65,7 +65,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):

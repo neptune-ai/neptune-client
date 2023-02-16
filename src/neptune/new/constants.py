@@ -14,10 +14,8 @@
 # limitations under the License.
 #
 __all__ = [
-    "ANONYMOUS",
     "ANONYMOUS_API_TOKEN",
     "NEPTUNE_DATA_DIRECTORY",
-    "NEPTUNE_RUNS_DIRECTORY",
     "OFFLINE_DIRECTORY",
     "ASYNC_DIRECTORY",
     "SYNC_DIRECTORY",
@@ -27,11 +25,9 @@ __all__ = [
 """Constants used by Neptune"""
 
 from neptune.constants import (
-    ANONYMOUS,
     ANONYMOUS_API_TOKEN,
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
-    NEPTUNE_RUNS_DIRECTORY,
     OFFLINE_DIRECTORY,
     OFFLINE_NAME_PREFIX,
     SYNC_DIRECTORY,

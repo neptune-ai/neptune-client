@@ -24,10 +24,6 @@ from typing import (
     Optional,
 )
 
-from neptune import (
-    ANONYMOUS,
-    ANONYMOUS_API_TOKEN,
-)
 from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.common.exceptions import NeptuneInvalidApiTokenException
 from neptune.exceptions import NeptuneMissingApiTokenException
@@ -43,9 +39,6 @@ class Credentials:
     def from_token(cls, api_token: Optional[str] = None) -> "Credentials":
         if api_token is None:
             api_token = os.getenv(API_TOKEN_ENV_NAME)
-
-        if api_token == ANONYMOUS:
-            api_token = ANONYMOUS_API_TOKEN
 
         if api_token is None:
             raise NeptuneMissingApiTokenException()

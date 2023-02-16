@@ -38,10 +38,6 @@ from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.exceptions import (
-    InactiveModelException,
-    InactiveModelVersionException,
-    InactiveProjectException,
-    InactiveRunException,
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
 )
@@ -76,17 +72,7 @@ from neptune.types.type_casting import cast_value
 def ensure_not_stopped(fun):
     @wraps(fun)
     def inner_fun(self: "MetadataContainer", *args, **kwargs):
-        if self._state == ContainerState.STOPPED:
-            if self.container_type == ContainerType.RUN:
-                raise InactiveRunException(label=self._label)
-            elif self.container_type == ContainerType.PROJECT:
-                raise InactiveProjectException(label=self._label)
-            elif self.container_type == ContainerType.MODEL:
-                raise InactiveModelException(label=self._label)
-            elif self.container_type == ContainerType.MODEL_VERSION:
-                raise InactiveModelVersionException(label=self._label)
-            else:
-                raise ValueError(f"Unknown container type: {self.container_type}")
+        self._raise_if_stopped()
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -134,24 +120,13 @@ class MetadataContainer(AbstractContextManager):
             raise NeptunePossibleLegacyUsageException()
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
-    @property
     @abc.abstractmethod
-    def _label(self) -> str:
+    def _raise_if_stopped(self):
         raise NotImplementedError
 
     @property
     @abc.abstractmethod
     def _docs_url_stop(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def _url(self) -> str:
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def _metadata_url(self) -> str:
         raise NotImplementedError
 
     def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
@@ -207,7 +182,7 @@ class MetadataContainer(AbstractContextManager):
 
         if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
             logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self._metadata_url)
+            logger.info(self.get_url().rstrip("/") + "/metadata")
         self._backend.close()
         self._state = ContainerState.STOPPED
 
@@ -297,9 +272,10 @@ class MetadataContainer(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
+    @abc.abstractmethod
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
-        return self._url
+        raise NotImplementedError
 
     def _startup(self, debug_mode):
         if not debug_mode:
