@@ -115,31 +115,7 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
-
-# ------------ Legacy neptune.new subpackage -------------
-from neptune.new.attributes.atoms.artifact import Artifact
-from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.attributes.atoms.datetime import Datetime
-from neptune.new.attributes.atoms.file import File
-from neptune.new.attributes.atoms.float import Float
-from neptune.new.attributes.atoms.git_ref import GitRef
-from neptune.new.attributes.atoms.notebook_ref import NotebookRef
-from neptune.new.attributes.atoms.run_state import RunState
-from neptune.new.attributes.atoms.string import String
-from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.file_set import FileSet
-from neptune.new.attributes.namespace import (
-    Namespace,
-    NamespaceBuilder,
-)
-from neptune.new.attributes.series.fetchable_series import FetchableSeries
-from neptune.new.attributes.series.file_series import FileSeries
-from neptune.new.attributes.series.float_series import FloatSeries
-from neptune.new.attributes.series.series import Series
-from neptune.new.attributes.series.string_series import StringSeries
-from neptune.new.attributes.sets.set import Set
-from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.attributes.utils import create_attribute_from_type
+from neptune.new.attributes import GitRef
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
@@ -192,8 +168,6 @@ from neptune.new.exceptions import (
     Unauthorized,
 )
 from neptune.new.handler import Handler
-from neptune.new.integrations.python_logger import NeptuneHandler
-from neptune.new.logging.logger import Logger
 from neptune.new.project import Project
 from neptune.new.run import (
     Attribute,
@@ -221,6 +195,9 @@ from neptune.new.runs_table import (
     RunsTable,
     RunsTableEntry,
 )
+
+# ------------ Legacy neptune.new subpackage -------------
+from neptune.new.types import StringSeries
 
 
 class TestImports(unittest.TestCase):
