@@ -19,6 +19,6 @@ __all__ = [
     "StringSeries",
 ]
 
-from neptune.attributes.series.file_series import FileSeries
-from neptune.attributes.series.float_series import FloatSeries
-from neptune.attributes.series.string_series import StringSeries
+from .file_series import FileSeries
+from .float_series import FloatSeries
+from .string_series import StringSeries

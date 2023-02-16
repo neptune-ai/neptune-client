@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-from neptune.attributes.atoms import (
+from .atoms import (
     Artifact,
     Boolean,
     Datetime,
@@ -46,11 +46,11 @@ from neptune.attributes.atoms import (
     RunState,
     String,
 )
-from neptune.attributes.file_set import FileSet
-from neptune.attributes.series import (
+from .file_set import FileSet
+from .series import (
     FileSeries,
     FloatSeries,
     StringSeries,
 )
-from neptune.attributes.sets import StringSet
-from neptune.attributes.utils import create_attribute_from_type
+from .sets import StringSet
+from .utils import create_attribute_from_type

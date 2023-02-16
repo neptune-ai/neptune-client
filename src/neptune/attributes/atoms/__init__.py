@@ -15,13 +15,13 @@
 #
 __all__ = ["Artifact", "Boolean", "Datetime", "File", "Float", "GitRef", "Integer", "NotebookRef", "RunState", "String"]
 
-from neptune.attributes.atoms.artifact import Artifact
-from neptune.attributes.atoms.boolean import Boolean
-from neptune.attributes.atoms.datetime import Datetime
-from neptune.attributes.atoms.file import File
-from neptune.attributes.atoms.float import Float
-from neptune.attributes.atoms.git_ref import GitRef
-from neptune.attributes.atoms.integer import Integer
-from neptune.attributes.atoms.notebook_ref import NotebookRef
-from neptune.attributes.atoms.run_state import RunState
-from neptune.attributes.atoms.string import String
+from .artifact import Artifact
+from .boolean import Boolean
+from .datetime import Datetime
+from .file import File
+from .float import Float
+from .git_ref import GitRef
+from .integer import Integer
+from .notebook_ref import NotebookRef
+from .run_state import RunState
+from .string import String
