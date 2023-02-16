@@ -23,7 +23,7 @@ from typing import (
     Union,
 )
 
-from neptune.types.stringify_value import StringifyValue
+from neptune.internal.types.stringify_value import StringifyValue
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tuple]:

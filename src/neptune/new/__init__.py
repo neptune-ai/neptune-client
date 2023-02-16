@@ -91,7 +91,7 @@ create_experiment = (
 ) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
-sys.meta_path.append(CompatibilityImporter())
+sys.meta_path.insert(0, CompatibilityImporter())
 
 warn_once(
     message="You're importing the Neptune client library via the deprecated"

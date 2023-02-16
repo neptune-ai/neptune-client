@@ -115,9 +115,10 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
+
+# ------------ Legacy neptune.new subpackage -------------
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.attributes.atoms.boolean import Boolean
 from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.file import File
 from neptune.new.attributes.atoms.float import Float
@@ -193,8 +194,6 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.integrations.python_logger import NeptuneHandler
 from neptune.new.logging.logger import Logger
-
-# ------------ Legacy neptune.new subpackage -------------
 from neptune.new.project import Project
 from neptune.new.run import (
     Attribute,

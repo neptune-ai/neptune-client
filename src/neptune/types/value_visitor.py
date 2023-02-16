@@ -24,24 +24,22 @@ from typing import (
 )
 
 from neptune.attributes.attribute import Attribute
-from neptune.types.atoms import (
+from neptune.types import (
     Artifact,
     Boolean,
     Datetime,
     File,
+    FileSeries,
     FileSet,
     Float,
+    FloatSeries,
     GitRef,
     Integer,
-    Namespace,
     String,
-)
-from neptune.types.series import (
-    FileSeries,
-    FloatSeries,
     StringSeries,
+    StringSet,
 )
-from neptune.types.sets import StringSet
+from neptune.types.namespace import Namespace
 from neptune.types.value import Value
 
 Ret = TypeVar("Ret")

@@ -21,8 +21,8 @@ from typing import (
     TypeVar,
 )
 
+from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.types.atoms.atom import Atom
-from neptune.types.stringify_value import extract_if_stringify_value
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
