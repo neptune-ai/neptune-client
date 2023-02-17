@@ -44,6 +44,10 @@ __all__ = [
 
 import sys
 
+from neptune.new._compatibility import CompatibilityImporter
+
+sys.meta_path.insert(0, CompatibilityImporter())
+
 from neptune import (
     ANONYMOUS_API_TOKEN,
     Run,
@@ -53,15 +57,21 @@ from neptune import (
     init_project,
     init_run,
 )
-from neptune.attributes import *
-from neptune.cli import *
 from neptune.common.deprecation import warn_once
-from neptune.exceptions import NeptunePossibleLegacyUsageException
-from neptune.integrations import *
-from neptune.logging import *
-from neptune.metadata_containers import *
-from neptune.new._compatibility import CompatibilityImporter
-from neptune.types import *
+from neptune.new.attributes import *
+from neptune.new.cli import *
+from neptune.new.constants import *
+from neptune.new.envs import *
+from neptune.new.exceptions import *
+from neptune.new.handler import *
+from neptune.new.integrations import *
+from neptune.new.logging import *
+from neptune.new.metadata_containers import *
+from neptune.new.project import *
+from neptune.new.run import *
+from neptune.new.runs_table import *
+from neptune.new.types import *
+from neptune.new.utils import *
 
 
 def _raise_legacy_client_expected(*args, **kwargs):
@@ -90,8 +100,6 @@ create_experiment = (
     log_text
 ) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
-
-sys.meta_path.insert(0, CompatibilityImporter())
 
 warn_once(
     message="You're importing the Neptune client library via the deprecated"
