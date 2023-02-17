@@ -31,7 +31,7 @@ else:
     )
 
 try:
-    __version__ = version("neptune")
+    __version__ = version("neptune-client")
     version = parse(__version__)
 except PackageNotFoundError:
     # package is not installed
