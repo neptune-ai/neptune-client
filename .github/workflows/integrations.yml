@@ -390,7 +390,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        r: [ release ]
         os: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     name: 'R (${{ matrix.os }})'
