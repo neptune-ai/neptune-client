@@ -56,11 +56,18 @@ from neptune import (
 from neptune.attributes import *
 from neptune.cli import *
 from neptune.common.deprecation import warn_once
-from neptune.exceptions import NeptunePossibleLegacyUsageException
 from neptune.integrations import *
 from neptune.logging import *
 from neptune.metadata_containers import *
 from neptune.new._compatibility import CompatibilityImporter
+from neptune.new.constants import *
+from neptune.new.envs import *
+from neptune.new.exceptions import *
+from neptune.new.handler import *
+from neptune.new.project import *
+from neptune.new.run import *
+from neptune.new.runs_table import *
+from neptune.new.utils import *
 from neptune.types import *
 
 
