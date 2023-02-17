@@ -56,7 +56,7 @@ class Run(MetadataContainer):
         >>> import neptune
 
         >>> # Create new experiment
-        ... run = neptune.init_run('my_workspace/my_project')
+        ... run = neptune.init_run(project='my_workspace/my_project')
 
         >>> # Log parameters
         ... params = {'max_epochs': 10, 'optimizer': 'Adam'}
