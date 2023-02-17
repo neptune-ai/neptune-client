@@ -390,9 +390,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: ubuntu-latest,  r: 'release'}
+        r: [ release ]
+        os: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     name: 'R (${{ matrix.os }})'
     steps:
