@@ -270,7 +270,6 @@ class Handler:
     def log(
         self,
         value,
-        *,
         step: Optional[float] = None,
         timestamp: Optional[float] = None,
         wait: bool = False,
