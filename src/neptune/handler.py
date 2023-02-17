@@ -270,6 +270,7 @@ class Handler:
     def log(
         self,
         value,
+        *,
         step: Optional[float] = None,
         timestamp: Optional[float] = None,
         wait: bool = False,
@@ -380,7 +381,7 @@ class Handler:
             timestamp = [timestamp]
 
         value = ExtendUtils.validate_and_transform_to_extend_format(value)
-        self.extend(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
+        self.extend(value, steps=step, timestamps=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
     def extend(

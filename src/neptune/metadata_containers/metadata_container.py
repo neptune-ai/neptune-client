@@ -207,6 +207,7 @@ class MetadataContainer(AbstractContextManager):
         self,
         path: str,
         value: Any,
+        *,
         wait: bool = False,
     ) -> Attribute:
         with self._lock:

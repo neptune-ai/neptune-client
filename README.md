@@ -59,7 +59,7 @@ pip install neptune
 ```python
 import neptune
 
-run = neptune.init_run("Me/MyProject")
+run = neptune.init_run(project="Me/MyProject")
 run["parameters"] = {"lr": 0.1, "dropout": 0.4}
 run["test_accuracy"] = 0.84
 
