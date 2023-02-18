@@ -24,7 +24,6 @@ import traceback
 from contextlib import AbstractContextManager
 from functools import wraps
 from typing import (
-    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -44,11 +43,16 @@ from neptune.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.handler import Handler
-from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.backends.api_model import (
+    ApiExperiment,
+    AttributeType,
+    Project,
+)
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.project_name_lookup import project_name_lookup
+from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
@@ -70,13 +74,6 @@ from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
-
-if TYPE_CHECKING:
-    from neptune.internal.backends.api_model import (
-        ApiExperiment,
-        Project,
-    )
-    from neptune.internal.backgroud_job_list import BackgroundJobList
 
 
 def ensure_not_stopped(fun):
@@ -143,7 +140,7 @@ class MetadataContainer(AbstractContextManager):
         if self._mode != Mode.READ_ONLY:
             self._write_initial_attributes()
 
-        self._startup(debug_mode=(mode == Mode.DEBUG))
+        self._startup(debug_mode=mode == Mode.DEBUG)
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
         if self._mode != Mode.READ_ONLY:

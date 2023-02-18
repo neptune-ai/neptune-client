@@ -111,7 +111,6 @@ from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
 from neptune.internal.utils.paths import path_to_str
-from neptune.metadata_containers import Model
 from neptune.types import (
     Boolean,
     Integer,
@@ -268,7 +267,7 @@ class NeptuneBackendMock(NeptuneBackend):
         elif expected_container_type == ContainerType.MODEL:
             return ApiExperiment(
                 id=UniqueId(str(uuid.uuid4())),
-                type=Model.container_type,
+                type=ContainerType.MODEL,
                 sys_id=SysId(container_id.rsplit("/", 1)[-1]),
                 workspace=self.WORKSPACE_NAME,
                 project_name=self.PROJECT_NAME,

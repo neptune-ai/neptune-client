@@ -74,7 +74,8 @@ from neptune.internal.utils.runningmode import (
 )
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
-from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
+
+# from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
 from neptune.types.series.string_series import StringSeries
@@ -309,8 +310,9 @@ class Run(MetadataContainer):
         self._tags: List[str] = tags
         self._source_files: List[str] = source_files
         self._fail_on_exception: bool = fail_on_exception
+        self._capture_traceback: bool = capture_traceback
 
-        self._monitoring_namespace = (
+        self._monitoring_namespace: str = (
             monitoring_namespace
             or os.getenv(MONITORING_NAMESPACE)
             or generate_monitoring_namespace(self._hostname, self._pid, self._tid)
@@ -328,7 +330,7 @@ class Run(MetadataContainer):
             self._capture_stderr = capture_only_if_non_interactive()
             self._stderr_path = "{}/stderr".format(self._monitoring_namespace)
 
-        self._capture_hardware_metrics = capture_hardware_metrics
+        self._capture_hardware_metrics: bool = capture_hardware_metrics
         if capture_hardware_metrics is None:
             self._capture_hardware_metrics = capture_only_if_non_interactive()
 
@@ -388,8 +390,8 @@ class Run(MetadataContainer):
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
-        background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+        # websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+        # background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
         if self._capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=self._stdout_path))
