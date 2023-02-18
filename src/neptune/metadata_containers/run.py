@@ -318,17 +318,15 @@ class Run(MetadataContainer):
             or generate_monitoring_namespace(self._hostname, self._pid, self._tid)
         )
 
-        self._stdout_path: str = ""
+        self._stdout_path: str = "{}/stdout".format(self._monitoring_namespace)
         self._capture_stdout: bool = capture_stdout
         if capture_stdout is None:
             self._capture_stdout = capture_only_if_non_interactive()
-            self._stdout_path = "{}/stdout".format(self._monitoring_namespace)
 
-        self._stderr_path: str = ""
+        self._stderr_path: str = "{}/stderr".format(self._monitoring_namespace)
         self._capture_stderr: bool = capture_stderr
         if capture_stderr is None:
             self._capture_stderr = capture_only_if_non_interactive()
-            self._stderr_path = "{}/stderr".format(self._monitoring_namespace)
 
         self._capture_hardware_metrics: bool = capture_hardware_metrics
         if capture_hardware_metrics is None:

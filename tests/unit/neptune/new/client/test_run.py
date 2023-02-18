@@ -94,7 +94,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
-    @patch("neptune.internal.init.run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.metadata_containers.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
@@ -140,35 +140,35 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
-    @patch("neptune.internal.init.run.in_interactive", new=lambda: True)
-    @patch("neptune.internal.init.run.TracebackJob")
-    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
-    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
-    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.in_interactive", new=lambda: True)
+    @patch("neptune.metadata_containers.run.TracebackJob")
+    @patch("neptune.metadata_containers.run.HardwareMetricReportingJob")
+    @patch("neptune.metadata_containers.run.StderrCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.StdoutCaptureBackgroundJob")
     def test_monitoring_disabled_in_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
         with init_run(mode="debug", monitoring_namespace="monitoring"):
             assert not stdout_job.called
             assert not stderr_job.called
             assert not hardware_job.called
-            traceback_job.assert_called_once_with("monitoring/traceback", True)
+            traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
-    @patch("neptune.internal.init.run.in_interactive", new=lambda: False)
-    @patch("neptune.internal.init.run.TracebackJob")
-    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
-    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
-    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.in_interactive", new=lambda: False)
+    @patch("neptune.metadata_containers.run.TracebackJob")
+    @patch("neptune.metadata_containers.run.HardwareMetricReportingJob")
+    @patch("neptune.metadata_containers.run.StderrCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.StdoutCaptureBackgroundJob")
     def test_monitoring_enabled_in_non_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
         with init_run(mode="debug", monitoring_namespace="monitoring"):
             stdout_job.assert_called_once_with(attribute_name="monitoring/stdout")
             stderr_job.assert_called_once_with(attribute_name="monitoring/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring")
-            traceback_job.assert_called_once_with("monitoring/traceback", True)
+            traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
-    @patch("neptune.internal.init.run.in_interactive", new=lambda: True)
-    @patch("neptune.internal.init.run.TracebackJob")
-    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
-    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
-    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.in_interactive", new=lambda: True)
+    @patch("neptune.metadata_containers.run.TracebackJob")
+    @patch("neptune.metadata_containers.run.HardwareMetricReportingJob")
+    @patch("neptune.metadata_containers.run.StderrCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.StdoutCaptureBackgroundJob")
     def test_monitoring_in_interactive_explicitly_enabled(self, stdout_job, stderr_job, hardware_job, traceback_job):
         with init_run(
             mode="debug",
@@ -180,11 +180,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             stdout_job.assert_called_once_with(attribute_name="monitoring/stdout")
             stderr_job.assert_called_once_with(attribute_name="monitoring/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring")
-            traceback_job.assert_called_once_with("monitoring/traceback", True)
+            traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
     @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.internal.utils.source_code.get_common_root", new=lambda _: None)
-    @patch("neptune.internal.init.run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.metadata_containers.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
@@ -200,22 +200,22 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
-    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
-    @patch("neptune.internal.init.run.TracebackJob")
-    @patch("neptune.internal.init.run.HardwareMetricReportingJob")
-    @patch("neptune.internal.init.run.StderrCaptureBackgroundJob")
-    @patch("neptune.internal.init.run.StdoutCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
+    @patch("neptune.metadata_containers.run.TracebackJob")
+    @patch("neptune.metadata_containers.run.HardwareMetricReportingJob")
+    @patch("neptune.metadata_containers.run.StderrCaptureBackgroundJob")
+    @patch("neptune.metadata_containers.run.StdoutCaptureBackgroundJob")
     def test_monitoring_namespace_based_on_hash(self, stdout_job, stderr_job, hardware_job, traceback_job):
         with init_run(mode="debug"):
             stdout_job.assert_called_once_with(attribute_name="monitoring/some_hash/stdout")
             stderr_job.assert_called_once_with(attribute_name="monitoring/some_hash/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
-            traceback_job.assert_called_once_with("monitoring/some_hash/traceback", True)
+            traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
 
-    @patch("neptune.internal.init.run.generate_hash", lambda *vals, length: "some_hash")
-    @patch("neptune.internal.init.run.get_hostname", lambda *vals: "localhost")
-    @patch("neptune.internal.init.run.os.getpid", lambda *vals: 1234)
-    @patch("neptune.internal.init.run.threading.get_ident", lambda: 56789)
+    @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
+    @patch("neptune.metadata_containers.run.get_hostname", lambda *vals: "localhost")
+    @patch("neptune.metadata_containers.run.os.getpid", lambda *vals: 1234)
+    @patch("neptune.metadata_containers.run.threading.get_ident", lambda: 56789)
     def test_that_hostname_and_process_info_were_logged(self):
         with init_run(mode="debug") as exp:
             assert exp["monitoring/some_hash/hostname"].fetch() == "localhost"
