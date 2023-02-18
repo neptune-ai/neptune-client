@@ -57,9 +57,9 @@ def init_model_version(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
+    verify_type("model", model, (str, type(None)))
     verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
-    verify_type("model", model, (str, type(None)))
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("mode", mode, (str, type(None)))
@@ -68,25 +68,24 @@ def init_model_version(
 
     # make mode proper Enum instead of string
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
-
-    if mode == Mode.OFFLINE:
-        raise NeptuneException("Model can't be initialized in OFFLINE mode")
-
     name = DEFAULT_NAME if model is None and name is None else name
-
-    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = OFFLINE_PROJECT_QUALIFIED_NAME
-
     project = id_formats.conform_optional(project, QualifiedName)
-    project_obj = project_name_lookup(backend, project)
-    project = f"{project_obj.workspace}/{project_obj.name}"
 
+    if mode == Mode.OFFLINE:
+        raise NeptuneException("ModelVersion can't be initialized in OFFLINE mode")
+
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
+
+    project_obj = project_name_lookup(backend, project)
+
+    project = f"{project_obj.workspace}/{project_obj.name}"
     if with_id is not None:
         # with_id (resume existing model_version) has priority over model (creating a new model_version)
         version_id = QualifiedName(project + "/" + with_id)
-        api_model_version = backend.get_metadata_container(
+        api_object = backend.get_metadata_container(
             container_id=version_id, expected_container_type=ModelVersion.container_type
         )
     elif model is not None:
@@ -95,7 +94,7 @@ def init_model_version(
 
         model_id = QualifiedName(project + "/" + model)
         api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
-        api_model_version = backend.create_model_version(project_id=project_obj.id, model_id=api_model.id)
+        api_object = backend.create_model_version(project_id=project_obj.id, model_id=api_model.id)
     else:
         raise NeptuneMissingRequiredInitParameter(
             parameter_name="model",
@@ -106,7 +105,7 @@ def init_model_version(
 
     operation_processor = get_operation_processor(
         mode=mode,
-        container_id=api_model_version.id,
+        container_id=api_object.id,
         container_type=ModelVersion.container_type,
         backend=backend,
         lock=lock,
@@ -114,15 +113,15 @@ def init_model_version(
     )
 
     _object = ModelVersion(
-        id_=api_model_version.id,
+        id_=api_object.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=background_jobs(mode=mode),
         lock=lock,
-        workspace=api_model_version.workspace,
-        project_name=api_model_version.project_name,
-        sys_id=api_model_version.sys_id,
+        workspace=api_object.workspace,
+        project_name=api_object.project_name,
+        sys_id=api_object.sys_id,
         project_id=project_obj.id,
     )
 

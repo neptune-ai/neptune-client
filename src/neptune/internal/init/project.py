@@ -50,18 +50,20 @@ def init_project(
     # make mode proper Enum instead of string
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
 
+    project = id_formats.conform_optional(project, QualifiedName)
+
     if mode == Mode.OFFLINE:
         raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
-    project = id_formats.conform_optional(project, QualifiedName)
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
-    project_obj = project_name_lookup(backend=backend, name=project)
+
+    api_object = project_name_lookup(backend=backend, name=project)
 
     lock = threading.RLock()
 
     operation_processor = get_operation_processor(
         mode=mode,
-        container_id=project_obj.id,
+        container_id=api_object.id,
         container_type=Project.container_type,
         backend=backend,
         lock=lock,
@@ -69,15 +71,15 @@ def init_project(
     )
 
     _object = Project(
-        id_=project_obj.id,
+        id_=api_object.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=background_jobs(),
         lock=lock,
-        workspace=project_obj.workspace,
-        project_name=project_obj.name,
-        sys_id=project_obj.sys_id,
+        workspace=api_object.workspace,
+        project_name=api_object.name,
+        sys_id=api_object.sys_id,
     )
 
     if mode != Mode.OFFLINE:

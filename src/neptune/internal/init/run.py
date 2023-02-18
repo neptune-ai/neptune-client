@@ -273,17 +273,17 @@ def init_run(
     if with_id and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
-
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = OFFLINE_PROJECT_QUALIFIED_NAME
-
     project = id_formats.conform_optional(project, QualifiedName)
-    project_obj = project_name_lookup(backend, project)
-    project = f"{project_obj.workspace}/{project_obj.name}"
 
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
+
+    project_obj = project_name_lookup(backend, project)
+
+    project = f"{project_obj.workspace}/{project_obj.name}"
     if with_id:
-        api_run = backend.get_metadata_container(
+        api_object = backend.get_metadata_container(
             container_id=QualifiedName(project + "/" + with_id),
             expected_container_type=Run.container_type,
         )
@@ -296,7 +296,7 @@ def init_run(
 
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
-        api_run = backend.create_run(
+        api_object = backend.create_run(
             project_id=project_obj.id,
             git_ref=git_ref,
             custom_run_id=custom_run_id,
@@ -308,7 +308,7 @@ def init_run(
 
     operation_processor = get_operation_processor(
         mode=mode,
-        container_id=api_run.id,
+        container_id=api_object.id,
         container_type=Run.container_type,
         backend=backend,
         lock=lock,
@@ -319,7 +319,7 @@ def init_run(
     stderr_path = "{}/stderr".format(monitoring_namespace)
 
     _object = Run(
-        id_=api_run.id,
+        id_=api_object.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
@@ -332,13 +332,13 @@ def init_run(
             stdout_path=stdout_path,
             stderr_path=stderr_path,
             monitoring_namespace=monitoring_namespace,
-            websockets_factory=backend.websockets_factory(project_obj.id, api_run.id),
+            websockets_factory=backend.websockets_factory(project_obj.id, api_object.id),
             fail_on_exception=fail_on_exception,
         ),
         lock=lock,
-        workspace=api_run.workspace,
-        project_name=api_run.project_name,
-        sys_id=api_run.sys_id,
+        workspace=api_object.workspace,
+        project_name=api_object.project_name,
+        sys_id=api_object.sys_id,
         project_id=project_obj.id,
         monitoring_namespace=monitoring_namespace,
     )

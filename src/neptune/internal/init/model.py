@@ -56,9 +56,9 @@ def init_model(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
+    verify_type("key", key, (str, type(None)))
     verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
-    verify_type("key", key, (str, type(None)))
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("mode", mode, (str, type(None)))
@@ -67,32 +67,31 @@ def init_model(
 
     # make mode proper Enum instead of string
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+    name = DEFAULT_NAME if with_id is None and name is None else name
+
+    if mode == Mode.OFFLINE or mode == Mode.DEBUG:
+        project = OFFLINE_PROJECT_QUALIFIED_NAME
+    project = id_formats.conform_optional(project, QualifiedName)
 
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-    name = DEFAULT_NAME if with_id is None and name is None else name
-
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
-    if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = OFFLINE_PROJECT_QUALIFIED_NAME
-
-    project = id_formats.conform_optional(project, QualifiedName)
     project_obj = project_name_lookup(backend=backend, name=project)
-    project = f"{project_obj.workspace}/{project_obj.name}"
 
+    project = f"{project_obj.workspace}/{project_obj.name}"
     if with_id is not None:
         # with_id (resume existing model) has priority over key (creating a new model)
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
         model_id = QualifiedName(project + "/" + with_id)
-        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
+        api_object = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
     elif key is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()
 
         try:
-            api_model = backend.create_model(project_id=project_obj.id, key=key)
+            api_object = backend.create_model(project_id=project_obj.id, key=key)
         except NeptuneObjectCreationConflict as e:
             base_url = backend.get_display_address()
             raise NeptuneModelKeyAlreadyExistsError(
@@ -110,7 +109,7 @@ def init_model(
 
     operation_processor = get_operation_processor(
         mode=mode,
-        container_id=api_model.id,
+        container_id=api_object.id,
         container_type=Model.container_type,
         backend=backend,
         lock=lock,
@@ -118,15 +117,15 @@ def init_model(
     )
 
     _object = Model(
-        id_=api_model.id,
+        id_=api_object.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=background_jobs(mode=mode),
         lock=lock,
-        workspace=api_model.workspace,
-        project_name=api_model.project_name,
-        sys_id=api_model.sys_id,
+        workspace=api_object.workspace,
+        project_name=api_object.project_name,
+        sys_id=api_object.sys_id,
         project_id=project_obj.id,
     )
 
