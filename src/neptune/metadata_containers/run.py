@@ -15,26 +15,80 @@
 #
 __all__ = ["Run"]
 
+import os
 import threading
+from platform import node as get_hostname
 from typing import (
     Any,
     Dict,
+    List,
     Optional,
+    Tuple,
     Union,
 )
 
-from neptune.exceptions import InactiveRunException
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.background_job import BackgroundJob
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import (
-    SysId,
-    UniqueId,
+from neptune.attributes import constants as attr_consts
+from neptune.envs import (
+    CONNECTION_MODE,
+    CUSTOM_RUN_ID_ENV_NAME,
+    MONITORING_NAMESPACE,
+    NEPTUNE_NOTEBOOK_ID,
+    NEPTUNE_NOTEBOOK_PATH,
 )
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.exceptions import (
+    InactiveRunException,
+    NeedExistingRunForReadOnlyMode,
+    NeptunePossibleLegacyUsageException,
+    NeptuneRunResumeAndCustomIdCollision,
+)
+from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.backgroud_job_list import BackgroundJobList
+from neptune.internal.container_type import ContainerType
+from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.internal.id_formats import QualifiedName
+from neptune.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
+)
+from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.internal.state import ContainerState
+from neptune.internal.streams.std_capture_background_job import (
+    StderrCaptureBackgroundJob,
+    StdoutCaptureBackgroundJob,
+)
+from neptune.internal.utils import (
+    verify_collection_type,
+    verify_type,
+)
+from neptune.internal.utils.git import (
+    discover_git_repo_location,
+    get_git_info,
+)
+from neptune.internal.utils.hashing import generate_hash
+from neptune.internal.utils.limits import custom_run_id_exceeds_length
+from neptune.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
+from neptune.internal.utils.source_code import upload_source_code
+from neptune.internal.utils.traceback_job import TracebackJob
+from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
+from neptune.types.series.string_series import StringSeries
+
+LEGACY_KWARGS = ("project_qualified_name", "backend")
+
+
+def _check_for_extra_kwargs(caller_name, kwargs: dict):
+    for name in LEGACY_KWARGS:
+        if name in kwargs:
+            raise NeptunePossibleLegacyUsageException()
+    if kwargs:
+        first_key = next(iter(kwargs.keys()))
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
 class Run(MetadataContainer):
@@ -106,32 +160,301 @@ class Run(MetadataContainer):
 
     def __init__(
         self,
+        with_id: Optional[str] = None,
         *,
-        id_: UniqueId,
-        mode: Mode,
-        backend: NeptuneBackend,
-        op_processor: OperationProcessor,
-        background_job: BackgroundJob,
-        lock: threading.RLock,
-        workspace: str,
-        project_name: str,
-        sys_id: SysId,
-        project_id: UniqueId,
-        monitoring_namespace: str = "monitoring",
+        project: Optional[str] = None,
+        api_token: Optional[str] = None,
+        custom_run_id: Optional[str] = None,
+        mode: Optional[str] = None,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        tags: Optional[Union[List[str], str]] = None,
+        source_files: Optional[Union[List[str], str]] = None,
+        capture_stdout: Optional[bool] = None,
+        capture_stderr: Optional[bool] = None,
+        capture_hardware_metrics: Optional[bool] = None,
+        fail_on_exception: bool = True,
+        monitoring_namespace: Optional[str] = None,
+        flush_period: float = DEFAULT_FLUSH_PERIOD,
+        proxies: Optional[dict] = None,
+        capture_traceback: bool = True,
+        **kwargs,
     ):
-        super().__init__(
-            id_=id_,
-            mode=mode,
-            backend=backend,
-            op_processor=op_processor,
-            background_job=background_job,
-            lock=lock,
-            project_id=project_id,
-            project_name=project_name,
-            workspace=workspace,
-            sys_id=sys_id,
+        """Starts a new tracked run and adds it to the top of the runs table.
+
+        If you provide the ID of an existing run, that run is resumed and no new run is created.
+
+        Args:
+            project: Name of the project where the run should go, in the form "workspace-name/project_name".
+            If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
+            api_token: User's API token. Defaults to None.
+                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
+                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
+                placing it in plain text in the source code.
+            with_id: If you want to resume a run, the identifier of the existing run.
+                For example, 'SAN-1'. A run with such an ID must exist.
+                If None (default) is passed, starts a new tracked run.
+            custom_run_id: A unique identifier to be used when running Neptune in pipelines.
+                Make sure to use the same identifier throughout the whole pipeline execution.
+            mode: Connection mode in which the tracking will work.
+                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If no value was set for the environment variable, 'async' is used by default.
+                Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
+            name: Editable name of the run. Defaults to 'Untitled'.
+                The name is displayed in the run details and as a column in the runs table.
+            description: Editable description of the run. Defaults to `''`.
+                The description is displayed in the run details and can be added to the runs table as a column.
+            tags: Tags of the run as a list of strings. Defaults to `[]`.
+                Tags are displayed in the run details and in the runs table as a column.
+                You can edit the tags after the run is created, either through the app or the API.
+            source_files: List of source files to be uploaded.
+                Uploaded source files are displayed in the 'Source code' tab of the run view.
+                To not upload anything, pass an empty list (`[]`).
+                Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
+                all Python files from the current directory.
+                If None is passed, the Python file from which the run was created will be uploaded.
+            capture_stdout: Whether to log the stdout of the run. Defaults to True.
+                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+            capture_stderr:  Whether to log the stderr of the run. Defaults to True.
+                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+            capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
+                Defaults to True.
+                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+            fail_on_exception: Whether to register an uncaught exception handler to this process and,
+                in case of an exception, set the 'sys/failed' field of the run to True.
+                An exception is always logged.
+            monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
+                Defaults to 'monitoring/<hash>', where the hash is generated based on environment information,
+                to ensure that it's unique for each process.
+            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
+                Defaults to 5 (every 5 seconds).
+            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+                For more information, see the 'Proxies' section in the Requests documentation.
+            capture_traceback:  Whether to log the traceback of the run in case of an exception.
+                Defaults to True.
+                The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
+                'monitoring_namespace' parameter).
+
+        Returns:
+            Run object that is used to manage the tracked run and log metadata to it.
+
+        Examples:
+
+            Creating a new run:
+
+            >>> import neptune
+
+            >>> # Minimal invoke
+            ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
+            ... run = neptune.init_run()
+
+            >>> # Create a tracked run with a name and description, and no sources files uploaded
+            >>> run = neptune.init_run(
+            ...     name="neural-net-mnist",
+            ...     description="neural net trained on MNIST",
+            ...     source_files=[],
+            ... )
+
+            >>> # Log all .py files from all subdirectories, excluding hidden files
+            ... run = neptune.init_run(source_files="**/*.py")
+
+            >>> # Log all files and directories in the current working directory, excluding hidden files
+            ... run = neptune.init_run(source_files="*")
+
+            >>> # Larger example
+            ... run = neptune.init_run(
+            ...     project="ml-team/classification",
+            ...     name="first-pytorch-ever",
+            ...     description="Longer description of the run goes here",
+            ...     tags=["tags", "go-here", "as-list-of-strings"],
+            ...     source_files=["training_with_pytorch.py", "net.py"],
+            ...     monitoring_namespace="system_metrics",
+            ...     capture_stderr=False,
+            ... )
+
+            Connecting to an existing run:
+
+            >>> # Resume logging to an existing run with the ID "SAN-3"
+            ... run = neptune.init_run(with_id="SAN-3")
+            ... run["parameters/lr"] = 0.1  # modify or add metadata
+
+            >>> # Initialize an existing run in read-only mode (logging new data is not possible, only fetching)
+            ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
+            ... learning_rate = run["parameters/lr"].fetch()
+
+        For more, see the API reference:
+        https://docs.neptune.ai/api/neptune#init_run
+        """
+        _check_for_extra_kwargs("Run", kwargs)
+
+        verify_type("project", project, (str, type(None)))
+        verify_type("with_id", with_id, (str, type(None)))
+        verify_type("custom_run_id", custom_run_id, (str, type(None)))
+        verify_type("mode", mode, (str, type(None)))
+        verify_type("name", name, (str, type(None)))
+        verify_type("description", description, (str, type(None)))
+        verify_type("capture_stdout", capture_stdout, (bool, type(None)))
+        verify_type("capture_stderr", capture_stderr, (bool, type(None)))
+        verify_type("fail_on_exception", fail_on_exception, bool)
+        verify_type("capture_hardware_metrics", capture_hardware_metrics, (bool, type(None)))
+        verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
+        verify_type("capture_traceback", capture_traceback, bool)
+        if tags is not None:
+            if isinstance(tags, str):
+                tags = [tags]
+            else:
+                verify_collection_type("tags", tags, str)
+        if source_files is not None:
+            if isinstance(source_files, str):
+                source_files = [source_files]
+            else:
+                verify_collection_type("source_files", source_files, str)
+
+        self._with_id: Optional[str] = with_id
+        self._name: str = DEFAULT_NAME if with_id is None and name is None else name
+        self._description: str = "" if with_id is None and description is None else description
+        self._custom_run_id: Optional[str] = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
+        self._hostname: str = get_hostname()
+        self._pid: int = os.getpid()
+        self._tid: int = threading.get_ident()
+        self._tags: List[str] = tags
+        self._source_files: List[str] = source_files
+        self._fail_on_exception: bool = fail_on_exception
+
+        self._monitoring_namespace = (
+            monitoring_namespace
+            or os.getenv(MONITORING_NAMESPACE)
+            or generate_monitoring_namespace(self._hostname, self._pid, self._tid)
         )
-        self.monitoring_namespace = monitoring_namespace
+
+        self._stdout_path: str = ""
+        self._capture_stdout: bool = capture_stdout
+        if capture_stdout is None:
+            self._capture_stdout = capture_only_if_non_interactive()
+            self._stdout_path = "{}/stdout".format(self._monitoring_namespace)
+
+        self._stderr_path: str = ""
+        self._capture_stderr: bool = capture_stderr
+        if capture_stderr is None:
+            self._capture_stderr = capture_only_if_non_interactive()
+            self._stderr_path = "{}/stderr".format(self._monitoring_namespace)
+
+        self._capture_hardware_metrics = capture_hardware_metrics
+        if capture_hardware_metrics is None:
+            self._capture_hardware_metrics = capture_only_if_non_interactive()
+
+        # for backward compatibility imports
+        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+
+        if with_id and custom_run_id:
+            raise NeptuneRunResumeAndCustomIdCollision()
+
+        if mode == Mode.OFFLINE or mode == Mode.DEBUG:
+            project = OFFLINE_PROJECT_QUALIFIED_NAME
+
+        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+
+    def _get_or_create_api_object(self) -> ApiExperiment:
+        project_workspace = self._project_api_object.workspace
+        project_name = self._project_api_object.name
+        project_qualified_name = f"{project_workspace}/{project_name}"
+
+        if self._with_id:
+            return self._backend.get_metadata_container(
+                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
+                expected_container_type=Run.container_type,
+            )
+        else:
+            if self._mode == Mode.READ_ONLY:
+                raise NeedExistingRunForReadOnlyMode()
+
+            git_ref = get_git_info(discover_git_repo_location())
+
+            custom_run_id = self._custom_run_id
+            if custom_run_id_exceeds_length(self._custom_run_id):
+                custom_run_id = None
+
+            notebook_id, checkpoint_id = self._create_notebook_checkpoint()
+
+            return self._backend.create_run(
+                project_id=self._project_api_object.id,
+                git_ref=git_ref,
+                custom_run_id=custom_run_id,
+                notebook_id=notebook_id,
+                checkpoint_id=checkpoint_id,
+            )
+
+    def _create_notebook_checkpoint(self) -> Tuple[Optional[str], Optional[str]]:
+        notebook_id = os.getenv(NEPTUNE_NOTEBOOK_ID, None)
+        notebook_path = os.getenv(NEPTUNE_NOTEBOOK_PATH, None)
+
+        checkpoint_id = None
+        if notebook_id is not None and notebook_path is not None:
+            checkpoint_id = create_checkpoint(
+                backend=self._backend, notebook_id=notebook_id, notebook_path=notebook_path
+            )
+
+        return notebook_id, checkpoint_id
+
+    def _prepare_background_jobs(self) -> BackgroundJobList:
+        background_jobs = [PingBackgroundJob()]
+
+        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+        background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+
+        if self._capture_stdout:
+            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=self._stdout_path))
+
+        if self._capture_stderr:
+            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=self._stderr_path))
+
+        if self._capture_hardware_metrics:
+            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=self._monitoring_namespace))
+
+        if self._capture_traceback:
+            background_jobs.append(
+                TracebackJob(path=f"{self._monitoring_namespace}/traceback", fail_on_exception=self._fail_on_exception)
+            )
+
+        return BackgroundJobList(background_jobs)
+
+    def _write_initial_attributes(self):
+        if self._name is not None:
+            self[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+
+        if self._description is not None:
+            self[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
+
+        if self._hostname is not None:
+            self[f"{self._monitoring_namespace}/hostname"] = self._hostname
+            if self._with_id is None:
+                self[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = self._hostname
+
+        if self._pid is not None:
+            self[f"{self._monitoring_namespace}/pid"] = str(self._pid)
+
+        if self._tid is not None:
+            self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
+
+        if self._tags is not None:
+            self[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(self._tags)
+
+        if self._with_id is None:
+            self[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
+
+        if self._capture_stdout and not self.exists(self._stdout_path):
+            self.define(self._stdout_path, StringSeries([]))
+
+        if self._capture_stderr and not self.exists(self._stderr_path):
+            self.define(self._stderr_path, StringSeries([]))
+
+        if self._with_id is None or self._source_files is not None:
+            # upload default sources ONLY if creating a new run
+            upload_source_code(source_files=self._source_files, run=self)
+
+    @property
+    def monitoring_namespace(self) -> str:
+        return self._monitoring_namespace
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
@@ -311,3 +634,13 @@ class Run(MetadataContainer):
             https://docs.neptune.ai/api/run#sync
         """
         return super().sync(wait=wait)
+
+
+def capture_only_if_non_interactive() -> bool:
+    if in_interactive() or in_notebook():
+        return False
+    return True
+
+
+def generate_monitoring_namespace(*descriptors):
+    return f"monitoring/{generate_hash(*descriptors, length=8)}"

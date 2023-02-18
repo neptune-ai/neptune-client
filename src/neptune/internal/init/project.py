@@ -15,22 +15,10 @@
 #
 __all__ = ["init_project"]
 
-import os
-import threading
 from typing import Optional
 
-from neptune.common.exceptions import NeptuneException
-from neptune.envs import CONNECTION_MODE
-from neptune.internal import id_formats
-from neptune.internal.backends.factory import get_backend
-from neptune.internal.backends.project_name_lookup import project_name_lookup
-from neptune.internal.backgroud_job_list import BackgroundJobList
-from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
-from neptune.internal.operation_processors.factory import get_operation_processor
-from neptune.internal.utils import verify_type
 from neptune.metadata_containers import Project
-from neptune.types.mode import Mode
 
 
 def init_project(
@@ -41,66 +29,4 @@ def init_project(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Project:
-    verify_type("project", project, (str, type(None)))
-    verify_type("api_token", api_token, (str, type(None)))
-    verify_type("mode", mode, (str, type(None)))
-    verify_type("flush_period", flush_period, (int, float))
-    verify_type("proxies", proxies, (dict, type(None)))
-
-    # make mode proper Enum instead of string
-    mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
-
-    project = id_formats.conform_optional(project, QualifiedName)
-
-    if mode == Mode.OFFLINE:
-        raise NeptuneException("Project can't be initialized in OFFLINE mode")
-
-    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
-
-    project_obj = project_name_lookup(backend=backend, name=project)
-
-    api_object = get_or_create_api_object(project_obj=project_obj, backend=backend, mode=mode)
-
-    lock = threading.RLock()
-
-    operation_processor = get_operation_processor(
-        mode=mode,
-        container_id=api_object.id,
-        container_type=Project.container_type,
-        backend=backend,
-        lock=lock,
-        flush_period=flush_period,
-    )
-
-    _object = Project(
-        id_=api_object.id,
-        mode=mode,
-        backend=backend,
-        op_processor=operation_processor,
-        background_job=background_jobs(),
-        lock=lock,
-        workspace=api_object.workspace,
-        project_name=api_object.name,
-        sys_id=api_object.sys_id,
-    )
-
-    if mode != Mode.OFFLINE:
-        _object.sync(wait=False)
-
-    additional_attributes(_object=_object)
-
-    _object._startup(debug_mode=mode == Mode.DEBUG)
-
-    return _object
-
-
-def get_or_create_api_object(project_obj, backend, mode):
-    return project_obj
-
-
-def background_jobs():
-    return BackgroundJobList([])
-
-
-def additional_attributes(_object):
-    pass
+    return Project(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
