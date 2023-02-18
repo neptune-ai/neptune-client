@@ -35,11 +35,3 @@ class RunState(enum.Enum):
             return RunState.inactive
         else:
             raise NeptuneException(f"Unknown RunState: {value}")
-
-    def to_api(self) -> str:
-        if self is RunState.active:
-            return self._api_active.value
-        elif self is RunState.inactive:
-            return self._api_inactive.value
-        else:
-            raise NeptuneException(f"Can't map RunState to API: {self.value}")
