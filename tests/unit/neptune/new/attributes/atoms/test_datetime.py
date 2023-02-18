@@ -16,8 +16,12 @@
 
 from datetime import datetime
 
-from mock import MagicMock
+from mock import (
+    MagicMock,
+    patch,
+)
 
+from neptune import Run
 from neptune.attributes.atoms.datetime import (
     Datetime,
     DatetimeVal,
@@ -27,7 +31,8 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestDatetime(TestAttributeBase):
-    def test_assign(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign(self, get_operation_processor):
         now = datetime.now()
         value_and_expected = [
             (now, now.replace(microsecond=1000 * int(now.microsecond / 1000))),
@@ -39,14 +44,15 @@ class TestDatetime(TestAttributeBase):
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
+            get_operation_processor.return_value = processor
+            path, wait = (
                 self._random_path(),
                 self._random_wait(),
             )
-            var = Datetime(exp, path)
-            var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignDatetime(path, expected), wait=wait)
+            with Run(mode="debug") as exp:
+                var = Datetime(exp, path)
+                var.assign(value, wait=wait)
+                processor.enqueue_operation.assert_called_with(AssignDatetime(path, expected), wait=wait)
 
     def test_assign_type_error(self):
         values = [55, None]
@@ -55,9 +61,9 @@ class TestDatetime(TestAttributeBase):
                 Datetime(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        exp, path = self._create_run(), self._random_path()
-        var = Datetime(exp, path)
-        now = datetime.now()
-        now = now.replace(microsecond=int(now.microsecond / 1000) * 1000)
-        var.assign(now)
-        self.assertEqual(now, var.fetch())
+        with Run(mode="debug") as exp:
+            var = Datetime(exp, self._random_path())
+            now = datetime.now()
+            now = now.replace(microsecond=int(now.microsecond / 1000) * 1000)
+            var.assign(now)
+            self.assertEqual(now, var.fetch())

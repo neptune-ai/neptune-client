@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from mock import MagicMock
+from mock import (
+    MagicMock,
+    patch,
+)
 
+from neptune import Run
 from neptune.attributes.atoms.string import (
     String,
     StringVal,
@@ -24,25 +28,28 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestString(TestAttributeBase):
-    def test_assign(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign(self, get_operation_processor):
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
         value_and_expected = [
             ("qwertyu", "qwertyu"),
             (StringVal("Some string"), "Some string"),
         ]
 
         for value, expected in value_and_expected:
-            processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
+            path, wait = (
                 self._random_path(),
                 self._random_wait(),
             )
-            var = String(exp, path)
-            var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait=wait)
+            with Run(mode="debug") as exp:
+                var = String(exp, path)
+                var.assign(value, wait=wait)
+                processor.enqueue_operation.assert_called_with(AssignString(path, expected), wait=wait)
 
     def test_get(self):
-        exp, path = self._create_run(), self._random_path()
-        var = String(exp, path)
-        var.assign("adfh")
-        self.assertEqual("adfh", var.fetch())
+        with Run(mode="debug") as exp:
+            var = String(exp, self._random_path())
+            var.assign("adfh")
+            self.assertEqual("adfh", var.fetch())

@@ -18,6 +18,7 @@ from mock import (
     patch,
 )
 
+from neptune import Run
 from neptune.attributes.series.string_series import StringSeries
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -31,17 +32,17 @@ class TestStringSeries(TestAttributeBase):
                 StringSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        exp, path = self._create_run(), self._random_path()
-        var = StringSeries(exp, path)
-        var.log("asdfhadh")
-        var.log("hej!")
-        self.assertEqual("hej!", var.fetch_last())
+        with Run(mode="debug") as exp:
+            var = StringSeries(exp, self._random_path())
+            var.log("asdfhadh")
+            var.log("hej!")
+            self.assertEqual("hej!", var.fetch_last())
 
     def test_log(self):
-        exp, path = self._create_run(), self._random_path()
-        var = StringSeries(exp, path)
-        var.log([str(val) for val in range(0, 5000)])
-        self.assertEqual("4999", var.fetch_last())
-        values = list(var.fetch_values()["value"].array)
-        expected = list(range(0, 5000))
-        self.assertEqual(len(set(expected)), len(set(values)))
+        with Run(mode="debug") as exp:
+            var = StringSeries(exp, self._random_path())
+            var.log([str(val) for val in range(0, 5000)])
+            self.assertEqual("4999", var.fetch_last())
+            values = list(var.fetch_values()["value"].array)
+            expected = list(range(0, 5000))
+            self.assertEqual(len(set(expected)), len(set(values)))

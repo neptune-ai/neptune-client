@@ -15,6 +15,7 @@
 #
 from mock import MagicMock
 
+from neptune import Run
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.internal.operation import AssignArtifact
 from neptune.types.atoms.artifact import Artifact as ArtifactVal
@@ -29,31 +30,31 @@ class TestArtifactHash(TestAttributeBase):
                 Artifact(MagicMock(), MagicMock()).assign(value)
 
     def test_fetch(self):
-        exp, path = self._create_run(), self._random_path()
-        var = Artifact(exp, path)
-        var._enqueue_operation(
-            AssignArtifact(
-                var._path,
-                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
-            ),
-            wait=False,
-        )
-        self.assertEqual(
-            ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-            var.fetch(),
-        )
+        with Run(mode="debug") as exp:
+            var = Artifact(exp, self._random_path())
+            var._enqueue_operation(
+                AssignArtifact(
+                    var._path,
+                    ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
+                ),
+                wait=False,
+            )
+            self.assertEqual(
+                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+                var.fetch(),
+            )
 
     def test_fetch_hash(self):
-        exp, path = self._create_run(), self._random_path()
-        var = Artifact(exp, path)
-        var._enqueue_operation(
-            AssignArtifact(
-                var._path,
-                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
-            ),
-            wait=False,
-        )
-        self.assertEqual(
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-            var.fetch_hash(),
-        )
+        with Run(mode="debug") as exp:
+            var = Artifact(exp, self._random_path())
+            var._enqueue_operation(
+                AssignArtifact(
+                    var._path,
+                    ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
+                ),
+                wait=False,
+            )
+            self.assertEqual(
+                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                var.fetch_hash(),
+            )
