@@ -79,7 +79,7 @@ def init_model_version(
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
-    project_obj = project_name_lookup(backend, project)
+    project_obj = project_name_lookup(backend=backend, name=project)
 
     api_object = get_or_create_api_object(
         project_obj=project_obj, backend=backend, with_id=with_id, model=model, mode=mode
