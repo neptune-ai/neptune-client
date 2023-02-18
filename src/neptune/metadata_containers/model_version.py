@@ -99,7 +99,7 @@ class ModelVersion(MetadataContainer):
             # with_id (resume existing model_version) has priority over model (creating a new model_version)
             version_id = QualifiedName(project_qualified_name + "/" + self._with_id)
             return self._backend.get_metadata_container(
-                container_id=version_id, expected_container_type=ModelVersion.container_type
+                container_id=version_id, expected_container_type=ContainerType.MODEL_VERSION
             )
         elif self._model is not None:
             if self._mode == Mode.READ_ONLY:
@@ -107,9 +107,9 @@ class ModelVersion(MetadataContainer):
 
             model_id = QualifiedName(project_qualified_name + "/" + self._model)
             api_model = self._backend.get_metadata_container(
-                container_id=model_id, expected_container_type=self.container_type
+                container_id=model_id, expected_container_type=ContainerType.MODEL
             )
-            return self.backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
+            return self._backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
         else:
             raise NeptuneMissingRequiredInitParameter(
                 parameter_name="model",
