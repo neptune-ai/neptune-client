@@ -79,17 +79,6 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.types.mode import Mode
 from neptune.types.series.string_series import StringSeries
 
-LEGACY_KWARGS = ("project_qualified_name", "backend")
-
-
-def _check_for_extra_kwargs(caller_name, kwargs: dict):
-    for name in LEGACY_KWARGS:
-        if name in kwargs:
-            raise NeptunePossibleLegacyUsageException()
-    if kwargs:
-        first_key = next(iter(kwargs.keys()))
-        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
-
 
 class Run(MetadataContainer):
     """A Run in Neptune is a representation of all metadata that you log to Neptune.
@@ -285,7 +274,7 @@ class Run(MetadataContainer):
         For more, see the API reference:
         https://docs.neptune.ai/api/neptune#init_run
         """
-        _check_for_extra_kwargs("Run", kwargs)
+        check_for_extra_kwargs("Run", kwargs)
 
         verify_type("project", project, (str, type(None)))
         verify_type("with_id", with_id, (str, type(None)))
@@ -644,3 +633,14 @@ def capture_only_if_non_interactive() -> bool:
 
 def generate_monitoring_namespace(*descriptors):
     return f"monitoring/{generate_hash(*descriptors, length=8)}"
+
+
+def check_for_extra_kwargs(caller_name, kwargs: dict):
+    legacy_kwargs = ("project_qualified_name", "backend")
+
+    for name in legacy_kwargs:
+        if name in kwargs:
+            raise NeptunePossibleLegacyUsageException()
+    if kwargs:
+        first_key = next(iter(kwargs.keys()))
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
