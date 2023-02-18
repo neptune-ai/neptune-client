@@ -102,14 +102,14 @@ def init_model_version(
             called_function="init_model_version",
         )
 
-    model_lock = threading.RLock()
+    lock = threading.RLock()
 
     operation_processor = get_operation_processor(
         mode=mode,
         container_id=api_model_version.id,
         container_type=ModelVersion.container_type,
         backend=backend,
-        lock=model_lock,
+        lock=lock,
         flush_period=flush_period,
     )
 
@@ -117,25 +117,30 @@ def init_model_version(
     if mode != Mode.READ_ONLY:
         background_jobs.append(PingBackgroundJob())
 
-    _model_version = ModelVersion(
+    _object = ModelVersion(
         id_=api_model_version.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
-        lock=model_lock,
+        lock=lock,
         workspace=api_model_version.workspace,
         project_name=api_model_version.project_name,
         sys_id=api_model_version.sys_id,
         project_id=project_obj.id,
     )
-    if mode != Mode.OFFLINE:
-        _model_version.sync(wait=False)
 
+    if mode != Mode.OFFLINE:
+        _object.sync(wait=False)
+
+    additional_attributes(_object=_object, mode=mode, name=name)
+
+    _object._startup(debug_mode=mode == Mode.DEBUG)
+
+    return _object
+
+
+def additional_attributes(_object, mode, name):
     if mode != Mode.READ_ONLY:
         if name is not None:
-            _model_version[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
-
-    _model_version._startup(debug_mode=mode == Mode.DEBUG)
-
-    return _model_version
+            _object[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name

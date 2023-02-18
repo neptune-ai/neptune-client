@@ -304,14 +304,14 @@ def init_run(
             checkpoint_id=checkpoint_id,
         )
 
-    run_lock = threading.RLock()
+    lock = threading.RLock()
 
     operation_processor = get_operation_processor(
         mode=mode,
         container_id=api_run.id,
         container_type=Run.container_type,
         backend=backend,
-        lock=run_lock,
+        lock=lock,
         flush_period=flush_period,
     )
 
@@ -339,58 +339,95 @@ def init_run(
 
         background_jobs.append(PingBackgroundJob())
 
-    _run = Run(
+    _object = Run(
         id_=api_run.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
-        lock=run_lock,
+        lock=lock,
         workspace=api_run.workspace,
         project_name=api_run.project_name,
         sys_id=api_run.sys_id,
         project_id=project_obj.id,
         monitoring_namespace=monitoring_namespace,
     )
-    if mode != Mode.OFFLINE:
-        _run.sync(wait=False)
 
+    if mode != Mode.OFFLINE:
+        _object.sync(wait=False)
+
+    additional_attributes(
+        _object=_object,
+        mode=mode,
+        name=name,
+        description=description,
+        hostname=hostname,
+        monitoring_namespace=monitoring_namespace,
+        pid=pid,
+        tid=tid,
+        tags=tags,
+        stdout_path=stdout_path,
+        stderr_path=stderr_path,
+        source_files=source_files,
+        with_id=with_id,
+        capture_stderr=capture_stderr,
+        capture_stdout=capture_stdout,
+    )
+
+    _object._startup(debug_mode=mode == Mode.DEBUG)
+
+    return _object
+
+
+def additional_attributes(
+    _object,
+    mode,
+    name,
+    description,
+    hostname,
+    monitoring_namespace,
+    pid,
+    tid,
+    tags,
+    capture_stdout,
+    capture_stderr,
+    stdout_path,
+    stderr_path,
+    with_id,
+    source_files,
+):
     if mode != Mode.READ_ONLY:
         if name is not None:
-            _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
+            _object[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
 
         if description is not None:
-            _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
+            _object[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
 
         if hostname is not None:
-            _run[f"{monitoring_namespace}/hostname"] = hostname
+            _object[f"{monitoring_namespace}/hostname"] = hostname
             if with_id is None:
-                _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+                _object[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
 
         if pid is not None:
-            _run[f"{monitoring_namespace}/pid"] = str(pid)
+            _object[f"{monitoring_namespace}/pid"] = str(pid)
 
         if tid is not None:
-            _run[f"{monitoring_namespace}/tid"] = str(tid)
+            _object[f"{monitoring_namespace}/tid"] = str(tid)
 
         if tags is not None:
-            _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+            _object[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
 
         if with_id is None:
-            _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
+            _object[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
-        if capture_stdout and not _run.exists(stdout_path):
-            _run.define(stdout_path, StringSeries([]))
-        if capture_stderr and not _run.exists(stderr_path):
-            _run.define(stderr_path, StringSeries([]))
+        if capture_stdout and not _object.exists(stdout_path):
+            _object.define(stdout_path, StringSeries([]))
+        if capture_stderr and not _object.exists(stderr_path):
+            _object.define(stderr_path, StringSeries([]))
 
         if with_id is None or source_files is not None:
             # upload default sources ONLY if creating a new run
-            upload_source_code(source_files=source_files, run=_run)
-
-    _run._startup(debug_mode=mode == Mode.DEBUG)
-
-    return _run
+            upload_source_code(source_files=source_files, run=_object)
 
 
 def _create_notebook_checkpoint(

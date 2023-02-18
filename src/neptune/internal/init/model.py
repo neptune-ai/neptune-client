@@ -106,14 +106,14 @@ def init_model(
             called_function="init_model",
         )
 
-    model_lock = threading.RLock()
+    lock = threading.RLock()
 
     operation_processor = get_operation_processor(
         mode=mode,
         container_id=api_model.id,
         container_type=Model.container_type,
         backend=backend,
-        lock=model_lock,
+        lock=lock,
         flush_period=flush_period,
     )
 
@@ -121,13 +121,13 @@ def init_model(
     if mode != Mode.READ_ONLY:
         background_jobs.append(PingBackgroundJob())
 
-    _model = Model(
+    _object = Model(
         id_=api_model.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
-        lock=model_lock,
+        lock=lock,
         workspace=api_model.workspace,
         project_name=api_model.project_name,
         sys_id=api_model.sys_id,
@@ -135,12 +135,16 @@ def init_model(
     )
 
     if mode != Mode.OFFLINE:
-        _model.sync(wait=False)
+        _object.sync(wait=False)
 
+    additional_attributes(_object=_object, mode=mode, name=name)
+
+    _object._startup(debug_mode=mode == Mode.DEBUG)
+
+    return _object
+
+
+def additional_attributes(_object, mode, name):
     if mode != Mode.READ_ONLY:
         if name is not None:
-            _model[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
-
-    _model._startup(debug_mode=mode == Mode.DEBUG)
-
-    return _model
+            _object[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name

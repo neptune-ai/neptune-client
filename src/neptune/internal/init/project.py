@@ -57,33 +57,38 @@ def init_project(
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
     project_obj = project_name_lookup(backend=backend, name=project)
 
-    project_lock = threading.RLock()
+    lock = threading.RLock()
 
     operation_processor = get_operation_processor(
         mode=mode,
         container_id=project_obj.id,
         container_type=Project.container_type,
         backend=backend,
-        lock=project_lock,
+        lock=lock,
         flush_period=flush_period,
     )
 
-    background_jobs = []
-
-    npt_project = Project(
+    _object = Project(
         id_=project_obj.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
-        background_job=BackgroundJobList(background_jobs),
-        lock=project_lock,
+        background_job=BackgroundJobList([]),
+        lock=lock,
         workspace=project_obj.workspace,
         project_name=project_obj.name,
         sys_id=project_obj.sys_id,
     )
 
     if mode != Mode.OFFLINE:
-        npt_project.sync(wait=False)
+        _object.sync(wait=False)
 
-    npt_project._startup(debug_mode=mode == Mode.DEBUG)
-    return npt_project
+    additional_attributes(_object=_object)
+
+    _object._startup(debug_mode=mode == Mode.DEBUG)
+
+    return _object
+
+
+def additional_attributes(_object):
+    pass
