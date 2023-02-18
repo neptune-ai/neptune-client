@@ -271,6 +271,60 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
+    def test_assign__list(self, run):
+        with assert_unsupported_error():
+            run["unsupported"] = [Obj(), Obj(), Obj()]
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj(), Obj(), Obj()])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__empty_list(self, run):
+        with assert_unsupported_error():
+            run["unsupported"] = []
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([])
+
+        with assert_no_warnings():
+            run["regular"] = str([])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__list__reassign(self, run):
+        with assert_unsupported_error():
+            run["unsupported"] = [Obj()]
+            run["unsupported"] = [Obj(), Obj(), Obj()]
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj()])
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj()])
+            run["regular"] = str([Obj(), Obj(), Obj()])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__empty_list__reassign(self, run):
+        with assert_unsupported_error():
+            run["unsupported"] = "string"
+            run["unsupported"] = []
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+            run["stringified"] = stringify_unsupported([])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj(), Obj(), Obj()])
+            run["regular"] = str([])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
     def test_log__custom_object(self, run):
         with assert_unsupported_warning():
             run["unsupported"].log(Obj())

@@ -45,7 +45,7 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tu
     if isinstance(value, dict):
         return {k: stringify_unsupported(v) for k, v in value.items()}
 
-    if isinstance(value, list):
-        return list(map(stringify_unsupported, value))
+    # if isinstance(value, list):
+    #     return list(map(stringify_unsupported, value))
 
     return StringifyValue(value=value)
