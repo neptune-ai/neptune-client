@@ -47,10 +47,10 @@ class TestArtifact(TestAttributeBase):
 
         self.wait = self._random_wait()
         self.op_processor = MagicMock()
+        get_operation_processor.return_value = self.op_processor
         self.exp = Run(mode="debug")
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
-        get_operation_processor.return_value = self.op_processor
 
         self.artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         self.artifact_files = [
