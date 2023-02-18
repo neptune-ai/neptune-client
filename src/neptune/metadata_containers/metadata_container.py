@@ -58,10 +58,6 @@ from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
-from neptune.internal.utils.runningmode import (
-    in_interactive,
-    in_notebook,
-)
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.metadata_containers.metadata_containers_table import Table
@@ -278,15 +274,6 @@ class MetadataContainer(AbstractContextManager):
             logger.info(self.get_url())
 
         self.start()
-
-        if not debug_mode and self._mode not in {Mode.READ_ONLY}:
-            if (in_interactive() or in_notebook()) and self.container_type == ContainerType.RUN:
-                logger.info(
-                    "You're in an interactive environment, so to avoid unintended consumption of logging hours,"
-                    " some background monitoring settings are disabled. To enable them, initialize your %s"
-                    " with `capture_stdout`, `capture_stderr`, and `capture_hardware_metrics` set to `True`.",
-                    self.container_type.value,
-                )
 
         uncaught_exception_handler.activate()
 

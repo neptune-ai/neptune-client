@@ -26,6 +26,10 @@ from typing import (
 )
 
 from neptune.attributes import constants as attr_consts
+from neptune.common.deprecation import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
@@ -258,13 +262,13 @@ def init_run(
     )
 
     if capture_stdout is None:
-        capture_stdout = capture_only_if_non_interactive()
+        capture_stdout = capture_only_if_non_interactive(mode=mode)
 
     if capture_stderr is None:
-        capture_stderr = capture_only_if_non_interactive()
+        capture_stderr = capture_only_if_non_interactive(mode=mode)
 
     if capture_hardware_metrics is None:
-        capture_hardware_metrics = capture_only_if_non_interactive()
+        capture_hardware_metrics = capture_only_if_non_interactive(mode=mode)
 
     if with_id and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
@@ -406,8 +410,15 @@ def _create_notebook_checkpoint(
     return notebook_id, checkpoint_id
 
 
-def capture_only_if_non_interactive() -> bool:
+def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
+        if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:
+            warn_once(
+                "You're in an interactive environment, so to avoid unintended consumption of logging hours,"
+                " some background monitoring settings are disabled. To enable them, initialize your Run"
+                " with `capture_stdout`, `capture_stderr`, and `capture_hardware_metrics` set to `True`.",
+                exception=NeptuneWarning,
+            )
         return False
     return True
 
