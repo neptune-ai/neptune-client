@@ -117,16 +117,12 @@ def init_model(
         flush_period=flush_period,
     )
 
-    background_jobs = []
-    if mode != Mode.READ_ONLY:
-        background_jobs.append(PingBackgroundJob())
-
     _object = Model(
         id_=api_model.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
-        background_job=BackgroundJobList(background_jobs),
+        background_job=background_jobs(mode=mode),
         lock=lock,
         workspace=api_model.workspace,
         project_name=api_model.project_name,
@@ -142,6 +138,12 @@ def init_model(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def background_jobs(mode):
+    if mode != Mode.READ_ONLY:
+        return BackgroundJobList([PingBackgroundJob()])
+    return BackgroundJobList([])
 
 
 def additional_attributes(_object, mode, name):

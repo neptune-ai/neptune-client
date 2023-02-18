@@ -73,7 +73,7 @@ def init_project(
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
-        background_job=BackgroundJobList([]),
+        background_job=background_jobs(),
         lock=lock,
         workspace=project_obj.workspace,
         project_name=project_obj.name,
@@ -88,6 +88,10 @@ def init_project(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def background_jobs():
+    return BackgroundJobList([])
 
 
 def additional_attributes(_object):

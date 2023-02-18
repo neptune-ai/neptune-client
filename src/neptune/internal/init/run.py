@@ -317,34 +317,24 @@ def init_run(
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
     stderr_path = "{}/stderr".format(monitoring_namespace)
-    traceback_path = "{}/traceback".format(monitoring_namespace)
-
-    background_jobs = []
-    if mode != Mode.READ_ONLY:
-        if capture_stdout:
-            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
-
-        if capture_stderr:
-            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
-
-        if capture_hardware_metrics:
-            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
-
-        if capture_traceback:
-            background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
-
-        websockets_factory = backend.websockets_factory(project_obj.id, api_run.id)
-        if websockets_factory:
-            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-
-        background_jobs.append(PingBackgroundJob())
 
     _object = Run(
         id_=api_run.id,
         mode=mode,
         backend=backend,
         op_processor=operation_processor,
-        background_job=BackgroundJobList(background_jobs),
+        background_job=background_jobs(
+            mode=mode,
+            capture_stdout=capture_stdout,
+            capture_stderr=capture_stderr,
+            capture_traceback=capture_traceback,
+            capture_hardware_metrics=capture_hardware_metrics,
+            stdout_path=stdout_path,
+            stderr_path=stderr_path,
+            monitoring_namespace=monitoring_namespace,
+            websockets_factory=backend.websockets_factory(project_obj.id, api_run.id),
+            fail_on_exception=fail_on_exception,
+        ),
         lock=lock,
         workspace=api_run.workspace,
         project_name=api_run.project_name,
@@ -377,6 +367,42 @@ def init_run(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def background_jobs(
+    mode,
+    capture_stdout,
+    capture_stderr,
+    stdout_path,
+    stderr_path,
+    capture_hardware_metrics,
+    capture_traceback,
+    monitoring_namespace,
+    websockets_factory,
+    fail_on_exception,
+):
+    background_jobs = []
+    traceback_path = "{}/traceback".format(monitoring_namespace)
+
+    if mode != Mode.READ_ONLY:
+        if capture_stdout:
+            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
+
+        if capture_stderr:
+            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
+
+        if capture_hardware_metrics:
+            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+
+        if capture_traceback:
+            background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+
+        if websockets_factory:
+            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+
+        background_jobs.append(PingBackgroundJob())
+
+    return BackgroundJobList(background_jobs)
 
 
 def additional_attributes(
