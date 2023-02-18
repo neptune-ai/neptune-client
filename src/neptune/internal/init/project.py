@@ -57,7 +57,9 @@ def init_project(
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
-    api_object = project_name_lookup(backend=backend, name=project)
+    project_obj = project_name_lookup(backend=backend, name=project)
+
+    api_object = get_or_create_api_object(project_obj=project_obj, backend=backend, mode=mode)
 
     lock = threading.RLock()
 
@@ -90,6 +92,10 @@ def init_project(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def get_or_create_api_object(project_obj, backend, mode):
+    return project_obj
 
 
 def background_jobs():

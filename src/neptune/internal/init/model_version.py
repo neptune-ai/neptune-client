@@ -81,25 +81,9 @@ def init_model_version(
 
     project_obj = project_name_lookup(backend, project)
 
-    project = f"{project_obj.workspace}/{project_obj.name}"
-    if with_id is not None:
-        # with_id (resume existing model_version) has priority over model (creating a new model_version)
-        version_id = QualifiedName(project + "/" + with_id)
-        api_object = backend.get_metadata_container(
-            container_id=version_id, expected_container_type=ModelVersion.container_type
-        )
-    elif model is not None:
-        if mode == Mode.READ_ONLY:
-            raise NeedExistingModelVersionForReadOnlyMode()
-
-        model_id = QualifiedName(project + "/" + model)
-        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
-        api_object = backend.create_model_version(project_id=project_obj.id, model_id=api_model.id)
-    else:
-        raise NeptuneMissingRequiredInitParameter(
-            parameter_name="model",
-            called_function="init_model_version",
-        )
+    api_object = get_or_create_api_object(
+        project_obj=project_obj, backend=backend, with_id=with_id, model=model, mode=mode
+    )
 
     lock = threading.RLock()
 
@@ -133,6 +117,28 @@ def init_model_version(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def get_or_create_api_object(project_obj, backend, with_id, model, mode):
+    project = f"{project_obj.workspace}/{project_obj.name}"
+    if with_id is not None:
+        # with_id (resume existing model_version) has priority over model (creating a new model_version)
+        version_id = QualifiedName(project + "/" + with_id)
+        return backend.get_metadata_container(
+            container_id=version_id, expected_container_type=ModelVersion.container_type
+        )
+    elif model is not None:
+        if mode == Mode.READ_ONLY:
+            raise NeedExistingModelVersionForReadOnlyMode()
+
+        model_id = QualifiedName(project + "/" + model)
+        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
+        return backend.create_model_version(project_id=project_obj.id, model_id=api_model.id)
+    else:
+        raise NeptuneMissingRequiredInitParameter(
+            parameter_name="model",
+            called_function="init_model_version",
+        )
 
 
 def background_jobs(mode):

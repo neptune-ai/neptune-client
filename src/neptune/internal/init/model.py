@@ -80,30 +80,7 @@ def init_model(
 
     project_obj = project_name_lookup(backend=backend, name=project)
 
-    project = f"{project_obj.workspace}/{project_obj.name}"
-    if with_id is not None:
-        # with_id (resume existing model) has priority over key (creating a new model)
-        #  additional creation parameters (e.g. name) are simply ignored in this scenario
-        model_id = QualifiedName(project + "/" + with_id)
-        api_object = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
-    elif key is not None:
-        if mode == Mode.READ_ONLY:
-            raise NeedExistingModelForReadOnlyMode()
-
-        try:
-            api_object = backend.create_model(project_id=project_obj.id, key=key)
-        except NeptuneObjectCreationConflict as e:
-            base_url = backend.get_display_address()
-            raise NeptuneModelKeyAlreadyExistsError(
-                model_key=key,
-                models_tab_url=f"{base_url}/{project_obj.workspace}/{project_obj.name}/models",
-            ) from e
-
-    else:
-        raise NeptuneMissingRequiredInitParameter(
-            parameter_name="key",
-            called_function="init_model",
-        )
+    api_object = get_or_create_api_object(project_obj=project_obj, backend=backend, with_id=with_id, key=key, mode=mode)
 
     lock = threading.RLock()
 
@@ -137,6 +114,33 @@ def init_model(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def get_or_create_api_object(project_obj, backend, with_id, key, mode):
+    project = f"{project_obj.workspace}/{project_obj.name}"
+    if with_id is not None:
+        # with_id (resume existing model) has priority over key (creating a new model)
+        #  additional creation parameters (e.g. name) are simply ignored in this scenario
+        model_id = QualifiedName(project + "/" + with_id)
+        return backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
+    elif key is not None:
+        if mode == Mode.READ_ONLY:
+            raise NeedExistingModelForReadOnlyMode()
+
+        try:
+            return backend.create_model(project_id=project_obj.id, key=key)
+        except NeptuneObjectCreationConflict as e:
+            base_url = backend.get_display_address()
+            raise NeptuneModelKeyAlreadyExistsError(
+                model_key=key,
+                models_tab_url=f"{base_url}/{project_obj.workspace}/{project_obj.name}/models",
+            ) from e
+
+    else:
+        raise NeptuneMissingRequiredInitParameter(
+            parameter_name="key",
+            called_function="init_model",
+        )
 
 
 def background_jobs(mode):

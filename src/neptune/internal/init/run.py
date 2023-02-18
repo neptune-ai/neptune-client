@@ -281,28 +281,9 @@ def init_run(
 
     project_obj = project_name_lookup(backend, project)
 
-    project = f"{project_obj.workspace}/{project_obj.name}"
-    if with_id:
-        api_object = backend.get_metadata_container(
-            container_id=QualifiedName(project + "/" + with_id),
-            expected_container_type=Run.container_type,
-        )
-    else:
-        if mode == Mode.READ_ONLY:
-            raise NeedExistingRunForReadOnlyMode()
-        git_ref = get_git_info(discover_git_repo_location())
-        if custom_run_id_exceeds_length(custom_run_id):
-            custom_run_id = None
-
-        notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
-
-        api_object = backend.create_run(
-            project_id=project_obj.id,
-            git_ref=git_ref,
-            custom_run_id=custom_run_id,
-            notebook_id=notebook_id,
-            checkpoint_id=checkpoint_id,
-        )
+    api_object = get_or_create_api_object(
+        project_obj=project_obj, backend=backend, with_id=with_id, custom_run_id=custom_run_id, mode=mode
+    )
 
     lock = threading.RLock()
 
@@ -367,6 +348,31 @@ def init_run(
     _object._startup(debug_mode=mode == Mode.DEBUG)
 
     return _object
+
+
+def get_or_create_api_object(project_obj, backend, with_id, custom_run_id, mode):
+    project = f"{project_obj.workspace}/{project_obj.name}"
+    if with_id:
+        return backend.get_metadata_container(
+            container_id=QualifiedName(project + "/" + with_id),
+            expected_container_type=Run.container_type,
+        )
+    else:
+        if mode == Mode.READ_ONLY:
+            raise NeedExistingRunForReadOnlyMode()
+        git_ref = get_git_info(discover_git_repo_location())
+        if custom_run_id_exceeds_length(custom_run_id):
+            custom_run_id = None
+
+        notebook_id, checkpoint_id = create_notebook_checkpoint(backend)
+
+        return backend.create_run(
+            project_id=project_obj.id,
+            git_ref=git_ref,
+            custom_run_id=custom_run_id,
+            notebook_id=notebook_id,
+            checkpoint_id=checkpoint_id,
+        )
 
 
 def background_jobs(
@@ -456,7 +462,7 @@ def additional_attributes(
             upload_source_code(source_files=source_files, run=_object)
 
 
-def _create_notebook_checkpoint(
+def create_notebook_checkpoint(
     backend: NeptuneBackend,
 ) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
     notebook_id = None
