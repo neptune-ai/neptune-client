@@ -157,14 +157,14 @@ class MetadataContainer(AbstractContextManager):
     def _write_initial_attributes(self):
         pass
 
-    @abc.abstractmethod
-    def _raise_if_stopped(self):
-        raise NotImplementedError
-
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
             traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
+
+    @abc.abstractmethod
+    def _raise_if_stopped(self):
+        raise NotImplementedError
 
     def __getattr__(self, item):
         if item in self.LEGACY_METHODS:
