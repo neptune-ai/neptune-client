@@ -18,8 +18,10 @@ __all__ = ["ModelVersion"]
 import os
 from typing import Optional
 
-from neptune.attributes import constants as attr_consts
-from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
+from neptune.attributes.constants import (
+    SYSTEM_NAME_ATTRIBUTE_PATH,
+    SYSTEM_STAGE_ATTRIBUTE_PATH,
+)
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
@@ -69,15 +71,15 @@ class ModelVersion(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
     ):
-        verify_type("model", model, (str, type(None)))
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
+        verify_type("model", model, (str, type(None)))
         verify_type("project", project, (str, type(None)))
         verify_type("mode", mode, (str, type(None)))
 
         self._model: Optional[str] = model
         self._with_id: Optional[str] = with_id
-        self._name: str = DEFAULT_NAME if model is None and name is None else name
+        self._name: Optional[str] = DEFAULT_NAME if model is None and name is None else name
 
         # make mode proper Enum instead of string
         mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
@@ -105,9 +107,9 @@ class ModelVersion(MetadataContainer):
             if self._mode == Mode.READ_ONLY:
                 raise NeedExistingModelVersionForReadOnlyMode()
 
-            model_id = QualifiedName(project_qualified_name + "/" + self._model)
             api_model = self._backend.get_metadata_container(
-                container_id=model_id, expected_container_type=ContainerType.MODEL
+                container_id=QualifiedName(project_qualified_name + "/" + self._model),
+                expected_container_type=ContainerType.MODEL,
             )
             return self._backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
         else:
@@ -121,7 +123,7 @@ class ModelVersion(MetadataContainer):
 
     def _write_initial_attributes(self):
         if self._name is not None:
-            self[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:

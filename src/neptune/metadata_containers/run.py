@@ -27,7 +27,13 @@ from typing import (
     Union,
 )
 
-from neptune.attributes import constants as attr_consts
+from neptune.attributes.constants import (
+    SYSTEM_DESCRIPTION_ATTRIBUTE_PATH,
+    SYSTEM_FAILED_ATTRIBUTE_PATH,
+    SYSTEM_HOSTNAME_ATTRIBUTE_PATH,
+    SYSTEM_NAME_ATTRIBUTE_PATH,
+    SYSTEM_TAGS_ATTRIBUTE_PATH,
+)
 from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
@@ -42,6 +48,7 @@ from neptune.exceptions import (
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
@@ -276,16 +283,16 @@ class Run(MetadataContainer):
         """
         check_for_extra_kwargs("Run", kwargs)
 
-        verify_type("project", project, (str, type(None)))
         verify_type("with_id", with_id, (str, type(None)))
+        verify_type("project", project, (str, type(None)))
         verify_type("custom_run_id", custom_run_id, (str, type(None)))
         verify_type("mode", mode, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("description", description, (str, type(None)))
         verify_type("capture_stdout", capture_stdout, (bool, type(None)))
         verify_type("capture_stderr", capture_stderr, (bool, type(None)))
-        verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("capture_hardware_metrics", capture_hardware_metrics, (bool, type(None)))
+        verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
         if tags is not None:
@@ -300,14 +307,14 @@ class Run(MetadataContainer):
                 verify_collection_type("source_files", source_files, str)
 
         self._with_id: Optional[str] = with_id
-        self._name: str = DEFAULT_NAME if with_id is None and name is None else name
-        self._description: str = "" if with_id is None and description is None else description
+        self._name: Optional[str] = DEFAULT_NAME if with_id is None and name is None else name
+        self._description: Optional[str] = "" if with_id is None and description is None else description
         self._custom_run_id: Optional[str] = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
         self._hostname: str = get_hostname()
         self._pid: int = os.getpid()
         self._tid: int = threading.get_ident()
-        self._tags: List[str] = tags
-        self._source_files: List[str] = source_files
+        self._tags: Optional[List[str]] = tags
+        self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
 
@@ -362,7 +369,7 @@ class Run(MetadataContainer):
             if custom_run_id_exceeds_length(self._custom_run_id):
                 custom_run_id = None
 
-            notebook_id, checkpoint_id = self._create_notebook_checkpoint()
+            notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 
             return self._backend.create_run(
                 project_id=self._project_api_object.id,
@@ -371,18 +378,6 @@ class Run(MetadataContainer):
                 notebook_id=notebook_id,
                 checkpoint_id=checkpoint_id,
             )
-
-    def _create_notebook_checkpoint(self) -> Tuple[Optional[str], Optional[str]]:
-        notebook_id = os.getenv(NEPTUNE_NOTEBOOK_ID, None)
-        notebook_path = os.getenv(NEPTUNE_NOTEBOOK_PATH, None)
-
-        checkpoint_id = None
-        if notebook_id is not None and notebook_path is not None:
-            checkpoint_id = create_checkpoint(
-                backend=self._backend, notebook_id=notebook_id, notebook_path=notebook_path
-            )
-
-        return notebook_id, checkpoint_id
 
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
@@ -409,15 +404,15 @@ class Run(MetadataContainer):
 
     def _write_initial_attributes(self):
         if self._name is not None:
-            self[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
 
         if self._description is not None:
-            self[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
+            self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
 
         if self._hostname is not None:
             self[f"{self._monitoring_namespace}/hostname"] = self._hostname
             if self._with_id is None:
-                self[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = self._hostname
+                self[SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = self._hostname
 
         if self._pid is not None:
             self[f"{self._monitoring_namespace}/pid"] = str(self._pid)
@@ -426,10 +421,10 @@ class Run(MetadataContainer):
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
 
         if self._tags is not None:
-            self[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(self._tags)
+            self[SYSTEM_TAGS_ATTRIBUTE_PATH].add(self._tags)
 
         if self._with_id is None:
-            self[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
+            self[SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
         if self._capture_stdout and not self.exists(self._stdout_path):
             self.define(self._stdout_path, StringSeries([]))
@@ -644,3 +639,14 @@ def check_for_extra_kwargs(caller_name, kwargs: dict):
     if kwargs:
         first_key = next(iter(kwargs.keys()))
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
+
+
+def create_notebook_checkpoint(backend: NeptuneBackend) -> Tuple[Optional[str], Optional[str]]:
+    notebook_id = os.getenv(NEPTUNE_NOTEBOOK_ID, None)
+    notebook_path = os.getenv(NEPTUNE_NOTEBOOK_PATH, None)
+
+    checkpoint_id = None
+    if notebook_id is not None and notebook_path is not None:
+        checkpoint_id = create_checkpoint(backend=backend, notebook_id=notebook_id, notebook_path=notebook_path)
+
+    return notebook_id, checkpoint_id
