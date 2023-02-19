@@ -97,6 +97,7 @@ class TestArtifact(TestAttributeBase):
         self.test_artifact_driver = TestArtifactDriver
 
     def tearDown(self):
+        self.exp.stop()
         self.monkeypatch.undo()
 
     def test_fetch_hash(self):
