@@ -162,14 +162,14 @@ class MetadataContainer(AbstractContextManager):
             traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
-    @abc.abstractmethod
-    def _raise_if_stopped(self):
-        raise NotImplementedError
-
     def __getattr__(self, item):
         if item in self.LEGACY_METHODS:
             raise NeptunePossibleLegacyUsageException()
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    @abc.abstractmethod
+    def _raise_if_stopped(self):
+        raise NotImplementedError
 
     def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
