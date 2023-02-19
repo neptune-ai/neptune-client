@@ -27,7 +27,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.atoms.file import (
     File,
     FileVal,
@@ -86,7 +85,7 @@ class TestFile(TestAttributeBase):
                 processor._operation_storage = PropertyMock(upload_path=Path(tmp_upload_dir))
                 get_operation_processor.return_value = processor
 
-                with Run(mode="debug") as exp:
+                with self._exp() as exp:
                     path, wait = (
                         self._random_path(),
                         self._random_wait(),
@@ -119,7 +118,7 @@ class TestFile(TestAttributeBase):
             processor = MagicMock()
             get_operation_processor.return_value = processor
 
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -139,7 +138,7 @@ class TestFile(TestAttributeBase):
             processor = MagicMock()
             get_operation_processor.return_value = processor
 
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -170,7 +169,7 @@ class TestFile(TestAttributeBase):
         ]
 
         for value, expected_ext in value_and_expected_ext:
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -180,7 +179,7 @@ class TestFile(TestAttributeBase):
                 self.assertEqual(expected_ext, var.fetch_extension())
 
     def test_clean_files_on_close(self):
-        with Run(mode="debug") as run:
+        with self._exp() as run:
             data_path = run._op_processor._operation_storage.data_path
 
             assert os.path.exists(data_path)

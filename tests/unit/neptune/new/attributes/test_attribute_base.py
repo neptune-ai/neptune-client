@@ -17,11 +17,26 @@ import random
 import time
 import unittest
 import uuid
+from contextlib import contextmanager
+
+from neptune import Run
 
 _now = time.time()
 
 
 class TestAttributeBase(unittest.TestCase):
+    @staticmethod
+    @contextmanager
+    def _exp():
+        with Run(
+            mode="debug",
+            capture_stderr=False,
+            capture_traceback=False,
+            capture_stdout=False,
+            capture_hardware_metrics=False,
+        ) as exp:
+            yield exp
+
     @staticmethod
     def _random_path():
         return ["some", "random", "path", str(uuid.uuid4())]
