@@ -35,7 +35,6 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
-from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.internal.state import ContainerState
@@ -87,12 +86,6 @@ class Project(MetadataContainer):
             workspace=self._project_api_object.workspace,
             project_name=self._project_api_object.name,
         )
-
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([])
-
-    def _write_initial_attributes(self):
-        pass
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:

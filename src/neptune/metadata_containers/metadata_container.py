@@ -151,13 +151,11 @@ class MetadataContainer(AbstractContextManager):
     def _get_or_create_api_object(self) -> ApiExperiment:
         raise NotImplementedError
 
-    @abc.abstractmethod
     def _prepare_background_jobs(self) -> BackgroundJobList:
-        raise NotImplementedError
+        return BackgroundJobList([])
 
-    @abc.abstractmethod
     def _write_initial_attributes(self):
-        raise NotImplementedError
+        pass
 
     @abc.abstractmethod
     def _raise_if_stopped(self):
