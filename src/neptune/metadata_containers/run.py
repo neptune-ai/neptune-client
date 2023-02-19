@@ -626,16 +626,17 @@ def capture_only_if_non_interactive() -> bool:
     return True
 
 
-def generate_monitoring_namespace(*descriptors):
+def generate_monitoring_namespace(*descriptors) -> str:
     return f"monitoring/{generate_hash(*descriptors, length=8)}"
 
 
-def check_for_extra_kwargs(caller_name, kwargs: dict):
+def check_for_extra_kwargs(caller_name: str, kwargs: dict):
     legacy_kwargs = ("project_qualified_name", "backend")
 
     for name in legacy_kwargs:
         if name in kwargs:
             raise NeptunePossibleLegacyUsageException()
+
     if kwargs:
         first_key = next(iter(kwargs.keys()))
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
