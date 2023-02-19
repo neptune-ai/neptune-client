@@ -97,9 +97,9 @@ class ModelVersion(MetadataContainer):
 
         if self._with_id is not None:
             # with_id (resume existing model_version) has priority over model (creating a new model_version)
-            version_id = QualifiedName(project_qualified_name + "/" + self._with_id)
             return self._backend.get_metadata_container(
-                container_id=version_id, expected_container_type=ContainerType.MODEL_VERSION
+                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
+                expected_container_type=self.container_type,
             )
         elif self._model is not None:
             if self._mode == Mode.READ_ONLY:

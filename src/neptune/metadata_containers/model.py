@@ -21,7 +21,7 @@ from typing import (
     Optional,
 )
 
-from neptune.attributes import constants as attr_consts
+from neptune.attributes.constants import SYSTEM_NAME_ATTRIBUTE_PATH
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
@@ -78,15 +78,15 @@ class Model(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
     ):
-        verify_type("key", key, (str, type(None)))
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
+        verify_type("key", key, (str, type(None)))
         verify_type("project", project, (str, type(None)))
         verify_type("mode", mode, (str, type(None)))
 
         self._key: Optional[str] = key
         self._with_id: Optional[str] = with_id
-        self._name: str = DEFAULT_NAME if with_id is None and name is None else name
+        self._name: Optional[str] = DEFAULT_NAME if with_id is None and name is None else name
 
         # make mode proper Enum instead of string
         mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
@@ -107,9 +107,9 @@ class Model(MetadataContainer):
         if self._with_id is not None:
             # with_id (resume existing model) has priority over key (creating a new model)
             #  additional creation parameters (e.g. name) are simply ignored in this scenario
-            model_id = QualifiedName(project_qualified_name + "/" + self._with_id)
             return self._backend.get_metadata_container(
-                container_id=model_id, expected_container_type=self.container_type
+                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
+                expected_container_type=self.container_type,
             )
         elif self._key is not None:
             if self._mode == Mode.READ_ONLY:
@@ -134,7 +134,7 @@ class Model(MetadataContainer):
 
     def _write_initial_attributes(self):
         if self._name is not None:
-            self[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
