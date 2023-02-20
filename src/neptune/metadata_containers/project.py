@@ -20,12 +20,10 @@ from typing import (
     Any,
     Dict,
     Iterable,
-    List,
     Optional,
     Union,
 )
 
-from neptune.common.exceptions import NeptuneException
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import (
@@ -44,6 +42,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import as_list
+from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
@@ -133,7 +132,7 @@ class Project(MetadataContainer):
                             name="sys/state",
                             type=NQLAttributeType.EXPERIMENT_STATE,
                             operator=NQLAttributeOperator.EQUALS,
-                            value=state,
+                            value=RunState.from_string(state).to_api(),
                         )
                         for state in states
                     ],
@@ -262,16 +261,6 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        def to_api_state_vals() -> List[str]:
-            processed_states = []
-            for st in states:
-                st = st.lower()
-                if st not in {"inactive", "active"}:
-                    raise NeptuneException(f"Unknown state: {st}")
-                processed_states.append("idle" if st == "inactive" else "running")
-            return processed_states
-
-        states = to_api_state_vals()
         nql_query = self._prepare_nql_query(ids, states, owners, tags)
         return MetadataContainer._fetch_entries(
             self,
