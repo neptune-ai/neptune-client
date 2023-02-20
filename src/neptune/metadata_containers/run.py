@@ -34,6 +34,10 @@ from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
+from neptune.common.deprecation import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
@@ -324,22 +328,22 @@ class Run(MetadataContainer):
             or generate_monitoring_namespace(self._hostname, self._pid, self._tid)
         )
 
+        # for backward compatibility imports
+        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+
         self._stdout_path: str = "{}/stdout".format(self._monitoring_namespace)
         self._capture_stdout: bool = capture_stdout
         if capture_stdout is None:
-            self._capture_stdout = capture_only_if_non_interactive()
+            self._capture_stdout = capture_only_if_non_interactive(mode=mode)
 
         self._stderr_path: str = "{}/stderr".format(self._monitoring_namespace)
         self._capture_stderr: bool = capture_stderr
         if capture_stderr is None:
-            self._capture_stderr = capture_only_if_non_interactive()
+            self._capture_stderr = capture_only_if_non_interactive(mode=mode)
 
         self._capture_hardware_metrics: bool = capture_hardware_metrics
         if capture_hardware_metrics is None:
-            self._capture_hardware_metrics = capture_only_if_non_interactive()
-
-        # for backward compatibility imports
-        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+            self._capture_hardware_metrics = capture_only_if_non_interactive(mode=mode)
 
         if with_id and custom_run_id:
             raise NeptuneRunResumeAndCustomIdCollision()
@@ -620,8 +624,15 @@ class Run(MetadataContainer):
         return super().sync(wait=wait)
 
 
-def capture_only_if_non_interactive() -> bool:
+def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
+        if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:
+            warn_once(
+                "You're in an interactive environment, so to avoid unintended consumption of logging hours,"
+                " some background monitoring settings are disabled. To enable them, initialize your Run"
+                " with `capture_stdout`, `capture_stderr`, and `capture_hardware_metrics` set to `True`.",
+                exception=NeptuneWarning,
+            )
         return False
     return True
 
