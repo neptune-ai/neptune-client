@@ -41,6 +41,12 @@ def extract_value(value: Any) -> str:
 
 class StringSeries(Series):
     def __init__(self, values):
+        if is_stringify_value(values):
+            if is_collection(values.value):
+                values = list(map(str, values.value))
+            else:
+                values = [str(values.value)]
+
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
 

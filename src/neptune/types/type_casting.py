@@ -24,6 +24,7 @@ from typing import (
     Union,
 )
 
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,
@@ -87,7 +88,9 @@ def cast_value(value: Any) -> Optional[Value]:
         return String(str(value))
 
 
-def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Optional[Union[Series, Namespace]]:
+def cast_value_for_extend(
+        values: Union[StringifyValue, Namespace, Series, Collection[Any]]
+) -> Optional[Union[Series, Namespace]]:
     from_stringify_value = False
     if is_stringify_value(values):
         from_stringify_value, values = True, values.value

@@ -29,6 +29,7 @@ from neptune.common.warnings import (
 from neptune.types import (
     Boolean,
     String,
+    StringSeries,
 )
 from neptune.utils import stringify_unsupported
 
@@ -96,6 +97,25 @@ class TestStringifyUnsupported:
 
         with assert_no_warnings():
             run["regular"] = 4.0
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__string_series(self, run):
+        with assert_no_warnings():
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj()]))
+
+        with assert_no_warnings():
+            run["regular"] = StringSeries(([str(Obj()), str(Obj())]))
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__string_series__reassign(self, run):
+        with assert_no_warnings():
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj()]))
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj(), Obj()]))
+
+        with assert_no_warnings():
+            run["regular"] = StringSeries(([str(Obj()), str(Obj())]))
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 

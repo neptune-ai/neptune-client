@@ -40,7 +40,6 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         For more information, see:
         https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
     """
-    # TODO: Think of removing it
     if isinstance(value, dict):
         return {k: stringify_unsupported(v) for k, v in value.items()}
 

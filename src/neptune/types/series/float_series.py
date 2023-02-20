@@ -40,9 +40,12 @@ class FloatSeries(Series):
         max: Optional[Union[float, int]] = None,
         unit: Optional[str] = None,
     ):
+        values = extract_if_stringify_value(values)
+
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        self._values = [float(extract_if_stringify_value(value)) for value in values]
+
+        self._values = [float(value) for value in values]
         self._min = min
         self._max = max
         self._unit = unit
