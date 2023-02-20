@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["warn_once", "NeptuneDeprecationWarning"]
+__all__ = ["warn_once", "NeptuneDeprecationWarning", "NeptuneWarning"]
 
 import os
 import traceback
@@ -23,6 +23,10 @@ import neptune
 
 
 class NeptuneDeprecationWarning(DeprecationWarning):
+    pass
+
+
+class NeptuneWarning(Warning):
     pass
 
 
@@ -40,11 +44,11 @@ def get_user_code_stack_level():
     return 2
 
 
-def warn_once(message: str):
+def warn_once(message: str, *, exception: type(Exception) = NeptuneDeprecationWarning):
     if message not in warned_once:
         warnings.warn(
             message=message,
-            category=NeptuneDeprecationWarning,
+            category=exception,
             stacklevel=get_user_code_stack_level(),
         )
         warned_once.add(message)
