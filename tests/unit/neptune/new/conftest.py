@@ -6,4 +6,4 @@ from neptune.metadata_containers import Project
 
 @pytest.fixture(scope="session")
 def project() -> Project:
-    return init_project()
+    return init_project(mode="read-only")
