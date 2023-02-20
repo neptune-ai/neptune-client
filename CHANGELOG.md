@@ -21,6 +21,7 @@
 - Added exception for unsupported types ([#1229](https://github.com/neptune-ai/neptune-client/pull/1229))
 - Change run status to Active / Inactive ([#1233](https://github.com/neptune-ai/neptune-client/pull/1233))
 - Package renamed from `neptune-client` to `neptune` ([#1225](https://github.com/neptune-ai/neptune-client/pull/1225))
+- Changed return values for run state ([#1253](https://github.com/neptune-ai/neptune-client/pull/1253))
 
 ## neptune-client 0.16.18
 
