@@ -20,10 +20,12 @@ from typing import (
     Any,
     Dict,
     Iterable,
+    List,
     Optional,
     Union,
 )
 
+from neptune.common.exceptions import NeptuneException
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import (
@@ -260,8 +262,17 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        nql_query = self._prepare_nql_query(ids, states, owners, tags)
+        def to_api_state_vals() -> List[str]:
+            processed_states = []
+            for st in states:
+                st = st.lower()
+                if st not in {"inactive", "active"}:
+                    raise NeptuneException(f"Unknown state: {st}")
+                processed_states.append("idle" if st == "inactive" else "running")
+            return processed_states
 
+        states = to_api_state_vals()
+        nql_query = self._prepare_nql_query(ids, states, owners, tags)
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.RUN,
