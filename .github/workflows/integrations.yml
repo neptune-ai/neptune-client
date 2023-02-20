@@ -404,6 +404,7 @@ jobs:
         uses: ./.github/actions/install-package
         with:
           os: ${{ matrix.os }}
+          python-version: "3.10"
 
       - name: Test integration
         uses: neptune-ai/neptune-r/.github/actions/e2e@master
