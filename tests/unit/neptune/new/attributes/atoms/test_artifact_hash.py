@@ -15,7 +15,6 @@
 #
 from mock import MagicMock
 
-from neptune import Run
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.internal.operation import AssignArtifact
 from neptune.types.atoms.artifact import Artifact as ArtifactVal
@@ -30,7 +29,7 @@ class TestArtifactHash(TestAttributeBase):
                 Artifact(MagicMock(), MagicMock()).assign(value)
 
     def test_fetch(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = Artifact(exp, self._random_path())
             var._enqueue_operation(
                 AssignArtifact(
@@ -45,7 +44,7 @@ class TestArtifactHash(TestAttributeBase):
             )
 
     def test_fetch_hash(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = Artifact(exp, self._random_path())
             var._enqueue_operation(
                 AssignArtifact(

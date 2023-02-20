@@ -25,7 +25,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.internal.artifacts.types import (
@@ -48,7 +47,7 @@ class TestArtifact(TestAttributeBase):
         self.wait = self._random_wait()
         self.op_processor = MagicMock()
         get_operation_processor.return_value = self.op_processor
-        self.exp = Run(mode="debug")
+        self.exp = self._exp()
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
 

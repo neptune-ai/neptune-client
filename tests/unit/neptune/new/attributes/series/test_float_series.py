@@ -18,7 +18,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.series.float_series import FloatSeries
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -38,14 +37,14 @@ class TestFloatSeries(TestAttributeBase):
                 FloatSeries(MagicMock(), MagicMock()).log(value)
 
     def test_get(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = FloatSeries(exp, self._random_path())
             var.log(5)
             var.log(34)
             self.assertEqual(34, var.fetch_last())
 
     def test_log(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = FloatSeries(exp, self._random_path())
             var.log([val for val in range(0, 5000)])
             self.assertEqual(4999, var.fetch_last())

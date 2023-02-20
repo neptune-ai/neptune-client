@@ -18,7 +18,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.atoms.string import (
     String,
     StringVal,
@@ -43,13 +42,13 @@ class TestString(TestAttributeBase):
                 self._random_path(),
                 self._random_wait(),
             )
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 var = String(exp, path)
                 var.assign(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(AssignString(path, expected), wait=wait)
 
     def test_get(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = String(exp, self._random_path())
             var.assign("adfh")
             self.assertEqual("adfh", var.fetch())

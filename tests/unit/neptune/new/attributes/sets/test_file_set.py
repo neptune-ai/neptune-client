@@ -20,7 +20,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.file_set import FileSet
 from neptune.internal.operation import (
     DeleteFiles,
@@ -38,7 +37,7 @@ class TestFileSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -53,7 +52,7 @@ class TestFileSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -70,7 +69,7 @@ class TestFileSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),

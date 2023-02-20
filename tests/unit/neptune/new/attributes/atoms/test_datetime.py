@@ -21,7 +21,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.atoms.datetime import (
     Datetime,
     DatetimeVal,
@@ -49,7 +48,7 @@ class TestDatetime(TestAttributeBase):
                 self._random_path(),
                 self._random_wait(),
             )
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 var = Datetime(exp, path)
                 var.assign(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(AssignDatetime(path, expected), wait=wait)
@@ -61,7 +60,7 @@ class TestDatetime(TestAttributeBase):
                 Datetime(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = Datetime(exp, self._random_path())
             now = datetime.now()
             now = now.replace(microsecond=int(now.microsecond / 1000) * 1000)

@@ -19,7 +19,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.sets.string_set import (
     StringSet,
     StringSetVal,
@@ -41,7 +40,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -57,7 +56,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -77,7 +76,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -91,7 +90,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -105,7 +104,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -119,7 +118,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -133,7 +132,7 @@ class TestStringSet(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -143,7 +142,7 @@ class TestStringSet(TestAttributeBase):
             processor.enqueue_operation.assert_called_with(ClearStringSet(path), wait=wait)
 
     def test_get(self):
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = StringSet(exp, self._random_path())
             var.add(["abc", "xyz"])
             var.remove(["abc"])

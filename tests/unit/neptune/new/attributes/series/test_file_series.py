@@ -24,7 +24,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.series.file_series import FileSeries
 from neptune.exceptions import OperationNotSupported
 from neptune.internal.operation import (
@@ -60,7 +59,7 @@ class TestFileSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -98,7 +97,7 @@ class TestFileSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -134,7 +133,7 @@ class TestFileSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -186,7 +185,7 @@ class TestFileSeries(TestAttributeBase):
         # given
         path = self._random_path()
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.from_content("some text")
@@ -206,7 +205,7 @@ class TestFileSeries(TestAttributeBase):
         # given
         path = self._random_path()
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.from_content("some text")
@@ -228,7 +227,7 @@ class TestFileSeries(TestAttributeBase):
         # given
         path = self._random_path()
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FileSeries(exp, path)
 
             file = File.as_image(numpy.random.rand(100, 100) * 255)

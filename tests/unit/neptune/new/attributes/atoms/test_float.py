@@ -18,7 +18,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
@@ -45,7 +44,7 @@ class TestFloat(TestAttributeBase):
                 self._random_path(),
                 self._random_wait(),
             )
-            with Run(mode="debug") as run:
+            with self._exp() as run:
                 var = Float(run, path)
                 var.assign(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(AssignFloat(path, expected), wait=wait)
@@ -57,7 +56,7 @@ class TestFloat(TestAttributeBase):
                 Float(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        with Run(mode="debug") as run:
+        with self._exp() as run:
             var = Float(run, self._random_path())
             var.assign(5)
             self.assertEqual(5, var.fetch())

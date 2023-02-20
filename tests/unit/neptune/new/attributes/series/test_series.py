@@ -19,7 +19,6 @@ from mock import (
     patch,
 )
 
-from neptune import Run
 from neptune.attributes.series.float_series import (
     FloatSeries,
     FloatSeriesVal,
@@ -53,7 +52,7 @@ class TestSeries(TestAttributeBase):
             self._random_path(),
             self._random_wait(),
         )
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             var = FloatSeries(exp, path)
             var.assign(value, wait=wait)
             processor.enqueue_operation.assert_has_calls(
@@ -69,7 +68,7 @@ class TestSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
@@ -113,7 +112,7 @@ class TestSeries(TestAttributeBase):
             processor = MagicMock()
             get_operation_processor.return_value = processor
 
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -136,7 +135,7 @@ class TestSeries(TestAttributeBase):
             processor = MagicMock()
             get_operation_processor.return_value = processor
 
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -156,7 +155,7 @@ class TestSeries(TestAttributeBase):
             processor = MagicMock()
             get_operation_processor.return_value = processor
 
-            with Run(mode="debug") as exp:
+            with self._exp() as exp:
                 path, wait = (
                     self._random_path(),
                     self._random_wait(),
@@ -170,7 +169,7 @@ class TestSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             attr = FloatSeries(exp, self._random_path())
 
             with self.assertRaises(ValueError):
@@ -187,7 +186,7 @@ class TestSeries(TestAttributeBase):
         processor = MagicMock()
         get_operation_processor.return_value = processor
 
-        with Run(mode="debug") as exp:
+        with self._exp() as exp:
             path, wait = (
                 self._random_path(),
                 self._random_wait(),
