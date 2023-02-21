@@ -29,7 +29,10 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import MetadataInconsistency
+from neptune.exceptions import (
+    MetadataInconsistency,
+    NeptuneException,
+)
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -184,3 +187,22 @@ class AbstractTablesTestMixin:
             path=["file", "set"],
             destination="some_directory",
         )
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_fetch_runs_table_is_case_insensitive(self, search_leaderboard_entries):
+        states = ["active", "inactive", "Active", "Inactive", "aCTive", "INacTiVe"]
+        for state in states:
+            with self.subTest(state):
+                try:
+                    self.get_table(state=state)
+                    assert search_leaderboard_entries.called
+                except Exception as e:
+                    self.fail(e)
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self, search_leaderboard_entries):
+        for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
+            with self.subTest(incorrect_state):
+                with self.assertRaises(NeptuneException):
+                    self.get_table(state=incorrect_state)
+                    assert search_leaderboard_entries.called
