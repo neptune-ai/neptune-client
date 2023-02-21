@@ -18,6 +18,7 @@ __all__ = [
     "warn_about_unsupported_type",
     "NeptuneDeprecationWarning",
     "NeptuneWarning",
+    "NeptuneUnsupportedType",
 ]
 
 import os

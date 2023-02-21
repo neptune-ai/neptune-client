@@ -22,6 +22,10 @@ from pytest import (
 )
 
 from neptune import init_run
+from neptune.common.warnings import (
+    NeptuneUnsupportedType,
+    warned_once,
+)
 from neptune.types import (
     Boolean,
     String,
@@ -38,13 +42,15 @@ class Obj:
 
 
 @contextmanager
-def assert_unsupported_error():
-    with raises(TypeError):
+def assert_unsupported_warning():
+    with warns(NeptuneUnsupportedType):
         yield
 
 
 @contextmanager
 def assert_no_warnings():
+    warned_once.clear()
+
     with warns(None) as record:
         yield
 
@@ -59,7 +65,7 @@ def run():
 
 class TestStringifyUnsupported:
     def test_assign__custom_object(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = Obj()
 
         with assert_no_warnings():
@@ -71,7 +77,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__custom_object__reassign(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = Obj()
             run["unsupported"] = Obj(name="b")
 
@@ -97,7 +103,7 @@ class TestStringifyUnsupported:
     def test_assign__array(self, run):
         values = [Obj(), Obj(), Obj()]
 
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = values
 
         with assert_no_warnings():
@@ -111,7 +117,7 @@ class TestStringifyUnsupported:
     def test_assign__array_inside_dict(self, run):
         values = [Obj(), Obj(), Obj()]
 
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = {"array": values}
 
         with assert_no_warnings():
@@ -154,7 +160,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__custom_object(self, run):
-        with assert_unsupported_error():
+        with raises(TypeError):
             run["unsupported"] = String(Obj())
 
         with assert_no_warnings():
@@ -166,7 +172,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__custom_object__reassign(self, run):
-        with assert_unsupported_error():
+        with raises(TypeError):
             run["unsupported"] = String(Obj())
             run["unsupported"] = String(Obj(name="B"))
 
@@ -181,7 +187,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__float(self, run):
-        with assert_unsupported_error():
+        with raises(TypeError):
             run["unsupported"] = String(4.0)
 
         with assert_no_warnings():
@@ -193,7 +199,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__string__float__reassign(self, run):
-        with assert_unsupported_error():
+        with raises(TypeError):
             run["unsupported"] = String(4.0)
             run["unsupported"] = String(5.3)
 
@@ -210,7 +216,7 @@ class TestStringifyUnsupported:
     def test_assign__tuple(self, run):
         values = (Obj(), Obj(), Obj())
 
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = values
 
         with assert_no_warnings():
@@ -224,7 +230,7 @@ class TestStringifyUnsupported:
     def test_assign__tuple_inside_dict(self, run):
         values = (Obj(), Obj(), Obj())
 
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = {"tuple": values}
 
         with assert_no_warnings():
@@ -236,7 +242,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__dict(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
 
         with assert_no_warnings():
@@ -250,7 +256,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__dict__reassign(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
             run["unsupported"] = {"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}}
 
@@ -267,7 +273,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_log__custom_object(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"].log(Obj())
 
         with assert_no_warnings():
@@ -279,7 +285,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_log__list_of_custom_objects(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
             run["unsupported"].log(Obj())
             run["unsupported"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
@@ -315,7 +321,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_extend__dict(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"].extend({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
 
         with assert_no_warnings():
@@ -343,7 +349,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
     def test_append__custom_object(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"].append(Obj())
             run["unsupported"].append(Obj())
 
