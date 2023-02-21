@@ -22,6 +22,9 @@
 - Change run status to Active / Inactive ([#1233](https://github.com/neptune-ai/neptune-client/pull/1233))
 - Package renamed from `neptune-client` to `neptune` ([#1225](https://github.com/neptune-ai/neptune-client/pull/1225))
 
+### Fixes
+- Fixed input value type verification for `append()` method ([#1254](https://github.com/neptune-ai/neptune-client/pull/1254))
+
 ## neptune-client 0.16.18
 
 ### Fixes
