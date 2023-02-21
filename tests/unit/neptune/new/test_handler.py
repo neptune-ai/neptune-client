@@ -671,7 +671,9 @@ class TestOtherBehaviour(unittest.TestCase):
             exp["attr"].append(4)
             exp["attr"].append(13.0)
             self.assertEqual(exp["attr"].fetch_last(), 13)
-            exp["attr"].append(4)
+            with self.assertRaises(ValueError):
+                exp["attr"].append(4)
+                exp["attr"].append("234a")
 
     def test_extend_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
