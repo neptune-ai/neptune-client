@@ -43,14 +43,13 @@ class Obj:
 
 @contextmanager
 def assert_unsupported_warning():
+    warned_once.clear()
     with warns(NeptuneUnsupportedType):
         yield
 
 
 @contextmanager
 def assert_no_warnings():
-    warned_once.clear()
-
     with warns(None) as record:
         yield
 
