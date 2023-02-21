@@ -20,6 +20,7 @@ import uuid
 import pytest
 
 import neptune
+from neptune.exceptions import NeptuneException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
     BaseE2ETest,
@@ -155,3 +156,25 @@ class TestFetchTable(BaseE2ETest):
             return container.fetch_model_versions_table(**kwargs).to_rows()
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
+
+    @pytest.mark.parametrize(
+        "state_active,state_inactive", [("active", "inactive"), ("Active", "Inactive"), ("aCTive", "inAcTiVE")]
+    )
+    def test_fetch_runs_table_with_correct_states(self, state_active, state_inactive, environment, project):
+        tag = str(uuid.uuid4())
+        with neptune.init_run(project=environment.project) as run:
+            run["sys/tags"] = tag
+            runs = project.fetch_runs_table(state=state_active).to_pandas()
+            assert not runs.empty
+            assert tag in runs["sys/tags"].values
+
+        time.sleep(5)
+
+        runs = project.fetch_runs_table(state=state_inactive).to_pandas()
+        assert not runs.empty
+        assert tag in runs["sys/tags"].values
+
+    def test_fetch_runs_table_with_incorrect_states(self, project):
+        for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
+            with pytest.raises(NeptuneException):
+                project.fetch_runs_table(state=incorrect_state)
