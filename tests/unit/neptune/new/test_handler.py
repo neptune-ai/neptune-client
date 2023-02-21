@@ -667,6 +667,7 @@ class TestOtherBehaviour(unittest.TestCase):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["attr"].append(self.FloatLike(34))
             self.assertEqual(exp["attr"].fetch_last(), 34)
+            exp["attr"].append("345")
             exp["attr"].append(self.FloatLike(34))
             exp["attr"].append(4)
             exp["attr"].append(13.0)
