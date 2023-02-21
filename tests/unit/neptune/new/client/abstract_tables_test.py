@@ -199,10 +199,8 @@ class AbstractTablesTestMixin:
                 except Exception as e:
                     self.fail(e)
 
-    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
-    def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self, search_leaderboard_entries):
+    def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
         for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
             with self.subTest(incorrect_state):
                 with self.assertRaises(NeptuneException):
                     self.get_table(state=incorrect_state)
-                    assert search_leaderboard_entries.called
