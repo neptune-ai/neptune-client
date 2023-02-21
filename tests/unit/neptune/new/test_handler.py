@@ -50,6 +50,7 @@ from neptune.envs import (
 from neptune.exceptions import (
     FileNotFound,
     NeptuneUserApiInputException,
+    UnsupportedType,
 )
 from neptune.types import File as FileVal
 from neptune.types.atoms.artifact import Artifact
@@ -62,6 +63,10 @@ from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.types.sets.string_set import StringSet as StringSetVal
 from tests.unit.neptune.new.utils.file_helpers import create_file
+
+
+class Obj:
+    pass
 
 
 class TestBaseAssign(unittest.TestCase):
@@ -270,21 +275,20 @@ class TestSeries(unittest.TestCase):
 
     def test_append_many_values_cause_error(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            with self.assertRaises(NeptuneUserApiInputException):
-                exp["some/num/val"].append([])
-            with self.assertRaises(NeptuneUserApiInputException):
-                exp["some/num/val"].append([5, 10, 15])
-            with self.assertRaises(NeptuneUserApiInputException):
-                exp["some/str/val"].append(["some text", "other"])
-            with self.assertRaises(NeptuneUserApiInputException):
-                exp["some/num/val"].append({"key-a": [1, 2]})
-            with self.assertRaises(NeptuneUserApiInputException):
-                exp["some/img/val"].append(
-                    [
-                        FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
-                        FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="red")),
-                    ]
-                )
+            with self.assertRaises(UnsupportedType):
+                exp["some/empty-list/val"].append([])
+            with self.assertRaises(UnsupportedType):
+                exp["some/tuple/val"].append(())
+            with self.assertRaises(UnsupportedType):
+                exp["some/list/val"].append([5, 10, 15])
+            with self.assertRaises(UnsupportedType):
+                exp["some/str-tuple/val"].append(("some text", "other"))
+            with self.assertRaises(UnsupportedType):
+                exp["some/dict-list/val"].append({"key-a": [1, 2]})
+            with self.assertRaises(UnsupportedType):
+                exp["some/custom-obj/val"].append(Obj())
+            with self.assertRaises(UnsupportedType):
+                exp["some/list-custom-obj/val"].append([Obj(), Obj()])
 
     def test_extend(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
