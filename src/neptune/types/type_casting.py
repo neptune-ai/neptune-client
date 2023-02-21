@@ -24,7 +24,6 @@ from typing import (
     Union,
 )
 
-from neptune.common.warnings import warn_about_unsupported_type
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,
@@ -87,8 +86,6 @@ def cast_value(value: Any) -> Optional[Value]:
     elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
         return String(str(value))
 
-    warn_about_unsupported_type(type_str=str(type(value)))
-
 
 def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Optional[Union[Series, Namespace]]:
     if isinstance(values, Namespace):
@@ -116,5 +113,3 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
         return FloatSeries(values=values)
     elif from_stringify_value:
         return StringSeries(values=values)
-
-    warn_about_unsupported_type(type_str=f"List[{type(sample_val)}]")

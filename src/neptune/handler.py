@@ -330,9 +330,10 @@ class Handler:
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     warn_about_unsupported_type(type_str=str(type(first_value)))
-                    return
+                    return None
 
                 self._container.set_attribute(self._path, attr)
+
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
@@ -428,15 +429,17 @@ class Handler:
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-
             if attr is not None:
-                attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
+                neptune_value = cast_value_for_extend(values)
 
-            neptune_value = cast_value_for_extend(values)
-            if neptune_value is not None:
+                if neptune_value is None:
+                    warn_about_unsupported_type(type_str=str(type(values)))
+                    return None
+
                 attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
                 self._container.set_attribute(self._path, attr)
-                attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
+
+            attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
