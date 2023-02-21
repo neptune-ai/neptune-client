@@ -38,7 +38,7 @@ from neptune.attributes.series import FileSeries
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.attributes.series.string_series import StringSeries
 from neptune.attributes.sets.string_set import StringSet
-from neptune.common.deprecation import warn_about_unsupported_type
+from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,

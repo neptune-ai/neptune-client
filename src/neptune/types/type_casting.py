@@ -24,7 +24,7 @@ from typing import (
     Union,
 )
 
-from neptune.common.deprecation import warn_about_unsupported_type
+from neptune.common.warnings import warn_about_unsupported_type
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,

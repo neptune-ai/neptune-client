@@ -54,7 +54,7 @@ def get_user_code_stack_level():
 
 
 def warn_once(message: str, *, exception: type(Exception) = None):
-    if None:
+    if exception is None:
         exception = NeptuneDeprecationWarning
 
     if message not in warned_once:
