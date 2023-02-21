@@ -20,10 +20,11 @@ from datetime import datetime
 from typing import (
     Any,
     Collection,
+    Optional,
     Union,
 )
 
-from neptune.exceptions import UnsupportedType
+from neptune.common.deprecation import warn_about_unsupported_type
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,
@@ -52,7 +53,7 @@ from neptune.types.value import Value
 from neptune.types.value_copy import ValueCopy
 
 
-def cast_value(value: Any) -> Value:
+def cast_value(value: Any) -> Optional[Value]:
     from neptune.handler import Handler
 
     from_stringify_value = False
@@ -86,10 +87,10 @@ def cast_value(value: Any) -> Value:
     elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
         return String(str(value))
 
-    raise UnsupportedType(type_str=str(type(value)))
+    warn_about_unsupported_type(type_str=str(type(value)))
 
 
-def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Union[Series, Namespace]:
+def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Optional[Union[Series, Namespace]]:
     if isinstance(values, Namespace):
         return values
     elif is_dict_like(values):
@@ -116,4 +117,4 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
     elif from_stringify_value:
         return StringSeries(values=values)
 
-    raise UnsupportedType(type_str=f"List[{type(sample_val)}]")
+    warn_about_unsupported_type(type_str=f"List[{type(sample_val)}]")

@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["warn_once", "NeptuneDeprecationWarning", "NeptuneWarning"]
+__all__ = [
+    "warn_once",
+    "warn_about_unsupported_type",
+    "NeptuneDeprecationWarning",
+    "NeptuneWarning",
+]
 
 import os
 import traceback
@@ -27,6 +32,10 @@ class NeptuneDeprecationWarning(DeprecationWarning):
 
 
 class NeptuneWarning(Warning):
+    pass
+
+
+class NeptuneUnsupportedType(Warning):
     pass
 
 
@@ -44,7 +53,10 @@ def get_user_code_stack_level():
     return 2
 
 
-def warn_once(message: str, *, exception: type(Exception) = NeptuneDeprecationWarning):
+def warn_once(message: str, *, exception: type(Exception) = None):
+    if None:
+        exception = NeptuneDeprecationWarning
+
     if message not in warned_once:
         warnings.warn(
             message=message,
@@ -52,3 +64,11 @@ def warn_once(message: str, *, exception: type(Exception) = NeptuneDeprecationWa
             stacklevel=get_user_code_stack_level(),
         )
         warned_once.add(message)
+
+
+def warn_about_unsupported_type(type_str: str):
+    warn_once(
+        message=f"""The type of the object you're logging is not supported by Neptune ({type_str}).
+        Need help? -> https://docs.neptune.ai/help/value_of_unsupported_type""",
+        exception=NeptuneUnsupportedType,
+    )
