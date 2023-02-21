@@ -380,7 +380,7 @@ class Handler:
         if timestamp is not None:
             timestamp = [timestamp]
 
-        value = ExtendUtils.validate_and_transform_to_extend_format(value)
+        value = ExtendUtils.transform_to_extend_format(value)
         self.extend(value, steps=step, timestamps=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
@@ -675,12 +675,12 @@ class Handler:
 
 class ExtendUtils:
     @staticmethod
-    def validate_and_transform_to_extend_format(value):
+    def transform_to_extend_format(value):
         """Preserve nested structure created by `Namespaces` and `dict_like` objects,
         but replace all other values with single-element lists,
         so work can be delegated to `extend` method."""
         if isinstance(value, Namespace) or is_dict_like(value):
-            return {k: ExtendUtils.validate_and_transform_to_extend_format(v) for k, v in value.items()}
+            return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
         return [value]
 
     @staticmethod

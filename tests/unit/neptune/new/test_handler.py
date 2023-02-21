@@ -65,6 +65,10 @@ from neptune.types.sets.string_set import StringSet as StringSetVal
 from tests.unit.neptune.new.utils.file_helpers import create_file
 
 
+class Obj:
+    pass
+
+
 class TestBaseAssign(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -272,20 +276,19 @@ class TestSeries(unittest.TestCase):
     def test_append_many_values_cause_error(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with self.assertRaises(UnsupportedType):
-                exp["some/num/val"].append([])
+                exp["some/empty-list/val"].append([])
             with self.assertRaises(UnsupportedType):
-                exp["some/num/val"].append([5, 10, 15])
+                exp["some/tuple/val"].append(())
             with self.assertRaises(UnsupportedType):
-                exp["some/str/val"].append(["some text", "other"])
+                exp["some/list/val"].append([5, 10, 15])
             with self.assertRaises(UnsupportedType):
-                exp["some/num/val"].append({"key-a": [1, 2]})
+                exp["some/str-tuple/val"].append(("some text", "other"))
             with self.assertRaises(UnsupportedType):
-                exp["some/img/val"].append(
-                    [
-                        FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
-                        FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="red")),
-                    ]
-                )
+                exp["some/dict-list/val"].append({"key-a": [1, 2]})
+            with self.assertRaises(UnsupportedType):
+                exp["some/custom-obj/val"].append(Obj())
+            with self.assertRaises(UnsupportedType):
+                exp["some/list-custom-obj/val"].append([Obj(), Obj()])
 
     def test_extend(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
