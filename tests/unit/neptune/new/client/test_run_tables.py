@@ -17,7 +17,11 @@
 import unittest
 from typing import List
 
+from mock import patch
+
 from neptune import init_project
+from neptune.exceptions import NeptuneException
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.metadata_containers.metadata_containers_table import (
     Table,
@@ -34,3 +38,21 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
 
     def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()
+
+    @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+    def test_fetch_runs_table_is_case_insensitive(self):
+        states = ["active", "inactive", "Active", "Inactive", "aCTive", "INacTiVe"]
+        for state in states:
+            with self.subTest(state):
+                try:
+                    self.get_table(state=state)
+                except Exception as e:
+                    self.fail(e)
+
+    @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+    def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
+        for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
+            with self.subTest(incorrect_state):
+                with self.assertRaises(NeptuneException) as context:
+                    self.get_table(state=incorrect_state)
+                self.assertEquals(f"Can't map RunState to API: {incorrect_state}", str(context.exception))

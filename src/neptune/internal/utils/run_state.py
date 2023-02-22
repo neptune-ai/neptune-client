@@ -27,6 +27,13 @@ class RunState(enum.Enum):
     _api_active = "running"
     _api_inactive = "idle"
 
+    @classmethod
+    def from_string(cls, value: str) -> "RunState":
+        try:
+            return cls(value.capitalize())
+        except ValueError as e:
+            raise NeptuneException(f"Can't map RunState to API: {value}") from e
+
     @staticmethod
     def from_api(value: str) -> "RunState":
         if value == RunState._api_active.value:
@@ -35,3 +42,9 @@ class RunState(enum.Enum):
             return RunState.inactive
         else:
             raise NeptuneException(f"Unknown RunState: {value}")
+
+    def to_api(self) -> str:
+        if self is RunState.active:
+            return self._api_active.value
+        if self is RunState.inactive:
+            return self._api_inactive.value
