@@ -693,18 +693,10 @@ class ExtendUtils:
         if isinstance(value, Namespace) or is_dict_like(value):
             return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
 
-        from_stringify_value = False
         if isinstance(value, StringifyValue):
-            from_stringify_value, value = True, value.value
+            return stringify_unsupported([value.value])
 
-        if is_collection(value):
-            raise NeptuneUserApiInputException(
-                "Value cannot be a collection, if you want to `append` multiple values at once use `extend` method."
-            )
-        else:
-            if from_stringify_value:
-                return stringify_unsupported([value])
-            return [value]
+        return [value]
 
     @staticmethod
     def validate_values_for_extend(values, steps, timestamps):
