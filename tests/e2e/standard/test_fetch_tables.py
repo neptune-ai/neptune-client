@@ -155,3 +155,21 @@ class TestFetchTable(BaseE2ETest):
             return container.fetch_model_versions_table(**kwargs).to_rows()
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
+
+    def test_fetch_runs_table_by_state(self, environment, project):
+        tag = str(uuid.uuid4())
+        random_val = random.random()
+        with neptune.init_run(project=environment.project) as run:
+            run["sys/tags"] = tag
+            run["some_random_val"] = random_val
+            runs = project.fetch_runs_table(state="active").to_rows()
+            assert len(runs) == 1
+            assert runs[0].get_attribute_value("sys/tags") == tag
+            assert runs[0].get_attribute_value("some_random_val") == random_val
+
+        time.sleep(5)
+
+        runs = project.fetch_runs_table(state="inactive").to_rows()
+        assert len(runs) > 0
+        assert runs[0].get_attribute_value("sys/tags") == tag
+        assert runs[0].get_attribute_value("some_random_val") == random_val
