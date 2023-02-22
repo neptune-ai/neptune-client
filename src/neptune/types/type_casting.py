@@ -91,9 +91,9 @@ def cast_value(value: Any) -> Optional[Value]:
 def cast_value_for_extend(
         values: Union[StringifyValue, Namespace, Series, Collection[Any]]
 ) -> Optional[Union[Series, Namespace]]:
-    from_stringify_value = False
+    from_stringify_value, original_values = False, None
     if is_stringify_value(values):
-        from_stringify_value, values = True, values.value
+        from_stringify_value, original_values, values = True, values, values.value
 
     if isinstance(values, Namespace):
         return values
@@ -115,4 +115,4 @@ def cast_value_for_extend(
     elif is_float_like(sample_val):
         return FloatSeries(values=values)
     elif from_stringify_value:
-        return StringSeries(values=list(map(str, values)))
+        return StringSeries(values=original_values)

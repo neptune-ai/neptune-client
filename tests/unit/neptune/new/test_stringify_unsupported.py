@@ -105,9 +105,9 @@ class TestStringifyUnsupported:
             run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj()]))
 
         with assert_no_warnings():
-            run["regular"] = StringSeries(([str(Obj()), str(Obj())]))
+            run["regular"] = StringSeries([str(Obj()), str(Obj())])
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["regular"].fetch_values()["value"].equals(run["stringified"].fetch_values()["value"])
 
     def test_assign__string_series__reassign(self, run):
         with assert_no_warnings():
@@ -115,9 +115,10 @@ class TestStringifyUnsupported:
             run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj(), Obj()]))
 
         with assert_no_warnings():
-            run["regular"] = StringSeries(([str(Obj()), str(Obj())]))
+            run["regular"] = StringSeries([str(Obj()), str(Obj())])
+            run["regular"] = StringSeries([str(Obj()), str(Obj()), str(Obj())])
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["regular"].fetch_values()["value"].equals(run["stringified"].fetch_values()["value"])
 
     def test_assign__array(self, run):
         values = [Obj(), Obj(), Obj()]

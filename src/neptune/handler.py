@@ -45,6 +45,7 @@ from neptune.exceptions import (
     NeptuneUserApiInputException,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     is_dict_like,
@@ -63,6 +64,7 @@ from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
+from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
@@ -690,7 +692,19 @@ class ExtendUtils:
         so work can be delegated to `extend` method."""
         if isinstance(value, Namespace) or is_dict_like(value):
             return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
-        return [value]
+
+        from_stringify_value = False
+        if isinstance(value, StringifyValue):
+            from_stringify_value, value = True, value.value
+
+        if is_collection(value):
+            raise NeptuneUserApiInputException(
+                "Value cannot be a collection, if you want to `append` multiple values at once use `extend` method."
+            )
+        else:
+            if from_stringify_value:
+                return stringify_unsupported([value])
+            return [value]
 
     @staticmethod
     def validate_values_for_extend(values, steps, timestamps):

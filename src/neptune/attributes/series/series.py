@@ -30,6 +30,7 @@ from typing import (
 
 from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import LogOperation
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     verify_collection_type,
@@ -37,6 +38,7 @@ from neptune.internal.utils import (
 )
 from neptune.internal.utils.iteration import get_batches
 from neptune.types.series.series import Series as SeriesVal
+from neptune.utils import stringify_unsupported
 
 ValTV = TypeVar("ValTV", bound=SeriesVal)
 DataTV = TypeVar("DataTV")
@@ -114,12 +116,20 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         **kwargs,
     ) -> None:
         """log is a deprecated method, this code should be removed in future"""
+        from_stringify_value = False
+        if isinstance(value, StringifyValue):
+            from_stringify_value, value = True, value.value
+
         if is_collection(value):
             if step is not None and len(value) > 1:
                 raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
-            value = self._data_to_value(value, **kwargs)
         else:
-            value = self._data_to_value([value], **kwargs)
+            value = [value]
+
+        if from_stringify_value:
+            value = stringify_unsupported(value)
+
+        value = self._data_to_value(value, **kwargs)
 
         if step is not None:
             verify_type("step", step, (float, int))
