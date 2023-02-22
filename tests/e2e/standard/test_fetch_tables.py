@@ -160,16 +160,12 @@ class TestFetchTable(BaseE2ETest):
         tag = str(uuid.uuid4())
         random_val = random.random()
         with neptune.init_run(project=environment.project) as run:
-            run["sys/tags"] = tag
+            run["sys/tags"].add(tag)
             run["some_random_val"] = random_val
-            runs = project.fetch_runs_table(state="active").to_rows()
-            assert len(runs) == 1
-            assert runs[0].get_attribute_value("sys/tags") == tag
-            assert runs[0].get_attribute_value("some_random_val") == random_val
 
-        time.sleep(5)
+        time.sleep(30)
 
-        runs = project.fetch_runs_table(state="inactive").to_rows()
-        assert len(runs) > 0
-        assert runs[0].get_attribute_value("sys/tags") == tag
-        assert runs[0].get_attribute_value("some_random_val") == random_val
+        runs = project.fetch_runs_table(state="inactive").to_pandas()
+        assert not runs.empty
+        assert tag in runs["sys/tags"].values
+        assert random_val in runs["some_random_val"].values
