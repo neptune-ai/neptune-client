@@ -35,10 +35,12 @@ Ret = TypeVar("Ret")
 
 class FileSeries(Series):
     def __init__(self, values, **kwargs):
+        values = extract_if_stringify_value(values)
+
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        self._values = [File.create_from(extract_if_stringify_value(value)) for value in values]
 
+        self._values = [File.create_from(value) for value in values]
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
         if kwargs:
