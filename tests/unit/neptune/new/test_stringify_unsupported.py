@@ -320,7 +320,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__list(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = [Obj(), Obj(), Obj()]
 
         with assert_no_warnings():
@@ -332,7 +332,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__empty_list(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = []
 
         with assert_no_warnings():
@@ -344,7 +344,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__list__reassign(self, run):
-        with assert_unsupported_error():
+        with assert_unsupported_warning():
             run["unsupported"] = [Obj()]
             run["unsupported"] = [Obj(), Obj(), Obj()]
 
@@ -359,8 +359,7 @@ class TestStringifyUnsupported:
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__empty_list__reassign(self, run):
-        with assert_unsupported_error():
-            run["unsupported"] = "string"
+        with assert_unsupported_warning():
             run["unsupported"] = []
 
         with assert_no_warnings():

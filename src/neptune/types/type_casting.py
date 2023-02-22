@@ -89,7 +89,7 @@ def cast_value(value: Any) -> Optional[Value]:
 
 
 def cast_value_for_extend(
-        values: Union[StringifyValue, Namespace, Series, Collection[Any]]
+    values: Union[StringifyValue, Namespace, Series, Collection[Any]]
 ) -> Optional[Union[Series, Namespace]]:
     from_stringify_value, original_values = False, None
     if is_stringify_value(values):
