@@ -17,6 +17,7 @@ import argparse
 import os
 import time
 import unittest
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import (
     datetime,
@@ -30,6 +31,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
+from pytest import warns
 
 from neptune import (
     ANONYMOUS_API_TOKEN,
@@ -43,6 +45,10 @@ from neptune.attributes.atoms.integer import Integer
 from neptune.attributes.atoms.string import String
 from neptune.attributes.series import FileSeries
 from neptune.attributes.sets.string_set import StringSet
+from neptune.common.warnings import (
+    NeptuneUnsupportedType,
+    warned_once,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -50,7 +56,6 @@ from neptune.envs import (
 from neptune.exceptions import (
     FileNotFound,
     NeptuneUserApiInputException,
-    UnsupportedType,
 )
 from neptune.types import File as FileVal
 from neptune.types.atoms.artifact import Artifact
@@ -67,6 +72,13 @@ from tests.unit.neptune.new.utils.file_helpers import create_file
 
 class Obj:
     pass
+
+
+@contextmanager
+def assert_unsupported_warning():
+    warned_once.clear()
+    with warns(NeptuneUnsupportedType):
+        yield
 
 
 class TestBaseAssign(unittest.TestCase):
@@ -275,19 +287,25 @@ class TestSeries(unittest.TestCase):
 
     def test_append_many_values_cause_error(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            with self.assertRaises(UnsupportedType):
+            with assert_unsupported_warning():
                 exp["some/empty-list/val"].append([])
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/tuple/val"].append(())
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/list/val"].append([5, 10, 15])
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/str-tuple/val"].append(("some text", "other"))
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/dict-list/val"].append({"key-a": [1, 2]})
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/custom-obj/val"].append(Obj())
-            with self.assertRaises(UnsupportedType):
+
+            with assert_unsupported_warning():
                 exp["some/list-custom-obj/val"].append([Obj(), Obj()])
 
     def test_extend(self):

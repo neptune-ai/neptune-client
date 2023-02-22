@@ -15,7 +15,7 @@
 #
 from functools import wraps
 
-from neptune.common.deprecation import warn_once
+from neptune.common.warnings import warn_once
 
 
 def legacy_client_deprecation(func):

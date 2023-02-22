@@ -26,7 +26,7 @@ from typing import (
 )
 
 from neptune.attributes import constants as attr_consts
-from neptune.common.deprecation import (
+from neptune.common.warnings import (
     NeptuneWarning,
     warn_once,
 )

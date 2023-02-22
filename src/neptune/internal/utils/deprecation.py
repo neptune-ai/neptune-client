@@ -16,7 +16,7 @@
 from functools import wraps
 from typing import Optional
 
-from neptune.common.deprecation import warn_once
+from neptune.common.warnings import warn_once
 from neptune.exceptions import NeptuneParametersCollision
 
 __all__ = ["deprecated", "deprecated_parameter"]

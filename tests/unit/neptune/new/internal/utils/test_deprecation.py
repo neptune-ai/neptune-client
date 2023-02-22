@@ -20,7 +20,7 @@ from unittest.mock import (
 
 import pytest
 
-from neptune.common.deprecation import (
+from neptune.common.warnings import (
     NeptuneDeprecationWarning,
     warn_once,
 )

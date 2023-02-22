@@ -38,11 +38,11 @@ from neptune.attributes.series import FileSeries
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.attributes.series.string_series import StringSeries
 from neptune.attributes.sets.string_set import StringSet
+from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
     NeptuneUserApiInputException,
-    UnsupportedType,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.utils import (
@@ -329,7 +329,8 @@ class Handler:
                 elif from_stringify_value:
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
-                    raise UnsupportedType(type_str=str(type(first_value)))
+                    warn_about_unsupported_type(type_str=str(type(first_value)))
+                    return None
 
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
@@ -429,6 +430,10 @@ class Handler:
             attr = self._container.get_attribute(self._path)
             if attr is None:
                 neptune_value = cast_value_for_extend(values)
+                if neptune_value is None:
+                    warn_about_unsupported_type(type_str=str(type(values)))
+                    return None
+
                 attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
                 self._container.set_attribute(self._path, attr)
 

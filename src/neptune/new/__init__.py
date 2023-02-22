@@ -57,7 +57,7 @@ from neptune import (
     init_project,
     init_run,
 )
-from neptune.common.deprecation import warn_once
+from neptune.common.warnings import warn_once
 from neptune.new.attributes import *
 from neptune.new.cli import *
 from neptune.new.constants import *

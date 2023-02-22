@@ -37,6 +37,7 @@ from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
+from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
@@ -205,13 +206,17 @@ class MetadataContainer(AbstractContextManager):
         value: Any,
         *,
         wait: bool = False,
-    ) -> Attribute:
+    ) -> Optional[Attribute]:
         with self._lock:
             old_attr = self.get_attribute(path)
             if old_attr is not None:
                 raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
 
             neptune_value = cast_value(value)
+            if neptune_value is None:
+                warn_about_unsupported_type(type_str=str(type(value)))
+                return None
+
             attr = ValueToAttributeVisitor(self, parse_path(path)).visit(neptune_value)
             self.set_attribute(path, attr)
             attr.process_assignment(neptune_value, wait=wait)
