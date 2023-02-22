@@ -163,6 +163,12 @@ class TestFetchTable(BaseE2ETest):
             run["sys/tags"].add(tag)
             run["some_random_val"] = random_val
 
+            time.sleep(30)
+            runs = project.fetch_runs_table(state="active").to_pandas()
+            assert not runs.empty
+            assert tag in runs["sys/tags"].values
+            assert random_val in runs["some_random_val"].values
+
         time.sleep(30)
 
         runs = project.fetch_runs_table(state="inactive").to_pandas()
