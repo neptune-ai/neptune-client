@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from contextlib import contextmanager
+from datetime import datetime
 
 from pytest import (
     fixture,
@@ -27,7 +28,12 @@ from neptune.common.warnings import (
     warned_once,
 )
 from neptune.types import (
+    Artifact,
     Boolean,
+    Datetime,
+    Float,
+    FloatSeries,
+    Integer,
     String,
     StringSeries,
 )
@@ -93,12 +99,12 @@ class TestStringifyUnsupported:
 
     def test_assign__float(self, run):
         with assert_no_warnings():
-            run["stringified"] = stringify_unsupported(4.0)
+            run["float"] = Float(4.0)
+            run["float"] = Float(stringify_unsupported(5.0))
+            run["float"] = stringify_unsupported(8.0)
+            run["float"] = 6.0
 
-        with assert_no_warnings():
-            run["regular"] = 4.0
-
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["float"].fetch() == 6
 
     def test_assign__string_series(self, run):
         with assert_no_warnings():
@@ -148,36 +154,57 @@ class TestStringifyUnsupported:
 
         assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
 
-    def test_assign__float__reassign(self, run):
+    def test_assign__artifact(self, run):
         with assert_no_warnings():
-            run["stringified"] = stringify_unsupported(4.0)
-            run["stringified"] = stringify_unsupported(5.3)
+            run["artifact"] = Artifact(
+                value=stringify_unsupported("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+            )
+            run["artifact"] = Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+            run["artifact"].assign(Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
+    def test_assign__boolean(self, run):
         with assert_no_warnings():
-            run["regular"] = 4.0
-            run["regular"] = 5.3
+            run["boolean"] = Boolean(value=True)
+            run["boolean"] = Boolean(value=stringify_unsupported(False))
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["boolean"].fetch() is False
+
+    def test_assign__integer(self, run):
+        with assert_no_warnings():
+            run["integer"] = Integer(12)
+            run["integer"] = Integer(stringify_unsupported(5))
+            run["integer"] = stringify_unsupported(9)
+            run["integer"] = 8
+
+        assert run["integer"].fetch() == 8
 
     def test_assign__string(self, run):
         with assert_no_warnings():
-            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
+            run["string"] = String(value="hello")
+            run["string"] = String(value=stringify_unsupported("world"))
+            run["string"] = stringify_unsupported(Obj())
+            run["string"] = "End"
+
+        assert run["string"].fetch() == "End"
+
+    def test_assign__float_series(self, run):
+        with assert_no_warnings():
+            run["float_series"] = FloatSeries(values=stringify_unsupported([4, 5, 6]))
+            run["float_series"] = FloatSeries(values=[1, 2, 3])
+            run["float_series"].assign(FloatSeries([2, 3, 4]))
+
+        assert list(run["float_series"].fetch_values()["value"]) == [2.0, 3.0, 4.0]
+
+    def test_assign__datetime(self, run):
+        sample_datetime = datetime.now().replace(microsecond=0)
 
         with assert_no_warnings():
-            run["regular"] = String("Nothing to be worry about")
+            run["datetime"] = Datetime(sample_datetime)
+            run["datetime"] = Datetime(stringify_unsupported(sample_datetime))
+            run["datetime"] = stringify_unsupported(sample_datetime)
+            run["datetime"] = sample_datetime
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
-
-    def test_assign__string__reassign(self, run):
-        with assert_no_warnings():
-            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
-            run["stringified"] = String(stringify_unsupported("... or maybe"))
-
-        with assert_no_warnings():
-            run["regular"] = String("Nothing to be worry about")
-            run["regular"] = String("... or maybe")
-
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["datetime"].fetch() == sample_datetime
 
     def test_assign__string__custom_object(self, run):
         with raises(TypeError):
