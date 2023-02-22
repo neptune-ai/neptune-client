@@ -159,8 +159,7 @@ class TestFetchTable(BaseE2ETest):
     def test_fetch_runs_table_by_state(self, environment, project):
         tag = str(uuid.uuid4())
         random_val = random.random()
-        with neptune.init_run(project=environment.project) as run:
-            run["sys/tags"].add(tag)
+        with neptune.init_run(project=environment.project, tags=tag) as run:
             run["some_random_val"] = random_val
 
             time.sleep(30)
