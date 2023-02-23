@@ -29,6 +29,7 @@ from typing import (
     Optional,
 )
 
+from neptune.common.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT_ENV
 from neptune.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
@@ -49,7 +50,7 @@ _logger = logging.getLogger(__name__)
 
 class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
-    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 300
+    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT_ENV, "300"))
 
     def __init__(
         self,
