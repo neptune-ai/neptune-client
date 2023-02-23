@@ -20,9 +20,14 @@ from typing import (
     TYPE_CHECKING,
     Optional,
     TypeVar,
+    Union,
 )
 
 from neptune.internal.artifacts.file_hasher import FileHasher
+from neptune.internal.types.stringify_value import (
+    StringifyValue,
+    extract_if_stringify_value,
+)
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -36,7 +41,9 @@ class Artifact(Atom):
 
     hash: str
 
-    def __init__(self, value: Optional[str] = None):
+    def __init__(self, value: Union[Optional[str], StringifyValue] = None):
+        value = extract_if_stringify_value(value)
+
         self.hash = str(value)
         assert (
             len(self.hash) == FileHasher.HASH_LENGTH or value is None

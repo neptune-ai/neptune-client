@@ -17,16 +17,14 @@ __all__ = ["stringify_unsupported"]
 
 from typing import (
     Any,
-    List,
     Mapping,
-    Tuple,
     Union,
 )
 
 from neptune.internal.types.stringify_value import StringifyValue
 
 
-def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tuple]:
+def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     """Helper function that converts unsupported values in a collection or dictionary to strings.
     Args:
         value (Any): A dictionary with values or a collection
@@ -44,8 +42,5 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping, List, Tu
     """
     if isinstance(value, dict):
         return {k: stringify_unsupported(v) for k, v in value.items()}
-
-    if isinstance(value, list):
-        return list(map(stringify_unsupported, value))
 
     return StringifyValue(value=value)

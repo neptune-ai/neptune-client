@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from contextlib import contextmanager
+from datetime import datetime
 
 from pytest import (
     fixture,
@@ -27,8 +28,14 @@ from neptune.common.warnings import (
     warned_once,
 )
 from neptune.types import (
+    Artifact,
     Boolean,
+    Datetime,
+    Float,
+    FloatSeries,
+    Integer,
     String,
+    StringSeries,
 )
 from neptune.utils import stringify_unsupported
 
@@ -92,12 +99,32 @@ class TestStringifyUnsupported:
 
     def test_assign__float(self, run):
         with assert_no_warnings():
-            run["stringified"] = stringify_unsupported(4.0)
+            run["float"] = Float(4.0)
+            run["float"] = Float(stringify_unsupported(5.0))
+            run["float"] = stringify_unsupported(8.0)
+            run["float"] = 6.0
+
+        assert run["float"].fetch() == 6
+
+    def test_assign__string_series(self, run):
+        with assert_no_warnings():
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj()]))
 
         with assert_no_warnings():
-            run["regular"] = 4.0
+            run["regular"] = StringSeries([str(Obj()), str(Obj())])
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["regular"].fetch_values()["value"].equals(run["stringified"].fetch_values()["value"])
+
+    def test_assign__string_series__reassign(self, run):
+        with assert_no_warnings():
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj()]))
+            run["stringified"] = StringSeries(stringify_unsupported([Obj(), Obj(), Obj()]))
+
+        with assert_no_warnings():
+            run["regular"] = StringSeries([str(Obj()), str(Obj())])
+            run["regular"] = StringSeries([str(Obj()), str(Obj()), str(Obj())])
+
+        assert run["regular"].fetch_values()["value"].equals(run["stringified"].fetch_values()["value"])
 
     def test_assign__array(self, run):
         values = [Obj(), Obj(), Obj()]
@@ -127,36 +154,57 @@ class TestStringifyUnsupported:
 
         assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
 
-    def test_assign__float__reassign(self, run):
+    def test_assign__artifact(self, run):
         with assert_no_warnings():
-            run["stringified"] = stringify_unsupported(4.0)
-            run["stringified"] = stringify_unsupported(5.3)
+            run["artifact"] = Artifact(
+                value=stringify_unsupported("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+            )
+            run["artifact"] = Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+            run["artifact"].assign(Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
+    def test_assign__boolean(self, run):
         with assert_no_warnings():
-            run["regular"] = 4.0
-            run["regular"] = 5.3
+            run["boolean"] = Boolean(value=True)
+            run["boolean"] = Boolean(value=stringify_unsupported(False))
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["boolean"].fetch() is False
+
+    def test_assign__integer(self, run):
+        with assert_no_warnings():
+            run["integer"] = Integer(12)
+            run["integer"] = Integer(stringify_unsupported(5))
+            run["integer"] = stringify_unsupported(9)
+            run["integer"] = 8
+
+        assert run["integer"].fetch() == 8
 
     def test_assign__string(self, run):
         with assert_no_warnings():
-            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
+            run["string"] = String(value="hello")
+            run["string"] = String(value=stringify_unsupported("world"))
+            run["string"] = stringify_unsupported(Obj())
+            run["string"] = "End"
+
+        assert run["string"].fetch() == "End"
+
+    def test_assign__float_series(self, run):
+        with assert_no_warnings():
+            run["float_series"] = FloatSeries(values=stringify_unsupported([4, 5, 6]))
+            run["float_series"] = FloatSeries(values=[1, 2, 3])
+            run["float_series"].assign(FloatSeries([2, 3, 4]))
+
+        assert list(run["float_series"].fetch_values()["value"]) == [2.0, 3.0, 4.0]
+
+    def test_assign__datetime(self, run):
+        sample_datetime = datetime.now().replace(microsecond=0)
 
         with assert_no_warnings():
-            run["regular"] = String("Nothing to be worry about")
+            run["datetime"] = Datetime(sample_datetime)
+            run["datetime"] = Datetime(stringify_unsupported(sample_datetime))
+            run["datetime"] = stringify_unsupported(sample_datetime)
+            run["datetime"] = sample_datetime
 
-        assert run["regular"].fetch() == run["stringified"].fetch()
-
-    def test_assign__string__reassign(self, run):
-        with assert_no_warnings():
-            run["stringified"] = String(stringify_unsupported("Nothing to be worry about"))
-            run["stringified"] = String(stringify_unsupported("... or maybe"))
-
-        with assert_no_warnings():
-            run["regular"] = String("Nothing to be worry about")
-            run["regular"] = String("... or maybe")
-
-        assert run["regular"].fetch() == run["stringified"].fetch()
+        assert run["datetime"].fetch() == sample_datetime
 
     def test_assign__string__custom_object(self, run):
         with raises(TypeError):
@@ -268,6 +316,59 @@ class TestStringifyUnsupported:
         with assert_no_warnings():
             run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
             run["regular"] = {"a": str(Obj(name="B")), "d": 12, "e": {"f": Boolean(False)}}
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__list(self, run):
+        with assert_unsupported_warning():
+            run["unsupported"] = [Obj(), Obj(), Obj()]
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj(), Obj(), Obj()])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__empty_list(self, run):
+        with assert_unsupported_warning():
+            run["unsupported"] = []
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([])
+
+        with assert_no_warnings():
+            run["regular"] = str([])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__list__reassign(self, run):
+        with assert_unsupported_warning():
+            run["unsupported"] = [Obj()]
+            run["unsupported"] = [Obj(), Obj(), Obj()]
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj()])
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj()])
+            run["regular"] = str([Obj(), Obj(), Obj()])
+
+        assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__empty_list__reassign(self, run):
+        with assert_unsupported_warning():
+            run["unsupported"] = []
+
+        with assert_no_warnings():
+            run["stringified"] = stringify_unsupported([Obj(), Obj(), Obj()])
+            run["stringified"] = stringify_unsupported([])
+
+        with assert_no_warnings():
+            run["regular"] = str([Obj(), Obj(), Obj()])
+            run["regular"] = str([])
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 

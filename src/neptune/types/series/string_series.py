@@ -17,10 +17,12 @@ __all__ = ["StringSeries"]
 
 from typing import (
     TYPE_CHECKING,
-    Any,
+    Iterable,
     TypeVar,
+    Union,
 )
 
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     is_stringify_value,
@@ -35,19 +37,16 @@ Ret = TypeVar("Ret")
 MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
-def extract_value(value: Any) -> str:
-    return str(value.value) if is_stringify_value(value) else value
-
-
 class StringSeries(Series):
-    def __init__(self, values):
+    def __init__(self, values: Union[Iterable[str], StringifyValue]):
+        if is_stringify_value(values):
+            values = list(map(str, values.value))
+
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
 
-        values_str = [extract_value(val) for val in values]
-
-        self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
-        self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
+        self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values])
+        self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values]
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)

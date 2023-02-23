@@ -24,6 +24,7 @@ from typing import (
     Union,
 )
 
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_bool,
     is_dict_like,
@@ -83,11 +84,17 @@ def cast_value(value: Any) -> Optional[Value]:
         return Float(value)
     elif is_dict_like(value):
         return Namespace(value)
-    elif (isinstance(value, list) and all(is_stringify_value(elem) for elem in value)) or from_stringify_value:
+    elif from_stringify_value:
         return String(str(value))
 
 
-def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Optional[Union[Series, Namespace]]:
+def cast_value_for_extend(
+    values: Union[StringifyValue, Namespace, Series, Collection[Any]]
+) -> Optional[Union[Series, Namespace]]:
+    from_stringify_value, original_values = False, None
+    if is_stringify_value(values):
+        from_stringify_value, original_values, values = True, values, values.value
+
     if isinstance(values, Namespace):
         return values
     elif is_dict_like(values):
@@ -96,10 +103,6 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
         return values
 
     sample_val = next(iter(values))
-
-    from_stringify_value = False
-    if is_stringify_value(sample_val):
-        from_stringify_value, sample_val = True, sample_val.value
 
     if isinstance(sample_val, File):
         return FileSeries(values=values)
@@ -112,4 +115,4 @@ def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> 
     elif is_float_like(sample_val):
         return FloatSeries(values=values)
     elif from_stringify_value:
-        return StringSeries(values=values)
+        return StringSeries(values=original_values)

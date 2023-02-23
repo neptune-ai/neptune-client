@@ -45,6 +45,7 @@ from neptune.exceptions import (
     NeptuneUserApiInputException,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     is_dict_like,
@@ -63,6 +64,7 @@ from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
+from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
@@ -306,6 +308,10 @@ class Handler:
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
             if attr is None:
+                from_stringify_value = False
+                if is_stringify_value(value):
+                    from_stringify_value, value = True, value.value
+
                 if is_collection(value):
                     if value:
                         first_value = next(iter(value))
@@ -313,10 +319,6 @@ class Handler:
                         raise ValueError("Cannot deduce value type: `value` cannot be empty")
                 else:
                     first_value = value
-
-                from_stringify_value = False
-                if is_stringify_value(first_value):
-                    from_stringify_value, first_value = True, first_value.value
 
                 if is_float(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
@@ -327,6 +329,10 @@ class Handler:
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif from_stringify_value:
+                    if is_collection(value):
+                        value = list(map(str, value))
+                    else:
+                        value = str(value)
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     warn_about_unsupported_type(type_str=str(type(first_value)))
@@ -686,6 +692,10 @@ class ExtendUtils:
         so work can be delegated to `extend` method."""
         if isinstance(value, Namespace) or is_dict_like(value):
             return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
+
+        if isinstance(value, StringifyValue):
+            return stringify_unsupported([value.value])
+
         return [value]
 
     @staticmethod
@@ -708,6 +718,9 @@ class ExtendUtils:
 
     @staticmethod
     def generate_leaf_collection_lengths(values) -> Iterator[int]:
+        if is_stringify_value(values):
+            values = values.value
+
         if isinstance(values, Namespace) or is_dict_like(values):
             for val in values.values():
                 yield from ExtendUtils.generate_leaf_collection_lengths(val)

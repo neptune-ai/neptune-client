@@ -20,9 +20,13 @@ from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     TypeVar,
+    Union,
 )
 
-from neptune.internal.types.stringify_value import extract_if_stringify_value
+from neptune.internal.types.stringify_value import (
+    StringifyValue,
+    extract_if_stringify_value,
+)
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -35,7 +39,7 @@ Ret = TypeVar("Ret")
 class Datetime(Atom):
     value: datetime
 
-    def __init__(self, value: datetime):
+    def __init__(self, value: Union[datetime, StringifyValue]):
         value = extract_if_stringify_value(value)
         self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 
