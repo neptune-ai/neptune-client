@@ -158,13 +158,13 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
-            if len(steps) != len(values):
-                raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(values)}")
+            if len(steps) != len(value):
+                raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(value)}")
         if timestamps is not None:
             verify_collection_type("timestamps", timestamps, (float, int))
-            if len(timestamps) != len(values):
+            if len(timestamps) != len(value):
                 raise ValueError(
-                    f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(values)}"
+                    f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(value)}"
                 )
 
         ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
