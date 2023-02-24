@@ -9,13 +9,13 @@ jobs:
   build-neptune:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for tests to finish
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          running-workflow-name: 'publish'
-          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-          wait-interval: 60
+#      - name: Wait for tests to finish
+#        uses: lewagon/wait-on-check-action@v1.3.1
+#        with:
+#          ref: ${{ github.ref }}
+#          running-workflow-name: 'publish'
+#          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+#          wait-interval: 60
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -62,13 +62,13 @@ jobs:
   build-neptune-client:
     runs-on: ubuntu-latest
     steps:
-      - name: Wait for tests to finish
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          running-workflow-name: 'publish'
-          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-          wait-interval: 60
+#      - name: Wait for tests to finish
+#        uses: lewagon/wait-on-check-action@v1.3.1
+#        with:
+#          ref: ${{ github.ref }}
+#          running-workflow-name: 'publish'
+#          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+#          wait-interval: 60
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -193,7 +193,7 @@ jobs:
       - name: Install neptune-client 0.16
         run: pip install neptune-client==0.16.18
 
-      - name: Upgrade to latest neptune-client
+      - name: Install new neptune-client package
         run: pip install --force-reinstall -f ./dist neptune-client
 
       - name: List dependencies
@@ -217,7 +217,7 @@ jobs:
       - name: Uninstall neptune-client
         run: pip uninstall neptune-client -y
 
-      - name: Upgrade to latest neptune-client
+      - name: Install new neptune-client package
         run: pip install -f ./dist neptune-client
 
       - name: List dependencies
@@ -241,7 +241,7 @@ jobs:
       - name: Uninstall neptune-client
         run: pip uninstall neptune-client -y
 
-      - name: Upgrade to latest neptune-client
+      - name: Install new neptune package
         run: pip install -f ./dist neptune
 
       - name: List dependencies
