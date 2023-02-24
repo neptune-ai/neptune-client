@@ -121,6 +121,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: neptune-package
+          path: dist
 
       - name: Install neptune package
         run: pip install --no-index -f ./dist neptune
@@ -138,6 +139,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: neptune-client-package
+          path: dist
 
       - name: Install neptune package
         run: pip install --no-index -f ./dist neptune-client
