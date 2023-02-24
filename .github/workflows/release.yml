@@ -174,7 +174,12 @@ jobs:
         run: pip list
 
       - name: Test that fails
-        run: ! python -c "from neptune.new import init_run; from neptune import init_run"
+        run: |
+          echo "TEST_EXIT_CODE=$(python -c "from neptune.new import init_run; from neptune import init_run")" >> $GITHUB_ENV
+
+      - name: Use the value
+        run: |
+          echo "${{ env.TEST_EXIT_CODE }}"
 
   test-upgrade-0-16:
     needs: [ build-neptune-client ]
