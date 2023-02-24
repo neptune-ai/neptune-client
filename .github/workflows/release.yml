@@ -74,9 +74,10 @@ jobs:
 
       - name: Build package
         run: |
-          ln -s src/ neptune_client_package/src
-          ln -s README.md neptune_client_package/README.md
-          ln -s CHANGELOG.md neptune_client_package/CHANGELOG.md
+          cp -R src/ neptune_client_package/src
+          cp README.md neptune_client_package/README.md
+          cp CHANGELOG.md neptune_client_package/CHANGELOG.md
+          find .
           cd neptune_client_package/
           poetry build
 
