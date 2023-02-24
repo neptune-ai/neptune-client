@@ -22,6 +22,9 @@ jobs:
       - name: Install build dependencies
         run: pip install poetry poetry-dynamic-versioning
 
+      - name: Tag version
+        run: git tag 1.0.1rc0
+
       - name: Build package
         run: poetry build
 
@@ -45,6 +48,9 @@ jobs:
 
       - name: Install build dependencies
         run: pip install poetry poetry-dynamic-versioning
+
+      - name: Tag version
+        run: git tag 1.0.1rc0
 
       - name: Build package
         run: |
