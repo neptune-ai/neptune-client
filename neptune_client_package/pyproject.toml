@@ -132,10 +132,10 @@ description = "Neptune Client"
 repository = "https://github.com/neptune-ai/neptune-client"
 homepage = "https://neptune.ai/"
 documentation = "https://docs.neptune.ai/"
-include = ["CHANGELOG.md"]
+include = ["../CHANGELOG.md"]
 license = "Apache License 2.0"
 name = "neptune-client"
-readme = "README.md"
+readme = "../README.md"
 version = "1.0.0"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -169,40 +169,3 @@ packages = [
 
 [tool.poetry.scripts]
 neptune = "neptune.cli.__main__:main"
-
-[tool.black]
-line-length = 120
-target-version = ['py37', 'py38', 'py39', 'py310']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
-
-[tool.isort]
-profile = "black"
-line_length = 120
-force_grid_wrap = 2
-
-[tool.flake8]
-max-line-length = 120
-extend-ignore = "E203"
-
-[tool.coverage.run]
-source_pkgs = ['neptune']
-branch = false
-relative_files = false
-
-[tool.coverage.paths]
-source = [
-    'src/neptune',
-    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
-]
