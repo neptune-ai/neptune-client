@@ -174,12 +174,7 @@ jobs:
         run: pip list
 
       - name: Test that fails
-        run: |
-          if python -c "from neptune.new import init_run; from neptune import init_run"; then
-            exit 0
-          else
-            exit 1
-          fi
+        run: ! python -c "from neptune.new import init_run; from neptune import init_run"
 
   test-upgrade-0-16:
     needs: [ build-neptune-client ]
