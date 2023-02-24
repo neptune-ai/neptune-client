@@ -132,10 +132,10 @@ description = "Neptune Client"
 repository = "https://github.com/neptune-ai/neptune-client"
 homepage = "https://neptune.ai/"
 documentation = "https://docs.neptune.ai/"
-include = ["../CHANGELOG.md"]
+include = ["CHANGELOG.md"]
 license = "Apache License 2.0"
 name = "neptune-client"
-readme = "../README.md"
+readme = "README.md"
 version = "1.0.0"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -160,7 +160,7 @@ keywords = [
     "ML Metadata Store",
 ]
 packages = [
-    { include = "neptune", from = "../src" },
+    { include = "neptune", from = "src" },
 ]
 
 [tool.poetry.urls]
