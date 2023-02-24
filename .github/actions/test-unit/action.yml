@@ -33,14 +33,14 @@ runs:
       shell: bash
 
     - name: Upload test coverage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: ${{ inputs.coverage-artifacts-name }}
         path: ./.coverage*
 
     - name: Upload test reports
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: test-artifacts
