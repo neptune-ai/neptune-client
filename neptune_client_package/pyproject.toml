@@ -160,7 +160,7 @@ keywords = [
     "ML Metadata Store",
 ]
 packages = [
-    { include = "neptune", from = "src" },
+    { include = "neptune", from = "../src" },
 ]
 
 [tool.poetry.urls]
