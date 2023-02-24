@@ -48,7 +48,7 @@ jobs:
 #          password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
 
   publish-neptune-client:
-    name: publish
+    name: publish-legacy-package
     runs-on: ubuntu-latest
     steps:
       - name: Wait for tests to finish
@@ -77,7 +77,6 @@ jobs:
           cp -R src/ neptune_client_package/src
           cp README.md neptune_client_package/README.md
           cp CHANGELOG.md neptune_client_package/CHANGELOG.md
-          find .
           cd neptune_client_package/
           poetry build
 
