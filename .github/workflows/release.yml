@@ -72,7 +72,7 @@ jobs:
           path: dist
 
       - name: Install neptune package
-        run: pip install --force-reinstall -f ./dist neptune
+        run: pip install --force-reinstall --pre -f ./dist neptune
 
       - name: List dependencies
         run: pip list
@@ -90,7 +90,7 @@ jobs:
           path: dist
 
       - name: Install neptune-client package
-        run: pip install --force-reinstall -f ./dist neptune-client
+        run: pip install --force-reinstall --pre -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
@@ -113,10 +113,10 @@ jobs:
           path: dist
 
       - name: Install neptune-client package
-        run: pip install --force-reinstall -f ./dist neptune-client
+        run: pip install --force-reinstall --pre -f ./dist neptune-client
 
       - name: Install neptune package
-        run: pip install --force-reinstall -f ./dist neptune
+        run: pip install --force-reinstall --pre -f ./dist neptune
 
       - name: List dependencies
         run: pip list
@@ -142,7 +142,7 @@ jobs:
         run: pip install neptune-client==0.16.18
 
       - name: Install new neptune-client package
-        run: pip install --force-reinstall -f ./dist neptune-client
+        run: pip install --force-reinstall --pre -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
@@ -166,7 +166,7 @@ jobs:
         run: pip uninstall neptune-client -y
 
       - name: Install new neptune-client package
-        run: pip install --force-reinstall -f ./dist neptune-client
+        run: pip install --force-reinstall --pre -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
@@ -190,7 +190,7 @@ jobs:
         run: pip uninstall neptune-client -y
 
       - name: Install new neptune package
-        run: pip install --force-reinstall -f ./dist neptune
+        run: pip install --force-reinstall --pre -f ./dist neptune
 
       - name: List dependencies
         run: pip list
