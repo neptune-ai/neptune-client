@@ -129,8 +129,8 @@ jobs:
       - name: List dependencies
         run: pip list
 
-      - name: Run tests
-        run: python -c "from neptune.new import init_run"
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
 
   test-clean-install-neptune-client:
     needs: [ build-neptune-client ]
@@ -147,8 +147,8 @@ jobs:
       - name: List dependencies
         run: pip list
 
-      - name: Run tests
-        run: python -c "from neptune.new import init_run"
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
 
   test-neptune-and-neptune-client:
     needs: [ build-neptune-client, build-neptune ]
@@ -173,5 +173,74 @@ jobs:
       - name: List dependencies
         run: pip list
 
-      - name: Run tests
-        run: python -c "from neptune.new import init_run"
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
+
+  test-upgrade-0-16:
+    needs: [ build-neptune-client ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: neptune-client-package
+          path: dist
+
+      - name: Install neptune-client 0.16
+        run: pip install neptune-client==0.16.18
+
+      - name: Upgrade to latest neptune-client
+        run: pip install -f ./dist neptune-client
+
+      - name: List dependencies
+        run: pip list
+
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
+
+  test-uninstall-0-16-install-neptune-client:
+    needs: [ build-neptune-client ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: neptune-client-package
+          path: dist
+
+      - name: Install neptune-client 0.16
+        run: pip install neptune-client==0.16.18
+
+      - name: Uninstall neptune-client
+        run: pip uninstall neptune-client -y
+
+      - name: Upgrade to latest neptune-client
+        run: pip install -f ./dist neptune-client
+
+      - name: List dependencies
+        run: pip list
+
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
+
+  test-uninstall-0-16-install-neptune:
+    needs: [ build-neptune-client ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: neptune-package
+          path: dist
+
+      - name: Install neptune-client 0.16
+        run: pip install neptune-client==0.16.18
+
+      - name: Uninstall neptune-client
+        run: pip uninstall neptune-client -y
+
+      - name: Upgrade to latest neptune-client
+        run: pip install -f ./dist neptune
+
+      - name: List dependencies
+        run: pip list
+
+      - name: Test imports
+        run: python -c "from neptune.new import init_run; from neptune import init_run"
