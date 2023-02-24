@@ -2,8 +2,8 @@ name: release
 
 on:
   push:
-    tags:
-      - "*"
+#    tags:
+#      - "*"
 
 jobs:
   build-neptune:
@@ -66,7 +66,7 @@ jobs:
           path: dist
 
       - name: Install neptune package
-        run: pip install -f ./dist neptune
+        run: pip install --force-reinstall -f ./dist neptune
 
       - name: List dependencies
         run: pip list
@@ -84,7 +84,7 @@ jobs:
           path: dist
 
       - name: Install neptune-client package
-        run: pip install -f ./dist neptune-client
+        run: pip install --force-reinstall -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
@@ -107,10 +107,10 @@ jobs:
           path: dist
 
       - name: Install neptune-client package
-        run: pip install -f ./dist neptune-client
+        run: pip install --force-reinstall -f ./dist neptune-client
 
       - name: Install neptune package
-        run: pip install -f ./dist neptune
+        run: pip install --force-reinstall -f ./dist neptune
 
       - name: List dependencies
         run: pip list
@@ -160,7 +160,7 @@ jobs:
         run: pip uninstall neptune-client -y
 
       - name: Install new neptune-client package
-        run: pip install -f ./dist neptune-client
+        run: pip install --force-reinstall -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
@@ -184,68 +184,68 @@ jobs:
         run: pip uninstall neptune-client -y
 
       - name: Install new neptune package
-        run: pip install -f ./dist neptune
+        run: pip install --force-reinstall -f ./dist neptune
 
       - name: List dependencies
         run: pip list
 
       - name: Test imports
         run: python -c "from neptune.new import init_run; from neptune import init_run"
-
-  publish-neptune:
-    needs:
-      - build-neptune
-      - test-upgrade-0-16
-      - test-clean-install-neptune
-      - test-clean-install-neptune-client
-      - test-neptune-and-neptune-client
-      - test-uninstall-0-16-install-neptune-client
-      - test-uninstall-0-16-install-neptune
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: neptune-package
-          path: dist/
-
+#
+#  publish-neptune:
+#    needs:
+#      - build-neptune
+#      - test-upgrade-0-16
+#      - test-clean-install-neptune
+#      - test-clean-install-neptune-client
+#      - test-neptune-and-neptune-client
+#      - test-uninstall-0-16-install-neptune-client
+#      - test-uninstall-0-16-install-neptune
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: neptune-package
+#          path: dist/
+#
+##      - name: Uploading to test PyPI
+##        uses: pypa/gh-action-pypi-publish@v1.6.4
+##        with:
+##         user: __token__
+##         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+##         repository_url: https://test.pypi.org/legacy/
+#
+#      - name: Uploading to PyPI
+#        uses: pypa/gh-action-pypi-publish@v1.6.4
+#        with:
+#          user: __token__
+#          password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
+#
+#  publish-neptune-client:
+#    needs:
+#      - build-neptune-client
+#      - test-upgrade-0-16
+#      - test-clean-install-neptune
+#      - test-clean-install-neptune-client
+#      - test-neptune-and-neptune-client
+#      - test-uninstall-0-16-install-neptune-client
+#      - test-uninstall-0-16-install-neptune
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: neptune-client-package
+#          path: dist/
+#
 #      - name: Uploading to test PyPI
 #        uses: pypa/gh-action-pypi-publish@v1.6.4
 #        with:
-#         user: __token__
-#         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-#         repository_url: https://test.pypi.org/legacy/
-
-      - name: Uploading to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.6.4
-        with:
-          user: __token__
-          password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
-
-  publish-neptune-client:
-    needs:
-      - build-neptune-client
-      - test-upgrade-0-16
-      - test-clean-install-neptune
-      - test-clean-install-neptune-client
-      - test-neptune-and-neptune-client
-      - test-uninstall-0-16-install-neptune-client
-      - test-uninstall-0-16-install-neptune
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: neptune-client-package
-          path: dist/
-
-      - name: Uploading to test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.6.4
-        with:
-          user: __token__
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
-
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1.6.4
-        with:
-          user: __token__
-          password: ${{ secrets.NEPTUNE_CLIENT_PYPI_API_TOKEN }}
+#          user: __token__
+#          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#          repository_url: https://test.pypi.org/legacy/
+#
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@v1.6.4
+#        with:
+#          user: __token__
+#          password: ${{ secrets.NEPTUNE_CLIENT_PYPI_API_TOKEN }}
