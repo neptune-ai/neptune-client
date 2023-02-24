@@ -179,7 +179,12 @@ jobs:
 
       - name: Test that fails (due to RuntimeException)
         run: |
-          exit !${{ env.TEST_EXIT_CODE }}
+          val=${{ env.TEST_EXIT_CODE }}
+          if [ $val -ne 0 ]; then
+            exit 0
+          else
+            exit 1
+          fi
 
   test-upgrade-0-16:
     needs: [ build-neptune-client ]
