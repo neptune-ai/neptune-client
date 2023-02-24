@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.0.1rc0
+## neptune 1.0.1rc0
 
 ### Fixes
 - Fixed `neptune-client` package setup ([#1263](https://github.com/neptune-ai/neptune-client/pull/1263))
