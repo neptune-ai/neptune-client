@@ -178,13 +178,8 @@ jobs:
           echo "TEST_EXIT_CODE=$(python -c "from neptune.new import init_run; from neptune import init_run")" >> $GITHUB_ENV
 
       - name: Test that fails (due to RuntimeException)
-        run: |
-          val=${{ env.TEST_EXIT_CODE }}
-          if [ $val -ne 0 ]; then
-            exit 0
-          else
-            exit 1
-          fi
+        if: ${{ env.TEST_EXIT_CODE }} == 0
+        run: exit 1
 
   test-upgrade-0-16:
     needs: [ build-neptune-client ]
