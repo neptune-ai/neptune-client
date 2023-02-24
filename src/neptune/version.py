@@ -50,7 +50,7 @@ def detect_version() -> str:
         warn_once("You should install `neptune`")
         return neptune_client_version
 
-    raise PackageNotFoundError("neptuen")
+    raise PackageNotFoundError("neptune")
 
 
 __version__ = detect_version()

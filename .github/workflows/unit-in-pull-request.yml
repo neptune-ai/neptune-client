@@ -3,7 +3,7 @@ name: pull-request-unittests
 on:
   workflow_dispatch:
   push:
-    branches:
+    branches-ignore:
       - master
 
 jobs:
