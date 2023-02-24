@@ -16,23 +16,41 @@
 __all__ = ["version", "__version__"]
 
 import sys
+from typing import Optional
 
 from packaging.version import parse
 
-if sys.version_info >= (3, 8):
-    from importlib.metadata import (
-        PackageNotFoundError,
-        version,
-    )
-else:
-    from importlib_metadata import (
-        PackageNotFoundError,
-        version,
-    )
+from neptune.common.warnings import warn_once
 
-try:
-    __version__ = version("neptune")
-    version = parse(__version__)
-except PackageNotFoundError:
-    # package is not installed
-    pass
+if sys.version_info >= (3, 8):
+    from importlib.metadata import PackageNotFoundError
+    from importlib.metadata import version as version_parser
+else:
+    from importlib_metadata import PackageNotFoundError
+    from importlib_metadata import version as version_parser
+
+
+def check_version(package_name: str) -> Optional[str]:
+    try:
+        return version_parser(package_name)
+    except PackageNotFoundError:
+        # package is not installed
+        return None
+
+
+def detect_version() -> str:
+    neptune_version = check_version("neptune")
+    neptune_client_version = check_version("neptune-client")
+    if neptune_version is not None and neptune_client_version is not None:
+        raise RuntimeError("Corrupted state")
+    elif neptune_version is not None:
+        return neptune_version
+    elif neptune_client_version is not None:
+        warn_once("You should install `neptune`")
+        return neptune_client_version
+    else:
+        raise PackageNotFoundError()
+
+
+__version__ = detect_version()
+version = parse(__version__)

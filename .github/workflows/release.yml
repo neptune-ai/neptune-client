@@ -2,11 +2,11 @@ name: release
 
 on:
   push:
-    tags:
-      - "*"
+#    tags:
+#      - "*"
 
 jobs:
-  publish:
+  publish-neptune:
     name: publish
     runs-on: ubuntu-latest
     steps:
@@ -41,8 +41,51 @@ jobs:
 #           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 #           repository_url: https://test.pypi.org/legacy/
 
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1.6.4
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@v1.6.4
+#        with:
+#          user: __token__
+#          password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
+
+  publish-neptune-client:
+    name: publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for tests to finish
+        uses: lewagon/wait-on-check-action@v1.3.1
         with:
-          user: __token__
-          password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
+          ref: ${{ github.ref }}
+          running-workflow-name: 'publish'
+          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          wait-interval: 60
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install build dependencies
+        run: pip install poetry poetry-dynamic-versioning
+
+      - name: Build package
+        run: |
+          cd neptune_client_package/
+          poetry build
+
+#       - name: Uploading to test PyPI
+#         uses: pypa/gh-action-pypi-publish@v1.6.4
+#         with:
+#           user: __token__
+#           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+#           repository_url: https://test.pypi.org/legacy/
+
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@v1.6.4
+#        with:
+#          user: __token__
+#          password: ${{ secrets.NEPTUNE_CLIENT_PYPI_API_TOKEN }}
