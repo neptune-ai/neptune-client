@@ -124,7 +124,7 @@ jobs:
           path: dist
 
       - name: Install neptune package
-        run: pip install --no-index -f ./dist neptune
+        run: pip install -f ./dist neptune
 
       - name: List dependencies
         run: pip list
@@ -142,7 +142,7 @@ jobs:
           path: dist
 
       - name: Install neptune package
-        run: pip install --no-index -f ./dist neptune-client
+        run: pip install -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
