@@ -41,6 +41,7 @@ def check_version(package_name: str) -> Optional[str]:
 def detect_version() -> str:
     neptune_version = check_version("neptune")
     neptune_client_version = check_version("neptune-client")
+
     if neptune_version is not None and neptune_client_version is not None:
         raise RuntimeError("Corrupted state")
     elif neptune_version is not None:
@@ -48,8 +49,8 @@ def detect_version() -> str:
     elif neptune_client_version is not None:
         warn_once("You should install `neptune`")
         return neptune_client_version
-    else:
-        raise PackageNotFoundError()
+
+    raise PackageNotFoundError("neptuen")
 
 
 __version__ = detect_version()

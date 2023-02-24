@@ -173,8 +173,13 @@ jobs:
       - name: List dependencies
         run: pip list
 
-      - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+      - name: Test that fails
+        run: |
+          if python -c "from neptune.new import init_run; from neptune import init_run"; then
+            exit 0
+          else
+            exit 1
+          fi
 
   test-upgrade-0-16:
     needs: [ build-neptune-client ]
@@ -189,7 +194,7 @@ jobs:
         run: pip install neptune-client==0.16.18
 
       - name: Upgrade to latest neptune-client
-        run: pip install -f ./dist neptune-client
+        run: pip install --force-reinstall -f ./dist neptune-client
 
       - name: List dependencies
         run: pip list
