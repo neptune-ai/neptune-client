@@ -9,13 +9,13 @@ jobs:
   build-neptune:
     runs-on: ubuntu-latest
     steps:
-#      - name: Wait for tests to finish
-#        uses: lewagon/wait-on-check-action@v1.3.1
-#        with:
-#          ref: ${{ github.ref }}
-#          running-workflow-name: 'publish'
-#          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-#          wait-interval: 60
+      - name: Wait for tests to finish
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: 'publish'
+          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          wait-interval: 60
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -62,13 +62,13 @@ jobs:
   build-neptune-client:
     runs-on: ubuntu-latest
     steps:
-#      - name: Wait for tests to finish
-#        uses: lewagon/wait-on-check-action@v1.3.1
-#        with:
-#          ref: ${{ github.ref }}
-#          running-workflow-name: 'publish'
-#          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-#          wait-interval: 60
+      - name: Wait for tests to finish
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: 'publish'
+          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          wait-interval: 60
 
       - name: Checkout repository
         uses: actions/checkout@v3
