@@ -38,14 +38,14 @@ jobs:
           name: neptune-package
           path: dist/
 
-  publish-neptune:
-    needs: [build-neptune]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: neptune-package
-
+#  publish-neptune:
+#    needs: [build-neptune]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: neptune-package
+#
 #      - name: Uploading to test PyPI
 #        uses: pypa/gh-action-pypi-publish@v1.6.4
 #        with:
@@ -93,14 +93,14 @@ jobs:
           name: neptune-client-package
           path: dist/
 
-  publish-neptune-client:
-    needs: [build-neptune-client]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v3
-        with:
-          name: neptune-client-package
-
+#  publish-neptune-client:
+#    needs: [build-neptune-client]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v3
+#        with:
+#          name: neptune-client-package
+#
 #       - name: Uploading to test PyPI
 #         uses: pypa/gh-action-pypi-publish@v1.6.4
 #         with:
@@ -141,8 +141,34 @@ jobs:
           name: neptune-client-package
           path: dist
 
-      - name: Install neptune package
+      - name: Install neptune-client package
         run: pip install -f ./dist neptune-client
+
+      - name: List dependencies
+        run: pip list
+
+      - name: Run tests
+        run: python -c "from neptune.new import init_run"
+
+  test-neptune-and-neptune-client:
+    needs: [ build-neptune-client, build-neptune ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: neptune-client-package
+          path: dist
+
+      - uses: actions/download-artifact@v3
+        with:
+          name: neptune-package
+          path: dist
+
+      - name: Install neptune-client package
+        run: pip install -f ./dist neptune-client
+
+      - name: Install neptune package
+        run: pip install -f ./dist neptune
 
       - name: List dependencies
         run: pip list
