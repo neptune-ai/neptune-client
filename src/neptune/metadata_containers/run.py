@@ -34,7 +34,7 @@ from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
-from neptune.common.deprecation import (
+from neptune.common.warnings import (
     NeptuneWarning,
     warn_once,
 )
@@ -628,9 +628,9 @@ def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
         if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:
             warn_once(
-                "You're in an interactive environment, so to avoid unintended consumption of logging hours,"
-                " some background monitoring settings are disabled. To enable them, initialize your Run"
-                " with `capture_stdout`, `capture_stderr`, and `capture_hardware_metrics` set to `True`.",
+                "To avoid unintended consumption of logging hours during interactive sessions, the"
+                " following monitoring options are disabled unless set to 'True' when initializing"
+                " the run: 'capture_stdout', 'capture_stderr', and 'capture_hardware_metrics'.",
                 exception=NeptuneWarning,
             )
         return False
