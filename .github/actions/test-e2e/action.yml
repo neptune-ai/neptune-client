@@ -37,7 +37,7 @@ runs:
       shell: bash
 
     - name: Upload test coverage
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: always()
       with:
         name: e2e-coverage
@@ -53,7 +53,7 @@ runs:
         annotate_notice: true
         job_name: ${{ inputs.report_job }}
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       if: always()
       with:
         name: test-artifacts
