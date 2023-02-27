@@ -25,10 +25,7 @@ __all__ = [
 """Constants used by Neptune"""
 
 
-ANONYMOUS_API_TOKEN = (
-    "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS"
-    "5haSIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQo="
-)
+ANONYMOUS_API_TOKEN = "ANONYMOUS"
 
 NEPTUNE_DATA_DIRECTORY = ".neptune"
 
