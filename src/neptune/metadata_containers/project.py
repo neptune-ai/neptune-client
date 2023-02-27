@@ -195,8 +195,8 @@ class Project(MetadataContainer):
                 Matching any element of the list is sufficient to pass the criterion.
                 Defaults to `None`.
             state: Run state, or list of states.
-                Example: `"Active"` or `["Inactive", "Active"]`.
-                Possible values: "Inactive", "Active".
+                Example: `"active"`.
+                Possible values: "inactive", "active".
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
             owner: Username of the run owner, or a list of owners.
