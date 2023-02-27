@@ -40,6 +40,7 @@ from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.common.exceptions import (
     ClientHttpError,
     Forbidden,
+    NeptuneAuthTokenExpired,
     NeptuneConnectionLostException,
     NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
@@ -83,6 +84,8 @@ def with_api_exceptions_handler(func):
             ) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
+                continue
+            except NeptuneAuthTokenExpired:
                 continue
             except HTTPUnauthorized:
                 raise Unauthorized()

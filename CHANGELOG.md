@@ -1,3 +1,8 @@
+## neptune 1.0.2 [Unreleased]
+
+### Fixes
+- Properly handle expired oauth token ([#1271](https://github.com/neptune-ai/neptune-client/pull/1271))
+
 ## neptune 1.0.1
 
 ### Fixes

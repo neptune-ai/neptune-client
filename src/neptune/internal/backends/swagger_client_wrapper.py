@@ -20,6 +20,7 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
+from neptune.common.exceptions import NeptuneAuthTokenExpired
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
@@ -35,6 +36,7 @@ class ApiMethodWrapper:
     PROJECT_KEY_INVALID = "PROJECT_KEY_INVALID"
     PROJECT_NAME_INVALID = "PROJECT_NAME_INVALID"
     EXPERIMENT_NOT_FOUND = "EXPERIMENT_NOT_FOUND"
+    AUTHORIZATION_TOKEN_EXPIRED = "AUTHORIZATION_TOKEN_EXPIRED"
 
     def __init__(self, api_method):
         self._api_method = api_method
@@ -53,6 +55,8 @@ class ApiMethodWrapper:
                 container_type=body.get("experimentType", "object"),
                 identifier=body.get("experimentQualifiedName", "<unknown identifier>"),
             )
+        elif error_type == ApiMethodWrapper.AUTHORIZATION_TOKEN_EXPIRED:
+            raise NeptuneAuthTokenExpired() from exception
         elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
             raise NeptuneLimitExceedException(reason=body.get("title", "Unknown reason")) from exception
         elif error_type == ApiMethodWrapper.INCORRECT_IDENTIFIER:
