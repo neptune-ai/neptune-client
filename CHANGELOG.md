@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune 1.1.0
+
+### Features
+- `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
+
 ## neptune 1.0.1
 
 ### Fixes
@@ -9,9 +14,6 @@
 - Fixed `neptune-client` package setup ([#1263](https://github.com/neptune-ai/neptune-client/pull/1263))
 
 ## neptune 1.0.0
-
-### Features
-- `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
 ### Changes
 - Disabled automatic casting to strings for unsupported by Neptune types ([#1215](https://github.com/neptune-ai/neptune-client/pull/1215))
