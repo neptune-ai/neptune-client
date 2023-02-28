@@ -13,7 +13,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ github.ref }}
-          running-workflow-name: 'publish'
+          running-workflow-name: 'wait-for-green-master'
           repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
           wait-interval: 60
 
