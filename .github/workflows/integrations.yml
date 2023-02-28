@@ -500,7 +500,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@aw/fix_neptune_requirement
+        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@master
         with:
           working_directory: neptune-xgboost
 
