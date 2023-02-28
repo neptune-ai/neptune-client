@@ -214,6 +214,11 @@ You don't have permission to access the given resource.
         super().__init__(message.format(**STYLES))
 
 
+class NeptuneAuthTokenExpired(Unauthorized):
+    def __init__(self):
+        super().__init__("Authorization token expired")
+
+
 class InternalServerError(NeptuneApiException):
     def __init__(self, response):
         message = """

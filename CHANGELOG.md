@@ -3,6 +3,11 @@
 ### Features
 - `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
+## neptune 1.0.2
+
+### Fixes
+- Properly handle expired oauth token ([#1271](https://github.com/neptune-ai/neptune-client/pull/1271))
+
 ## neptune 1.0.1
 
 ### Fixes
