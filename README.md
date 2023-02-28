@@ -239,4 +239,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Valentina, Paulina, Chaz, Prince, Parth, Kshitij, Siddhant, Jakub, Patrycja, Dominika, Karolina, Stephen, Artur, Aleksiej, Martyna, Małgorzata, Magdalena, Karolina, Marcin, Michał, Tymoteusz, Rafał, Aleksandra, Sabine, Tomek, Piotr, Adam, Jakub, Rafał, Piotr, Hubert, Marcin, Jakub, Paweł, Jakub, Franciszek, Bartosz, Aleksander, Dawid, Pavel, Patryk, and [you?](https://neptune.ai/jobs)
+Piotr, Valentina, Paulina, Chaz, Prince, Parth, Kshitij, Siddhant, Jakub, Patrycja, Dominika, Karolina, Stephen, Artur, Aleksiej, Martyna, Małgorzata, Magdalena, Karolina, Marcin, Michał, Tymoteusz, Rafał, Aleksandra, Sabine, Tomek, Piotr, Adam, Jakub, Rafał, Hubert, Marcin, Jakub, Paweł, Jakub, Franciszek, Bartosz, Aleksander, Dawid, Patryk, Krzysztof, Aurimas, and [you?](https://neptune.ai/jobs)
