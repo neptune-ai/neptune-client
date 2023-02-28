@@ -106,8 +106,3 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         with init_model(key="TRY", name="some_name") as exp:
             exp.wait()
             self.assertEqual(exp["sys/name"].fetch(), "some_name")
-
-    @unittest.skip("NPT-12753 Flaky test")
-    def test_async_mode_stop_on_dead(self):
-        # Check abstract mixin class for details
-        pass

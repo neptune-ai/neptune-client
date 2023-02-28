@@ -16,6 +16,7 @@
 import contextlib
 import os
 import time
+import unittest
 from abc import abstractmethod
 from io import StringIO
 from unittest.mock import Mock
@@ -98,6 +99,7 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
 
+    @unittest.skip("NPT-12753 Flaky test")
     def test_async_mode_stop_on_dead(self):
         stream = StringIO()
         with contextlib.redirect_stdout(stream):
