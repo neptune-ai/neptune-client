@@ -148,6 +148,9 @@ class AsyncOperationProcessor(OperationProcessor):
                 )
 
         while True:
+            if self._consumer.last_backoff_time == 0:
+                # reset `waiting_start` on successful action
+                waiting_start = monotonic()
             if seconds is None:
                 wait_time = self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
             else:
