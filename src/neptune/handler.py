@@ -61,6 +61,7 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.metadata_containers.assignable import Assignable
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
@@ -90,7 +91,7 @@ def check_protected_paths(fun):
 ExtendDictT = Union[Collection[Any], Dict[str, "ExtendDictT"]]
 
 
-class Handler:
+class Handler(Assignable):
     # paths which can't be modified by client directly
     _PROTECTED_PATHS = {
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,

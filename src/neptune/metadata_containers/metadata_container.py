@@ -71,6 +71,7 @@ from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.metadata_containers.assignable import Assignable
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -85,7 +86,7 @@ def ensure_not_stopped(fun):
     return inner_fun
 
 
-class MetadataContainer(AbstractContextManager):
+class MetadataContainer(AbstractContextManager, Assignable):
     container_type: ContainerType
 
     LEGACY_METHODS = set()

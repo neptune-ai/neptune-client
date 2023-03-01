@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune 1.1.0
 
 ### Features
+- Added `neptune.typing` module with `Assignable` type to handle proper type checking across integrations ([?](?))
 - `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
 ## neptune 1.0.2
