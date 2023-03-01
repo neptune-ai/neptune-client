@@ -33,9 +33,9 @@ urllib3 = "*"
 swagger-spec-validator = ">=2.7.4"
 
 # Built-in integrations
-#boto3 = "^1.16.0"
 Pillow = ">=1.1.6"
 GitPython = ">=2.0.8"
+boto3 = "*"
 psutil = "*"
 pandas = "*"
 
