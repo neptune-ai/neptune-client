@@ -423,5 +423,5 @@ def capture_only_if_non_interactive(mode) -> bool:
     return True
 
 
-def generate_monitoring_namespace(*descriptors):
+def generate_monitoring_namespace(*descriptors: str):
     return f"monitoring/{generate_hash(*descriptors, length=8)}"

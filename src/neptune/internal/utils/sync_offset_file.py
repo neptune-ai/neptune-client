@@ -20,7 +20,7 @@ from typing import Optional
 
 
 class SyncOffsetFile:
-    def __init__(self, path: Path, default: int = None):
+    def __init__(self, path: Path, default: Optional[int] = None) -> None:
         mode = "r+" if path.exists() else "w+"
         self._file = open(path, mode)
         self._default = default
@@ -43,8 +43,8 @@ class SyncOffsetFile:
     def read_local(self) -> Optional[int]:
         return self._last
 
-    def flush(self):
+    def flush(self) -> None:
         self._file.flush()
 
-    def close(self):
+    def close(self) -> None:
         self._file.close()

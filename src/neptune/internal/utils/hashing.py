@@ -18,7 +18,7 @@ __all__ = ["generate_hash"]
 import hashlib
 
 
-def generate_hash(*descriptors, length: int) -> str:
+def generate_hash(*descriptors: str, length: int) -> str:
     hasher = hashlib.sha256()
     for descriptor in descriptors:
         hasher.update(str(descriptor).encode())
