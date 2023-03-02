@@ -1024,7 +1024,7 @@ A Neptune Artifact you're listing is tracking a file type unhandled by this clie
 
 
 class NeptuneLocalStorageAccessException(NeptuneException):
-    def __init__(self, path, expected_description):
+    def __init__(self, path, expected_description) -> None:
         message = """
 {h1}
 ----NeptuneLocalStorageAccessException-------------------------------------
@@ -1037,7 +1037,7 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 
 
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneRemoteStorageCredentialsException-------------------------------------
@@ -1050,7 +1050,7 @@ Neptune could not find suitable credentials for remote storage of a Neptune Arti
 
 
 class NeptuneRemoteStorageAccessException(NeptuneException):
-    def __init__(self, location: str):
+    def __init__(self, location: str) -> None:
         message = """
 {h1}
 ----NeptuneRemoteStorageAccessException------------------------------------------

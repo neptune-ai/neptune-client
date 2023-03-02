@@ -17,8 +17,13 @@ __all__ = ["LocalArtifactDriver"]
 
 import os
 import pathlib
-import typing
 from datetime import datetime
+from typing import (
+    Any,
+    Dict,
+    List,
+    Optional,
+)
 from urllib.parse import urlparse
 
 from neptune.exceptions import (
@@ -45,21 +50,21 @@ class LocalArtifactDriver(ArtifactDriver):
         return urlparse(path).scheme in ("file", "")
 
     @classmethod
-    def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
+    def _serialize_metadata(cls, metadata: Dict[str, Any]) -> Dict[str, str]:
         return {
             "file_path": metadata["file_path"],
             "last_modified": datetime.fromtimestamp(metadata["last_modified"]).strftime(cls.DATETIME_FORMAT),
         }
 
     @classmethod
-    def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
+    def _deserialize_metadata(cls, metadata: Dict[str, str]) -> Dict[str, Any]:
         return {
             "file_path": metadata["file_path"],
             "last_modified": datetime.strptime(metadata["last_modified"], cls.DATETIME_FORMAT),
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: Optional[str] = None) -> List[ArtifactFileData]:
         file_protocol_prefix = "file://"
         if path.startswith(file_protocol_prefix):
             path = path[len(file_protocol_prefix) :]
@@ -71,7 +76,7 @@ class LocalArtifactDriver(ArtifactDriver):
 
         source_location = pathlib.Path(path).expanduser()
 
-        stored_files: typing.List[ArtifactFileData] = list()
+        stored_files: List[ArtifactFileData] = list()
 
         files_to_check = source_location.rglob("*") if source_location.is_dir() else [source_location]
         for file in files_to_check:
@@ -103,9 +108,11 @@ class LocalArtifactDriver(ArtifactDriver):
         return stored_files
 
     @classmethod
-    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
+    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData) -> None:
         parsed_path = urlparse(file_definition.metadata.get("file_path"))
-        absolute_path = pathlib.Path(parsed_path.netloc + parsed_path.path)
+        netloc = to_string(parsed_path.netloc)
+        path = to_string(parsed_path.path)
+        absolute_path = pathlib.Path(netloc + path)
 
         if not absolute_path.is_file():
             raise NeptuneLocalStorageAccessException(path=absolute_path, expected_description="an existing file")
@@ -114,3 +121,9 @@ class LocalArtifactDriver(ArtifactDriver):
         if destination.exists():
             os.remove(destination)
         destination.symlink_to(absolute_path)
+
+
+def to_string(value: str | bytes) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+    return value

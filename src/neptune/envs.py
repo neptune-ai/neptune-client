@@ -26,6 +26,7 @@ __all__ = [
     "NEPTUNE_SYNC_BATCH_TIMEOUT_ENV",
     "NEPTUNE_SUBPROCESS_KILL_TIMEOUT",
     "NEPTUNE_FETCH_TABLE_STEP_SIZE",
+    "S3_ENDPOINT_URL",
 ]
 
 from neptune.common.envs import (

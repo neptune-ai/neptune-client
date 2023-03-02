@@ -17,12 +17,12 @@ __all__ = ["get_boto_s3_client"]
 
 import os
 
-import boto3
+from boto3 import resource
 
 from neptune.envs import S3_ENDPOINT_URL
 
 
-def get_boto_s3_client():
+def get_boto_s3_client() -> resource:
     """
     User might want to use other than `AWS` `S3` providers, so we should be able to override `endpoint_url`.
     Unfortunately `boto3` doesn't support this parameter in configuration, so we'll have to create our env variable.
@@ -32,7 +32,7 @@ def get_boto_s3_client():
      * https://github.com/boto/boto3/pull/2746
     """
     endpoint_url = os.getenv(S3_ENDPOINT_URL)
-    return boto3.resource(
+    return resource(
         service_name="s3",
         endpoint_url=endpoint_url,
     )
