@@ -21,7 +21,9 @@ __all__ = [
     "create_artifacts_client",
 ]
 
+import gzip
 import platform
+import zlib
 from typing import (
     Dict,
     Tuple,
@@ -29,6 +31,7 @@ from typing import (
 
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests.adapters import HTTPAdapter
 
 from neptune.common.oauth import NeptuneAuthenticator
 from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
@@ -63,6 +66,21 @@ DEFAULT_REQUEST_KWARGS = {
 }
 
 
+class GzipAdapter(HTTPAdapter):
+    def add_headers(self, request, **kw):
+        if request.body is not None:
+            request.headers["Content-Encoding"] = "gzip"
+
+    def send(self, request, stream=False, **kw):
+        if request.body is not None:
+            if stream is True:
+                request.body = gzip.GzipFile(filename=request.url, fileobj=request.body)
+            else:
+                request.prepare_body(zlib.compress(bytes(request.body, "utf-8")), None)
+
+        return super(GzipAdapter, self).send(request, stream, **kw)
+
+
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
@@ -75,6 +93,8 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
         python_version=platform.python_version(),
     )
     http_client.session.headers.update({"User-Agent": user_agent})
+    http_client.session.mount("http://", GzipAdapter())
+    http_client.session.mount("https://", GzipAdapter())
 
     return http_client
 
