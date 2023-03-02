@@ -59,7 +59,7 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
-    def close(self):
+    def close(self) -> None:
         sys.stdout = self.stream
         super().close()
 
@@ -69,6 +69,6 @@ class StderrCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stderr)
         sys.stderr = self
 
-    def close(self, wait_for_all_logs=True):
+    def close(self, wait_for_all_logs: bool = True) -> None:
         sys.stderr = self.stream
         super().close()

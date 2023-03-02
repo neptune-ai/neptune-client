@@ -33,28 +33,30 @@ if TYPE_CHECKING:
 class StdoutCaptureBackgroundJob(BackgroundJob):
     def __init__(self, attribute_name: str):
         self._attribute_name = attribute_name
-        self._logger = None
+        self._logger: Optional[StdoutCaptureLogger] = None
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         self._logger = StdoutCaptureLogger(container, self._attribute_name)
 
-    def stop(self):
-        self._logger.close()
+    def stop(self) -> None:
+        if self._logger is not None:
+            self._logger.close()
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
 
 
 class StderrCaptureBackgroundJob(BackgroundJob):
     def __init__(self, attribute_name: str):
         self._attribute_name = attribute_name
-        self._logger = None
+        self._logger: Optional[StderrCaptureLogger] = None
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         self._logger = StderrCaptureLogger(container, self._attribute_name)
 
-    def stop(self):
-        self._logger.close()
+    def stop(self) -> None:
+        if self._logger is not None:
+            self._logger.close()
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
