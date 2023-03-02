@@ -267,5 +267,5 @@ def split_upload_files(
     yield current_package
 
 
-def normalize_file_name(name):
+def normalize_file_name(name: str) -> str:
     return name.replace(os.sep, "/")

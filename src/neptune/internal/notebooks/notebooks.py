@@ -17,6 +17,7 @@ __all__ = ["create_checkpoint"]
 
 import logging
 import threading
+from typing import Optional
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.notebooks.comm import send_checkpoint_created
@@ -28,7 +29,7 @@ _checkpoints_lock = threading.Lock()
 _checkpoints = dict()
 
 
-def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: str):
+def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: str) -> Optional[str]:
     if is_ipython():
         import IPython
 

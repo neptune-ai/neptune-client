@@ -24,7 +24,7 @@ class MessageType(object):
     CHECKPOINT_CREATED = "CHECKPOINT_CREATED"
 
 
-def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id) -> None:
+def send_checkpoint_created(notebook_id: str, notebook_path: str, checkpoint_id: str) -> None:
     """Send checkpoint created message.
 
     Args:
@@ -36,7 +36,7 @@ def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id) -> None:
     Raises:
         `ImportError`: If ipykernel is not available.
     """
-    neptune_comm = _get_comm()
+    neptune_comm = get_comm()
     neptune_comm.send(
         data=dict(
             message_type=MessageType.CHECKPOINT_CREATED,
@@ -49,7 +49,7 @@ def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id) -> None:
     )
 
 
-def _get_comm():
+def get_comm():
     from ipykernel.comm import Comm
 
     return Comm(target_name="neptune_comm")

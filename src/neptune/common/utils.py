@@ -214,7 +214,7 @@ def in_docker():
     return os.path.exists("./dockerenv") or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text="docker"))
 
 
-def is_ipython():
+def is_ipython() -> bool:
     try:
         import IPython
 
