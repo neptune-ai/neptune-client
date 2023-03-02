@@ -13,13 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 __all__ = ["ArtifactFileType", "ArtifactMetadataSerializer", "ArtifactFileData", "ArtifactDriversMap", "ArtifactDriver"]
 
-import abc
 import enum
 import pathlib
-import typing
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from dataclasses import dataclass
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Type,
+)
 
 from neptune.exceptions import (
     NeptuneUnhandledArtifactSchemeException,
@@ -34,11 +44,11 @@ class ArtifactFileType(enum.Enum):
 
 class ArtifactMetadataSerializer:
     @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+    def serialize(metadata: Dict[str, str]) -> List[Dict[str, str]]:
         return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+    def deserialize(metadata: List[Dict[str, str]]) -> Dict[str, str]:
         return {f'{key_value.get("key")}': f'{key_value.get("value")}' for key_value in metadata}
 
 
@@ -47,11 +57,11 @@ class ArtifactFileData:
     file_path: str
     file_hash: str
     type: str
-    metadata: typing.Dict[str, str]
-    size: int = None
+    metadata: Dict[str, str]
+    size: Optional[int] = None
 
     @classmethod
-    def from_dto(cls, artifact_file_dto):
+    def from_dto(cls, artifact_file_dto) -> "ArtifactFileData":
         return cls(
             file_path=artifact_file_dto.filePath,
             file_hash=artifact_file_dto.fileHash,
@@ -62,7 +72,7 @@ class ArtifactFileData:
             ),
         )
 
-    def to_dto(self) -> typing.Dict:
+    def to_dto(self) -> Dict[str, str | Optional[int] | List[Dict[str, str]]]:
         return {
             "filePath": self.file_path,
             "fileHash": self.file_hash,
@@ -73,10 +83,10 @@ class ArtifactFileData:
 
 
 class ArtifactDriversMap:
-    _implementations: typing.List[typing.Type["ArtifactDriver"]] = []
+    _implementations: List[Type["ArtifactDriver"]] = []
 
     @classmethod
-    def match_path(cls, path: str) -> typing.Type["ArtifactDriver"]:
+    def match_path(cls, path: str) -> Type["ArtifactDriver"]:
         for artifact_driver in cls._implementations:
             if artifact_driver.matches(path):
                 return artifact_driver
@@ -84,7 +94,7 @@ class ArtifactDriversMap:
         raise NeptuneUnhandledArtifactSchemeException(path)
 
     @classmethod
-    def match_type(cls, type_str: str) -> typing.Type["ArtifactDriver"]:
+    def match_type(cls, type_str: str) -> Type["ArtifactDriver"]:
         for artifact_driver in cls._implementations:
             if artifact_driver.get_type() == type_str:
                 return artifact_driver
@@ -92,22 +102,26 @@ class ArtifactDriversMap:
         raise NeptuneUnhandledArtifactTypeException(type_str)
 
 
-class ArtifactDriver(abc.ABC):
-    def __init_subclass__(cls):
+class ArtifactDriver(ABC):
+    def __init_subclass__(cls) -> None:
         ArtifactDriversMap._implementations.append(cls)
 
     @staticmethod
+    @abstractmethod
     def get_type() -> str:
-        raise NotImplementedError
+        ...
 
     @classmethod
+    @abstractmethod
     def matches(cls, path: str) -> bool:
-        raise NotImplementedError
+        ...
 
     @classmethod
-    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
-        raise NotImplementedError
+    @abstractmethod
+    def get_tracked_files(cls, path: str, destination: Optional[str] = None) -> List[ArtifactFileData]:
+        ...
 
     @classmethod
-    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        raise NotImplementedError
+    @abstractmethod
+    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData) -> None:
+        ...

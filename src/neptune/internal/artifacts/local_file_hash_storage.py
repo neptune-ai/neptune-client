@@ -19,6 +19,7 @@ import os
 import sqlite3 as sql
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 
 class LocalFileHashStorage:
@@ -28,7 +29,7 @@ class LocalFileHashStorage:
         file_hash: str
         modification_date: str
 
-    def __init__(self):
+    def __init__(self) -> None:
         db_path = Path.home() / ".neptune" / "files.db"
         os.makedirs(db_path.parent, exist_ok=True)
 
@@ -39,14 +40,14 @@ class LocalFileHashStorage:
         )
         self.session.commit()
 
-    def insert(self, path: Path, computed_hash: str, modification_date: str):
+    def insert(self, path: Path, computed_hash: str, modification_date: str) -> None:
         self.cursor.execute(
             "INSERT INTO local_file_hashes (file_path, file_hash, modification_date) VALUES (?, ?, ?)",
             (str(path), computed_hash, modification_date),
         )
         self.session.commit()
 
-    def fetch_one(self, path: Path) -> "LocalFileHash":
+    def fetch_one(self, path: Path) -> Optional["LocalFileHash"]:
         found = [
             LocalFileHashStorage.LocalFileHash(*row)
             for row in self.cursor.execute(
@@ -57,7 +58,7 @@ class LocalFileHashStorage:
 
         return found[0] if found is not None and len(found) > 0 else None
 
-    def update(self, path: Path, computed_hash: str, modification_date: str):
+    def update(self, path: Path, computed_hash: str, modification_date: str) -> None:
         self.cursor.execute(
             "UPDATE local_file_hashes SET file_hash=?, modification_date=? WHERE file_path = ?",
             (computed_hash, modification_date, str(path)),
