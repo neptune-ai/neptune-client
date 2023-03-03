@@ -18,12 +18,12 @@ __all__ = ["in_interactive", "in_notebook"]
 import sys
 
 
-def in_interactive():
+def in_interactive() -> bool:
     """Based on: https://stackoverflow.com/a/2356427/1565454"""
     return hasattr(sys, "ps1")
 
 
-def in_notebook():
+def in_notebook() -> bool:
     """Based on: https://stackoverflow.com/a/22424821/1565454"""
     try:
         from IPython import get_ipython

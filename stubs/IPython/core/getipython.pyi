@@ -1,0 +1,3 @@
+from IPython.core.interactiveshell import InteractiveShell
+
+def get_ipython() -> InteractiveShell: ...

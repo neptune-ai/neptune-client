@@ -211,7 +211,6 @@ source = [
 [tool.mypy]
 files = 'src/neptune'
 exclude = [
-    '^src/neptune/internal/utils/__init__\.py$',
     '^src/neptune/new/__init__\.py$',
     '^src/neptune/legacy/__init__\.py$',
     '^src/neptune/common/patches/__init__\.py$',
@@ -277,7 +276,6 @@ module = [
     "neptune.common.hardware.resources.system_resource_info_factory",
     "neptune.common.hardware.system.system_monitor",
     "neptune.common.oauth",
-    "neptune.common.patches.__init__",
     "neptune.common.patches.bravado",
     "neptune.common.storage.datastream",
     "neptune.common.storage.storage_utils",
@@ -332,7 +330,6 @@ module = [
     "neptune.internal.streams.std_capture_background_job",
     "neptune.internal.streams.std_stream_capture_logger",
     "neptune.internal.threading.daemon",
-    "neptune.internal.utils.__init__",
     "neptune.internal.utils.deprecation",
     "neptune.internal.utils.generic_attribute_mapper",
     "neptune.internal.utils.git",
@@ -344,7 +341,6 @@ module = [
     "neptune.internal.utils.ping_background_job",
     "neptune.internal.utils.process_killer",
     "neptune.internal.utils.run_state",
-    "neptune.internal.utils.runningmode",
     "neptune.internal.utils.s3",
     "neptune.internal.utils.source_code",
     "neptune.internal.utils.sync_offset_file",
@@ -352,7 +348,6 @@ module = [
     "neptune.internal.utils.uncaught_exception_handler",
     "neptune.internal.websockets.websocket_signals_background_job",
     "neptune.internal.websockets.websockets_factory",
-    "neptune.legacy.__init__",
     "neptune.legacy.api_exceptions",
     "neptune.legacy.backend",
     "neptune.legacy.checkpoint",
@@ -402,7 +397,6 @@ module = [
     "neptune.metadata_containers.model_version",
     "neptune.metadata_containers.project",
     "neptune.metadata_containers.run",
-    "neptune.new.__init__",
     "neptune.new._compatibility",
     "neptune.types.type_casting",
     "neptune.vendor.pynvml",
