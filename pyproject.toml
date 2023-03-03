@@ -337,7 +337,6 @@ module = [
     "neptune.internal.utils.images",
     "neptune.internal.utils.json_file_splitter",
     "neptune.internal.utils.limits",
-    "neptune.internal.utils.logger",
     "neptune.internal.utils.ping_background_job",
     "neptune.internal.utils.process_killer",
     "neptune.internal.utils.run_state",
