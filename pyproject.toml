@@ -325,7 +325,6 @@ module = [
     "neptune.internal.streams.std_capture_background_job",
     "neptune.internal.streams.std_stream_capture_logger",
     "neptune.internal.threading.daemon",
-    "neptune.internal.utils.deprecation",
     "neptune.internal.utils.generic_attribute_mapper",
     "neptune.internal.utils.git",
     "neptune.internal.utils.images",
