@@ -306,7 +306,6 @@ module = [
     "neptune.internal.backends.project_name_lookup",
     "neptune.internal.backends.swagger_client_wrapper",
     "neptune.internal.backends.utils",
-    "neptune.internal.backgroud_job_list",
     "neptune.internal.container_structure",
     "neptune.internal.disk_queue",
     "neptune.internal.hardware.gpu.gpu_monitor",

@@ -29,18 +29,18 @@ if TYPE_CHECKING:
 
 
 class BackgroundJobList(BackgroundJob):
-    def __init__(self, jobs: List[BackgroundJob]):
+    def __init__(self, jobs: List[BackgroundJob]) -> None:
         self._jobs = jobs
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         for job in self._jobs:
             job.start(container)
 
-    def stop(self):
+    def stop(self) -> None:
         for job in self._jobs:
             job.stop()
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         ts = time.time()
         for job in self._jobs:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
