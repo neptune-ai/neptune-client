@@ -15,8 +15,12 @@
 #
 __all__ = ["UniqueId", "SysId", "QualifiedName", "conform_optional"]
 
-import typing
-from typing import NewType
+from typing import (
+    NewType,
+    Optional,
+    Type,
+    Union,
+)
 
 UniqueId = NewType("UniqueId", str)
 
@@ -25,5 +29,7 @@ SysId = NewType("SysId", str)
 QualifiedName = NewType("QualifiedName", str)
 
 
-def conform_optional(value: typing.Optional[str], cls):
+def conform_optional(
+    value: Optional[str], cls: Type[Union[UniqueId, SysId, QualifiedName]]
+) -> Optional[Union[UniqueId, SysId, QualifiedName]]:
     return cls(value) if value is not None else None
