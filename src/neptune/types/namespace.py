@@ -33,9 +33,9 @@ Ret = TypeVar("Ret")
 @dataclass
 class Namespace(Value):
 
-    value: Dict
+    value: Dict[str, Value]
 
-    def __init__(self, value: Dict) -> None:
+    def __init__(self, value: Dict[str, Value]) -> None:
         self.value = value
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
