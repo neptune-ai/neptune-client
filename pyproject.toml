@@ -309,7 +309,6 @@ module = [
     "neptune.internal.backgroud_job_list",
     "neptune.internal.background_job",
     "neptune.internal.container_structure",
-    "neptune.internal.credentials",
     "neptune.internal.disk_queue",
     "neptune.internal.hardware.gpu.gpu_monitor",
     "neptune.internal.hardware.hardware_metric_reporting_job",
