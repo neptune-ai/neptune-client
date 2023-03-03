@@ -788,7 +788,7 @@ You can find documentation for the legacy neptune Python API here:
 
 
 class NeptuneIntegrationNotInstalledException(NeptuneException):
-    def __init__(self, integration_package_name, framework_name):
+    def __init__(self, integration_package_name: str, framework_name: str) -> None:
         message = """
 {h1}
 ----NeptuneIntegrationNotInstalledException-----------------------------------------

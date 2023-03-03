@@ -221,7 +221,6 @@ exclude = [
     '^src/neptune/integrations/optuna/__init__\.py$',
     '^ssrc/neptune/integrations/lightgbm/__init__\.py$',
     '^src/neptune/integrations/kedro/__init__\.py$',
-    '^src/neptune/integrations/fastai/__init__\.py$',
     '^src/neptune/integrations/detectron2/__init__\.py$',
     '^src/neptune/integrations/aws/__init__\.py$',
     '^src/neptune/integrations/lightgbm/__init__\.py$',

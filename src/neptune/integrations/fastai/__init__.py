@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["NeptuneCallback"]
 
 try:
-    from neptune_fastai.impl import *  # noqa: F401,F403
+    from neptune_fastai.impl import NeptuneCallback
 except ModuleNotFoundError as e:
     if e.name == "neptune_fastai":
         from neptune.exceptions import NeptuneIntegrationNotInstalledException
