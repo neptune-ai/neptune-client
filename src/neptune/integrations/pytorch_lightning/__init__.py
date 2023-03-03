@@ -15,7 +15,6 @@
 #
 # mypy: disable-error-code=import
 __all__ = ["NeptuneLogger"]
-
 try:
     from pytorch_lightning.loggers import NeptuneLogger
 except ModuleNotFoundError as e:

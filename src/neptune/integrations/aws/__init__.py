@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# mypy: disable-error-code=import
 try:
     from neptune_aws.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:

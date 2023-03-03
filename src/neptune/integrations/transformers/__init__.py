@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# mypy: disable-error-code=import
 __all__ = ["NeptuneCallback"]
-
 
 try:
     from transformers.integrations import NeptuneCallback

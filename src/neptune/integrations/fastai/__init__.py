@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["NeptuneCallback"]
-
+# mypy: disable-error-code=import
 try:
-    from neptune_fastai.impl import NeptuneCallback
+    from neptune_fastai.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_fastai":
         from neptune.exceptions import NeptuneIntegrationNotInstalledException
