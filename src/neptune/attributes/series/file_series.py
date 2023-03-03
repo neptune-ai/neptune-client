@@ -83,7 +83,8 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
             file_content = file.content
 
         try:
-            Image.open(io.BytesIO(file_content))
+            with Image.open(io.BytesIO(file_content)):
+                ...
         except UnidentifiedImageError:
             raise OperationNotSupported(
                 "FileSeries supports only image files for now. Other file types will be implemented in future."
