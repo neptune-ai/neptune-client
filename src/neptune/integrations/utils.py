@@ -25,7 +25,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.paths import join_paths
 
 
-def expect_not_an_experiment(run: Run):
+def expect_not_an_experiment(run: Run) -> None:
     if isinstance(run, Experiment):
         raise NeptuneLegacyIncompatibilityException()
 

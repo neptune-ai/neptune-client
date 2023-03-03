@@ -286,7 +286,6 @@ module = [
     "neptune.exceptions",
     "neptune.handler",
     "neptune.integrations.python_logger",
-    "neptune.integrations.utils",
     "neptune.internal.artifacts.drivers.local",
     "neptune.internal.artifacts.drivers.s3",
     "neptune.internal.artifacts.file_hasher",
