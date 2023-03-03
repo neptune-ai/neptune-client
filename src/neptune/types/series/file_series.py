@@ -17,11 +17,14 @@ __all__ = ["FileSeries"]
 
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Iterable,
     List,
     TypeVar,
+    Union,
 )
 
-from neptune.internal.types.stringify_value import extract_if_stringify_value
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import is_collection
 from neptune.internal.utils.logger import logger
 from neptune.types import File
@@ -34,8 +37,9 @@ Ret = TypeVar("Ret")
 
 
 class FileSeries(Series):
-    def __init__(self, values, **kwargs):
-        values = extract_if_stringify_value(values)
+    def __init__(self, values: Union[Iterable[Any], StringifyValue[Iterable[Any]]], **kwargs: Any) -> None:
+        if isinstance(values, StringifyValue):
+            values = values.value
 
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
@@ -53,5 +57,5 @@ class FileSeries(Series):
     def values(self) -> List[File]:
         return self._values
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"FileSeries({self.values})"

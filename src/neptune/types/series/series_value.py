@@ -34,7 +34,7 @@ class SeriesValue(Generic[T]):
         return self._step
 
     @step.setter
-    def step(self, step: float):
+    def step(self, step: float) -> None:
         self._step = step
 
     @property
@@ -42,7 +42,7 @@ class SeriesValue(Generic[T]):
         return self._value
 
     @value.setter
-    def value(self, value: T):
+    def value(self, value: T) -> None:
         self._value = value
 
     @property
@@ -50,5 +50,5 @@ class SeriesValue(Generic[T]):
         return self._timestamp
 
     @timestamp.setter
-    def timestamp(self, timestamp: float):
+    def timestamp(self, timestamp: float) -> None:
         self._timestamp = timestamp

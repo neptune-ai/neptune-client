@@ -17,16 +17,15 @@ __all__ = ["StringSeries"]
 
 from typing import (
     TYPE_CHECKING,
+    Any,
     Iterable,
+    List,
     TypeVar,
     Union,
 )
 
 from neptune.internal.types.stringify_value import StringifyValue
-from neptune.internal.utils import (
-    is_collection,
-    is_stringify_value,
-)
+from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -38,8 +37,8 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 class StringSeries(Series):
-    def __init__(self, values: Union[Iterable[str], StringifyValue]):
-        if is_stringify_value(values):
+    def __init__(self, values: Union[Iterable[str], StringifyValue[Iterable[Any]]]):
+        if isinstance(values, StringifyValue):
             values = list(map(str, values.value))
 
         if not is_collection(values):
@@ -52,13 +51,13 @@ class StringSeries(Series):
         return visitor.visit_string_series(self)
 
     @property
-    def values(self):
+    def values(self) -> List[str]:
         return self._values
 
     @property
-    def truncated(self):
+    def truncated(self) -> bool:
         """True if any value had to be truncated to `MAX_STRING_SERIES_VALUE_LENGTH`"""
         return self._truncated
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "StringSeries({})".format(str(self.values))

@@ -15,9 +15,11 @@
 #
 __all__ = ["Series"]
 
-import abc
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
+    Any,
+    List,
     TypeVar,
 )
 
@@ -30,14 +32,14 @@ Ret = TypeVar("Ret")
 
 
 class Series(Value):
-    @abc.abstractmethod
+    @abstractmethod
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+        ...
 
     @property
-    @abc.abstractmethod
-    def values(self):
-        pass
+    @abstractmethod
+    def values(self) -> List[Any]:
+        ...
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.values)
