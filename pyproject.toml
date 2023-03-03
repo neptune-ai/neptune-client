@@ -58,6 +58,7 @@ tensorflow = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
 Faker = { version = "*", optional = true }
+mypy = { version = "*", optional = true }
 
 # e2e
 optuna = { version = "*", optional = true }
@@ -114,6 +115,7 @@ dev = [
     "tensorflow",
     "torch",
     "vega_datasets",
+    "mypy",
 ]
 e2e = [
     # Integrations
@@ -225,7 +227,7 @@ exclude = [
     '^src/neptune/integrations/lightgbm/__init__\.py$',
     '^src/neptune/new/__init__\.py$',
 ]
-mypy_path = 'stubs'
+mypy_path = "stubs"
 install_types = "True"
 non_interactive = "True"
 
