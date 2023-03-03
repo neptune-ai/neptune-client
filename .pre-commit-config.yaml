@@ -32,7 +32,6 @@ repos:
     hooks:
       - id: mypy
         args: [--config-file, pyproject.toml]
-#        language: system
         pass_filenames: false
 exclude: |
   (?x)(
