@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 from functools import wraps
-from typing import Optional
+from typing import (
+    Any,
+    Callable,
+    Optional,
+)
 
 from neptune.common.warnings import warn_once
 from neptune.exceptions import NeptuneParametersCollision
@@ -22,10 +26,10 @@ from neptune.exceptions import NeptuneParametersCollision
 __all__ = ["deprecated", "deprecated_parameter"]
 
 
-def deprecated(*, alternative: Optional[str] = None):
-    def deco(func):
+def deprecated(*, alternative: Optional[str] = None) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def deco(func: Callable[..., Any]) -> Callable[..., Any]:
         @wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             additional_info = f", use `{alternative}` instead" if alternative else " and will be removed"
 
             warn_once(
@@ -40,13 +44,17 @@ def deprecated(*, alternative: Optional[str] = None):
     return deco
 
 
-def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
-    def deco(f):
-        @wraps(f)
-        def inner(*args, **kwargs):
+def deprecated_parameter(
+    *, deprecated_kwarg_name: str, required_kwarg_name: str
+) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+    def deco(func: Callable[..., Any]) -> Callable[..., Any]:
+        @wraps(func)
+        def inner(*args: Any, **kwargs: Any) -> Any:
             if deprecated_kwarg_name in kwargs:
                 if required_kwarg_name in kwargs:
-                    raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
+                    raise NeptuneParametersCollision(
+                        required_kwarg_name, deprecated_kwarg_name, method_name=func.__name__
+                    )
 
                 warn_once(
                     message=f"Parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
@@ -56,7 +64,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                 kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]
                 del kwargs[deprecated_kwarg_name]
 
-            return f(*args, **kwargs)
+            return func(*args, **kwargs)
 
         return inner
 
