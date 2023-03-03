@@ -33,6 +33,17 @@ repos:
       - id: mypy
         args: [--config-file, pyproject.toml]
         pass_filenames: false
+        additional_dependencies: [
+            pandas-stubs,
+            types-Pillow,
+            types-oauthlib,
+            types-openpyxl,
+            types-psutil,
+            types-requests,
+            types-setuptools,
+            types-six,
+            types-urllib3
+        ]
 exclude: |
   (?x)(
      ^tests/unit/data/|

@@ -217,7 +217,6 @@ exclude = [
     '^src/neptune/integrations/tensorflow_keras/__init__\.py$',
     '^src/neptune/integrations/sklearn/__init__\.py$',
     '^src/neptune/integrations/sacred/__init__\.py$',
-    '^src/neptune/integrations/prophet/__init__\.py$',
     '^src/neptune/integrations/optuna/__init__\.py$',
     '^ssrc/neptune/integrations/lightgbm/__init__\.py$',
     '^src/neptune/integrations/kedro/__init__\.py$',
@@ -230,8 +229,6 @@ exclude = [
     '^src/neptune/internal/utils/__init__\.py$',
 ]
 mypy_path = "stubs"
-install_types = "True"
-non_interactive = "True"
 disallow_untyped_defs = "True"
 disallow_any_unimported = "True"
 no_implicit_optional = "True"
