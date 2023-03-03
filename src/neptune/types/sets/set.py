@@ -15,7 +15,7 @@
 #
 __all__ = ["Set"]
 
-import abc
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     TypeVar,
@@ -30,6 +30,6 @@ Ret = TypeVar("Ret")
 
 
 class Set(Value):
-    @abc.abstractmethod
+    @abstractmethod
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+        ...

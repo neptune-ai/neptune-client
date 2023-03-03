@@ -30,11 +30,11 @@ Ret = TypeVar("Ret")
 
 
 class StringSet(Set):
-    def __init__(self, values: Iterable[str]):
+    def __init__(self, values: Iterable[str]) -> None:
         self.values = set(values)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_set(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "StringSet({})".format(str(self.values))
