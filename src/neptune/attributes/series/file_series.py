@@ -15,13 +15,18 @@
 #
 __all__ = ["FileSeries"]
 
-import imghdr
+import io
 import os
 import pathlib
 from typing import (
     Iterable,
     List,
     Optional,
+)
+
+from PIL import (
+    Image,
+    UnidentifiedImageError,
 )
 
 from neptune.attributes.series.series import Series
@@ -77,8 +82,9 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
         else:
             file_content = file.content
 
-        ext = imghdr.what("", h=file_content)
-        if not ext:
+        try:
+            Image.open(io.BytesIO(file_content))
+        except UnidentifiedImageError:
             raise OperationNotSupported(
                 "FileSeries supports only image files for now. Other file types will be implemented in future."
             )
