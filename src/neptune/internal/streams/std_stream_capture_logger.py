@@ -18,7 +18,10 @@ __all__ = ["StdoutCaptureLogger", "StderrCaptureLogger"]
 import sys
 import threading
 from queue import Queue
-from typing import TextIO
+from typing import (
+    Any,
+    TextIO,
+)
 
 from neptune.logging import Logger as NeptuneLogger
 from neptune.metadata_containers import MetadataContainer
@@ -30,23 +33,23 @@ class StdStreamCaptureLogger:
         self.stream = stream
         self._thread_local = threading.local()
         self.enabled = True
-        self._log_data_queue = Queue()
+        self._log_data_queue: Queue = Queue()
         self._logging_thread = threading.Thread(target=self.__proces_logs, daemon=True)
         self._logging_thread.start()
 
-    def write(self, data: str):
+    def write(self, data: str) -> None:
         self.stream.write(data)
         self._log_data_queue.put_nowait(data)
 
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         return getattr(self.stream, attr)
 
-    def close(self):
+    def close(self) -> None:
         self.enabled = False
         self._log_data_queue.put_nowait(None)
         self._logging_thread.join()
 
-    def __proces_logs(self):
+    def __proces_logs(self) -> None:
         while True:
             data = self._log_data_queue.get()
             if data is None:
@@ -55,20 +58,20 @@ class StdStreamCaptureLogger:
 
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
-    def __init__(self, container: MetadataContainer, attribute_name: str):
+    def __init__(self, container: MetadataContainer, attribute_name: str) -> None:
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
-    def close(self):
+    def close(self) -> None:
         sys.stdout = self.stream
         super().close()
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
-    def __init__(self, container: MetadataContainer, attribute_name: str):
+    def __init__(self, container: MetadataContainer, attribute_name: str) -> None:
         super().__init__(container, attribute_name, sys.stderr)
         sys.stderr = self
 
-    def close(self, wait_for_all_logs=True):
+    def close(self, wait_for_all_logs: bool = True) -> None:
         sys.stderr = self.stream
         super().close()

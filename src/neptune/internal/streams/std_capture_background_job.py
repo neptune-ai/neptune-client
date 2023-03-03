@@ -24,6 +24,7 @@ from neptune.internal.background_job import BackgroundJob
 from neptune.internal.streams.std_stream_capture_logger import (
     StderrCaptureLogger,
     StdoutCaptureLogger,
+    StdStreamCaptureLogger,
 )
 
 if TYPE_CHECKING:
@@ -31,30 +32,32 @@ if TYPE_CHECKING:
 
 
 class StdoutCaptureBackgroundJob(BackgroundJob):
-    def __init__(self, attribute_name: str):
+    def __init__(self, attribute_name: str) -> None:
         self._attribute_name = attribute_name
-        self._logger = None
+        self._logger: Optional[StdStreamCaptureLogger] = None
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         self._logger = StdoutCaptureLogger(container, self._attribute_name)
 
-    def stop(self):
-        self._logger.close()
+    def stop(self) -> None:
+        if self._logger is not None:
+            self._logger.close()
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
 
 
 class StderrCaptureBackgroundJob(BackgroundJob):
-    def __init__(self, attribute_name: str):
+    def __init__(self, attribute_name: str) -> None:
         self._attribute_name = attribute_name
-        self._logger = None
+        self._logger: Optional[StdStreamCaptureLogger] = None
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         self._logger = StderrCaptureLogger(container, self._attribute_name)
 
-    def stop(self):
-        self._logger.close()
+    def stop(self) -> None:
+        if self._logger is not None:
+            self._logger.close()
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
