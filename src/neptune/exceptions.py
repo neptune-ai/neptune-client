@@ -1158,7 +1158,7 @@ If the issue persists, our support is happy to help.
 
 
 class StreamAlreadyUsedException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----StreamAlreadyUsedException---------------------------------------------------

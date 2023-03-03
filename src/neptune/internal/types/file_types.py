@@ -28,13 +28,18 @@ import os
 from functools import wraps
 from io import IOBase
 from typing import (
+    Any,
+    Callable,
     Optional,
+    TypeVar,
     Union,
 )
 
 from neptune.common.exceptions import NeptuneException
 from neptune.exceptions import StreamAlreadyUsedException
 from neptune.internal.utils import verify_type
+
+T = TypeVar("T")
 
 
 class FileType(enum.Enum):
@@ -48,32 +53,32 @@ class FileComposite(abc.ABC):
     Composite class defining behaviour of neptune.types.atoms.file.File
     """
 
-    file_type: FileType = None
+    file_type: Optional[FileType] = None
 
-    def __init__(self, extension: str):
-        verify_type("extension", extension, str)
-        self._extension = extension
+    def __init__(self, extension: Optional[str]):
+        verify_type("extension", extension, (str, type(None)))
+        self._extension: Optional[str] = extension
 
     @property
-    def extension(self):
+    def extension(self) -> Optional[str]:
         return self._extension
 
     @property
-    def path(self):
+    def path(self) -> str:
         raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
 
     @property
-    def content(self):
+    def content(self) -> Any:
         raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
-    def save(self, path):
+    def save(self, path: str) -> None:
         raise NeptuneException(f"`save` method is not supported for {self.file_type}")
 
 
 class LocalFileComposite(FileComposite):
     file_type = FileType.LOCAL_FILE
 
-    def __init__(self, path: str, extension: Optional[str] = None):
+    def __init__(self, path: str, extension: Optional[str] = None) -> None:
         try:
             ext = os.path.splitext(path)[1]
             ext = ext[1:] if ext else ""
@@ -81,20 +86,20 @@ class LocalFileComposite(FileComposite):
             ext = ""
         super().__init__(extension or ext)
 
-        self._path = path
+        self._path: str = path
 
     @property
-    def path(self):
+    def path(self) -> str:
         return self._path
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"File(path={self.path})"
 
 
 class InMemoryComposite(FileComposite):
     file_type = FileType.IN_MEMORY
 
-    def __init__(self, content: Union[str, bytes], extension: Optional[str] = None):
+    def __init__(self, content: Union[str, bytes], extension: Optional[str] = None) -> None:
         if isinstance(content, str):
             ext = "txt"
             content = content.encode("utf-8")
@@ -102,25 +107,25 @@ class InMemoryComposite(FileComposite):
             ext = "bin"
         super().__init__(extension or ext)
 
-        self._content = content
+        self._content: bytes = content
 
     @property
-    def content(self):
+    def content(self) -> bytes:
         return self._content
 
-    def save(self, path):
-        with open(path, "wb") as f:
-            f.write(self._content)
+    def save(self, path: str) -> None:
+        with open(path, "wb") as handler:
+            handler.write(self._content)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "File(content=...)"
 
 
-def read_once(f):
+def read_once(f: Callable[..., Any]) -> Callable[..., Any]:
     """Decorator for validating read once on STREAM objects"""
 
     @wraps(f)
-    def func(self: "StreamComposite", *args, **kwargs):
+    def func(self: "StreamComposite", *args: Any, **kwargs: Any) -> Any:
         if self._stream_read:
             raise StreamAlreadyUsedException()
         self._stream_read = True
@@ -132,8 +137,8 @@ def read_once(f):
 class StreamComposite(FileComposite):
     file_type = FileType.STREAM
 
-    def __init__(self, stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None):
-        verify_type("stream", stream, (IOBase, type(None)))
+    def __init__(self, stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> None:
+        verify_type("stream", stream, IOBase)
         verify_type("extension", extension, (str, type(None)))
 
         if seek is not None and stream.seekable():
@@ -142,27 +147,28 @@ class StreamComposite(FileComposite):
             extension = "txt" if isinstance(stream, io.TextIOBase) else "bin"
         super().__init__(extension)
 
-        self._stream = stream
-        self._stream_read = False
+        self._stream: IOBase = stream
+        self._stream_read: bool = False
 
     @property
     @read_once
-    def content(self):
+    def content(self) -> Any:
         val = self._stream.read()
         if isinstance(self._stream, io.TextIOBase):
             val = val.encode()
         return val
 
     @read_once
-    def save(self, path):
-        with open(path, "wb") as f:
-            buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
-            while buffer_:
+    def save(self, path: str) -> None:
+        with open(path, "wb") as handler:
+            stream_buffer = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+            while stream_buffer:
                 # TODO: replace with Walrus Operator once python3.7 support is dropped
                 if isinstance(self._stream, io.TextIOBase):
-                    buffer_ = buffer_.encode()
-                f.write(buffer_)
-                buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+                    stream_buffer = stream_buffer.encode()
 
-    def __str__(self):
+                handler.write(stream_buffer)
+                stream_buffer = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+
+    def __str__(self) -> str:
         return f"File(stream={self._stream})"
