@@ -18,13 +18,16 @@ __all__ = ["Integer"]
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    SupportsInt,
     TypeVar,
+    Union,
 )
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
+    from neptune.internal.types.stringify_value import StringifyValue
     from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
@@ -35,14 +38,14 @@ class Integer(Atom):
 
     value: int
 
-    def __init__(self, value):
+    def __init__(self, value: Union[SupportsInt, StringifyValue[SupportsInt]]) -> None:
         self.value = int(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_integer(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Integer({})".format(str(self.value))
 
-    def __int__(self):
+    def __int__(self) -> int:
         return self.value

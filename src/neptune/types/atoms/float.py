@@ -18,13 +18,16 @@ __all__ = ["Float"]
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    SupportsFloat,
     TypeVar,
+    Union,
 )
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
+    from neptune.internal.types.stringify_value import StringifyValue
     from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
@@ -35,14 +38,14 @@ class Float(Atom):
 
     value: float
 
-    def __init__(self, value):
+    def __init__(self, value: Union[SupportsFloat, StringifyValue[SupportsFloat]]) -> None:
         self.value = float(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_float(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Float({})".format(str(self.value))
 
-    def __float__(self):
+    def __float__(self) -> float:
         return self.value

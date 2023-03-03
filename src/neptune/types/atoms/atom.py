@@ -15,7 +15,7 @@
 #
 __all__ = ["Atom"]
 
-import abc
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     TypeVar,
@@ -30,6 +30,6 @@ Ret = TypeVar("Ret")
 
 
 class Atom(Value):
-    @abc.abstractmethod
+    @abstractmethod
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+        ...

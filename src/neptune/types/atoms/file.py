@@ -20,6 +20,7 @@ __all__ = [
 from io import IOBase
 from typing import (
     TYPE_CHECKING,
+    Any,
     Optional,
     TypeVar,
     Union,
@@ -47,12 +48,16 @@ from neptune.internal.utils.images import (
 from neptune.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
+    from neptune.internal.types.file_types import FileType
     from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
 
 
 class File(Atom):
+
+    _file_composite: FileComposite
+
     def __init__(self, path: Optional[str] = None, file_composite: Optional[FileComposite] = None):
         """We have to support `path` parameter since almost all of `File` usages by our users look like `File(path)`."""
         verify_type("path", path, (str, type(None)))
@@ -62,31 +67,32 @@ class File(Atom):
             raise ValueError("path and file_composite are mutually exclusive")
         if path is None and file_composite is None:
             raise ValueError("path or file_composite is required")
-        if path is not None:
-            self._file_composite = LocalFileComposite(path)
-        else:
+
+        if file_composite is not None:
             self._file_composite = file_composite
+        elif path is not None:
+            self._file_composite = LocalFileComposite(path)
 
     @property
-    def extension(self):
+    def extension(self) -> Optional[str]:
         return self._file_composite.extension
 
     @property
-    def file_type(self):
+    def file_type(self) -> Optional["FileType"]:
         return self._file_composite.file_type
 
     @property
-    def path(self):
+    def path(self) -> str:
         return self._file_composite.path
 
     @property
-    def content(self):
+    def content(self) -> Any:
         return self._file_composite.content
 
-    def _save(self, path):
+    def _save(self, path: str) -> None:
         self._file_composite.save(path)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._file_composite)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
@@ -170,7 +176,7 @@ class File(Atom):
         return File(file_composite=file_composite)
 
     @staticmethod
-    def as_image(image) -> "File":
+    def as_image(image: Any) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
         This way you can upload `Matplotlib` figures, `PIL` images, `NumPy` arrays, as static images.
@@ -210,7 +216,7 @@ class File(Atom):
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
 
     @staticmethod
-    def as_html(chart) -> "File":
+    def as_html(chart: Any) -> "File":
         """Converts an object to an HTML File value object.
 
         This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts
@@ -251,7 +257,7 @@ class File(Atom):
         return File.from_content(content if content is not None else "", extension="html")
 
     @staticmethod
-    def as_pickle(obj) -> "File":
+    def as_pickle(obj: Any) -> "File":
         """Pickles a Python object and stores it in `File` value object.
 
         This way you can upload any Python object for future use.
@@ -282,7 +288,7 @@ class File(Atom):
         return File.from_content(content if content is not None else b"", extension="pkl")
 
     @staticmethod
-    def create_from(value) -> "File":
+    def create_from(value: Any) -> "File":
         if isinstance(value, str):
             return File(path=value)
         elif File.is_convertable_to_image(value):
@@ -298,7 +304,7 @@ class File(Atom):
         raise TypeError("Value of type {} is not supported.".format(type(value)))
 
     @staticmethod
-    def is_convertable(value):
+    def is_convertable(value: Any) -> bool:
         return (
             is_pil_image(value)
             or is_matplotlib_figure(value)
@@ -311,11 +317,11 @@ class File(Atom):
         )
 
     @staticmethod
-    def is_convertable_to_image(value):
+    def is_convertable_to_image(value: Any) -> bool:
         convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure)
         return any(predicate(value) for predicate in convertable_to_img_predicates)
 
     @staticmethod
-    def is_convertable_to_html(value):
+    def is_convertable_to_html(value: Any) -> bool:
         convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure)
         return any(predicate(value) for predicate in convertable_to_html_predicates)

@@ -35,7 +35,10 @@ from io import (
     BytesIO,
     StringIO,
 )
-from typing import Optional
+from typing import (
+    Any,
+    Optional,
+)
 
 from packaging import version
 from pandas import DataFrame
@@ -249,35 +252,35 @@ def _is_tensorflow_tensor(image):
     )
 
 
-def _is_matplotlib_pyplot(chart):
+def _is_matplotlib_pyplot(chart: Any) -> bool:
     return chart.__class__.__module__.startswith("matplotlib.pyplot")
 
 
-def is_numpy_array(image) -> bool:
+def is_numpy_array(image: Any) -> bool:
     return numpy_ndarray is not None and isinstance(image, numpy_ndarray)
 
 
-def is_pil_image(image) -> bool:
+def is_pil_image(image: Any) -> bool:
     return PILImage is not None and isinstance(image, PILImage)
 
 
-def is_matplotlib_figure(image):
+def is_matplotlib_figure(image: Any) -> bool:
     return image.__class__.__module__.startswith("matplotlib.") and image.__class__.__name__ == "Figure"
 
 
-def is_plotly_figure(chart):
+def is_plotly_figure(chart: Any) -> bool:
     return chart.__class__.__module__.startswith("plotly.") and chart.__class__.__name__ == "Figure"
 
 
-def is_altair_chart(chart):
+def is_altair_chart(chart: Any) -> bool:
     return chart.__class__.__module__.startswith("altair.") and "Chart" in chart.__class__.__name__
 
 
-def is_bokeh_figure(chart):
+def is_bokeh_figure(chart: Any) -> bool:
     return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__.lower() == "figure"
 
 
-def is_pandas_dataframe(table):
+def is_pandas_dataframe(table: Any) -> bool:
     return isinstance(table, DataFrame)
 
 

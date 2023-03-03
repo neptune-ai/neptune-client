@@ -41,8 +41,9 @@ class Artifact(Atom):
 
     hash: str
 
-    def __init__(self, value: Union[Optional[str], StringifyValue] = None):
-        value = extract_if_stringify_value(value)
+    def __init__(self, value: Optional[Union[str, StringifyValue[str]]] = None) -> None:
+        if value is not None:
+            value = extract_if_stringify_value(value)
 
         self.hash = str(value)
         assert (
@@ -52,5 +53,5 @@ class Artifact(Atom):
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_artifact(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Artifact({})".format(self.hash)

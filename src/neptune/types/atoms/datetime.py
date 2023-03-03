@@ -39,12 +39,12 @@ Ret = TypeVar("Ret")
 class Datetime(Atom):
     value: datetime
 
-    def __init__(self, value: Union[datetime, StringifyValue]):
+    def __init__(self, value: Union[datetime, StringifyValue[datetime]]) -> None:
         value = extract_if_stringify_value(value)
         self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_datetime(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Datetime({})".format(str(self.value))

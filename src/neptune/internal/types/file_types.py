@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 __all__ = [
+    "FileType",
     "FileComposite",
     "LocalFileComposite",
     "InMemoryComposite",

@@ -47,5 +47,5 @@ class GitRef(Atom):
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "GitRef({})".format(str(self.commit_id))

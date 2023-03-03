@@ -119,7 +119,7 @@ def is_string_like(var):
         return False
 
 
-def is_stringify_value(var):
+def is_stringify_value(var) -> bool:
     return isinstance(var, StringifyValue)
 
 
