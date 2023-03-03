@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from typing import (
     Dict,
     Optional,
+    cast,
 )
 
 from neptune.common.envs import API_TOKEN_ENV_NAME
@@ -35,7 +36,7 @@ from neptune.internal.constants import ANONYMOUS_API_TOKEN_CONTENT
 class Credentials:
     api_token: str
     token_origin_address: str
-    api_url_opt: str
+    api_url_opt: Optional[str]
 
     @classmethod
     def from_token(cls, api_token: Optional[str] = None) -> "Credentials":
@@ -65,6 +66,6 @@ class Credentials:
     @staticmethod
     def _api_token_to_dict(api_token: str) -> Dict[str, str]:
         try:
-            return json.loads(base64.b64decode(api_token.encode()).decode("utf-8"))
+            return cast(Dict[str, str], json.loads(base64.b64decode(api_token.encode()).decode("utf-8")))
         except Exception:
             raise NeptuneInvalidApiTokenException()
