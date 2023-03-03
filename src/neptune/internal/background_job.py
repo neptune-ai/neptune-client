@@ -15,7 +15,7 @@
 #
 __all__ = ["BackgroundJob"]
 
-import abc
+from abc import abstractmethod
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -26,14 +26,14 @@ if TYPE_CHECKING:
 
 
 class BackgroundJob:
-    @abc.abstractmethod
-    def start(self, container: "MetadataContainer"):
+    @abstractmethod
+    def start(self, container: "MetadataContainer") -> None:
+        ...
+
+    @abstractmethod
+    def stop(self) -> None:
         pass
 
-    @abc.abstractmethod
-    def stop(self):
-        pass
-
-    @abc.abstractmethod
-    def join(self, seconds: Optional[float] = None):
+    @abstractmethod
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
