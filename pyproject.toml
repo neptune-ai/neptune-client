@@ -333,7 +333,6 @@ module = [
     "neptune.internal.utils.deprecation",
     "neptune.internal.utils.generic_attribute_mapper",
     "neptune.internal.utils.git",
-    "neptune.internal.utils.hashing",
     "neptune.internal.utils.images",
     "neptune.internal.utils.json_file_splitter",
     "neptune.internal.utils.limits",
