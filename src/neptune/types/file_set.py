@@ -38,7 +38,7 @@ Ret = TypeVar("Ret")
 
 
 class FileSet(Value):
-    def __init__(self, file_globs: Union[str, Iterable[str]]):
+    def __init__(self, file_globs: Union[str, Iterable[str]]) -> None:
         verify_type("file_globs", file_globs, (str, Iterable))
         if isinstance(file_globs, str):
             file_globs = [file_globs]
@@ -49,5 +49,5 @@ class FileSet(Value):
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file_set(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "FileSet({})".format(str(self.file_globs))

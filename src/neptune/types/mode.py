@@ -25,5 +25,5 @@ class Mode(str, Enum):
     SYNC = "sync"
     READ_ONLY = "read-only"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'"{self.value}"'

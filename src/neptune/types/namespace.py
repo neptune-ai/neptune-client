@@ -18,6 +18,7 @@ __all__ = ["Namespace"]
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    Dict,
     TypeVar,
 )
 
@@ -32,13 +33,13 @@ Ret = TypeVar("Ret")
 @dataclass
 class Namespace(Value):
 
-    value: dict
+    value: Dict
 
-    def __init__(self, value):
+    def __init__(self, value: Dict) -> None:
         self.value = value
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_namespace(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Namespace({})".format(str(self.value))

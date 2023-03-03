@@ -36,7 +36,7 @@ class ValueCopy(Value):
 
     source_handler: "Handler"
 
-    def __init__(self, source_handler: "Handler"):
+    def __init__(self, source_handler: "Handler") -> None:
         self.source_handler = source_handler
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
@@ -47,5 +47,5 @@ class ValueCopy(Value):
         else:
             raise Exception(f"{type(source_attr).__name__} doesn't support copying")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Copy({})".format(str(self.source_handler))
