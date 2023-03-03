@@ -38,7 +38,7 @@ class Boolean(Atom):
 
     value: bool
 
-    def __init__(self, value: Union[Any, StringifyValue[Any]]) -> None:
+    def __init__(self, value: Union[Any, "StringifyValue[Any]"]) -> None:
         self.value = bool(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:

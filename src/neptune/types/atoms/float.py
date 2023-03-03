@@ -38,7 +38,7 @@ class Float(Atom):
 
     value: float
 
-    def __init__(self, value: Union[SupportsFloat, StringifyValue[SupportsFloat]]) -> None:
+    def __init__(self, value: Union[SupportsFloat, "StringifyValue[SupportsFloat]"]) -> None:
         self.value = float(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:

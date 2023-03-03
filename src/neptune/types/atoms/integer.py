@@ -38,7 +38,7 @@ class Integer(Atom):
 
     value: int
 
-    def __init__(self, value: Union[SupportsInt, StringifyValue[SupportsInt]]) -> None:
+    def __init__(self, value: Union[SupportsInt, "StringifyValue[SupportsInt]"]) -> None:
         self.value = int(extract_if_stringify_value(value))
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
