@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# mypy: disable-error-code=import
 __all__ = [
     "replace_patch_version",
     "verify_type",
@@ -42,6 +43,7 @@ import os
 from glob import glob
 from io import IOBase
 from typing import (
+    Any,
     Iterable,
     List,
     Mapping,
@@ -58,11 +60,11 @@ T = TypeVar("T")
 _logger = logging.getLogger(__name__)
 
 
-def replace_patch_version(version: str):
+def replace_patch_version(version: str) -> str:
     return version[: version.index(".", version.index(".") + 1)] + ".0"
 
 
-def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
+def verify_type(var_name: str, var: Any, expected_type: Union[type, tuple]) -> None:
     try:
         if isinstance(expected_type, tuple):
             type_name = " or ".join(get_type_name(t) for t in expected_type)
@@ -79,27 +81,27 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
         raise TypeError("{} is a stream, which does not implement read method".format(var_name))
 
 
-def is_stream(var):
+def is_stream(var: Any) -> bool:
     return isinstance(var, IOBase) and hasattr(var, "read")
 
 
-def is_bool(var):
+def is_bool(var: Any) -> bool:
     return isinstance(var, bool)
 
 
-def is_int(var):
+def is_int(var: Any) -> bool:
     return isinstance(var, int)
 
 
-def is_float(var):
+def is_float(var: Any) -> bool:
     return isinstance(var, (float, int))
 
 
-def is_string(var):
+def is_string(var: Any) -> bool:
     return isinstance(var, str)
 
 
-def is_float_like(var):
+def is_float_like(var: Any) -> bool:
     try:
         _ = float(var)
         return True
@@ -107,11 +109,11 @@ def is_float_like(var):
         return False
 
 
-def is_dict_like(var):
+def is_dict_like(var: Any) -> bool:
     return isinstance(var, (dict, Mapping))
 
 
-def is_string_like(var):
+def is_string_like(var: Any) -> bool:
     try:
         _ = str(var)
         return True
@@ -119,21 +121,21 @@ def is_string_like(var):
         return False
 
 
-def is_stringify_value(var) -> bool:
+def is_stringify_value(var: Any) -> bool:
     return isinstance(var, StringifyValue)
 
 
-def get_type_name(_type: Union[type, tuple]):
+def get_type_name(_type: Union[type, tuple]) -> str:
     return _type.__name__ if hasattr(_type, "__name__") else str(_type)
 
 
-def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):
+def verify_collection_type(var_name: str, var: Any, expected_type: Union[type, tuple]) -> None:
     verify_type(var_name, var, (list, set, tuple))
     for value in var:
         verify_type("elements of collection '{}'".format(var_name), value, expected_type)
 
 
-def is_collection(var) -> bool:
+def is_collection(var: Any) -> bool:
     return isinstance(var, (list, set, tuple))
 
 

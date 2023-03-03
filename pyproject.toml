@@ -228,12 +228,18 @@ exclude = [
     '^src/neptune/new/__init__\.py$',
     '^src/neptune/legacy/__init__\.py$',
     '^src/neptune/common/patches/__init__\.py$',
+    '^src/neptune/internal/utils/__init__\.py$',
 ]
 mypy_path = "stubs"
 install_types = "True"
 non_interactive = "True"
 disallow_untyped_defs = "True"
 disallow_any_unimported = "True"
+no_implicit_optional = "True"
+check_untyped_defs = "True"
+warn_return_any = "True"
+show_error_codes = "True"
+warn_unused_ignores = "True"
 
 [[tool.mypy.overrides]]
 module = [
@@ -417,4 +423,3 @@ module = [
     "neptune.vendor.pynvml",
 ]
 ignore_errors = "True"
-ignore_missing_imports = "True"
