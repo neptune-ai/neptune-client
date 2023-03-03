@@ -32,25 +32,31 @@
 __all__ = ["StringifyValue", "extract_if_stringify_value"]
 
 
-from typing import Any
+from typing import (
+    Generic,
+    TypeVar,
+    Union,
+)
+
+T = TypeVar("T")
 
 
-class StringifyValue:
-    def __init__(self, value: Any):
+class StringifyValue(Generic[T]):
+    def __init__(self, value: T) -> None:
         self.__value = value
 
     @property
-    def value(self):
+    def value(self) -> T:
         return self.__value
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.__value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self.__value)
 
 
-def extract_if_stringify_value(val):
+def extract_if_stringify_value(val: Union[StringifyValue[T], T]) -> T:
     if isinstance(val, StringifyValue):
         return val.value
     return val
