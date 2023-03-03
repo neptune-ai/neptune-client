@@ -18,7 +18,7 @@ __all__ = ["custom_run_id_exceeds_length", "image_size_exceeds_limit_for_logging
 import logging
 import warnings
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 CUSTOM_RUN_ID_LENGTH = 36
@@ -28,7 +28,7 @@ BYTES_IN_MB = 1024 * 1024
 
 def custom_run_id_exceeds_length(custom_run_id: str) -> bool:
     if custom_run_id and len(custom_run_id) > CUSTOM_RUN_ID_LENGTH:
-        logger.warning(
+        _logger.warning(
             "Given custom_run_id exceeds %s" " characters and it will be ignored.",
             CUSTOM_RUN_ID_LENGTH,
         )

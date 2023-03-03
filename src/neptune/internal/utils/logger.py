@@ -31,9 +31,12 @@ class GrabbableStdoutHandler(logging.StreamHandler):
     Based on logging._StderrHandler from standard library.
     """
 
-    def __init__(self, level: int = logging.NOTSET):
-        logging.Handler.__init__(self, level=level)
-        self.stream = sys.stdout
+    def __init__(self, level=logging.NOTSET):
+        logging.Handler.__init__(self, level)
+
+    @property
+    def stream(self):
+        return sys.stdout
 
 
 logger = logging.getLogger(LOGGER_NAME)

@@ -212,7 +212,7 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(OperationNotSupported):
                 attr.assign([stream])
 
-    @mock.patch("neptune.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
+    @mock.patch("neptune.internal.utils.limits.LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
     def test_image_limit(self):
         """Test if we prohibit logging images greater than mocked 1KB limit size"""
         # given
