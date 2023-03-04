@@ -283,7 +283,6 @@ module = [
     "neptune.common.warnings",
     "neptune.common.websockets.reconnecting_websocket",
     "neptune.common.websockets.websocket_client_adapter",
-    "neptune.exceptions",
     "neptune.handler",
     "neptune.integrations.python_logger",
     "neptune.internal.artifacts.drivers.local",

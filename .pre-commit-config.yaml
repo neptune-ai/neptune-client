@@ -42,7 +42,8 @@ repos:
             types-requests,
             types-setuptools,
             types-six,
-            types-urllib3
+            types-urllib3,
+            types-boto3,
         ]
 exclude: |
   (?x)(

@@ -92,8 +92,11 @@ __all__ = [
 ]
 
 from typing import (
+    Any,
+    Iterable,
     List,
     Optional,
+    Type,
     Union,
 )
 from urllib.parse import urlparse
@@ -136,7 +139,7 @@ class MetadataInconsistency(NeptuneException):
 class MissingFieldException(NeptuneException, AttributeError, KeyError):
     """Raised when get-like action is called on `Handler`, instead of on `Attribute`."""
 
-    def __init__(self, field_path):
+    def __init__(self, field_path: str) -> None:
         message = """
 {h1}
 ----MissingFieldException-------------------------------------------------------
@@ -154,13 +157,13 @@ There are two possible reasons:
         self._msg = message.format(field_path=field_path, **STYLES)
         super().__init__(self._msg)
 
-    def __str__(self):
+    def __str__(self) -> str:
         # required because of overriden `__str__` in `KeyError`
         return self._msg
 
 
 class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
-    def __init__(self, type_, attribute):
+    def __init__(self, type_: Type, attribute: str) -> None:
         message = """
 {h1}
 ----TypeDoesNotSupportAttributeException----------------------------------------
@@ -172,7 +175,7 @@ class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
         self._msg = message.format(type=type_, attribute=attribute, **STYLES)
         super().__init__(self._msg)
 
-    def __str__(self):
+    def __str__(self) -> str:
         # required because of overriden `__str__` in `KeyError`
         return self._msg
 
@@ -182,32 +185,34 @@ class MalformedOperation(NeptuneException):
 
 
 class FileNotFound(NeptuneException):
-    def __init__(self, file: str):
+    def __init__(self, file: str) -> None:
         super().__init__("File not found: {}".format(file))
 
 
 class FileUploadError(NeptuneException):
-    def __init__(self, filename: str, msg: str):
+    def __init__(self, filename: str, msg: str) -> None:
         super().__init__("Cannot upload file {}: {}".format(filename, msg))
 
 
 class FileSetUploadError(NeptuneException):
-    def __init__(self, globs: List[str], msg: str):
+    def __init__(self, globs: List[str], msg: str) -> None:
         super().__init__("Cannot upload file set {}: {}".format(globs, msg))
 
 
 class MetadataContainerNotFound(NeptuneException):
     container_id: str
-    container_type: ContainerType
+    container_type: Optional[ContainerType]
 
-    def __init__(self, container_id: str, container_type: Optional[ContainerType]):
+    def __init__(self, container_id: str, container_type: Optional[ContainerType]) -> None:
         self.container_id = container_id
         self.container_type = container_type
         container_type_str = container_type.value.capitalize() if container_type else "object"
         super().__init__("{} {} not found.".format(container_type_str, container_id))
 
     @classmethod
-    def of_container_type(cls, container_type: Optional[ContainerType], container_id: str):
+    def of_container_type(
+        cls, container_type: Optional[ContainerType], container_id: str
+    ) -> "MetadataContainerNotFound":
         if container_type is None:
             return MetadataContainerNotFound(container_id=container_id, container_type=None)
         elif container_type == ContainerType.PROJECT:
@@ -223,22 +228,22 @@ class MetadataContainerNotFound(NeptuneException):
 
 
 class ProjectNotFound(MetadataContainerNotFound):
-    def __init__(self, project_id: str):
+    def __init__(self, project_id: str) -> None:
         super().__init__(container_id=project_id, container_type=ContainerType.PROJECT)
 
 
 class RunNotFound(MetadataContainerNotFound):
-    def __init__(self, run_id: str):
+    def __init__(self, run_id: str) -> None:
         super().__init__(container_id=run_id, container_type=ContainerType.RUN)
 
 
 class ModelNotFound(MetadataContainerNotFound):
-    def __init__(self, model_id: str):
+    def __init__(self, model_id: str) -> None:
         super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
 
 
 class ModelVersionNotFound(MetadataContainerNotFound):
-    def __init__(self, model_version_id: str):
+    def __init__(self, model_version_id: str) -> None:
         super().__init__(container_id=model_version_id, container_type=ContainerType.MODEL_VERSION)
 
 
@@ -246,9 +251,9 @@ class ExceptionWithProjectsWorkspacesListing(NeptuneException):
     def __init__(
         self,
         message: str,
-        available_projects: List[Project] = (),
-        available_workspaces: List[Workspace] = (),
-        **kwargs,
+        available_projects: Iterable[Project] = (),
+        available_workspaces: Iterable[Workspace] = (),
+        **kwargs: Any,
     ):
         available_projects_message = """
 Did you mean any of these?
@@ -294,7 +299,7 @@ class ContainerUUIDNotFound(NeptuneException):
     container_id: str
     container_type: ContainerType
 
-    def __init__(self, container_id: str, container_type: ContainerType):
+    def __init__(self, container_id: str, container_type: ContainerType) -> None:
         self.container_id = container_id
         self.container_type = container_type
         super().__init__(
@@ -313,8 +318,8 @@ class ProjectNotFoundWithSuggestions(ExceptionWithProjectsWorkspacesListing, Pro
     def __init__(
         self,
         project_id: QualifiedName,
-        available_projects: List[Project] = (),
-        available_workspaces: List[Workspace] = (),
+        available_projects: Iterable[Project] = (),
+        available_workspaces: Iterable[Workspace] = (),
     ):
         message = """
 {h1}
@@ -336,7 +341,7 @@ You may want to check the following docs page:
 
 
 class AmbiguousProjectName(ExceptionWithProjectsWorkspacesListing):
-    def __init__(self, project_id: str, available_projects: List[Project] = ()):
+    def __init__(self, project_id: str, available_projects: Iterable[Project] = ()) -> None:
         message = """
 {h1}
 ----NeptuneProjectNameCollisionException------------------------------------
@@ -354,8 +359,8 @@ You may also want to check the following docs pages:
 class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
     def __init__(
         self,
-        available_projects: List[Project] = (),
-        available_workspaces: List[Workspace] = (),
+        available_projects: Iterable[Project] = (),
+        available_workspaces: Iterable[Workspace] = (),
     ):
         message = """
 {h1}
@@ -401,7 +406,7 @@ You may also want to check the following docs pages:
 class InactiveContainerException(NeptuneException):
     resume_info: str
 
-    def __init__(self, container_type: ContainerType, label: str):
+    def __init__(self, container_type: ContainerType, label: str) -> None:
         message = """
 {h1}
 ----{cls}----------------------------------------
@@ -435,7 +440,7 @@ class InactiveRunException(InactiveContainerException):
     you can resume a run in read-only mode:
     https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
 
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         super().__init__(label=label, container_type=ContainerType.RUN)
 
 
@@ -447,7 +452,7 @@ class InactiveModelException(InactiveContainerException):
     you can resume a model in read-only mode:
     https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
 
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         super().__init__(label=label, container_type=ContainerType.MODEL)
 
 
@@ -459,7 +464,7 @@ class InactiveModelVersionException(InactiveContainerException):
     you can resume a model version in read-only mode:
     https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
 
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         super().__init__(label=label, container_type=ContainerType.MODEL_VERSION)
 
 
@@ -469,12 +474,12 @@ class InactiveProjectException(InactiveContainerException):
     https://docs.neptune.ai/api/neptune/#init_project
     - Don't invoke `stop()` on a project that you want to access."""
 
-    def __init__(self, label: str):
+    def __init__(self, label: str) -> None:
         super().__init__(label=label, container_type=ContainerType.PROJECT)
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneMissingApiTokenException-------------------------------------------
@@ -515,7 +520,7 @@ You may also want to check the following docs pages:
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Cannot synchronize offline runs without a project.")
 
 
@@ -523,7 +528,7 @@ class NeedExistingExperimentForReadOnlyMode(NeptuneException):
     container_type: ContainerType
     callback_name: str
 
-    def __init__(self, container_type: ContainerType, callback_name: str):
+    def __init__(self, container_type: ContainerType, callback_name: str) -> None:
         message = """
 {h1}
 ----{class_name}-----------------------------------------
@@ -552,17 +557,17 @@ You may also want to check the following docs pages:
 
 
 class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(container_type=ContainerType.RUN, callback_name="neptune.init_run")
 
 
 class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(container_type=ContainerType.MODEL, callback_name="neptune.init_model")
 
 
 class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             container_type=ContainerType.MODEL_VERSION,
             callback_name="neptune.init_model_version",
@@ -570,7 +575,7 @@ class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyM
 
 
 class NeptuneParametersCollision(NeptuneException):
-    def __init__(self, parameter1, parameter2, method_name):
+    def __init__(self, parameter1: str, parameter2: str, method_name: str) -> None:
         self.parameter1 = parameter1
         self.parameter2 = parameter2
         self.method_name = method_name
@@ -600,7 +605,7 @@ class NeptuneWrongInitParametersException(NeptuneException):
 
 
 class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneRunResumeAndCustomIdCollision-----------------------------------------
@@ -678,7 +683,7 @@ https://docs.neptune.ai/api/neptune#{called_function}
 
 
 class CannotResolveHostname(NeptuneException):
-    def __init__(self, host):
+    def __init__(self, host: str) -> None:
         message = """
 {h1}
 ----CannotResolveHostname-----------------------------------------------------------------------
@@ -703,7 +708,7 @@ class NeptuneOfflineModeException(NeptuneException):
 
 
 class NeptuneOfflineModeFetchException(NeptuneOfflineModeException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneOfflineModeFetchException---------------------------------------------------
@@ -723,7 +728,7 @@ You may also want to check the following docs page:
 
 
 class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneOfflineModeChangeStageException---------------------------------------
@@ -736,7 +741,7 @@ You cannot change the stage of the model version while in offline mode.
 class NeptuneProtectedPathException(NeptuneException):
     extra_info = ""
 
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         message = """
 {h1}
 ----NeptuneProtectedPathException----------------------------------------------
@@ -764,12 +769,12 @@ use the {python}.change_stage(){end} method:
 
 
 class OperationNotSupported(NeptuneException):
-    def __init__(self, message: str):
+    def __init__(self, message: str) -> None:
         super().__init__(f"Operation not supported: {message}")
 
 
 class NeptuneLegacyProjectException(NeptuneException):
-    def __init__(self, project: QualifiedName):
+    def __init__(self, project: QualifiedName) -> None:
         message = """
 {h1}
 ----NeptuneLegacyProjectException---------------------------------------------------------
@@ -814,7 +819,7 @@ You may also want to check the following docs page:
 
 
 class NeptuneLimitExceedException(NeptuneException):
-    def __init__(self, reason: str):
+    def __init__(self, reason: str) -> None:
         message = """
 {h1}
 ----NeptuneLimitExceedException---------------------------------------------------------------------------------------
@@ -836,7 +841,7 @@ You may also want to check the following docs page:
 
 
 class NeptuneFieldCountLimitExceedException(NeptuneException):
-    def __init__(self, limit: int, container_type: str, identifier: str):
+    def __init__(self, limit: int, container_type: str, identifier: str) -> None:
         message = """
 {h1}
 ----NeptuneFieldCountLimitExceedException---------------------------------------------------------------------------------------
@@ -870,7 +875,7 @@ For more details, see https://docs.neptune.ai/usage/best_practices
 
 
 class NeptuneStorageLimitException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneStorageLimitException---------------------------------------------------------------------------------------
@@ -890,7 +895,7 @@ You may also want to check the following docs page:
 
 
 class FetchAttributeNotFoundException(MetadataInconsistency):
-    def __init__(self, attribute_path: str):
+    def __init__(self, attribute_path: str) -> None:
         message = """
 {h1}
 ----MetadataInconsistency----------------------------------------------------------------------
@@ -915,7 +920,7 @@ You may also want to check the following docs page:
 
 
 class ArtifactNotFoundException(MetadataInconsistency):
-    def __init__(self, artifact_hash: str):
+    def __init__(self, artifact_hash: str) -> None:
         message = """
 {h1}
 ----MetadataInconsistency----------------------------------------------------------------------
@@ -940,7 +945,7 @@ You may also want to check the following docs page:
 
 
 class PlotlyIncompatibilityException(Exception):
-    def __init__(self, matplotlib_version, plotly_version, details):
+    def __init__(self, matplotlib_version: str, plotly_version: str, details: str) -> None:
         super().__init__(
             "Unable to convert plotly figure to matplotlib format. "
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
@@ -949,7 +954,7 @@ class PlotlyIncompatibilityException(Exception):
 
 
 class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptunePossibleLegacyUsageException----------------------------------------------------------------
@@ -977,7 +982,7 @@ You may also want to check the following docs page:
 
 
 class NeptuneLegacyIncompatibilityException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneLegacyIncompatibilityException----------------------------------------
@@ -996,7 +1001,7 @@ What can I do?
 
 
 class NeptuneUnhandledArtifactSchemeException(NeptuneException):
-    def __init__(self, path: str):
+    def __init__(self, path: str) -> None:
         scheme = urlparse(path).scheme
         message = """
 {h1}
@@ -1011,7 +1016,7 @@ Problematic path: {path}
 
 
 class NeptuneUnhandledArtifactTypeException(NeptuneException):
-    def __init__(self, type_str: str):
+    def __init__(self, type_str: str) -> None:
         message = """
 {h1}
 ----NeptuneUnhandledArtifactTypeException----------------------------------------
@@ -1024,7 +1029,7 @@ A Neptune Artifact you're listing is tracking a file type unhandled by this clie
 
 
 class NeptuneLocalStorageAccessException(NeptuneException):
-    def __init__(self, path, expected_description):
+    def __init__(self, path: str, expected_description: str) -> None:
         message = """
 {h1}
 ----NeptuneLocalStorageAccessException-------------------------------------
@@ -1037,7 +1042,7 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 
 
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneRemoteStorageCredentialsException-------------------------------------
@@ -1050,7 +1055,7 @@ Neptune could not find suitable credentials for remote storage of a Neptune Arti
 
 
 class NeptuneRemoteStorageAccessException(NeptuneException):
-    def __init__(self, location: str):
+    def __init__(self, location: str) -> None:
         message = """
 {h1}
 ----NeptuneRemoteStorageAccessException------------------------------------------
@@ -1063,12 +1068,12 @@ Neptune could not access an object ({location}) from remote storage of a Neptune
 
 
 class ArtifactUploadingError(NeptuneException):
-    def __init__(self, msg: str):
+    def __init__(self, msg: str) -> None:
         super().__init__("Cannot upload artifact: {}".format(msg))
 
 
 class NeptuneUnsupportedArtifactFunctionalityException(NeptuneException):
-    def __init__(self, functionality_info: str):
+    def __init__(self, functionality_info: str) -> None:
         message = """
 {h1}
 ----NeptuneUnsupportedArtifactFunctionality-------------------------------------
@@ -1083,7 +1088,7 @@ It seems you are using Neptune Artifacts functionality that is currently not sup
 
 
 class NeptuneEmptyLocationException(NeptuneException):
-    def __init__(self, location: str, namespace: str):
+    def __init__(self, location: str, namespace: str) -> None:
         message = """
 {h1}
 ----NeptuneEmptyLocationException----------------------------------------------
@@ -1096,7 +1101,7 @@ Neptune could not find files in the requested location ({location}) during the c
 
 
 class NeptuneFeatureNotAvailableException(NeptuneException):
-    def __init__(self, missing_feature):
+    def __init__(self, missing_feature: str) -> None:
         message = """
 {h1}
 ----NeptuneFeatureNotAvailableException----------------------------------------------
@@ -1118,7 +1123,7 @@ class NeptuneObjectCreationConflict(NeptuneException):
 
 
 class NeptuneModelKeyAlreadyExistsError(NeptuneObjectCreationConflict):
-    def __init__(self, model_key, models_tab_url):
+    def __init__(self, model_key: str, models_tab_url: str) -> None:
         message = """
 {h1}
 ----NeptuneModelKeyAlreadyExistsError---------------------------------------------------
@@ -1135,7 +1140,7 @@ You can check all of your models in the project on the Models page:
 
 
 class NeptuneSynchronizationAlreadyStoppedException(NeptuneException):
-    def __init__(self):
+    def __init__(self) -> None:
         message = """
 {h1}
 ----NeptuneSynchronizationAlreadyStopped---------------------------------------------------
@@ -1174,5 +1179,5 @@ For more, see https://docs.neptune.ai/api/field_types/#from_stream
 
 
 class NeptuneUserApiInputException(NeptuneException):
-    def __init__(self, message):
+    def __init__(self, message: str) -> None:
         super().__init__(message)
