@@ -259,7 +259,6 @@ module = [
     "neptune.common.hardware.cgroup.cgroup_filesystem_reader",
     "neptune.common.hardware.cgroup.cgroup_monitor",
     "neptune.common.hardware.gauges.cpu",
-    "neptune.common.hardware.gauges.gauge",
     "neptune.common.hardware.gauges.gauge_factory",
     "neptune.common.hardware.gauges.gpu",
     "neptune.common.hardware.gauges.memory",

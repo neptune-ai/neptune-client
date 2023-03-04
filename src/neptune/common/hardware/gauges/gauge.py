@@ -13,26 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from abc import (
-    ABCMeta,
+    ABC,
     abstractmethod,
 )
 
 
-class Gauge(object):
-    __metaclass__ = ABCMeta
-
+class Gauge(ABC):
     @abstractmethod
-    def name(self):
+    def name(self) -> str:
         """
         :return: Gauge name (str).
         """
-        raise NotImplementedError()
+        ...
 
     @abstractmethod
-    def value(self):
+    def value(self) -> float:
         """
         :return: Current value (float).
         """
-        raise NotImplementedError()
+        ...
