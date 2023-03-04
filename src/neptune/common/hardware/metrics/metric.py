@@ -13,19 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    List,
+    Optional,
+)
+
+if TYPE_CHECKING:
+    from neptune.common.hardware.gauges.gauge import Gauge
 
 
-class Metric(object):
+class Metric:
     def __init__(
         self,
-        name,
-        description,
-        resource_type,
-        unit,
-        min_value,
-        max_value,
-        gauges,
-        internal_id=None,
+        name: str,
+        description: str,
+        resource_type: str,
+        unit: str,
+        min_value: float,
+        max_value: float,
+        gauges: List[Gauge],
+        internal_id: Optional[str] = None,
     ):
         self.__internal_id = internal_id
         self.__name = name
@@ -37,42 +46,42 @@ class Metric(object):
         self.__gauges = gauges
 
     @property
-    def internal_id(self):
+    def internal_id(self) -> Optional[str]:
         return self.__internal_id
 
     @internal_id.setter
-    def internal_id(self, value):
+    def internal_id(self, value: str) -> None:
         self.__internal_id = value
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
 
     @property
-    def description(self):
+    def description(self) -> str:
         return self.__description
 
     @property
-    def resource_type(self):
+    def resource_type(self) -> str:
         return self.__resource_type
 
     @property
-    def unit(self):
+    def unit(self) -> str:
         return self.__unit
 
     @property
-    def min_value(self):
+    def min_value(self) -> float:
         return self.__min_value
 
     @property
-    def max_value(self):
+    def max_value(self) -> float:
         return self.__max_value
 
     @property
-    def gauges(self):
+    def gauges(self) -> List[Gauge]:
         return self.__gauges
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             "Metric(internal_id={}, name={}, description={}, resource_type={}, unit={}, min_value={}, "
             "max_value={}, gauges={})"
@@ -87,11 +96,11 @@ class Metric(object):
             self.gauges,
         )
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         return self.__class__ == other.__class__ and repr(self) == repr(other)
 
 
-class MetricResourceType(object):
+class MetricResourceType:
     CPU = "CPU"
     RAM = "MEMORY"
     GPU = "GPU"

@@ -13,24 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
 
-try:
-    import psutil
-
-    PSUTIL_INSTALLED = True
-except ImportError:
-    PSUTIL_INSTALLED = False
+import psutil
 
 
-class SystemMonitor(object):
+@dataclass
+class VirtualMemoryStats:
+    total: int
+    available: int
+
+
+class SystemMonitor:
     @staticmethod
-    def cpu_count():
+    def cpu_count() -> int:
         return psutil.cpu_count()
 
     @staticmethod
-    def cpu_percent():
+    def cpu_percent() -> float:
         return psutil.cpu_percent()
 
     @staticmethod
-    def virtual_memory():
-        return psutil.virtual_memory()
+    def virtual_memory() -> VirtualMemoryStats:
+        vm = psutil.virtual_memory()
+        return VirtualMemoryStats(total=vm.total, available=vm.available)
