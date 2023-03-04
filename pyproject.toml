@@ -338,7 +338,6 @@ module = [
     "neptune.internal.websockets.websocket_signals_background_job",
     "neptune.internal.websockets.websockets_factory",
     "neptune.logging.logger",
-    "neptune.management.exceptions",
     "neptune.management.internal.api",
     "neptune.management.internal.dto",
     "neptune.management.internal.utils",

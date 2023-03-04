@@ -13,28 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    Any,
+    Dict,
+    Type,
+    Union,
+)
 
-REGISTERED_CODES = dict()
+REGISTERED_CODES: Dict[int, Type[Exception]] = dict()
 
 
 class ManagementOperationFailure(Exception):
     code = -1
     description = "Unknown error"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__()
         self._properties: dict = kwargs or {}
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.description.format(**self._properties)} (code: {self.code})"
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         previous = REGISTERED_CODES.get(cls.code)
         assert previous is None, f"{cls} cannot have code {cls.code} already used by {previous}"
         REGISTERED_CODES[cls.code] = cls
 
     @property
-    def details(self):
+    def details(self) -> Dict[str, Union[str, int]]:
         return {
             "code": self.code,
             "description": self.description.format(**self._properties),
