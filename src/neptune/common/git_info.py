@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    Any,
+    List,
+    Optional,
+)
 
 
 class GitInfo(object):
@@ -34,14 +39,14 @@ class GitInfo(object):
 
     def __init__(
         self,
-        commit_id,
-        message="",
-        author_name="",
-        author_email="",
-        commit_date="",
-        repository_dirty=True,
-        active_branch="",
-        remote_urls=None,
+        commit_id: str,
+        message: str = "",
+        author_name: str = "",
+        author_email: str = "",
+        commit_date: str = "",
+        repository_dirty: bool = True,
+        active_branch: str = "",
+        remote_urls: Optional[List[str]] = None,
     ):
         if remote_urls is None:
             remote_urls = []
@@ -57,14 +62,14 @@ class GitInfo(object):
         self.active_branch = active_branch
         self.remote_urls = remote_urls
 
-    def __eq__(self, o):
-        return o is not None and self.__dict__ == o.__dict__
+    def __eq__(self, obj: Any) -> bool:
+        return obj is not None and self.__dict__ == obj.__dict__
 
-    def __ne__(self, o):
-        return not self.__eq__(o)
+    def __ne__(self, obj: Any) -> bool:
+        return not self.__eq__(obj)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "GitInfo({})".format(self.commit_id)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
