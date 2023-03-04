@@ -46,7 +46,7 @@ warned_once = set()
 path_to_root_module = os.path.dirname(os.path.realpath(neptune.__file__))
 
 
-def get_user_code_stack_level():
+def get_user_code_stack_level() -> int:
     call_stack = traceback.extract_stack()
     for level, stack_frame in enumerate(reversed(call_stack)):
         if path_to_root_module not in stack_frame.filename:
@@ -54,7 +54,7 @@ def get_user_code_stack_level():
     return 2
 
 
-def warn_once(message: str, *, exception: type(Exception) = None):
+def warn_once(message: str, *, exception: type(Exception) = None) -> None:
     if exception is None:
         exception = NeptuneDeprecationWarning
 
@@ -67,7 +67,7 @@ def warn_once(message: str, *, exception: type(Exception) = None):
         warned_once.add(message)
 
 
-def warn_about_unsupported_type(type_str: str):
+def warn_about_unsupported_type(type_str: str) -> None:
     warn_once(
         message=f"""You're attempting to log a type that is not directly supported by Neptune ({type_str}).
         Convert the value to a supported type, such as a string or float, or use stringify_unsupported(obj)
