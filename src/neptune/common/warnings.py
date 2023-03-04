@@ -24,6 +24,10 @@ __all__ = [
 import os
 import traceback
 import warnings
+from typing import (
+    Optional,
+    Type,
+)
 
 import neptune
 
@@ -54,7 +58,7 @@ def get_user_code_stack_level() -> int:
     return 2
 
 
-def warn_once(message: str, *, exception: type(Exception) = None) -> None:
+def warn_once(message: str, *, exception: Optional[Type[Warning]] = None) -> None:
     if exception is None:
         exception = NeptuneDeprecationWarning
 
