@@ -24,10 +24,12 @@ from abc import abstractmethod
 from typing import (
     Any,
     Callable,
-    ParamSpec,
 )
 
-from typing_extensions import Concatenate
+from typing_extensions import (
+    Concatenate,
+    ParamSpec,
+)
 
 from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.internal.utils.logger import logger
