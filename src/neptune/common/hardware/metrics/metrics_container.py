@@ -13,16 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    TYPE_CHECKING,
+    List,
+)
+
+if TYPE_CHECKING:
+    from neptune.common.hardware.metrics.metric import Metric
 
 
-class MetricsContainer(object):
-    def __init__(self, cpu_usage_metric, memory_metric, gpu_usage_metric, gpu_memory_metric):
+class MetricsContainer:
+    def __init__(
+        self,
+        cpu_usage_metric: Metric,
+        memory_metric: Metric,
+        gpu_usage_metric: Metric,
+        gpu_memory_metric: Metric,
+    ) -> None:
         self.cpu_usage_metric = cpu_usage_metric
         self.memory_metric = memory_metric
         self.gpu_usage_metric = gpu_usage_metric
         self.gpu_memory_metric = gpu_memory_metric
 
-    def metrics(self):
+    def metrics(self) -> List[Metric]:
         return [
             metric
             for metric in [

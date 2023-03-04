@@ -263,7 +263,6 @@ module = [
     "neptune.common.hardware.gauges.gpu",
     "neptune.common.hardware.gauges.memory",
     "neptune.common.hardware.gpu.gpu_monitor",
-    "neptune.common.hardware.metrics.metrics_container",
     "neptune.common.hardware.metrics.metrics_factory",
     "neptune.common.hardware.metrics.reports.metric_reporter",
     "neptune.common.hardware.metrics.reports.metric_reporter_factory",
