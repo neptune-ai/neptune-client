@@ -25,17 +25,17 @@ if TYPE_CHECKING:
 class MetricsContainer:
     def __init__(
         self,
-        cpu_usage_metric: Metric,
-        memory_metric: Metric,
-        gpu_usage_metric: Metric,
-        gpu_memory_metric: Metric,
+        cpu_usage_metric: "Metric",
+        memory_metric: "Metric",
+        gpu_usage_metric: "Metric",
+        gpu_memory_metric: "Metric",
     ) -> None:
         self.cpu_usage_metric = cpu_usage_metric
         self.memory_metric = memory_metric
         self.gpu_usage_metric = gpu_usage_metric
         self.gpu_memory_metric = gpu_memory_metric
 
-    def metrics(self) -> List[Metric]:
+    def metrics(self) -> List["Metric"]:
         return [
             metric
             for metric in [

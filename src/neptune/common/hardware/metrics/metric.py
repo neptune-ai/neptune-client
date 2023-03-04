@@ -33,7 +33,7 @@ class Metric:
         unit: str,
         min_value: float,
         max_value: float,
-        gauges: List[Gauge],
+        gauges: List["Gauge"],
         internal_id: Optional[str] = None,
     ):
         self.__internal_id = internal_id
@@ -78,7 +78,7 @@ class Metric:
         return self.__max_value
 
     @property
-    def gauges(self) -> List[Gauge]:
+    def gauges(self) -> List["Gauge"]:
         return self.__gauges
 
     def __repr__(self) -> str:

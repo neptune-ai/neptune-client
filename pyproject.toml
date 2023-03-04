@@ -21,6 +21,7 @@ future = ">=0.17.1"
 # Utility
 packaging = "*"
 click = ">=7.0"
+typing_extensions = "*"
 
 # Networking
 bravado = "^11.0.0"
