@@ -13,19 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 __all__ = ["Daemon"]
 
-import abc
 import functools
 import threading
 import time
+from abc import abstractmethod
+from typing import (
+    Any,
+    Callable,
+    Concatenate,
+    ParamSpec,
+)
 
 from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.internal.utils.logger import logger
 
+P = ParamSpec("P")
+
 
 class Daemon(threading.Thread):
-    def __init__(self, sleep_time: float, name):
+    def __init__(self, sleep_time: float, name: str) -> None:
         super().__init__(daemon=True, name=name)
         self._sleep_time = sleep_time
         self._interrupted = False
@@ -33,20 +43,20 @@ class Daemon(threading.Thread):
         self._is_running = False
         self.last_backoff_time = 0  # used only with ConnectionRetryWrapper decorator
 
-    def interrupt(self):
+    def interrupt(self) -> None:
         self._interrupted = True
         self.wake_up()
 
-    def wake_up(self):
+    def wake_up(self) -> None:
         self._event.set()
 
-    def disable_sleep(self):
+    def disable_sleep(self) -> None:
         self._sleep_time = 0
 
     def is_running(self) -> bool:
         return self._is_running
 
-    def run(self):
+    def run(self) -> None:
         self._is_running = True
         try:
             while not self._interrupted:
@@ -57,20 +67,20 @@ class Daemon(threading.Thread):
         finally:
             self._is_running = False
 
-    @abc.abstractmethod
-    def work(self):
-        pass
+    @abstractmethod
+    def work(self) -> None:
+        ...
 
     class ConnectionRetryWrapper:
         INITIAL_RETRY_BACKOFF = 2
         MAX_RETRY_BACKOFF = 120
 
-        def __init__(self, kill_message):
+        def __init__(self, kill_message: str):
             self.kill_message = kill_message
 
-        def __call__(self, func):
+        def __call__(self, func: Callable[Concatenate[Daemon, P], Any]) -> Callable[Concatenate[Daemon, P], Any]:
             @functools.wraps(func)
-            def wrapper(self_: Daemon, *args, **kwargs):
+            def wrapper(self_: Daemon, *args: P.args, **kwargs: P.kwargs) -> Any:
                 while not self_._interrupted:
                     try:
                         result = func(self_, *args, **kwargs)

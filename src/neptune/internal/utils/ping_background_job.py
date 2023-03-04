@@ -18,6 +18,7 @@ __all__ = ["PingBackgroundJob"]
 import logging
 from typing import (
     TYPE_CHECKING,
+    Any,
     Optional,
 )
 
@@ -31,23 +32,23 @@ _logger = logging.getLogger(__name__)
 
 
 class PingBackgroundJob(BackgroundJob):
-    def __init__(self, period: float = 10):
+    def __init__(self, period: float = 10) -> None:
         self._period = period
-        self._thread = None
+        self._thread: Optional[Daemon] = None
         self._started = False
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "MetadataContainer") -> None:
         self._thread = self.ReportingThread(self._period, container)
         self._thread.start()
         self._started = True
 
-    def stop(self):
-        if not self._started:
+    def stop(self) -> None:
+        if not self._started or not self._thread:
             return
         self._thread.interrupt()
 
-    def join(self, seconds: Optional[float] = None):
-        if not self._started:
+    def join(self, seconds: Optional[float] = None) -> None:
+        if not self._started or not self._thread:
             return
         self._thread.join(seconds)
 
@@ -62,5 +63,5 @@ class PingBackgroundJob(BackgroundJob):
                 " the run will be shown as inactive."
             )
         )
-        def work(self) -> None:
+        def work(self) -> Any:
             self._container.ping()

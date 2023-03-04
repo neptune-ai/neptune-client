@@ -323,7 +323,6 @@ module = [
     "neptune.internal.operation_processors.sync_operation_processor",
     "neptune.internal.streams.std_capture_background_job",
     "neptune.internal.streams.std_stream_capture_logger",
-    "neptune.internal.threading.daemon",
     "neptune.internal.utils.generic_attribute_mapper",
     "neptune.internal.utils.git",
     "neptune.internal.utils.images",
