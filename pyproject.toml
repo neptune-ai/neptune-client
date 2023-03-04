@@ -268,7 +268,6 @@ module = [
     "neptune.common.hardware.metrics.reports.metric_reporter_factory",
     "neptune.common.hardware.metrics.service.metric_service",
     "neptune.common.hardware.metrics.service.metric_service_factory",
-    "neptune.common.hardware.resources.gpu_card_indices_provider",
     "neptune.common.hardware.resources.system_resource_info",
     "neptune.common.hardware.resources.system_resource_info_factory",
     "neptune.common.oauth",

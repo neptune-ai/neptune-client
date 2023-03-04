@@ -13,28 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import re
+from typing import List
 
 
 class GPUCardIndicesProvider(object):
-    def __init__(self, cuda_visible_devices, gpu_card_count):
+    def __init__(self, cuda_visible_devices: str, gpu_card_count: int) -> None:
         self.__cuda_visible_devices = cuda_visible_devices
         self.__gpu_card_count = gpu_card_count
         self.__cuda_visible_devices_regex = r"^-?\d+(,-?\d+)*$"
 
-    def get(self):
+    def get(self) -> List[int]:
         if self.__is_cuda_visible_devices_correct():
             return self.__gpu_card_indices_from_cuda_visible_devices()
         else:
             return list(range(self.__gpu_card_count))
 
-    def __is_cuda_visible_devices_correct(self):
-        return self.__cuda_visible_devices is not None and re.match(
-            self.__cuda_visible_devices_regex, self.__cuda_visible_devices
+    def __is_cuda_visible_devices_correct(self) -> bool:
+        return (
+            self.__cuda_visible_devices is not None
+            and re.match(self.__cuda_visible_devices_regex, self.__cuda_visible_devices) is not None
         )
 
-    def __gpu_card_indices_from_cuda_visible_devices(self):
+    def __gpu_card_indices_from_cuda_visible_devices(self) -> List[int]:
         correct_indices = []
 
         # According to CUDA Toolkit specification.
