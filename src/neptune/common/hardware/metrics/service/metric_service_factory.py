@@ -32,7 +32,7 @@ if TYPE_CHECKING:
 
 
 class MetricServiceFactory:
-    def __init__(self, backend: LeaderboardApiClient, os_environ: Dict[str, str]):
+    def __init__(self, backend: "LeaderboardApiClient", os_environ: Dict[str, str]):
         self.__backend = backend
         self.__os_environ = os_environ
 
