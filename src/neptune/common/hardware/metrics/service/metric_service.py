@@ -13,15 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from neptune.common.hardware.metrics.metrics_container import MetricsContainer
+    from neptune.common.hardware.metrics.reports.metric_reporter import MetricReporter
+    from neptune.legacy.backend import LeaderboardApiClient
+    from neptune.legacy.experiments import Experiment
 
 
-class MetricService(object):
-    def __init__(self, backend, metric_reporter, experiment, metrics_container):
+class MetricService:
+    def __init__(
+        self,
+        backend: "LeaderboardApiClient",
+        metric_reporter: "MetricReporter",
+        experiment: "Experiment",
+        metrics_container: "MetricsContainer",
+    ) -> None:
         self.__backend = backend
         self.__metric_reporter = metric_reporter
         self.experiment = experiment
         self.metrics_container = metrics_container
 
-    def report_and_send(self, timestamp):
+    def report_and_send(self, timestamp: float) -> None:
         metric_reports = self.__metric_reporter.report(timestamp)
         self.__backend.send_hardware_metric_reports(self.experiment, self.metrics_container.metrics(), metric_reports)

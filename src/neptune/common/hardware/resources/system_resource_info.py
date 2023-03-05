@@ -19,7 +19,7 @@ from typing import List
 class SystemResourceInfo:
     def __init__(
         self,
-        cpu_core_count: int,
+        cpu_core_count: float,
         memory_amount_bytes: int,
         gpu_card_indices: List[int],
         gpu_memory_amount_bytes: int,
@@ -30,7 +30,7 @@ class SystemResourceInfo:
         self.__gpu_memory_amount_bytes = gpu_memory_amount_bytes
 
     @property
-    def cpu_core_count(self) -> int:
+    def cpu_core_count(self) -> float:
         return self.__cpu_core_count
 
     @property

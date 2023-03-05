@@ -256,19 +256,8 @@ module = [
     "neptune.cli.utils",
     "neptune.common.backends.utils",
     "neptune.common.exceptions",
-    "neptune.common.hardware.cgroup.cgroup_filesystem_reader",
-    "neptune.common.hardware.cgroup.cgroup_monitor",
-    "neptune.common.hardware.gauges.cpu",
-    "neptune.common.hardware.gauges.gauge_factory",
     "neptune.common.hardware.gauges.gpu",
-    "neptune.common.hardware.gauges.memory",
     "neptune.common.hardware.gpu.gpu_monitor",
-    "neptune.common.hardware.metrics.metrics_factory",
-    "neptune.common.hardware.metrics.reports.metric_reporter",
-    "neptune.common.hardware.metrics.reports.metric_reporter_factory",
-    "neptune.common.hardware.metrics.service.metric_service",
-    "neptune.common.hardware.metrics.service.metric_service_factory",
-    "neptune.common.hardware.resources.system_resource_info_factory",
     "neptune.common.oauth",
     "neptune.common.patches.bravado",
     "neptune.common.storage.datastream",
@@ -344,7 +333,6 @@ module = [
     "neptune.metadata_containers.run",
     "neptune.new._compatibility",
     "neptune.types.type_casting",
-    "neptune.vendor.pynvml",
 
     # Legacy client
     "neptune.legacy.api_exceptions",
@@ -385,5 +373,8 @@ module = [
     "neptune.legacy.notebook",
     "neptune.legacy.projects",
     "neptune.legacy.sessions",
+
+    # External package with C bindings
+    "neptune.vendor.pynvml",
 ]
 ignore_errors = "True"

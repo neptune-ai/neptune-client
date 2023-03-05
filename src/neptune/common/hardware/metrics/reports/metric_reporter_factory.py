@@ -13,12 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    TYPE_CHECKING,
+    List,
+)
+
 from neptune.common.hardware.metrics.reports.metric_reporter import MetricReporter
 
+if TYPE_CHECKING:
+    from neptune.common.hardware.metrics.metric import Metric
 
-class MetricReporterFactory(object):
-    def __init__(self, reference_timestamp):
+
+class MetricReporterFactory:
+    def __init__(self, reference_timestamp: float) -> None:
         self.__reference_timestamp = reference_timestamp
 
-    def create(self, metrics):
+    def create(self, metrics: List["Metric"]) -> MetricReporter:
         return MetricReporter(metrics=metrics, reference_timestamp=self.__reference_timestamp)

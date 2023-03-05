@@ -13,42 +13,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Any
+
 from neptune.common.hardware.constants import BYTES_IN_ONE_GB
 from neptune.common.hardware.gauges.gauge import Gauge
 from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 
 
 class GpuUsageGauge(Gauge):
-    def __init__(self, card_index):
+    def __init__(self, card_index: int):
         self.card_index = card_index
         self.__gpu_monitor = GPUMonitor()
 
-    def name(self):
+    def name(self) -> str:
         return str(self.card_index)
 
-    def value(self):
+    def value(self) -> float:
         return self.__gpu_monitor.get_card_usage_percent(self.card_index)
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.card_index == other.card_index
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__class__ == other.__class__ and self.card_index == other.card_index)
 
-    def __repr__(self):
-        return str("GpuUsageGauge")
+    def __repr__(self) -> str:
+        return "GpuUsageGauge"
 
 
 class GpuMemoryGauge(Gauge):
-    def __init__(self, card_index):
+    def __init__(self, card_index: int):
         self.card_index = card_index
         self.__gpu_monitor = GPUMonitor()
 
-    def name(self):
+    def name(self) -> str:
         return str(self.card_index)
 
-    def value(self):
+    def value(self) -> float:
         return self.__gpu_monitor.get_card_used_memory_in_bytes(self.card_index) / float(BYTES_IN_ONE_GB)
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__ and self.card_index == other.card_index
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__class__ == other.__class__ and self.card_index == other.card_index)
 
-    def __repr__(self):
-        return str("GpuMemoryGauge")
+    def __repr__(self) -> str:
+        return "GpuMemoryGauge"

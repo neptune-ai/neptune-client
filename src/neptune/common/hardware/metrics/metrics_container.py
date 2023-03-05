@@ -16,6 +16,7 @@
 from typing import (
     TYPE_CHECKING,
     List,
+    Optional,
 )
 
 if TYPE_CHECKING:
@@ -27,8 +28,8 @@ class MetricsContainer:
         self,
         cpu_usage_metric: "Metric",
         memory_metric: "Metric",
-        gpu_usage_metric: "Metric",
-        gpu_memory_metric: "Metric",
+        gpu_usage_metric: Optional["Metric"],
+        gpu_memory_metric: Optional["Metric"],
     ) -> None:
         self.cpu_usage_metric = cpu_usage_metric
         self.memory_metric = memory_metric

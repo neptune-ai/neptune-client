@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+)
+
 from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
@@ -21,13 +26,17 @@ from neptune.common.hardware.metrics.service.metric_service import MetricService
 from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.common.hardware.system.system_monitor import SystemMonitor
 
+if TYPE_CHECKING:
+    from neptune.legacy.backend import LeaderboardApiClient
+    from neptune.legacy.experiments import Experiment
 
-class MetricServiceFactory(object):
-    def __init__(self, backend, os_environ):
+
+class MetricServiceFactory:
+    def __init__(self, backend: LeaderboardApiClient, os_environ: Dict[str, str]):
         self.__backend = backend
         self.__os_environ = os_environ
 
-    def create(self, gauge_mode, experiment, reference_timestamp):
+    def create(self, gauge_mode: str, experiment: "Experiment", reference_timestamp: float) -> "MetricService":
         system_resource_info = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=GPUMonitor(),

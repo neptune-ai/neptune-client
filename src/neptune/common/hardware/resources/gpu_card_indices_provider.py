@@ -14,11 +14,14 @@
 # limitations under the License.
 #
 import re
-from typing import List
+from typing import (
+    List,
+    Optional,
+)
 
 
-class GPUCardIndicesProvider(object):
-    def __init__(self, cuda_visible_devices: str, gpu_card_count: int) -> None:
+class GPUCardIndicesProvider:
+    def __init__(self, cuda_visible_devices: Optional[str], gpu_card_count: int) -> None:
         self.__cuda_visible_devices = cuda_visible_devices
         self.__gpu_card_count = gpu_card_count
         self.__cuda_visible_devices_regex = r"^-?\d+(,-?\d+)*$"
@@ -36,6 +39,9 @@ class GPUCardIndicesProvider(object):
         )
 
     def __gpu_card_indices_from_cuda_visible_devices(self) -> List[int]:
+        # Added to satisfy mypy.
+        assert self.__cuda_visible_devices is not None
+
         correct_indices = []
 
         # According to CUDA Toolkit specification.

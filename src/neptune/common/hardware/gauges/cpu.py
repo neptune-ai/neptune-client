@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Any
 
 from neptune.common.hardware.cgroup.cgroup_monitor import CGroupMonitor
 from neptune.common.hardware.gauges.gauge import Gauge
@@ -20,34 +21,34 @@ from neptune.common.hardware.system.system_monitor import SystemMonitor
 
 
 class SystemCpuUsageGauge(Gauge):
-    def __init__(self):
+    def __init__(self) -> None:
         self.__system_monitor = SystemMonitor()
 
-    def name(self):
+    def name(self) -> str:
         return "cpu"
 
-    def value(self):
+    def value(self) -> float:
         return self.__system_monitor.cpu_percent()
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__class__ == other.__class__)
 
-    def __repr__(self):
-        return str("SystemCpuUsageGauge")
+    def __repr__(self) -> str:
+        return "SystemCpuUsageGauge"
 
 
 class CGroupCpuUsageGauge(Gauge):
-    def __init__(self):
+    def __init__(self) -> None:
         self.__cgroup_monitor = CGroupMonitor.create()
 
-    def name(self):
+    def name(self) -> str:
         return "cpu"
 
-    def value(self):
+    def value(self) -> float:
         return self.__cgroup_monitor.get_cpu_usage_percentage()
 
-    def __eq__(self, other):
-        return self.__class__ == other.__class__
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__class__ == other.__class__)
 
-    def __repr__(self):
-        return str("CGroupCpuUsageGauge")
+    def __repr__(self) -> str:
+        return "CGroupCpuUsageGauge"

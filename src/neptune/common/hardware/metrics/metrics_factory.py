@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import TYPE_CHECKING
+
 from neptune.common.hardware.constants import BYTES_IN_ONE_GB
 from neptune.common.hardware.metrics.metric import (
     Metric,
@@ -20,13 +22,17 @@ from neptune.common.hardware.metrics.metric import (
 )
 from neptune.common.hardware.metrics.metrics_container import MetricsContainer
 
+if TYPE_CHECKING:
+    from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
+    from neptune.common.hardware.resources.system_resource_info import SystemResourceInfo
+
 
 class MetricsFactory(object):
-    def __init__(self, gauge_factory, system_resource_info):
+    def __init__(self, gauge_factory: "GaugeFactory", system_resource_info: "SystemResourceInfo") -> None:
         self.__gauge_factory = gauge_factory
         self.__system_resource_info = system_resource_info
 
-    def create_metrics_container(self):
+    def create_metrics_container(self) -> MetricsContainer:
         cpu_usage_metric = self.__create_cpu_usage_metric()
         memory_metric = self.__create_memory_metric()
 
@@ -41,7 +47,7 @@ class MetricsFactory(object):
             gpu_memory_metric=gpu_memory_metric,
         )
 
-    def __create_cpu_usage_metric(self):
+    def __create_cpu_usage_metric(self) -> Metric:
         return Metric(
             name="CPU - usage",
             description="average of all cores",
@@ -52,7 +58,7 @@ class MetricsFactory(object):
             gauges=[self.__gauge_factory.create_cpu_usage_gauge()],
         )
 
-    def __create_memory_metric(self):
+    def __create_memory_metric(self) -> Metric:
         return Metric(
             name="RAM",
             description="",
@@ -63,7 +69,7 @@ class MetricsFactory(object):
             gauges=[self.__gauge_factory.create_memory_usage_gauge()],
         )
 
-    def __create_gpu_usage_metric(self):
+    def __create_gpu_usage_metric(self) -> Metric:
         return Metric(
             name="GPU - usage",
             description="{} cards".format(self.__system_resource_info.gpu_card_count),
@@ -77,7 +83,7 @@ class MetricsFactory(object):
             ],
         )
 
-    def __create_gpu_memory_metric(self):
+    def __create_gpu_memory_metric(self) -> Metric:
         return Metric(
             name="GPU - memory",
             description="{} cards".format(self.__system_resource_info.gpu_card_count),

@@ -13,18 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+)
+
 from neptune.common.hardware.metrics.reports.metric_report import (
     MetricReport,
     MetricValue,
 )
 
+if TYPE_CHECKING:
+    from neptune.common.hardware.gauges.gauge import Gauge
+    from neptune.common.hardware.metrics.metric import Metric
 
-class MetricReporter(object):
-    def __init__(self, metrics, reference_timestamp):
+
+class MetricReporter:
+    def __init__(self, metrics: List["Metric"], reference_timestamp: float):
         self.__metrics = metrics
         self.__reference_timestamp = reference_timestamp
 
-    def report(self, timestamp):
+    def report(self, timestamp: float) -> List[MetricReport]:
         """
         :param timestamp: Time of measurement (float, seconds since Epoch).
         :return: list[MetricReport]
@@ -37,7 +47,7 @@ class MetricReporter(object):
             for metric in self.__metrics
         ]
 
-    def __metric_value_for_gauge(self, gauge, timestamp):
+    def __metric_value_for_gauge(self, gauge: "Gauge", timestamp: float) -> Optional[MetricValue]:
         value = gauge.value()
         return (
             MetricValue(

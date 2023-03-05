@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import TYPE_CHECKING
+
 from neptune.common.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
@@ -27,12 +29,15 @@ from neptune.common.hardware.gauges.memory import (
     SystemMemoryUsageGauge,
 )
 
+if TYPE_CHECKING:
+    from neptune.common.hardware.gauges.gauge import Gauge
 
-class GaugeFactory(object):
-    def __init__(self, gauge_mode):
-        self.__gauge_mode = gauge_mode
 
-    def create_cpu_usage_gauge(self):
+class GaugeFactory:
+    def __init__(self, gauge_mode: str) -> None:
+        self.__gauge_mode: str = gauge_mode
+
+    def create_cpu_usage_gauge(self) -> "Gauge":
         if self.__gauge_mode == GaugeMode.SYSTEM:
             return SystemCpuUsageGauge()
         elif self.__gauge_mode == GaugeMode.CGROUP:
@@ -40,7 +45,7 @@ class GaugeFactory(object):
         else:
             raise self.__invalid_gauge_mode_exception()
 
-    def create_memory_usage_gauge(self):
+    def create_memory_usage_gauge(self) -> "Gauge":
         if self.__gauge_mode == GaugeMode.SYSTEM:
             return SystemMemoryUsageGauge()
         elif self.__gauge_mode == GaugeMode.CGROUP:
@@ -49,12 +54,12 @@ class GaugeFactory(object):
             raise self.__invalid_gauge_mode_exception()
 
     @staticmethod
-    def create_gpu_usage_gauge(card_index):
+    def create_gpu_usage_gauge(card_index: int) -> "Gauge":
         return GpuUsageGauge(card_index=card_index)
 
     @staticmethod
-    def create_gpu_memory_gauge(card_index):
+    def create_gpu_memory_gauge(card_index: int) -> "Gauge":
         return GpuMemoryGauge(card_index=card_index)
 
-    def __invalid_gauge_mode_exception(self):
+    def __invalid_gauge_mode_exception(self) -> ValueError:
         return ValueError(str("Invalid gauge mode: {}".format(self.__gauge_mode)))

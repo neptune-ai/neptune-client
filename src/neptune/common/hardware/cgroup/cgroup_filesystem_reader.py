@@ -18,8 +18,8 @@ import os
 import re
 
 
-class CGroupFilesystemReader(object):
-    def __init__(self):
+class CGroupFilesystemReader:
+    def __init__(self) -> None:
         cgroup_memory_dir = self.__cgroup_mount_dir(subsystem="memory")
         self.__memory_usage_file = os.path.join(cgroup_memory_dir, "memory.usage_in_bytes")
         self.__memory_limit_file = os.path.join(cgroup_memory_dir, "memory.limit_in_bytes")
@@ -31,26 +31,26 @@ class CGroupFilesystemReader(object):
         cgroup_cpuacct_dir = self.__cgroup_mount_dir(subsystem="cpuacct")
         self.__cpuacct_usage_file = os.path.join(cgroup_cpuacct_dir, "cpuacct.usage")
 
-    def get_memory_usage_in_bytes(self):
+    def get_memory_usage_in_bytes(self) -> int:
         return self.__read_int_file(self.__memory_usage_file)
 
-    def get_memory_limit_in_bytes(self):
+    def get_memory_limit_in_bytes(self) -> int:
         return self.__read_int_file(self.__memory_limit_file)
 
-    def get_cpu_quota_micros(self):
+    def get_cpu_quota_micros(self) -> int:
         return self.__read_int_file(self.__cpu_quota_file)
 
-    def get_cpu_period_micros(self):
+    def get_cpu_period_micros(self) -> int:
         return self.__read_int_file(self.__cpu_period_file)
 
-    def get_cpuacct_usage_nanos(self):
+    def get_cpuacct_usage_nanos(self) -> int:
         return self.__read_int_file(self.__cpuacct_usage_file)
 
-    def __read_int_file(self, filename):
+    def __read_int_file(self, filename: str) -> int:
         with open(filename) as f:
             return int(f.read())
 
-    def __cgroup_mount_dir(self, subsystem):
+    def __cgroup_mount_dir(self, subsystem: str) -> str:
         """
         :param subsystem: cgroup subsystem like memory, cpu
         :return: directory where given subsystem is mounted
