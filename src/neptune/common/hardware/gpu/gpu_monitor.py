@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["GPUMonitor"]
 
 import logging
+from typing import (
+    Callable,
+    List,
+    TypeVar,
+)
 
-from neptune.vendor.pynvml import (
+from pynvml import (
     NVMLError,
     nvmlDeviceGetCount,
     nvmlDeviceGetHandleByIndex,
@@ -25,32 +31,36 @@ from neptune.vendor.pynvml import (
     nvmlInit,
 )
 
+T = TypeVar("T")
+
 _logger = logging.getLogger(__name__)
 
 
-class GPUMonitor(object):
+class GPUMonitor:
 
-    nvml_error_printed = False
+    nvml_error_printed: bool = False
 
-    def get_card_count(self):
+    def get_card_count(self) -> int:
         return self.__nvml_get_or_else(nvmlDeviceGetCount, default=0)
 
-    def get_card_usage_percent(self, card_index):
+    def get_card_usage_percent(self, card_index: int) -> float:
         return self.__nvml_get_or_else(
-            lambda: float(nvmlDeviceGetUtilizationRates(nvmlDeviceGetHandleByIndex(card_index)).gpu)
+            lambda: float(nvmlDeviceGetUtilizationRates(nvmlDeviceGetHandleByIndex(card_index)).gpu), default=0.0
         )
 
-    def get_card_used_memory_in_bytes(self, card_index):
-        return self.__nvml_get_or_else(lambda: nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).used)
+    def get_card_used_memory_in_bytes(self, card_index: int) -> int:
+        return self.__nvml_get_or_else(
+            lambda: int(nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).used), default=0
+        )
 
-    def get_top_card_memory_in_bytes(self):
-        def read_top_card_memory_in_bytes():
+    def get_top_card_memory_in_bytes(self) -> int:
+        def read_top_card_memory_in_bytes() -> List[int]:
             return self.__nvml_get_or_else(
                 lambda: [
-                    nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total
+                    int(nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total)
                     for card_index in range(nvmlDeviceGetCount())
                 ],
-                default=0,
+                default=[],
             )
 
         memory_per_card = read_top_card_memory_in_bytes()
@@ -58,7 +68,7 @@ class GPUMonitor(object):
             return 0
         return max(memory_per_card)
 
-    def __nvml_get_or_else(self, getter, default=None):
+    def __nvml_get_or_else(self, getter: Callable[..., T], default: T) -> T:
         try:
             nvmlInit()
             return getter()

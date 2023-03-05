@@ -39,6 +39,7 @@ Pillow = ">=1.1.6"
 GitPython = ">=2.0.8"
 psutil = "*"
 pandas = "*"
+pynvml = "*"
 
 # dev
 altair = { version = "*", optional = true }
@@ -256,8 +257,6 @@ module = [
     "neptune.cli.utils",
     "neptune.common.backends.utils",
     "neptune.common.exceptions",
-    "neptune.common.hardware.gauges.gpu",
-    "neptune.common.hardware.gpu.gpu_monitor",
     "neptune.common.oauth",
     "neptune.common.patches.bravado",
     "neptune.common.storage.datastream",
@@ -288,7 +287,6 @@ module = [
     "neptune.internal.backends.utils",
     "neptune.internal.container_structure",
     "neptune.internal.disk_queue",
-    "neptune.internal.hardware.gpu.gpu_monitor",
     "neptune.internal.hardware.hardware_metric_reporting_job",
     "neptune.internal.init.model",
     "neptune.internal.init.model_version",
@@ -373,8 +371,5 @@ module = [
     "neptune.legacy.notebook",
     "neptune.legacy.projects",
     "neptune.legacy.sessions",
-
-    # External package with C bindings
-    "neptune.vendor.pynvml",
 ]
 ignore_errors = "True"
