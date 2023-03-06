@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["GitRef"]
+__all__ = ["GitRef", "GitRefDisabled"]
 
 from dataclasses import dataclass
-from datetime import datetime
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    List,
     Optional,
     TypeVar,
+    Union,
 )
 
 from neptune.types.atoms.atom import Atom
+from neptune.vendor.lib_programname import get_path_executed_script
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
@@ -34,18 +35,33 @@ Ret = TypeVar("Ret")
 
 @dataclass
 class GitRef(Atom):
+    """
+    Represents a git repository.
+    args:
+        repository_path: path to the repository. If not provided, the path to the script that is currently executed
+    """
 
-    commit_id: str
-    message: str
-    author_name: str
-    author_email: str
-    commit_date: datetime
-    dirty: bool
-    branch: Optional[str]
-    remotes: Optional[List[str]]
+    repository_path: Optional[Union[str, Path]] = None
+
+    @staticmethod
+    def disabled() -> "GitRef":
+        return GitRef()
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
 
-    def __str__(self):
-        return "GitRef({})".format(str(self.commit_id))
+    def __str__(self) -> str:
+        return f"GitRef({self.repository_path})"
+
+    def resolve_path(self) -> Optional[Path]:
+        repository_path = self.repository_path or get_path_executed_script()
+        return Path(repository_path).resolve()
+
+
+class GitRefDisabled(GitRef):
+    """
+    Represents a disabled git repository.
+    """
+
+    def resolve_path(self) -> Optional[Path]:
+        return None

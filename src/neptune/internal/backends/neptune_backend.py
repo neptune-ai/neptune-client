@@ -56,8 +56,8 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.types.atoms import GitRef
 
 
 class NeptuneBackend:
@@ -95,7 +95,7 @@ class NeptuneBackend:
     def create_run(
         self,
         project_id: UniqueId,
-        git_ref: Optional[GitRef] = None,
+        git_info: Optional[GitInfo] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
