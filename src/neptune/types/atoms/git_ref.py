@@ -36,7 +36,7 @@ Ret = TypeVar("Ret")
 @dataclass
 class GitRef(Atom):
     """
-    Represents a git repository.
+    Represents a git repository metadata.
     args:
         repository_path: path to the repository. If not provided, the path to the script that is currently executed
     """
@@ -57,13 +57,12 @@ class GitRef(Atom):
     @classmethod
     def disabled(cls) -> "GitRef":
         """
-        TODO: add docs
+        Returns `GitRef` that do not track git repository metadata.
         """
         return cls(repository_path=None)
 
 
 GitRefDisabled = GitRef.disabled()
 """
-Represents a disabled git repository.
-TODO: add docs
+`GitRef` that do not track git repository metadata.
 """
