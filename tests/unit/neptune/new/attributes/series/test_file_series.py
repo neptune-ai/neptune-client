@@ -51,86 +51,18 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(TypeError):
                 FileSeries(MagicMock(), MagicMock()).log(value)
 
-    def test_log_content(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log_content(self, get_operation_processor):
         # given
         wait = self._random_wait()
         path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
 
-        file = File.as_image(numpy.random.rand(10, 10) * 255)
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
 
-        # when
-        attr.log(
-            file,
-            step=3,
-            timestamp=self._now(),
-            wait=wait,
-            name="nazwa",
-            description="opis",
-        )
-
-        # then
-        op_processor.enqueue_operation.assert_called_once_with(
-            LogImages(
-                path,
-                [
-                    LogImages.ValueType(
-                        ImageValue(base64_encode(file.content), "nazwa", "opis"),
-                        3,
-                        self._now(),
-                    )
-                ],
-            ),
-            wait=wait,
-        )
-
-    def test_assign_content(self):
-        # given
-        wait = self._random_wait()
-        path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
-
-        file = File.as_image(numpy.random.rand(10, 10) * 255)
-
-        # when
-        attr.assign([file], wait=wait)
-
-        # then
-        op_processor.enqueue_operation.assert_has_calls(
-            [
-                call(ClearImageLog(path), wait=False),
-                call(
-                    LogImages(
-                        path,
-                        [
-                            LogImages.ValueType(
-                                ImageValue(base64_encode(file.content), None, None),
-                                None,
-                                self._now(),
-                            )
-                        ],
-                    ),
-                    wait=wait,
-                ),
-            ]
-        )
-
-    def test_log_path(self):
-        # given
-        wait = self._random_wait()
-        path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
-
-        file = File.as_image(numpy.random.rand(10, 10) * 255)
-        stream = File.from_stream(io.BytesIO(file.content))
-        with create_file(file.content, binary_mode=True) as tmp_filename:
-            saved_file = File(tmp_filename)
+            file = File.as_image(numpy.random.rand(10, 10) * 255)
 
             # when
             attr.log(
@@ -138,95 +70,176 @@ class TestFileSeries(TestAttributeBase):
                 step=3,
                 timestamp=self._now(),
                 wait=wait,
-                description="something",
-            )
-            attr.log(
-                [stream, saved_file],
-                timestamp=self._now(),
-                wait=wait,
-                description="something",
+                name="nazwa",
+                description="opis",
             )
 
             # then
-            def generate_expected_call(wait, step):
-                log_operation = LogImages(
-                    path=path,
-                    values=[
+            processor.enqueue_operation.assert_called_with(
+                LogImages(
+                    path,
+                    [
                         LogImages.ValueType(
-                            value=ImageValue(base64_encode(file.content), None, "something"),
-                            step=step,
-                            ts=self._now(),
+                            ImageValue(base64_encode(file.content), "nazwa", "opis"),
+                            3,
+                            self._now(),
                         )
                     ],
-                )
-                return call(
-                    log_operation,
-                    wait=wait,
-                )
+                ),
+                wait=wait,
+            )
 
-            op_processor.enqueue_operation.assert_has_calls(
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign_content(self, get_operation_processor):
+        # given
+        wait = self._random_wait()
+        path = self._random_path()
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
+
+            file = File.as_image(numpy.random.rand(10, 10) * 255)
+
+            # when
+            attr.assign([file], wait=wait)
+
+            # then
+            processor.enqueue_operation.assert_has_calls(
                 [
-                    generate_expected_call(wait, step=3),
-                    generate_expected_call(wait, step=None),
-                    generate_expected_call(wait, step=None),
+                    call(ClearImageLog(path), wait=False),
+                    call(
+                        LogImages(
+                            path,
+                            [
+                                LogImages.ValueType(
+                                    ImageValue(base64_encode(file.content), None, None),
+                                    None,
+                                    self._now(),
+                                )
+                            ],
+                        ),
+                        wait=wait,
+                    ),
                 ]
             )
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log_path(self, get_operation_processor):
+        # given
+        wait = self._random_wait()
+        path = self._random_path()
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
+
+            file = File.as_image(numpy.random.rand(10, 10) * 255)
+            stream = File.from_stream(io.BytesIO(file.content))
+            with create_file(file.content, binary_mode=True) as tmp_filename:
+                saved_file = File(tmp_filename)
+
+                # when
+                attr.log(
+                    file,
+                    step=3,
+                    timestamp=self._now(),
+                    wait=wait,
+                    description="something",
+                )
+                attr.log(
+                    [stream, saved_file],
+                    timestamp=self._now(),
+                    wait=wait,
+                    description="something",
+                )
+
+                # then
+                def generate_expected_call(wait, step):
+                    log_operation = LogImages(
+                        path=path,
+                        values=[
+                            LogImages.ValueType(
+                                value=ImageValue(base64_encode(file.content), None, "something"),
+                                step=step,
+                                ts=self._now(),
+                            )
+                        ],
+                    )
+                    return call(
+                        log_operation,
+                        wait=wait,
+                    )
+
+                processor.enqueue_operation.assert_has_calls(
+                    [
+                        generate_expected_call(wait, step=3),
+                        generate_expected_call(wait, step=None),
+                        generate_expected_call(wait, step=None),
+                    ]
+                )
 
     def test_log_raise_not_image(self):
         # given
         path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
 
-        file = File.from_content("some text")
-        stream = File.from_stream(io.BytesIO(file.content))
-        with create_file(file.content, binary_mode=True) as tmp_filename:
-            saved_file = File(tmp_filename)
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
 
-            # when
-            with self.assertRaises(OperationNotSupported):
-                attr.log(file)
-            with self.assertRaises(OperationNotSupported):
-                attr.log(saved_file)
-            with self.assertRaises(OperationNotSupported):
-                attr.log(stream)
+            file = File.from_content("some text")
+            stream = File.from_stream(io.BytesIO(file.content))
+            with create_file(file.content, binary_mode=True) as tmp_filename:
+                saved_file = File(tmp_filename)
+
+                # when
+                with self.assertRaises(OperationNotSupported):
+                    attr.log(file)
+                with self.assertRaises(OperationNotSupported):
+                    attr.log(saved_file)
+                with self.assertRaises(OperationNotSupported):
+                    attr.log(stream)
 
     def test_assign_raise_not_image(self):
         # given
         path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
 
-        file = File.from_content("some text")
-        stream = File.from_stream(io.BytesIO(file.content))
-        with create_file(file.content, binary_mode=True) as tmp_filename:
-            saved_file = File(tmp_filename)
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
 
-            # when
-            with self.assertRaises(OperationNotSupported):
-                attr.assign([file])
-            with self.assertRaises(OperationNotSupported):
-                attr.assign([saved_file])
-            with self.assertRaises(OperationNotSupported):
-                attr.assign([stream])
+            file = File.from_content("some text")
+            stream = File.from_stream(io.BytesIO(file.content))
+            with create_file(file.content, binary_mode=True) as tmp_filename:
+                saved_file = File(tmp_filename)
+
+                # when
+                with self.assertRaises(OperationNotSupported):
+                    attr.assign([file])
+                with self.assertRaises(OperationNotSupported):
+                    attr.assign([saved_file])
+                with self.assertRaises(OperationNotSupported):
+                    attr.assign([stream])
 
     @mock.patch("neptune.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
     def test_image_limit(self):
         """Test if we prohibit logging images greater than mocked 1KB limit size"""
         # given
         path = self._random_path()
-        op_processor = MagicMock()
-        exp = self._create_run(processor=op_processor)
-        attr = FileSeries(exp, path)
 
-        file = File.as_image(numpy.random.rand(100, 100) * 255)
-        with create_file(file.content, binary_mode=True) as tmp_filename:
-            saved_file = File(tmp_filename)
+        with self._exp() as exp:
+            attr = FileSeries(exp, path)
 
-            # when
-            with pytest.warns(expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"):
-                attr.assign([file])
-            with pytest.warns(expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"):
-                attr.assign([saved_file])
+            file = File.as_image(numpy.random.rand(100, 100) * 255)
+            with create_file(file.content, binary_mode=True) as tmp_filename:
+                saved_file = File(tmp_filename)
+
+                # when
+                with pytest.warns(
+                    expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"
+                ):
+                    attr.assign([file])
+                with pytest.warns(
+                    expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"
+                ):
+                    attr.assign([saved_file])

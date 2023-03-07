@@ -15,7 +15,7 @@
 #
 __all__ = ["Project"]
 
-import threading
+import os
 from typing import (
     Any,
     Dict,
@@ -24,8 +24,10 @@ from typing import (
     Union,
 )
 
+from neptune.common.exceptions import NeptuneException
+from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
-from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -33,15 +35,13 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
-from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import (
-    SysId,
-    UniqueId,
-)
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.internal.state import ContainerState
-from neptune.internal.utils import as_list
+from neptune.internal.utils import (
+    as_list,
+    verify_type,
+)
 from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.metadata_containers_table import Table
@@ -61,28 +61,30 @@ class Project(MetadataContainer):
 
     def __init__(
         self,
+        project: Optional[str] = None,
         *,
-        id_: UniqueId,
-        mode: Mode,
-        backend: NeptuneBackend,
-        op_processor: OperationProcessor,
-        background_job: BackgroundJob,
-        lock: threading.RLock,
-        workspace: str,
-        project_name: str,
-        sys_id: SysId,
+        api_token: Optional[str] = None,
+        mode: Optional[str] = None,
+        flush_period: float = DEFAULT_FLUSH_PERIOD,
+        proxies: Optional[dict] = None,
     ):
-        super().__init__(
-            id_=id_,
-            mode=mode,
-            backend=backend,
-            op_processor=op_processor,
-            background_job=background_job,
-            lock=lock,
-            project_id=id_,
-            project_name=project_name,
-            workspace=workspace,
-            sys_id=sys_id,
+        verify_type("mode", mode, (str, type(None)))
+
+        # make mode proper Enum instead of string
+        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+
+        if mode == Mode.OFFLINE:
+            raise NeptuneException("Project can't be initialized in OFFLINE mode")
+
+        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+
+    def _get_or_create_api_object(self) -> ApiExperiment:
+        return ApiExperiment(
+            id=self._project_api_object.id,
+            type=ContainerType.PROJECT,
+            sys_id=self._project_api_object.sys_id,
+            workspace=self._project_api_object.workspace,
+            project_name=self._project_api_object.name,
         )
 
     def _raise_if_stopped(self):
@@ -262,6 +264,7 @@ class Project(MetadataContainer):
         tags = as_list("tag", tag)
 
         nql_query = self._prepare_nql_query(ids, states, owners, tags)
+
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.RUN,

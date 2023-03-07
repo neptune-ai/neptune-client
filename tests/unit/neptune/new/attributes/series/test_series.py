@@ -38,7 +38,8 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestSeries(TestAttributeBase):
-    def test_assign(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign(self, get_operation_processor):
         value = FloatSeriesVal([17, 3.6], min=0, max=100, unit="%")
         expected = [
             LogFloats.ValueType(17, None, self._now()),
@@ -46,34 +47,38 @@ class TestSeries(TestAttributeBase):
         ]
 
         processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
+        get_operation_processor.return_value = processor
+        path, wait = (
             self._random_path(),
             self._random_wait(),
         )
-        var = FloatSeries(exp, path)
-        var.assign(value, wait=wait)
-        self.assertEqual(3, processor.enqueue_operation.call_count)
-        processor.enqueue_operation.assert_has_calls(
-            [
-                call(ConfigFloatSeries(path, min=0, max=100, unit="%"), wait=False),
-                call(ClearFloatLog(path), wait=False),
-                call(LogFloats(path, expected), wait=wait),
-            ]
-        )
+        with self._exp() as exp:
+            var = FloatSeries(exp, path)
+            var.assign(value, wait=wait)
+            processor.enqueue_operation.assert_has_calls(
+                [
+                    call(ConfigFloatSeries(path, min=0, max=100, unit="%"), wait=False),
+                    call(ClearFloatLog(path), wait=False),
+                    call(LogFloats(path, expected), wait=wait),
+                ]
+            )
 
-    def test_assign_empty(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign_empty(self, get_operation_processor):
         processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
-            self._random_path(),
-            self._random_wait(),
-        )
-        var = StringSeries(exp, path)
-        var.assign(StringSeriesVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringLog(path), wait=wait)
+        get_operation_processor.return_value = processor
 
-    def test_log(self):
+        with self._exp() as exp:
+            path, wait = (
+                self._random_path(),
+                self._random_wait(),
+            )
+            var = StringSeries(exp, path)
+            var.assign(StringSeriesVal([]), wait=wait)
+            processor.enqueue_operation.assert_called_with(ClearStringLog(path), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log(self, get_operation_processor):
         value_and_expected = [
             (13, [LogFloats.ValueType(13, None, self._now())]),
             (15.3, [LogFloats.ValueType(15.3, None, self._now())]),
@@ -105,16 +110,19 @@ class TestSeries(TestAttributeBase):
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = FloatSeries(exp, path)
-            var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait=wait)
+            get_operation_processor.return_value = processor
 
-    def test_log_with_step(self):
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = FloatSeries(exp, path)
+                var.log(value, wait=wait)
+                processor.enqueue_operation.assert_called_with(LogFloats(path, expected), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log_with_step(self, get_operation_processor):
         value_step_and_expected = [
             (13, 5.3, LogFloats.ValueType(13, 5.3, self._now())),
             (15.3, 10, LogFloats.ValueType(15.3, 10, self._now())),
@@ -125,16 +133,19 @@ class TestSeries(TestAttributeBase):
 
         for value, step, expected in value_step_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = FloatSeries(exp, path)
-            var.log(value, step=step, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait=wait)
+            get_operation_processor.return_value = processor
 
-    def test_log_with_timestamp(self):
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = FloatSeries(exp, path)
+                var.log(value, step=step, wait=wait)
+                processor.enqueue_operation.assert_called_with(LogFloats(path, [expected]), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log_with_timestamp(self, get_operation_processor):
         value_step_and_expected = [
             (13, 5.3, LogFloats.ValueType(13, None, 5.3)),
             (15.3, 10, LogFloats.ValueType(15.3, None, 10)),
@@ -142,36 +153,44 @@ class TestSeries(TestAttributeBase):
 
         for value, ts, expected in value_step_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
+            get_operation_processor.return_value = processor
+
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = FloatSeries(exp, path)
+                var.log(value, timestamp=ts, wait=wait)
+                processor.enqueue_operation.assert_called_with(LogFloats(path, [expected]), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_log_value_errors(self, get_operation_processor):
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            attr = FloatSeries(exp, self._random_path())
+
+            with self.assertRaises(ValueError):
+                attr.log(["str", 5])
+            with self.assertRaises(ValueError):
+                attr.log([5, 10], step=10)
+            with self.assertRaises(TypeError):
+                attr.log(5, step="str")
+            with self.assertRaises(TypeError):
+                attr.log(5, timestamp="str")
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_clear(self, get_operation_processor):
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            path, wait = (
                 self._random_path(),
                 self._random_wait(),
             )
             var = FloatSeries(exp, path)
-            var.log(value, timestamp=ts, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait=wait)
-
-    def test_log_value_errors(self):
-        processor = MagicMock()
-        exp, path = self._create_run(processor), self._random_path()
-        attr = FloatSeries(exp, path)
-
-        with self.assertRaises(ValueError):
-            attr.log(["str", 5])
-        with self.assertRaises(ValueError):
-            attr.log([5, 10], step=10)
-        with self.assertRaises(TypeError):
-            attr.log(5, step="str")
-        with self.assertRaises(TypeError):
-            attr.log(5, timestamp="str")
-
-    def test_clear(self):
-        processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
-            self._random_path(),
-            self._random_wait(),
-        )
-        var = FloatSeries(exp, path)
-        var.clear(wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait=wait)
+            var.clear(wait=wait)
+            processor.enqueue_operation.assert_called_with(ClearFloatLog(path), wait=wait)

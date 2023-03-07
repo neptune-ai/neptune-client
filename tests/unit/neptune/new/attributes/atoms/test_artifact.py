@@ -22,8 +22,10 @@ from _pytest.monkeypatch import MonkeyPatch
 from mock import (
     MagicMock,
     call,
+    patch,
 )
 
+from neptune import Run
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.internal.artifacts.types import (
@@ -39,12 +41,20 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestArtifact(TestAttributeBase):
-    def setUp(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def setUp(self, get_operation_processor):
         self.monkeypatch = MonkeyPatch()
 
         self.wait = self._random_wait()
         self.op_processor = MagicMock()
-        self.exp = self._create_run(processor=self.op_processor)
+        get_operation_processor.return_value = self.op_processor
+        self.exp = Run(
+            mode="debug",
+            capture_stdout=False,
+            capture_stderr=False,
+            capture_traceback=False,
+            capture_hardware_metrics=False,
+        )
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
 
@@ -93,6 +103,7 @@ class TestArtifact(TestAttributeBase):
         self.test_artifact_driver = TestArtifactDriver
 
     def tearDown(self):
+        self.exp.stop()
         self.monkeypatch.undo()
 
     def test_fetch_hash(self):

@@ -15,7 +15,10 @@
 #
 import os
 
-from mock import MagicMock
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.attributes.file_set import FileSet
 from neptune.internal.operation import (
@@ -26,42 +29,51 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestFileSet(TestAttributeBase):
-    def test_assign(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign(self, get_operation_processor):
         globs = ["path1", "dir/", "glob/*.py"]
         expected = [os.path.abspath(glob) for glob in globs]
 
         processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
-            self._random_path(),
-            self._random_wait(),
-        )
-        var = FileSet(exp, path)
-        var.assign(globs, wait=wait)
-        processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, reset=True), wait=wait)
+        get_operation_processor.return_value = processor
 
-    def test_upload_files(self):
+        with self._exp() as exp:
+            path, wait = (
+                self._random_path(),
+                self._random_wait(),
+            )
+            var = FileSet(exp, path)
+            var.assign(globs, wait=wait)
+            processor.enqueue_operation.assert_called_with(UploadFileSet(path, expected, reset=True), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_upload_files(self, get_operation_processor):
         globs = ["path1", "dir/", "glob/*.py"]
         processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
-            self._random_path(),
-            self._random_wait(),
-        )
-        var = FileSet(exp, path)
-        var.upload_files(globs, wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            UploadFileSet(path, [os.path.abspath(glob) for glob in globs], reset=False),
-            wait=wait,
-        )
+        get_operation_processor.return_value = processor
 
-    def test_delete_files(self):
+        with self._exp() as exp:
+            path, wait = (
+                self._random_path(),
+                self._random_wait(),
+            )
+            var = FileSet(exp, path)
+            var.upload_files(globs, wait=wait)
+            processor.enqueue_operation.assert_called_with(
+                UploadFileSet(path, [os.path.abspath(glob) for glob in globs], reset=False),
+                wait=wait,
+            )
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_delete_files(self, get_operation_processor):
         processor = MagicMock()
-        exp, path, wait = (
-            self._create_run(processor),
-            self._random_path(),
-            self._random_wait(),
-        )
-        var = FileSet(exp, path)
-        var.delete_files(["path1", "dir/"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(DeleteFiles(path, {"path1", "dir/"}), wait=wait)
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            path, wait = (
+                self._random_path(),
+                self._random_wait(),
+            )
+            var = FileSet(exp, path)
+            var.delete_files(["path1", "dir/"], wait=wait)
+            processor.enqueue_operation.assert_called_with(DeleteFiles(path, {"path1", "dir/"}), wait=wait)

@@ -43,17 +43,27 @@ from neptune.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.handler import Handler
-from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.backends.api_model import (
+    ApiExperiment,
+    AttributeType,
+    Project,
+)
+from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
-from neptune.internal.background_job import BackgroundJob
+from neptune.internal.backends.project_name_lookup import project_name_lookup
+from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
+    QualifiedName,
     SysId,
     UniqueId,
+    conform_optional,
 )
+from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.internal.operation import DeleteAttribute
+from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
@@ -83,29 +93,69 @@ class MetadataContainer(AbstractContextManager):
     def __init__(
         self,
         *,
-        id_: UniqueId,
-        mode: Mode,
-        backend: NeptuneBackend,
-        op_processor: OperationProcessor,
-        background_job: BackgroundJob,
-        lock: threading.RLock,
-        project_id: UniqueId,
-        project_name: str,
-        workspace: str,
-        sys_id: SysId,
+        project: Optional[str] = None,
+        api_token: Optional[str] = None,
+        mode: Mode = Mode.ASYNC,
+        flush_period: float = DEFAULT_FLUSH_PERIOD,
+        proxies: Optional[dict] = None,
     ):
-        self._id = id_
-        self._mode = mode
-        self._project_id = project_id
-        self._project_name = project_name
-        self._workspace = workspace
-        self._backend = backend
-        self._op_processor = op_processor
-        self._bg_job = background_job
+        verify_type("project", project, (str, type(None)))
+        verify_type("api_token", api_token, (str, type(None)))
+        verify_type("mode", mode, Mode)
+        verify_type("flush_period", flush_period, (int, float))
+        verify_type("proxies", proxies, (dict, type(None)))
+
+        self._mode: Mode = mode
+        self._lock: threading.RLock = threading.RLock()
+        self._state: ContainerState = ContainerState.CREATED
+
+        self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
+
+        self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
+        self._project_api_object: Project = project_name_lookup(
+            backend=self._backend, name=self._project_qualified_name
+        )
+        self._project_id: UniqueId = self._project_api_object.id
+
+        self._api_object: ApiExperiment = self._get_or_create_api_object()
+        self._id: UniqueId = self._api_object.id
+        self._sys_id: SysId = self._api_object.sys_id
+        self._workspace: str = self._api_object.workspace
+        self._project_name: str = self._api_object.project_name
+
+        self._op_processor: OperationProcessor = get_operation_processor(
+            mode=mode,
+            container_id=self._id,
+            container_type=self.container_type,
+            backend=self._backend,
+            lock=self._lock,
+            flush_period=flush_period,
+        )
+        self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
-        self._lock = lock
-        self._state = ContainerState.CREATED
-        self._sys_id = sys_id
+
+        if self._mode != Mode.OFFLINE:
+            self.sync(wait=False)
+
+        if self._mode != Mode.READ_ONLY:
+            self._write_initial_attributes()
+
+        self._startup(debug_mode=mode == Mode.DEBUG)
+
+    def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
+        if self._mode != Mode.READ_ONLY:
+            return self._prepare_background_jobs()
+        return BackgroundJobList([])
+
+    @abc.abstractmethod
+    def _get_or_create_api_object(self) -> ApiExperiment:
+        raise NotImplementedError
+
+    def _prepare_background_jobs(self) -> BackgroundJobList:
+        return BackgroundJobList([])
+
+    def _write_initial_attributes(self):
+        pass
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:

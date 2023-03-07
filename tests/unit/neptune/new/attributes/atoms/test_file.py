@@ -22,7 +22,10 @@ from io import (
 from pathlib import Path
 from unittest.mock import PropertyMock
 
-from mock import MagicMock
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.attributes.atoms.file import (
     File,
@@ -44,7 +47,8 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_assign(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_assign(self, get_operation_processor):
         def get_tmp_uploaded_file_name(tmp_upload_dir):
             """Get tmp file to uploaded from `upload_path`
             - here's assumption that we upload only one file per one path in test"""
@@ -79,23 +83,25 @@ class TestFile(TestAttributeBase):
             with tmp_context() as tmp_upload_dir:
                 processor = MagicMock()
                 processor._operation_storage = PropertyMock(upload_path=Path(tmp_upload_dir))
-                exp, path, wait = (
-                    self._create_run(processor),
-                    self._random_path(),
-                    self._random_wait(),
-                )
-                var = File(exp, path)
-                var.assign(value, wait=wait)
+                get_operation_processor.return_value = processor
 
-                if value.file_type is not FileType.LOCAL_FILE:
-                    tmp_uploaded_file = get_tmp_uploaded_file_name(tmp_upload_dir)
-                    self.assertTrue(os.path.exists(tmp_uploaded_file))
-                else:
-                    tmp_uploaded_file = None
+                with self._exp() as exp:
+                    path, wait = (
+                        self._random_path(),
+                        self._random_wait(),
+                    )
+                    var = File(exp, path)
+                    var.assign(value, wait=wait)
 
-                processor.enqueue_operation.assert_called_once_with(
-                    operation_factory(path, tmp_uploaded_file), wait=wait
-                )
+                    if value.file_type is not FileType.LOCAL_FILE:
+                        tmp_uploaded_file = get_tmp_uploaded_file_name(tmp_upload_dir)
+                        self.assertTrue(os.path.exists(tmp_uploaded_file))
+                    else:
+                        tmp_uploaded_file = None
+
+                    processor.enqueue_operation.assert_called_with(
+                        operation_factory(path, tmp_uploaded_file), wait=wait
+                    )
 
     def test_assign_type_error(self):
         values = [55, None, []]
@@ -104,36 +110,42 @@ class TestFile(TestAttributeBase):
                 File(MagicMock(), MagicMock()).assign(value)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_save(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_save(self, get_operation_processor):
         value_and_expected = [("some/path", os.getcwd() + "/some/path")]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = File(exp, path)
-            var.upload(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                UploadFile(path=path, ext="", file_path=expected), wait=wait
-            )
+            get_operation_processor.return_value = processor
+
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = File(exp, path)
+                var.upload(value, wait=wait)
+                processor.enqueue_operation.assert_called_with(
+                    UploadFile(path=path, ext="", file_path=expected), wait=wait
+                )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_save_files(self):
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_save_files(self, get_operation_processor):
         value_and_expected = [("some/path/*", [os.getcwd() + "/some/path/*"])]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = FileSet(exp, path)
-            var.upload_files(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, False), wait=wait)
+            get_operation_processor.return_value = processor
+
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = FileSet(exp, path)
+                var.upload_files(value, wait=wait)
+                processor.enqueue_operation.assert_called_with(UploadFileSet(path, expected, False), wait=wait)
 
     def test_save_type_error(self):
         values = [55, None, [], FileVal]
@@ -157,21 +169,21 @@ class TestFile(TestAttributeBase):
         ]
 
         for value, expected_ext in value_and_expected_ext:
-            exp, path, wait = (
-                self._create_run(),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = File(exp, path)
-            var.assign(value, wait=wait)
-            self.assertEqual(expected_ext, var.fetch_extension())
+            with self._exp() as exp:
+                path, wait = (
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = File(exp, path)
+                var.assign(value, wait=wait)
+                self.assertEqual(expected_ext, var.fetch_extension())
 
     def test_clean_files_on_close(self):
-        run = self._create_run()
-        data_path = run._op_processor._operation_storage.data_path
+        with self._exp() as run:
+            data_path = run._op_processor._operation_storage.data_path
 
-        assert os.path.exists(data_path)
+            assert os.path.exists(data_path)
 
-        run.stop()
+            run.stop()
 
-        assert not os.path.exists(data_path)
+            assert not os.path.exists(data_path)
