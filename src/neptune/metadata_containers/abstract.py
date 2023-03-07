@@ -13,28 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Assignable"]
+__all__ = ["SupportsNamespaces"]
 
-import abc
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from neptune.handler import Handler
 
 
-class Assignable(abc.ABC):
+class SupportsNamespaces(ABC):
     """
-    Interface for objects that metadata can be assigned to.
-
-    This could be a run, model, model version or project or already selected namespace that metadata
-    will be stored under.
+    Interface for Neptune objects that supports subscripting (selecting namespaces)
+    It could be a Run, Model, ModelVersion, Project or already selected namespace (Handler).
 
     Example:
         >>> from neptune import init_run
-        >>> from neptune.typing import Assignable
+        >>> from neptune.integrations.utils import SupportsNamespaces
         >>> class NeptuneCallback:
         ...     # Proper type hinting of `start_from` parameter.
-        ...     def __init__(self, start_from: Assignable):
+        ...     def __init__(self, start_from: SupportsNamespaces):
         ...         self._start_from = start_from
         ...
         ...     def log_accuracy(self, accuracy: float) -> None:
@@ -48,14 +49,14 @@ class Assignable(abc.ABC):
         >>> callback.log_accuracy(0.8)
     """
 
-    @abc.abstractmethod
+    @abstractmethod
     def __getitem__(self, path: str) -> "Handler":
-        raise NotImplementedError
+        ...
 
-    @abc.abstractmethod
+    @abstractmethod
     def __setitem__(self, key: str, value) -> None:
-        raise NotImplementedError
+        ...
 
-    @abc.abstractmethod
+    @abstractmethod
     def __delitem__(self, path) -> None:
-        raise NotImplementedError
+        ...
