@@ -200,9 +200,6 @@ class NeptuneBackendMock(NeptuneBackend):
         sys_id = SysId(f"{self.PROJECT_KEY}-{self._next_run}")
         self._next_run += 1
         new_run_id = UniqueId(str(uuid.uuid4()))
-        # container = self._create_container(new_run_id, ContainerType.RUN, sys_id=sys_id)
-        # if git_info:
-        #     container.set(["source_code", "git"], git_info)
         return ApiExperiment(
             id=new_run_id,
             type=ContainerType.RUN,

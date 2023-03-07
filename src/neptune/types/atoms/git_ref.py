@@ -41,11 +41,7 @@ class GitRef(Atom):
         repository_path: path to the repository. If not provided, the path to the script that is currently executed
     """
 
-    repository_path: Optional[Union[str, Path]] = None
-
-    @staticmethod
-    def disabled() -> "GitRef":
-        return GitRef()
+    repository_path: Optional[Union[str, Path]] = get_path_executed_script()
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
@@ -54,14 +50,20 @@ class GitRef(Atom):
         return f"GitRef({self.repository_path})"
 
     def resolve_path(self) -> Optional[Path]:
-        repository_path = self.repository_path or get_path_executed_script()
-        return Path(repository_path).resolve()
+        if self.repository_path is None:
+            return None
+        return Path(self.repository_path).resolve()
+
+    @classmethod
+    def disabled(cls) -> "GitRef":
+        """
+        TODO: add docs
+        """
+        return cls(repository_path=None)
 
 
-class GitRefDisabled(GitRef):
-    """
-    Represents a disabled git repository.
-    """
-
-    def resolve_path(self) -> Optional[Path]:
-        return None
+GitRefDisabled = GitRef.disabled()
+"""
+Represents a disabled git repository.
+TODO: add docs
+"""
