@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["expect_not_an_experiment", "join_paths", "verify_type", "RunType", "SupportsNamespaces"]
+__all__ = ["expect_not_an_experiment", "join_paths", "verify_type", "RunType"]
 
 from typing import Union
 
@@ -23,7 +23,6 @@ from neptune.exceptions import NeptuneLegacyIncompatibilityException
 from neptune.handler import Handler
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.paths import join_paths
-from neptune.metadata_containers.abstract import SupportsNamespaces
 
 
 def expect_not_an_experiment(run: Run):

@@ -32,7 +32,7 @@ class SupportsNamespaces(ABC):
 
     Example:
         >>> from neptune import init_run
-        >>> from neptune.integrations.utils import SupportsNamespaces
+        >>> from neptune.metadata_containers.abstract import SupportsNamespaces
         >>> class NeptuneCallback:
         ...     # Proper type hinting of `start_from` parameter.
         ...     def __init__(self, start_from: SupportsNamespaces):
@@ -59,4 +59,8 @@ class SupportsNamespaces(ABC):
 
     @abstractmethod
     def __delitem__(self, path) -> None:
+        ...
+
+    @abstractmethod
+    def get_root_object(self) -> "SupportsNamespaces":
         ...

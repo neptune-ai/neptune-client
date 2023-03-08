@@ -354,3 +354,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             container_type=child_type,
             entries=leaderboard_entries,
         )
+
+    def get_root_object(self) -> "MetadataContainer":
+        """Returns the same Neptune object."""
+        return self
