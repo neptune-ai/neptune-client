@@ -15,10 +15,7 @@
 #
 from pathlib import Path
 
-from neptune.types import (
-    GitRef,
-    GitRefDisabled,
-)
+from neptune.types import GitRef
 from neptune.vendor.lib_programname import get_path_executed_script
 
 
@@ -29,9 +26,3 @@ class TestGitRef:
     def test_resolve_path_provided(self):
         assert GitRef("path").resolve_path() == Path("path").resolve()
         assert GitRef(Path("path")).resolve_path() == Path("path").resolve()
-
-    def test_disabled(self):
-        assert GitRef.disabled() == GitRefDisabled
-
-    def test_resolve_path_disabled(self):
-        assert GitRefDisabled.resolve_path() is None

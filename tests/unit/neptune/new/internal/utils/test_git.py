@@ -29,7 +29,7 @@ from neptune.types import GitRef
 
 class TestGit:
     def test_disabled(self):
-        assert to_git_info(GitRef.disabled()) is None
+        assert to_git_info(GitRef.DISABLED) is None
 
     @patch("git.Repo", return_value=MagicMock())
     def test_getting_git_info(self, repo_mock):

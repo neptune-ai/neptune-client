@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
+    NewType,
     Optional,
     TypeVar,
     Union,
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
 
 Ret = TypeVar("Ret")
+GitRefDisabled = NewType("GitRefDisabled", str)
 
 
 @dataclass
@@ -42,6 +44,10 @@ class GitRef(Atom):
     """
 
     repository_path: Optional[Union[str, Path]] = get_path_executed_script()
+    DISABLED: GitRefDisabled = GitRefDisabled("DO_NOT_TRACK_GIT_REPOSITORY")
+    """
+    Do not track git repository metadata.
+    """
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
@@ -53,16 +59,3 @@ class GitRef(Atom):
         if self.repository_path is None:
             return None
         return Path(self.repository_path).resolve()
-
-    @classmethod
-    def disabled(cls) -> "GitRef":
-        """
-        Returns `GitRef` that do not track git repository metadata.
-        """
-        return cls(repository_path=None)
-
-
-GitRefDisabled = GitRef.disabled()
-"""
-`GitRef` that do not track git repository metadata.
-"""

@@ -22,9 +22,13 @@ from datetime import datetime
 from typing import (
     List,
     Optional,
+    Union,
 )
 
-from neptune.types.atoms import GitRef
+from neptune.types.atoms.git_ref import (
+    GitRef,
+    GitRefDisabled,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -52,8 +56,11 @@ def get_git_repo(repo_path):
         warnings.warn("GitPython could not be initialized")
 
 
-def to_git_info(git_ref: GitRef) -> Optional[GitInfo]:
+def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
     try:
+        if git_ref == GitRef.DISABLED:
+            return None
+
         initial_repo_path = git_ref.resolve_path()
         if initial_repo_path is None:
             return None

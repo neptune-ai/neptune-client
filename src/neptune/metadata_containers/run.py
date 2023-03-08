@@ -84,9 +84,12 @@ from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
-from neptune.types import GitRef
+from neptune.types import (
+    GitRef,
+    StringSeries,
+)
+from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.types.mode import Mode
-from neptune.types.series.string_series import StringSeries
 
 
 class Run(MetadataContainer):
@@ -176,7 +179,7 @@ class Run(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
-        git_ref: Optional[GitRef] = None,
+        git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
         **kwargs,
     ):
         """Starts a new tracked run and adds it to the top of the runs table.
@@ -301,7 +304,7 @@ class Run(MetadataContainer):
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("capture_traceback", capture_traceback, bool)
-        verify_type("git_ref", git_ref, (GitRef, type(None)))
+        verify_type("git_ref", git_ref, (GitRef, str, type(None)))
         if tags is not None:
             if isinstance(tags, str):
                 tags = [tags]
@@ -324,7 +327,7 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
-        self._git_ref: Optional[GitRef] = git_ref
+        self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref
 
         self._monitoring_namespace: str = (
             monitoring_namespace
