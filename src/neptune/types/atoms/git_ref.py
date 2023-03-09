@@ -35,8 +35,13 @@ Ret = TypeVar("Ret")
 GitRefDisabled = NewType("GitRefDisabled", str)
 
 
+class WithDisabledMixin:
+    DISABLED: GitRefDisabled = GitRefDisabled("DO_NOT_TRACK_GIT_REPOSITORY")
+    """Constant that can be used to disable git repository tracking."""
+
+
 @dataclass
-class GitRef(Atom):
+class GitRef(Atom, WithDisabledMixin):
     """
     Represents a git repository metadata.
     args:
@@ -44,8 +49,6 @@ class GitRef(Atom):
     """
 
     repository_path: Optional[Union[str, Path]] = get_path_executed_script()
-    DISABLED: GitRefDisabled = GitRefDisabled("DO_NOT_TRACK_GIT_REPOSITORY")
-    """Do not track git repository metadata."""
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
