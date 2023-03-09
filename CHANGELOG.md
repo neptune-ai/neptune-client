@@ -2,6 +2,7 @@
 
 ### Features
 - Added ability to provide repository path with `GitRef` to `init_run` ([#1292](https://github.com/neptune-ai/neptune-client/pull/1292))
+- Added `SupportsNamespaces` interface in `neptune.typing` for proper type annotations of Handler and Neptune objects ([#1280](https://github.com/neptune-ai/neptune-client/pull/1280))
 - `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
 ## neptune 1.0.2
