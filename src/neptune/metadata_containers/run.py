@@ -236,8 +236,10 @@ class Run(MetadataContainer):
                 Defaults to True.
                 The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
                 'monitoring_namespace' parameter).
-            git_ref: `GitRef` object containing information about the git repository path.
-                At default (`None`) it will look for repository in location of entrypoint script.
+            git_ref: GitRef object containing information about the Git repository path.
+                If None, Neptune looks for a repository in the location where the script is executed.
+                To specify a different location, set to GitRef(repository_path="path/to/repo").
+                To turn off Git tracking for the run, set to GitRef.DISABLED.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -252,11 +254,12 @@ class Run(MetadataContainer):
             ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
             ... run = neptune.init_run()
 
-            >>> # Create a tracked run with a name and description, and no sources files uploaded
+            >>> # Create a run with a name and description, with no sources files or Git info tracked:
             >>> run = neptune.init_run(
             ...     name="neural-net-mnist",
             ...     description="neural net trained on MNIST",
             ...     source_files=[],
+            ...     git_ref=GitRef.DISABLED,
             ... )
 
             >>> # Log all .py files from all subdirectories, excluding hidden files
@@ -274,6 +277,7 @@ class Run(MetadataContainer):
             ...     source_files=["training_with_pytorch.py", "net.py"],
             ...     monitoring_namespace="system_metrics",
             ...     capture_stderr=False,
+            ...     git_ref=GitRef(repository_path="/Users/Jackie/repos/cls_project"),
             ... )
 
             Connecting to an existing run:

@@ -37,15 +37,17 @@ GitRefDisabled = NewType("GitRefDisabled", str)
 
 class WithDisabledMixin:
     DISABLED: GitRefDisabled = GitRefDisabled("DO_NOT_TRACK_GIT_REPOSITORY")
-    """Constant that can be used to disable git repository tracking."""
+    """Constant that can be used to disable Git repository tracking."""
 
 
 @dataclass
 class GitRef(Atom, WithDisabledMixin):
     """
-    Represents a git repository metadata.
-    args:
-        repository_path: path to the repository. If not provided, the path to the script that is currently executed
+    Represents Git repository metadata.
+
+    Args:
+        repository_path: Path to the repository. If not provided,
+            the path to the script that is currently executed is used.
     """
 
     repository_path: Optional[Union[str, Path]] = get_path_executed_script()
