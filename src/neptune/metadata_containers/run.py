@@ -237,7 +237,7 @@ class Run(MetadataContainer):
                 The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
                 'monitoring_namespace' parameter).
             git_ref: GitRef object containing information about the Git repository path.
-                If None, Neptune looks for a repository in the location where the script is executed.
+                If None, Neptune looks for a repository in the path of the script that is executed.
                 To specify a different location, set to GitRef(repository_path="path/to/repo").
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
 
