@@ -15,6 +15,10 @@ inputs:
     description: "Artifact name for storing coverage report"
     required: false
     default: unit-coverage
+  codecov-token:
+    description: "Codecov token"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -41,7 +45,7 @@ runs:
       if: ${{ inputs.os }} == 'ubuntu-latest' && ${{ inputs.python-version }} == '3.7'
       uses: codecov/codecov-action@v3
       with:
-        token: ${{ inputs.token }}
+        token: ${{ inputs.codecov-token }}
         files: ./coverage.xml
         flags: unit-pull-request
         fail_ci_if_error: false

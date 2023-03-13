@@ -39,6 +39,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-tests-notify:
     needs: [ test ]
