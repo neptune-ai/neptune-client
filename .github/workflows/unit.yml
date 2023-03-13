@@ -67,7 +67,7 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Coverage report
-        uses: ./.github/actions/coverage
+        uses: ./.github/actions/combined-coverage
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           kind: unit

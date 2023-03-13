@@ -29,9 +29,3 @@ jobs:
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
           coverage-artifacts-name: unit-pull-request-coverage
-
-      - name: Coverage report
-        uses: ./.github/actions/coverage
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          kind: unit-pull-request

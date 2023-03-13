@@ -32,7 +32,21 @@ runs:
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-    - name: Upload test coverage
+    - name: Prepare coverage report
+      if: ${{ inputs.os }} == 'ubuntu-latest' && ${{ inputs.python-version }} == '3.7'
+      run: coverage combine --keep && coverage xml
+      shell: bash
+
+    - name: Upload coverage report do Codecov
+      if: ${{ inputs.os }} == 'ubuntu-latest' && ${{ inputs.python-version }} == '3.7'
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ inputs.token }}
+        files: ./coverage.xml
+        flags: unit-pull-request
+        fail_ci_if_error: false
+
+    - name: Upload test coverage artifacts
       uses: actions/upload-artifact@v3
       if: always()
       with:
