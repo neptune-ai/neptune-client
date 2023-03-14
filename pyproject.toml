@@ -96,24 +96,17 @@ transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
 dev = [
-    "altair",
-    "bokeh",
     "coverage",
     "Faker",
     "freezegun",
-    "matplotlib",
     "mock",
     "moto",
     "munch",
-    "plotly",
     "pre-commit",
     "pytest",
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
-    "tensorflow",
-    "torch",
-    "vega_datasets",
 ]
 e2e = [
     # Integrations
