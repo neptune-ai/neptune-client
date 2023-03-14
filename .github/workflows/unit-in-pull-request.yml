@@ -23,16 +23,10 @@ jobs:
           fetch-depth: 0
 
       - name: Run tests
-        uses: ./.github/actions/test-unit
+        uses: ./.github/actions/test-unit-with-pull-request-coverage
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
           coverage-artifacts-name: unit-pull-request-coverage
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Coverage report
-        uses: ./.github/actions/coverage
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          kind: unit-pull-request
