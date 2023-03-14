@@ -32,7 +32,7 @@ runs:
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-    - name: Upload test coverage artifacts
+    - name: Upload test coverage
       uses: actions/upload-artifact@v3
       if: always()
       with:
