@@ -4,6 +4,9 @@
 - Added `SupportsNamespaces` interface in `neptune.typing` for proper type annotations of Handler and Neptune objects ([#1280](https://github.com/neptune-ai/neptune-client/pull/1280))
 - `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
+### Fixes
+- Timeout was set to 10 minutes instead of unlimited for requests to Neptune API ([#1281](https://github.com/neptune-ai/neptune-client/pull/1281))
+
 ## neptune 1.0.2
 
 ### Fixes
