@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-import sys
 import unittest
 from uuid import uuid4
 
@@ -23,10 +22,6 @@ import numpy
 from matplotlib import pyplot
 from PIL import Image
 
-from neptune.common.utils import (
-    IS_MACOS,
-    IS_WINDOWS,
-)
 from neptune.legacy.internal.utils.image import (
     _get_figure_as_image,
     _get_pil_image_data,
@@ -109,11 +104,6 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
-    @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
-    @unittest.skipIf(
-        IS_MACOS and sys.version_info.major == 3 and sys.version_info.minor == 10,
-        "No torch for 3.10 on Mac",
-    )
     def test_get_image_content_from_torch_tensor(self):
         import torch
 
