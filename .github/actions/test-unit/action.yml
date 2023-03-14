@@ -24,6 +24,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
+        dependencies-group: dev
 
     - name: Test
       run: |

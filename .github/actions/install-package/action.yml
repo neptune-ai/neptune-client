@@ -8,6 +8,10 @@ inputs:
   os:
     description: "Operating system"
     required: true
+  dependencies-group:
+    description: "Install only specific dependencies group"
+    required: false
+    default: "all"
 
 runs:
     using: "composite"
@@ -21,7 +25,7 @@ runs:
         id: cache
         with:
           path: ~/.cache/pip
-          key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
+          key: ${{ inputs.dependencies-group }}-${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
 
       - name: Install Python ${{ inputs.python-version }}
         uses: actions/setup-python@v4
@@ -30,7 +34,11 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install ".[dev,e2e]"
+          if [ "${{ inputs.dependencies-group }}" = "dev" ]; then
+              pip install ".[dev]"
+          else
+              pip install ".[dev,e2e]"
+          fi
         shell: bash
 
       - name: List dependencies
