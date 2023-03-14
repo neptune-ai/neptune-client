@@ -5,7 +5,7 @@
 - `Run`, `Model`, `ModelVersion` and `Project` could be created with constructor in addition to `init_*` functions ([#1246](https://github.com/neptune-ai/neptune-client/pull/1246))
 
 ### Fixes
-- Timeout was set to 10 minutes instead of unlimited for requests to Neptune API ([#1295](https://github.com/neptune-ai/neptune-client/pull/1295))
+- Setting request timeout to 10 minutes instead of infinite ([#1295](https://github.com/neptune-ai/neptune-client/pull/1295))
 
 ## neptune 1.0.2
 
