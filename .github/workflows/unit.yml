@@ -50,6 +50,12 @@ jobs:
     runs-on: ubuntu-latest
     name: 'test (ubuntu-latest - py3.7)'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
       - name: Run tests with unittests coverage
         uses: ./.github/actions/test-unit-with-pull-request-coverage
         with:
