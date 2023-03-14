@@ -40,7 +40,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Run tests with unittests coverage
         if: ${{ matrix.os }} == 'ubuntu-latest' && ${{ matrix.python-version }} == '3.7'
