@@ -36,6 +36,18 @@ runs:
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Prepare coverage report
+      run: coverage combine --keep && coverage xml
+      shell: bash
+
+    - name: Upload Pull Request coverage report do Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ inputs.codecov-token }}
+        files: ./coverage.xml
+        flags: unit-pull-request
+        fail_ci_if_error: false
+
     - name: Upload test coverage artifacts
       uses: actions/upload-artifact@v3
       if: always()
