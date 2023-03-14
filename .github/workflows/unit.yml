@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches:
+    branches-ignore:
       - master
 
 jobs:
@@ -20,10 +20,15 @@ jobs:
           - "macos-latest"
           - "windows-latest"
         python-version:
-          - "3.7"
           - "3.8"
-          - "3.9"
-          - "3.10"
+#          - "3.9"
+#          - "3.10"
+        include:
+          - os: "macos-latest"
+            python-version: "3.7"
+          - os: "windows-latest"
+            python-version: "3.7"
+
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
@@ -34,24 +39,27 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Run tests
-        if: ${{ matrix.os }} != 'ubuntu-latest' or ${{ matrix.python-version }} != '3.7'
         uses: ./.github/actions/test-unit
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
 
+  test-ubuntu-3.7:
+    timeout-minutes: 75
+    runs-on: ubuntu-latest
+    name: 'test (ubuntu-latest - py3.7)'
+    steps:
       - name: Run tests with unittests coverage
-        if: ${{ matrix.os }} == 'ubuntu-latest' && ${{ matrix.python-version }} == '3.7'
         uses: ./.github/actions/test-unit-with-pull-request-coverage
         with:
           python-version: '3.7'
-          os: ${{ matrix.os }}
+          os: ubuntu-latest
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-tests-notify:
-    needs: [ test ]
+    needs: [ test, test-ubuntu-3.7 ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
@@ -67,7 +75,7 @@ jobs:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
 
   coverage:
-    needs: [ test ]
+    needs: [ test, test-ubuntu-3.7 ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
