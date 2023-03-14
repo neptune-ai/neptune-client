@@ -45,7 +45,7 @@ jobs:
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
 
-  test-ubuntu-3.7:
+  test-ubuntu-37:
     timeout-minutes: 75
     runs-on: ubuntu-latest
     name: 'test (ubuntu-latest - py3.7)'
@@ -59,7 +59,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-tests-notify:
-    needs: [ test, test-ubuntu-3.7 ]
+    needs: [ test, test-ubuntu-37 ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
@@ -75,7 +75,7 @@ jobs:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
 
   coverage:
-    needs: [ test, test-ubuntu-3.7 ]
+    needs: [ test, test-ubuntu-37 ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
