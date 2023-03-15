@@ -103,9 +103,8 @@ dev = [
     "munch",
     "pre-commit",
     "pytest",
-#    "pytest-mock",
-#    "pytest-timeout",
-#    "pytest-xdist",
+    "pytest-timeout",
+    "pytest-xdist",
 ]
 e2e = [
     "Faker",

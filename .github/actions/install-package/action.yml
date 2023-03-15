@@ -12,36 +12,46 @@ inputs:
     description: "Install only specific dependencies group"
     required: false
     default: "all"
+  poetry-version:
+    description: "Poetry version"
+    required: false
+    default: "1.4.0"
 
 runs:
     using: "composite"
     steps:
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-        shell: bash
+#      - name: Get current date
+#        id: date
+#        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+#        shell: bash
+#
+##      - uses: actions/cache@v3
+##        id: cache
+##        with:
+##          path: ~/.cache/pypoetry
+##          key: ${{ inputs.dependencies-group }}-${{ inputs.os }}-python-${{ inputs.python-version }}-${{ inputs.poetry-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
 
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: ~/.cache/pip
-          key: ${{ inputs.dependencies-group }}-${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+        shell: bash
 
       - name: Install Python ${{ inputs.python-version }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python-version }}
+          cache: poetry
 
       - name: Install dependencies
         run: |
           if [ "${{ inputs.dependencies-group }}" = "dev" ]; then
-              pip install ".[dev]"
+              poetry install --extras "dev"
           else
-              pip install ".[dev,e2e]"
+              poetry install --extras "dev e2e"
           fi
         shell: bash
 
       - name: List dependencies
         run: |
-          pip list
+          poetry run pip list
         shell: bash
