@@ -21,6 +21,7 @@ __all__ = [
     "create_artifacts_client",
 ]
 
+import os
 import platform
 from typing import (
     Dict,
@@ -32,6 +33,7 @@ from bravado.requests_client import RequestsClient
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
+from neptune.envs import NEPTUNE_REQUEST_TIMEOUT
 from neptune.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.internal.backends.api_model import ClientConfig
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -52,7 +54,7 @@ LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
 ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
-REQUEST_TIMEOUT = None
+REQUEST_TIMEOUT = int(os.getenv(NEPTUNE_REQUEST_TIMEOUT, "600"))
 
 DEFAULT_REQUEST_KWARGS = {
     "_request_options": {
