@@ -33,6 +33,7 @@ from neptune.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
 )
+from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
@@ -49,7 +50,7 @@ _logger = logging.getLogger(__name__)
 
 class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
-    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 300
+    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, "300"))
 
     def __init__(
         self,
@@ -148,6 +149,9 @@ class AsyncOperationProcessor(OperationProcessor):
 
         while True:
             if seconds is None:
+                if self._consumer.last_backoff_time == 0:
+                    # reset `waiting_start` on successful action
+                    waiting_start = monotonic()
                 wait_time = self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
             else:
                 wait_time = max(
