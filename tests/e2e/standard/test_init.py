@@ -21,6 +21,7 @@ from neptune.metadata_containers import (
     Model,
     Project,
 )
+from neptune.types import GitRef
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -59,6 +60,36 @@ class TestInitRun(BaseE2ETest):
         exp.sync()
         with with_check_if_file_appears("files.zip"):
             exp["source_code/files"].download()
+
+    def test_git_client_repository(self, environment):
+        exp = neptune.init_run(
+            git_ref=GitRef(repository_path="."),
+            project=environment.project,
+        )
+
+        # download sources
+        exp.sync()
+        assert exp.exists("source_code/git")
+
+    def test_git_default(self, environment):
+        exp = neptune.init_run(
+            git_ref=GitRef(),
+            project=environment.project,
+        )
+
+        # download sources
+        exp.sync()
+        assert not exp.exists("source_code/git")
+
+    def test_git_disabled(self, environment):
+        exp = neptune.init_run(
+            git_ref=GitRef.DISABLED,
+            project=environment.project,
+        )
+
+        # download sources
+        exp.sync()
+        assert not exp.exists("source_code/git")
 
 
 class TestInitProject(BaseE2ETest):

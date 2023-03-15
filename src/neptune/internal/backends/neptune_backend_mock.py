@@ -110,6 +110,7 @@ from neptune.internal.operation_visitor import OperationVisitor
 from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
+from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.types import (
     Boolean,
@@ -191,7 +192,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_run(
         self,
         project_id: UniqueId,
-        git_ref: Optional[GitRef] = None,
+        git_info: Optional[GitInfo] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
@@ -199,9 +200,7 @@ class NeptuneBackendMock(NeptuneBackend):
         sys_id = SysId(f"{self.PROJECT_KEY}-{self._next_run}")
         self._next_run += 1
         new_run_id = UniqueId(str(uuid.uuid4()))
-        container = self._create_container(new_run_id, ContainerType.RUN, sys_id=sys_id)
-        if git_ref:
-            container.set(["source_code", "git"], git_ref)
+        self._create_container(new_run_id, ContainerType.RUN, sys_id=sys_id)
         return ApiExperiment(
             id=new_run_id,
             type=ContainerType.RUN,

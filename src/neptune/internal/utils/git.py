@@ -13,17 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_git_info", "discover_git_repo_location"]
+__all__ = ["to_git_info", "GitInfo"]
 
 import logging
-import os
 import warnings
-from typing import Optional
+from dataclasses import dataclass
+from datetime import datetime
+from typing import (
+    List,
+    Optional,
+    Union,
+)
 
-from neptune.types.atoms import GitRef
-from neptune.vendor.lib_programname import get_path_executed_script
+from neptune.types.atoms.git_ref import (
+    GitRef,
+    GitRefDisabled,
+)
 
 _logger = logging.getLogger(__name__)
+
+
+@dataclass
+class GitInfo:
+    commit_id: str
+    message: str
+    author_name: str
+    author_email: str
+    commit_date: datetime
+    dirty: bool
+    branch: Optional[str]
+    remotes: Optional[List[str]]
 
 
 def get_git_repo(repo_path):
@@ -37,10 +56,16 @@ def get_git_repo(repo_path):
         warnings.warn("GitPython could not be initialized")
 
 
-def get_git_info(repo_path=None):
+def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
     try:
-        repo = get_git_repo(repo_path)
+        if git_ref == GitRef.DISABLED:
+            return None
 
+        initial_repo_path = git_ref.resolve_path()
+        if initial_repo_path is None:
+            return None
+
+        repo = get_git_repo(repo_path=initial_repo_path)
         commit = repo.head.commit
 
         active_branch = ""
@@ -53,7 +78,7 @@ def get_git_info(repo_path=None):
 
         remote_urls = [remote.url for remote in repo.remotes]
 
-        return GitRef(
+        return GitInfo(
             commit_id=commit.hexsha,
             message=commit.message,
             author_name=commit.author.name,
@@ -65,15 +90,3 @@ def get_git_info(repo_path=None):
         )
     except:  # noqa: E722
         return None
-
-
-def get_git_repo_path(initial_path: str) -> Optional[str]:
-    try:
-        return get_git_repo(initial_path).git_dir
-    except:  # noqa: E722
-        pass
-
-
-def discover_git_repo_location() -> Optional[str]:
-    potential_initial_path = os.path.dirname(os.path.abspath(get_path_executed_script()))
-    return get_git_repo_path(initial_path=potential_initial_path)

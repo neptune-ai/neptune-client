@@ -72,10 +72,7 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.internal.utils.git import (
-    discover_git_repo_location,
-    get_git_info,
-)
+from neptune.internal.utils.git import to_git_info
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
@@ -87,8 +84,12 @@ from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
+from neptune.types import (
+    GitRef,
+    StringSeries,
+)
+from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.types.mode import Mode
-from neptune.types.series.string_series import StringSeries
 
 
 class Run(MetadataContainer):
@@ -178,6 +179,7 @@ class Run(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
+        git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
         **kwargs,
     ):
         """Starts a new tracked run and adds it to the top of the runs table.
@@ -234,6 +236,10 @@ class Run(MetadataContainer):
                 Defaults to True.
                 The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
                 'monitoring_namespace' parameter).
+            git_ref: GitRef object containing information about the Git repository path.
+                If None, Neptune looks for a repository in the path of the script that is executed.
+                To specify a different location, set to GitRef(repository_path="path/to/repo").
+                To turn off Git tracking for the run, set to GitRef.DISABLED.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -248,11 +254,12 @@ class Run(MetadataContainer):
             ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
             ... run = neptune.init_run()
 
-            >>> # Create a tracked run with a name and description, and no sources files uploaded
+            >>> # Create a run with a name and description, with no sources files or Git info tracked:
             >>> run = neptune.init_run(
             ...     name="neural-net-mnist",
             ...     description="neural net trained on MNIST",
             ...     source_files=[],
+            ...     git_ref=GitRef.DISABLED,
             ... )
 
             >>> # Log all .py files from all subdirectories, excluding hidden files
@@ -270,6 +277,7 @@ class Run(MetadataContainer):
             ...     source_files=["training_with_pytorch.py", "net.py"],
             ...     monitoring_namespace="system_metrics",
             ...     capture_stderr=False,
+            ...     git_ref=GitRef(repository_path="/Users/Jackie/repos/cls_project"),
             ... )
 
             Connecting to an existing run:
@@ -299,6 +307,8 @@ class Run(MetadataContainer):
         verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
+        verify_type("capture_traceback", capture_traceback, bool)
+        verify_type("git_ref", git_ref, (GitRef, str, type(None)))
         if tags is not None:
             if isinstance(tags, str):
                 tags = [tags]
@@ -321,6 +331,7 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
+        self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref
 
         self._monitoring_namespace: str = (
             monitoring_namespace
@@ -367,7 +378,8 @@ class Run(MetadataContainer):
             if self._mode == Mode.READ_ONLY:
                 raise NeedExistingRunForReadOnlyMode()
 
-            git_ref = get_git_info(discover_git_repo_location())
+            git_ref = self._git_ref or GitRef()
+            git_info = to_git_info(git_ref=git_ref)
 
             custom_run_id = self._custom_run_id
             if custom_run_id_exceeds_length(self._custom_run_id):
@@ -377,7 +389,7 @@ class Run(MetadataContainer):
 
             return self._backend.create_run(
                 project_id=self._project_api_object.id,
-                git_ref=git_ref,
+                git_info=git_info,
                 custom_run_id=custom_run_id,
                 notebook_id=notebook_id,
                 checkpoint_id=checkpoint_id,
