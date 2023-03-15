@@ -33,6 +33,7 @@ runs:
         coverage run -p -m \
         pytest -v ./tests/e2e/ -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
+        --color=yes \
         --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
