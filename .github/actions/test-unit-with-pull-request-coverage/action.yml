@@ -31,7 +31,7 @@ runs:
         dependencies-group: "dev"
 
     - name: Show package info
-      run: poetry pip show neptune
+      run: poetry run pip show neptune
       shell: bash
 
     - name: Test
