@@ -196,5 +196,6 @@ source = [
     'src/neptune',
     '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
     '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
+    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune',
+    '/Users/neptune/miniconda3/envs/py3.10-neptune-client/lib/python3.10/site-packages/neptune',
 ]

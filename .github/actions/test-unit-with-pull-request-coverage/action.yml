@@ -30,6 +30,10 @@ runs:
         os: ${{ inputs.os }}
         dependencies-group: "dev"
 
+    - name: Show package info
+      run: poetry pip show neptune
+      shell: bash
+
     - name: Test
       run: |
         poetry run coverage run -p -m pytest -v -n 2 ./tests/unit/ \
@@ -48,22 +52,40 @@ runs:
     - name: Combine coverages
       run: poetry run coverage combine
       shell: bash
-
-    - name: Show coverage report
-      run: poetry run coverage report -m
-      shell: bash
-
-    - name: Prepare coverage report
-      run: poetry run coverage xml
-      shell: bash
-
-    - name: Upload Pull Request coverage report do Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ inputs.codecov-token }}
-        files: ./coverage.xml
-        flags: unit-pull-request
-        fail_ci_if_error: false
+#
+#    - name: Test
+#      run: |
+#        poetry run coverage run -p -m pytest -v -n 2 ./tests/unit/ \
+#        --timeout=120 --timeout_method=thread \
+#        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+#      shell: bash
+#
+#    - name: Upload test coverage artifacts
+#      uses: actions/upload-artifact@v3
+#      if: always()
+#      with:
+#        name: ${{ inputs.coverage-artifacts-name }}
+#        path: ./.coverage*
+#
+#    - name: Combine coverages
+#      run: poetry run coverage combine
+#      shell: bash
+#
+#    - name: Show coverage report
+#      run: poetry run coverage report -m
+#      shell: bash
+#
+#    - name: Prepare coverage report
+#      run: poetry run coverage xml
+#      shell: bash
+#
+#    - name: Upload Pull Request coverage report do Codecov
+#      uses: codecov/codecov-action@v3
+#      with:
+#        token: ${{ inputs.codecov-token }}
+#        files: ./coverage.xml
+#        flags: unit-pull-request
+#        fail_ci_if_error: false
 #
 #    - name: Upload test reports
 #      uses: actions/upload-artifact@v3
