@@ -32,13 +32,13 @@ runs:
 
     - name: Test
       run: |
-        coverage run -p -m pytest -v -n 2 ./tests/unit/ \
+        poetry run coverage run -p -m pytest -v -n 2 ./tests/unit/ \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
     - name: Prepare coverage report
-      run: coverage combine --keep && coverage xml
+      run: poetry run coverage combine --keep && poetry run coverage xml
       shell: bash
 
     - name: Upload Pull Request coverage report do Codecov
