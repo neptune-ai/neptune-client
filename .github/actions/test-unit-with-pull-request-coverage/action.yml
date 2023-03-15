@@ -38,8 +38,23 @@ runs:
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Upload test coverage artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: ${{ inputs.coverage-artifacts-name }}
+        path: ./.coverage*
+
+    - name: Combine coverages
+      run: poetry run coverage combine
+      shell: bash
+
+    - name: Show coverage report
+      run: poetry run coverage report -m
+      shell: bash
+
     - name: Prepare coverage report
-      run: poetry run coverage combine --keep && poetry run coverage xml
+      run: poetry run coverage xml
       shell: bash
 
     - name: Upload Pull Request coverage report do Codecov
@@ -49,27 +64,20 @@ runs:
         files: ./coverage.xml
         flags: unit-pull-request
         fail_ci_if_error: false
-
-    - name: Upload test coverage artifacts
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: ${{ inputs.coverage-artifacts-name }}
-        path: ./.coverage*
-
-    - name: Upload test reports
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-artifacts
-        path: ./test-results
-
-    - name: Report
-      uses: mikepenz/action-junit-report@v3.6.2
-      if: always()
-      with:
-        report_paths: './test-results/test-unit-*.xml'
-        update_check: true
-        include_passed: true
-        annotate_notice: true
-        job_name: ${{ inputs.report_job }}
+#
+#    - name: Upload test reports
+#      uses: actions/upload-artifact@v3
+#      if: always()
+#      with:
+#        name: test-artifacts
+#        path: ./test-results
+#
+#    - name: Report
+#      uses: mikepenz/action-junit-report@v3.6.2
+#      if: always()
+#      with:
+#        report_paths: './test-results/test-unit-*.xml'
+#        update_check: true
+#        include_passed: true
+#        annotate_notice: true
+#        job_name: ${{ inputs.report_job }}
