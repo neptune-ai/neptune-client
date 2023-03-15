@@ -71,5 +71,5 @@ runs:
         report_paths: './test-results/test-unit-*.xml'
         update_check: true
         include_passed: true
-        annotate_notice: true
+        annotate_notice: false
         job_name: ${{ inputs.report_job }}
