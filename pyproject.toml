@@ -97,18 +97,18 @@ xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
 dev = [
     "coverage",
-    "Faker",
     "freezegun",
     "mock",
     "moto",
     "munch",
     "pre-commit",
     "pytest",
-    "pytest-mock",
-    "pytest-timeout",
-    "pytest-xdist",
+#    "pytest-mock",
+#    "pytest-timeout",
+#    "pytest-xdist",
 ]
 e2e = [
+    "Faker",
     # Integrations
     "optuna",
     "pytorch-lightning",
