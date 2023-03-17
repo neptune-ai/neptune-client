@@ -59,7 +59,7 @@ torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
 Faker = { version = "*", optional = true }
 
-# e2e
+# Integrations e2e
 optuna = { version = "*", optional = true }
 scikit-learn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
@@ -115,7 +115,7 @@ dev = [
     "torch",
     "vega_datasets",
 ]
-e2e = [
+integrations-e2e = [
     # Integrations
     "optuna",
     "pytorch-lightning",

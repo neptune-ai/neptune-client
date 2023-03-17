@@ -8,6 +8,10 @@ inputs:
   os:
     description: "Operating system"
     required: true
+  extras:
+    description: "Package extras"
+    required: false
+    default: "dev"
 
 runs:
     using: "composite"
@@ -30,7 +34,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install ".[dev,e2e]"
+          pip install ".[${{ inputs.extras }}]"
         shell: bash
 
       - name: List dependencies

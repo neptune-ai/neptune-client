@@ -3,6 +3,9 @@ name: integrations
 on:
   workflow_call:
   workflow_dispatch:
+  push:
+    branches-ignore:
+      - master
   schedule:
     - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 
@@ -225,6 +228,7 @@ jobs:
           os: ${{ matrix.os }}
           module: lightning
           report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+          extras: dev,integrations-e2e
 
   lightning-notify:
     needs: [lightning]
@@ -272,6 +276,7 @@ jobs:
           os: ${{ matrix.os }}
           module: huggingface
           report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+          extras: dev,integrations-e2e
 
   huggingface-notify:
     needs: [huggingface]
@@ -319,6 +324,7 @@ jobs:
           os: ${{ matrix.os }}
           module: zenml
           report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+          extras: dev,integrations-e2e
 
   zenml-notify:
     needs: [zenml]

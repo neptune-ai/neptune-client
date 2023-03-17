@@ -18,6 +18,10 @@ inputs:
   report_job:
     description: "Job name to update by JUnit report"
     required: true
+  extras:
+    description: "Package extras"
+    required: false
+    default: "dev"
 
 runs:
   using: "composite"
@@ -27,6 +31,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
+        extras: ${{ inputs.extras }}
 
     - name: E2E - ${{ inputs.module }}
       run: |
