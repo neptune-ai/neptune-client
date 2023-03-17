@@ -34,7 +34,6 @@ from transformers.integrations import (
 from transformers.utils import logging
 
 from neptune import init_run
-from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import (
     catch_time,
     modified_environ,
@@ -94,7 +93,7 @@ class RegressionDataset:
 
 @pytest.mark.huggingface
 @pytest.mark.integrations
-class TestHuggingFace(BaseE2ETest):
+class TestHuggingFace:
     @property
     def _trainer_default_attributes(self):
         config = RegressionModelConfig()
@@ -111,27 +110,20 @@ class TestHuggingFace(BaseE2ETest):
             "eval_dataset": validation_dataset,
         }
 
-    def _test_with_run_initialization(self, environment, *, pre, post):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
+    def _test_with_run_initialization(self, *, pre, post):
+        with init_run() as run:
             run_id = run["sys/id"].fetch()
             pre(run)
 
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         run = init_run(
             run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
             mode="read-only",
         )
         post(run)
 
-    def test_every_train_should_create_new_run(self, environment, project, common_tag):
-        trainer = Trainer(
-            **self._trainer_default_attributes,
-            callbacks=[
-                NeptuneCallback(api_token=environment.user_token, project=environment.project, tags=[common_tag])
-            ],
-        )
+    def test_every_train_should_create_new_run(self, project, common_tag):
+        trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback(tags=[common_tag])])
 
         expected_times = 5
         for _ in range(expected_times):
@@ -140,7 +132,7 @@ class TestHuggingFace(BaseE2ETest):
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         assert len(project.fetch_runs_table(tag=common_tag).to_rows()) == expected_times
 
-    def test_runtime_factor(self, environment):
+    def test_runtime_factor(self):
         with catch_time() as standard:
             trainer = Trainer(**self._trainer_default_attributes)
             trainer.train()
@@ -149,28 +141,28 @@ class TestHuggingFace(BaseE2ETest):
         with catch_time() as with_neptune_callback:
             trainer = Trainer(
                 **self._trainer_default_attributes,
-                callbacks=[NeptuneCallback(api_token=environment.user_token, project=environment.project)],
+                callbacks=[NeptuneCallback()],
             )
             trainer.train()
             del trainer
 
         assert with_neptune_callback() / standard() <= MAX_OVERWHELMING_FACTOR
 
-    def test_run_access_methods(self, environment):
-        callback = NeptuneCallback(api_token=environment.user_token, project=environment.project)
+    def test_run_access_methods(self):
+        callback = NeptuneCallback()
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         assert callback.run.get_url() == NeptuneCallback.get_run(trainer).get_url()
 
-    def test_initialization_with_run_provided(self, environment):
-        run = init_run(project=environment.project, api_token=environment.user_token)
+    def test_initialization_with_run_provided(self):
+        run = init_run()
         callback = NeptuneCallback(run=run)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         assert run.get_url() == NeptuneCallback.get_run(trainer).get_url()
 
-    def test_run_reinitialization_failure(self, environment):
-        run = init_run(project=environment.project, api_token=environment.user_token)
+    def test_run_reinitialization_failure(self):
+        run = init_run()
 
         with modified_environ("NEPTUNE_API_TOKEN", "NEPTUNE_PROJECT"):
             callback = NeptuneCallback(run=run)
@@ -187,7 +179,7 @@ class TestHuggingFace(BaseE2ETest):
         with pytest.raises(Exception):
             NeptuneCallback.get_run(trainer)
 
-    def test_log_parameters_with_base_namespace(self, environment):
+    def test_log_parameters_with_base_namespace(self):
         base_namespace = "custom/base/path"
 
         def run_test(run):
@@ -206,9 +198,9 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
             assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
-    def test_log_parameters_disabled(self, environment):
+    def test_log_parameters_disabled(self):
         def run_test(run):
             callback = NeptuneCallback(run=run, log_parameters=False)
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
@@ -218,17 +210,15 @@ class TestHuggingFace(BaseE2ETest):
             assert not run.exists("finetuning/trainer_parameters")
             assert not run.exists("finetuning/model_parameters")
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
-    def test_log_with_custom_base_namespace(self, environment):
+    def test_log_with_custom_base_namespace(self):
         base_namespace = "just/a/sample/path"
 
         def run_test(run):
             callback = NeptuneCallback(
                 run=run,
                 base_namespace=base_namespace,
-                project=environment.project,
-                api_token=environment.user_token,
             )
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.log({"metric1": 123, "another/metric": 0.2})
@@ -245,9 +235,9 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
             assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
-    def test_integration_version_is_logged(self, environment):
+    def test_integration_version_is_logged(self):
         def run_test(run):
             callback = NeptuneCallback(run=run)
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
@@ -256,11 +246,11 @@ class TestHuggingFace(BaseE2ETest):
         def assert_metadata_structure(run):
             assert run.exists("source_code/integrations/transformers")
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
-    def test_non_monitoring_runs_creation(self, environment, project, common_tag):
+    def test_non_monitoring_runs_creation(self, project, common_tag):
         # given
-        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
+        callback = NeptuneCallback(tags=common_tag)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         # when
@@ -317,15 +307,10 @@ class TestHuggingFace(BaseE2ETest):
         assert len(runs) == 2
         assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
 
-    def test_non_monitoring_runs_creation_with_initial_run(self, environment, project, common_tag):
+    def test_non_monitoring_runs_creation_with_initial_run(self, project, common_tag):
         # given
-        initial_run = init_run(project=environment.project, api_token=environment.user_token, tags=common_tag)
-        callback = NeptuneCallback(
-            project=environment.project,
-            api_token=environment.user_token,
-            tags=common_tag,
-            run=initial_run,
-        )
+        initial_run = init_run(tags=common_tag)
+        callback = NeptuneCallback(tags=common_tag, run=initial_run)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         # when
@@ -381,7 +366,7 @@ class TestHuggingFace(BaseE2ETest):
         assert len(runs) == 2
         assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
 
-    def test_hyperparameter_optimization(self, environment, project, common_tag):
+    def test_hyperparameter_optimization(self, project, common_tag):
         # given
         n_trials = 5
 
@@ -391,7 +376,7 @@ class TestHuggingFace(BaseE2ETest):
             return RegressionPreTrainedModel(config)
 
         # and
-        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
+        callback = NeptuneCallback(tags=common_tag)
         trainer_config = self._trainer_default_attributes
         del trainer_config["model"]
         trainer = Trainer(**trainer_config, model_init=model_init, callbacks=[callback])
@@ -447,7 +432,6 @@ class TestHuggingFace(BaseE2ETest):
 
     def _test_checkpoints_creation(
         self,
-        environment,
         log_checkpoints,
         expected_checkpoints=None,
         expected_checkpoints_number=None,
@@ -490,9 +474,9 @@ class TestHuggingFace(BaseE2ETest):
                         assert subdirectories == expected_checkpoints
                     handler.extractall(".")
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
-    def _test_restore_from_checkpoint(self, environment):
+    def _test_restore_from_checkpoint(self):
         def run_test(run):
             callback = NeptuneCallback(run=run)
             training_args = self._trainer_default_attributes
@@ -504,36 +488,33 @@ class TestHuggingFace(BaseE2ETest):
         def assert_metadata_structure(run):
             assert run["finetuning/train/epoch"].fetch() == 1000
 
-        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
+        self._test_with_run_initialization(pre=run_test, post=assert_metadata_structure)
 
     @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
-    def test_model_checkpoints_same(self, environment, checkpoint_settings):
+    def test_model_checkpoints_same(self, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
-                environment=environment,
                 log_checkpoints="same",
                 expected_checkpoints={"model/checkpoint-1000", "model/checkpoint-2000"},
                 additional_training_args=checkpoint_settings,
             )
-            self._test_restore_from_checkpoint(environment=environment)
+            self._test_restore_from_checkpoint()
 
     @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
-    def test_model_checkpoints_last(self, environment, checkpoint_settings):
+    def test_model_checkpoints_last(self, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
-                environment=environment,
                 log_checkpoints="last",
                 expected_checkpoints={"model/checkpoint-2000"},
                 checkpoints_key="last",
                 additional_training_args=checkpoint_settings,
             )
-            self._test_restore_from_checkpoint(environment=environment)
+            self._test_restore_from_checkpoint()
 
     @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
-    def test_model_checkpoints_best(self, environment, checkpoint_settings):
+    def test_model_checkpoints_best(self, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
-                environment=environment,
                 log_checkpoints="best",
                 additional_training_args={
                     "load_best_model_at_end": True,
@@ -544,10 +525,10 @@ class TestHuggingFace(BaseE2ETest):
                 expected_checkpoints_number=3,
                 checkpoints_key="best",
             )
-            self._test_restore_from_checkpoint(environment=environment)
+            self._test_restore_from_checkpoint()
 
-    def test_model_checkpoints_best_invalid_load_best_model_at_end(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
+    def test_model_checkpoints_best_invalid_load_best_model_at_end(self):
+        with init_run() as run:
             callback = NeptuneCallback(run=run, log_checkpoints="best")
             training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments(

@@ -1,5 +1,5 @@
 ---
-name: Test E2E
+name: Test Integration E2E
 description: Check client against production API
 inputs:
   python-version:
@@ -27,22 +27,15 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
+        extras: dev,integrations-e2e
 
-    - name: E2E - ${{ inputs.module }}
+    - name: Integration - ${{ inputs.module }}
       run: |
-        coverage run -p -m \
-        pytest -v ./tests/e2e/ -m "${{ inputs.module }}" \
+        pytest -v ./tests/integrations/ -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
         --color=yes \
-        --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+        --junitxml="./test-results/test-integration-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
-
-    - name: Upload test coverage
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: e2e-coverage
-        path: ./.coverage*
 
     - name: Report
       uses: mikepenz/action-junit-report@v3.6.2

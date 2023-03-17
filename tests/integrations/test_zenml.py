@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
 
 import neptune
-from tests.e2e.base import BaseE2ETest
 
 zenml = pytest.importorskip("zenml")
 pipelines = pytest.importorskip("zenml.pipelines")
@@ -34,13 +33,13 @@ def zenml_client():
 
 
 @pytest.fixture(scope="session")
-def experiment_tracker_comp(zenml_client, environment):
+def experiment_tracker_comp(zenml_client):
     try:
         return zenml_client.create_stack_component(
             name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
             component_type=zenml.enums.StackComponentType.EXPERIMENT_TRACKER,
             flavor="neptune",
-            configuration={"api_token": environment.user_token, "project": environment.project},
+            configuration={},
         )
     except zenml.exceptions.StackComponentExistsError:
         return zenml_client.get_stack_component(
@@ -103,7 +102,7 @@ def neptune_example_pipeline(ex_step):
 
 @pytest.mark.integrations
 @pytest.mark.zenml
-class TestZenML(BaseE2ETest):
+class TestZenML:
     def _test_setup_creates_stack_with_neptune_experiment_tracker(self, zenml_client):
         assert zenml_client.active_stack.experiment_tracker.name == NEPTUNE_EXPERIMENT_TRACKER_NAME
 
@@ -113,16 +112,14 @@ class TestZenML(BaseE2ETest):
 
         self.zenml_run_name = run.get_runs()[-1].name
 
-    def _test_fetch_neptune_run(self, environment):
+    def _test_fetch_neptune_run(self):
         custom_run_id = hashlib.md5(self.zenml_run_name.encode()).hexdigest()
-        neptune_run = neptune.init_run(
-            custom_run_id=custom_run_id, project=environment.project, api_token=environment.user_token
-        )
+        neptune_run = neptune.init_run(custom_run_id=custom_run_id)
         assert neptune_run["params/gamma"].fetch() == 0.001
         assert neptune_run["sys/tags"].fetch() == {"sklearn", "digits"}
         assert neptune_run["metrics/val_accuracy"].fetch() <= 1
 
-    def test_zenml(self, registered_stack, zenml_client, environment):
+    def test_zenml(self, registered_stack, zenml_client):
         self._test_setup_creates_stack_with_neptune_experiment_tracker(zenml_client)
         self._test_pipeline_runs_without_errors()
-        self._test_fetch_neptune_run(environment)
+        self._test_fetch_neptune_run()

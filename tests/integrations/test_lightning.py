@@ -120,8 +120,8 @@ def prepare(project):
 
 
 @pytest.fixture(scope="session")
-def model_in_regular_env(environment):
-    yield prepare(project=environment.project)
+def model_in_regular_env():
+    yield prepare(project=os.getenv("NEPTUNE_PROJECT"))
 
 
 @pytest.fixture(scope="session")
