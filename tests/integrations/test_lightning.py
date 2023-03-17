@@ -31,7 +31,6 @@ from torch.utils.data import (
 )
 
 import neptune
-from tests.e2e.base import BaseE2ETest
 
 LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
 
@@ -131,7 +130,7 @@ def model_in_lightning_ci_project():
 
 @pytest.mark.integrations
 @pytest.mark.lightning
-class TestPytorchLightning(BaseE2ETest):
+class TestPytorchLightning:
     def _test_logging_values(self, pytorch_run):
         # correct integration version is logged
         if pytorch_run.exists("source_code/integrations/lightning"):
