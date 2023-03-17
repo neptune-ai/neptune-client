@@ -5,7 +5,7 @@ from PIL import Image
 
 from neptune.legacy import Session
 from tests.e2e.base import fake
-from tests.e2e.utils import tmp_context
+from tests.utils import tmp_context
 
 
 class TestLegacyClient:
