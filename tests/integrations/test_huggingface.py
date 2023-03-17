@@ -34,7 +34,7 @@ from transformers.integrations import (
 from transformers.utils import logging
 
 from neptune import init_run
-from tests.e2e.utils import (
+from tests.utils import (
     catch_time,
     modified_environ,
     tmp_context,

@@ -41,8 +41,8 @@ from neptune.internal.operation import (
     UploadFileSet,
 )
 from neptune.internal.types.file_types import FileType
-from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from tests.utils import tmp_context
 
 
 class TestFile(TestAttributeBase):

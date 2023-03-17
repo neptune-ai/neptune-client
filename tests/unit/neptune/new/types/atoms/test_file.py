@@ -34,7 +34,7 @@ from neptune.internal.types.file_types import (
 )
 from neptune.internal.utils.images import _get_pil_image_data
 from neptune.types import File
-from tests.e2e.utils import tmp_context
+from tests.utils import tmp_context
 
 
 class TestFile(unittest.TestCase):

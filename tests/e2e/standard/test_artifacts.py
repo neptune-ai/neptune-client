@@ -29,10 +29,8 @@ from tests.e2e.base import (
     BaseE2ETest,
     fake,
 )
-from tests.e2e.utils import (
-    tmp_context,
-    with_check_if_file_appears,
-)
+from tests.e2e.utils import with_check_if_file_appears
+from tests.utils import tmp_context
 
 
 class TestArtifacts(BaseE2ETest):

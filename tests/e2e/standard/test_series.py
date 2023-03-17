@@ -28,8 +28,8 @@ from tests.e2e.utils import (
     SIZE_1KB,
     generate_image,
     image_to_png,
-    tmp_context,
 )
+from tests.utils import tmp_context
 
 
 class TestSeries(BaseE2ETest):

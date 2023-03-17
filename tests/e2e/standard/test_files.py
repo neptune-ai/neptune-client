@@ -52,8 +52,8 @@ from tests.e2e.utils import (
     SIZE_1KB,
     SIZE_1MB,
     initialize_container,
-    tmp_context,
 )
+from tests.utils import tmp_context
 
 
 class TestUpload(BaseE2ETest):

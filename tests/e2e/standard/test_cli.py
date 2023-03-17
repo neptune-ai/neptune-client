@@ -35,8 +35,8 @@ from tests.e2e.utils import (
     DISABLE_SYSLOG_KWARGS,
     initialize_container,
     reinitialize_container,
-    tmp_context,
 )
+from tests.utils import tmp_context
 
 runner = CliRunner()
 
