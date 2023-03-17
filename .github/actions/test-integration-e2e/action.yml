@@ -27,7 +27,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
-        extras: dev,integrations-e2e
+        extras: integrations-e2e
 
     - name: Integration - ${{ inputs.module }}
       run: |

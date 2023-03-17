@@ -11,7 +11,7 @@ inputs:
   extras:
     description: "Package extras"
     required: false
-    default: "dev"
+    default: ""
 
 runs:
     using: "composite"
@@ -34,7 +34,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install ".[${{ inputs.extras }}]"
+          pip install ".[dev,${{ inputs.extras }}]"
         shell: bash
 
       - name: List dependencies
