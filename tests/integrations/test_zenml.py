@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 import pytest
 from sklearn.datasets import load_digits
@@ -39,7 +40,7 @@ def experiment_tracker_comp(zenml_client):
             name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
             component_type=zenml.enums.StackComponentType.EXPERIMENT_TRACKER,
             flavor="neptune",
-            configuration={},
+            configuration={"api_token": os.environ["NEPTUNE_API_TOKEN"], "project": os.environ["NEPTUNE_PROJECT"]},
         )
     except zenml.exceptions.StackComponentExistsError:
         return zenml_client.get_stack_component(
