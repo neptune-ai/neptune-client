@@ -3,9 +3,6 @@ name: integrations
 on:
   workflow_call:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - master
   schedule:
     - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 

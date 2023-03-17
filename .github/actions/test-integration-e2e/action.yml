@@ -41,7 +41,7 @@ runs:
       uses: mikepenz/action-junit-report@v3.6.2
       if: always()
       with:
-        report_paths: './test-results/test-e2e-*.xml'
+        report_paths: './test-results/test-integration-*.xml'
         update_check: true
         include_passed: true
         annotate_notice: true
