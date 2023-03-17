@@ -54,6 +54,7 @@ pytest = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
+pytest-cov = { version = "*", optional = true }
 #tensorflow-macos = { version = "*", optional = true }
 #torch = { version = "*", optional = true }
 #vega_datasets = { version = "*", optional = true }
@@ -106,6 +107,7 @@ dev = [
     "pytest-timeout",
     "pytest-xdist",
     "pytest-mock",
+    "pytest-cov",
 ]
 #e2e = [
 #    "Faker",
@@ -194,8 +196,9 @@ relative_files = false
 [tool.coverage.paths]
 source = [
     'src/neptune',
-    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune',
-    '/home/runner/.cache/pypoetry/virtualenvs/*/lib/python*/site-packages/neptune',
+    '/Users/neptune/Repos/neptune-client/src/neptune',
+#    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+#    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
+#    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune',
+#    '/home/runner/.cache/pypoetry/virtualenvs/*/lib/python*/site-packages/neptune',
 ]
