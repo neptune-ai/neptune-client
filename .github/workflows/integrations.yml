@@ -10,14 +10,11 @@ on:
     - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 
 env:
-  WORKSPACE_NAME: e2e-tests
+  NEPTUNE_PROJECT: e2e-tests/integrations
   NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-  SLACK_WEBHOOK_URL: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 
 jobs:
   fastai:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -62,8 +59,6 @@ jobs:
           job-status: ${{ needs.fastai.result }}
 
   kedro:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -108,8 +103,6 @@ jobs:
           job-status: ${{ needs.kedro.result }}
 
   prophet:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -154,8 +147,6 @@ jobs:
           job-status: ${{ needs.prophet.result }}
 
   keras:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -200,12 +191,6 @@ jobs:
           job-status: ${{ needs.keras.result }}
 
   lightning:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -248,12 +233,6 @@ jobs:
           job-status: ${{ needs.lightning.result }}
 
   huggingface:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -296,12 +275,6 @@ jobs:
           job-status: ${{ needs.huggingface.result }}
 
   zenml:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -344,8 +317,6 @@ jobs:
           job-status: ${{ needs.zenml.result }}
 
   detectron2:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -390,8 +361,6 @@ jobs:
           job-status: ${{ needs.detectron2.result }}
 
   rlang:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -435,8 +404,6 @@ jobs:
           job-status: ${{ needs.rlang.result }}
 
   sklearn:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -481,8 +448,6 @@ jobs:
           job-status: ${{ needs.sklearn.result }}
 
   xgboost:
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
