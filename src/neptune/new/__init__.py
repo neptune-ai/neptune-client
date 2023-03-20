@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# mypy: disable-error-code=no-untyped-def
+# mypy: disable-error-code=import
 # flake8: noqa
 __all__ = [
     "ANONYMOUS_API_TOKEN",
@@ -43,6 +45,7 @@ __all__ = [
 ]
 
 import sys
+from typing import Any
 
 from neptune.new._compatibility import CompatibilityImporter
 
@@ -74,7 +77,7 @@ from neptune.new.types import *
 from neptune.new.utils import *
 
 
-def _raise_legacy_client_expected(*args, **kwargs):
+def _raise_legacy_client_expected(*args: Any, **kwargs: Any) -> None:
     raise NeptunePossibleLegacyUsageException()
 
 

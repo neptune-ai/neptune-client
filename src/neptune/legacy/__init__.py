@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# mypy: disable-error-code=no-untyped-def
 __all__ = [
     "Project",
     "Session",
