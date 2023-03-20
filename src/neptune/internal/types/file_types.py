@@ -68,7 +68,7 @@ class FileComposite(abc.ABC):
         raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
 
     @property
-    def content(self) -> Any:
+    def content(self) -> bytes:
         raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
     def save(self, path: str) -> None:
@@ -152,7 +152,7 @@ class StreamComposite(FileComposite):
 
     @property
     @read_once
-    def content(self) -> Any:
+    def content(self) -> bytes:
         val = self._stream.read()
         if isinstance(self._stream, io.TextIOBase):
             val = val.encode()
