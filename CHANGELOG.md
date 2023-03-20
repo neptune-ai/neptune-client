@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.1.0
+## neptune 1.1.0
 
 ### Features
 - Added ability to provide repository path with `GitRef` to `init_run` ([#1292](https://github.com/neptune-ai/neptune-client/pull/1292))
