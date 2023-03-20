@@ -2,3 +2,29 @@ coverage:
   status:
     project: off
     patch: off
+
+flags:
+  unit:
+    paths:
+      - src/
+    carryforward: true
+
+  functional:
+    paths:
+      - src/
+    carryforward: true
+
+  ubuntu:
+    paths:
+      - src/
+    carryforward: true
+
+  macos:
+    paths:
+      - src/
+    carryforward: true
+
+  windows:
+    paths:
+      - src/
+    carryforward: true
