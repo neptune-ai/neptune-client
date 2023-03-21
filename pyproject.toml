@@ -57,44 +57,44 @@ pytest-xdist = { version = "*", optional = true }
 #tensorflow-macos = { version = "*", optional = true }
 #torch = { version = "*", optional = true }
 #vega_datasets = { version = "*", optional = true }
-Faker = { version = "*", optional = true }
+#Faker = { version = "*", optional = true }
 
 # e2e
-optuna = { version = "*", optional = true }
-scikit-learn = { version = "*", optional = true }
-torchvision = { version = "*", optional = true }
+#optuna = { version = "*", optional = true }
+#scikit-learn = { version = "*", optional = true }
+#torchvision = { version = "*", optional = true }
 
 # Additional integrations
-kedro-neptune = { version = "*", optional = true, python = "<3.11" }
-neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
-neptune-fastai = { version = "*", optional = true }
-neptune-lightgbm = { version = "*", optional = true }
-pytorch-lightning = { version = "*", optional = true }
-neptune-optuna = { version = "*", optional = true }
-neptune-prophet = { version = "*", optional = true }
-neptune-sacred = { version = "*", optional = true }
-neptune-sklearn = { version = "*", optional = true }
-neptune-tensorflow-keras = { version = "*", optional = true }
-neptune-xgboost = { version = "*", optional = true }
-transformers = { version = "*", optional = true }
-zenml = { version = "*", optional = true, python = "<3.9" }
-neptune-aws = { version = "*", optional = true }
+#kedro-neptune = { version = "*", optional = true, python = "<3.11" }
+#neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
+#neptune-fastai = { version = "*", optional = true }
+#neptune-lightgbm = { version = "*", optional = true }
+#pytorch-lightning = { version = "*", optional = true }
+#neptune-optuna = { version = "*", optional = true }
+#neptune-prophet = { version = "*", optional = true }
+#neptune-sacred = { version = "*", optional = true }
+#neptune-sklearn = { version = "*", optional = true }
+#neptune-tensorflow-keras = { version = "*", optional = true }
+#neptune-xgboost = { version = "*", optional = true }
+#transformers = { version = "*", optional = true }
+#zenml = { version = "*", optional = true, python = "<3.9" }
+#neptune-aws = { version = "*", optional = true }
 
 [tool.poetry.extras]
-aws = ["neptune-aws"]
-detectron2 = ["neptune-detectron2"]
-fastai = ["neptune-fastai"]
-kedro = ["kedro-neptune"]
-lightgbm = ["neptune-lightgbm"]
-optuna = ["neptune-optuna"]
-prophet = ["neptune-prophet"]
-pytorch-lightning = ["pytorch-lightning"]
-sacred = ["neptune-sacred"]
-sklearn = ["neptune-sklearn"]
-tensorflow-keras = ["neptune-tensorflow-keras"]
-transformers = ["transformers"]
-xgboost = ["neptune-xgboost"]
-zenml = ["zenml"]
+#aws = ["neptune-aws"]
+#detectron2 = ["neptune-detectron2"]
+#fastai = ["neptune-fastai"]
+#kedro = ["kedro-neptune"]
+#lightgbm = ["neptune-lightgbm"]
+#optuna = ["neptune-optuna"]
+#prophet = ["neptune-prophet"]
+#pytorch-lightning = ["pytorch-lightning"]
+#sacred = ["neptune-sacred"]
+#sklearn = ["neptune-sklearn"]
+#tensorflow-keras = ["neptune-tensorflow-keras"]
+#transformers = ["transformers"]
+#xgboost = ["neptune-xgboost"]
+#zenml = ["zenml"]
 dev = [
     "coverage",
     "freezegun",
@@ -103,20 +103,20 @@ dev = [
     "munch",
     "pre-commit",
     "pytest",
-#    "pytest-mock",
-#    "pytest-timeout",
-#    "pytest-xdist",
+    "pytest-timeout",
+    "pytest-xdist",
+    "pytest-mock",
 ]
-e2e = [
-    "Faker",
-    # Integrations
-    "optuna",
-    "pytorch-lightning",
-    "scikit-learn",
-    "torchvision",
-    "transformers",
-    "zenml",
-]
+#e2e = [
+#    "Faker",
+#    # Integrations
+#    "optuna",
+#    "pytorch-lightning",
+#    "scikit-learn",
+#    "torchvision",
+#    "transformers",
+#    "zenml",
+#]
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]

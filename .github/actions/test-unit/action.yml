@@ -28,7 +28,7 @@ runs:
 
     - name: Test
       run: |
-        coverage run -p -m pytest -v -n 2 ./tests/unit/ \
+        poetry run coverage run -p -m pytest -v -n 2 ./tests/unit/ \
         --timeout=120 --timeout_method=thread \
         --color=yes \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
@@ -55,5 +55,5 @@ runs:
         report_paths: './test-results/test-unit-*.xml'
         update_check: true
         include_passed: true
-        annotate_notice: true
+        annotate_notice: false
         job_name: ${{ inputs.report_job }}
