@@ -18,6 +18,10 @@ inputs:
   report_job:
     description: "Job name to update by JUnit report"
     required: true
+  codecov-token:
+    description: "Codecov token"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -26,12 +30,12 @@ runs:
       uses: ./.github/actions/install-package
       with:
         python-version: ${{ inputs.python-version }}
-        os: ${{ inputs.os }}
+        os: ${{ inputs.os }}-latest
 
     - name: E2E - ${{ inputs.module }}
       run: |
-        coverage run -p -m \
-        pytest -v ./tests/e2e/ -m "${{ inputs.module }}" \
+        pytest --cov=neptune --cov-report xml \
+        -v ./tests/e2e/ -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
         --color=yes \
         --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
@@ -46,6 +50,14 @@ runs:
         include_passed: true
         annotate_notice: true
         job_name: ${{ inputs.report_job }}
+
+    - name: Upload Pull Request coverage report do Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ inputs.codecov-token }}
+        files: ./coverage.xml
+        flags: e2e,${{ inputs.os }},py${{ inputs.python-version }}
+        fail_ci_if_error: false
 
     - uses: actions/upload-artifact@v3
       if: always()
