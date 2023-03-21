@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune 1.1.1
+
+### Fixes
+- Fixed handling errors in case of too long filenames provided with `sys.argv` ([#1305](https://github.com/neptune-ai/neptune-client/pull/1305))
+
 ## neptune 1.1.0
 
 ### Features
