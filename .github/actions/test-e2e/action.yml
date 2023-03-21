@@ -13,8 +13,7 @@ inputs:
     required: true
   name:
     description: "Name"
-    required: false
-    default: ""
+    required: true
   report_job:
     description: "Job name to update by JUnit report"
     required: true
@@ -56,7 +55,7 @@ runs:
       with:
         token: ${{ inputs.codecov-token }}
         files: ./coverage.xml
-        flags: e2e,${{ inputs.os }},py${{ inputs.python-version }}
+        flags: e2e,e2e-${{ inputs.name }},${{ inputs.os }},py${{ inputs.python-version }}
         fail_ci_if_error: false
 
     - uses: actions/upload-artifact@v3

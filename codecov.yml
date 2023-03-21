@@ -49,6 +49,26 @@ flags:
       - src/neptune
     carryforward: true
 
+  e2e-standard:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e-management:
+    paths:
+      - src/neptune/management
+    carryforward: true
+
+  e2e-s3-gcs:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e-s3:
+    paths:
+      - src/neptune
+    carryforward: true
+
 component_management:
   default_rules:
     statuses:
