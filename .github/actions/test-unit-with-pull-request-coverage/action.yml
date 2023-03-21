@@ -49,13 +49,6 @@ runs:
         flags: unit-pull-request
         fail_ci_if_error: false
 
-    - name: Upload test coverage artifacts
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: ${{ inputs.coverage-artifacts-name }}
-        path: ./.coverage*
-
     - name: Upload test reports
       uses: actions/upload-artifact@v3
       if: always()

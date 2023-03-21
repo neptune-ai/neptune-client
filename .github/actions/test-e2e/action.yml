@@ -37,13 +37,6 @@ runs:
         --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-    - name: Upload test coverage
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: e2e-coverage
-        path: ./.coverage*
-
     - name: Report
       uses: mikepenz/action-junit-report@v3.6.2
       if: always()

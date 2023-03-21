@@ -2,3 +2,49 @@ coverage:
   status:
     project: off
     patch: off
+
+flags:
+  unit:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  ubuntu:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  macos:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  windows:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.7:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.8:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.9:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.10:
+    paths:
+      - src/neptune
+    carryforward: true
