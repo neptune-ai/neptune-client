@@ -42,7 +42,6 @@ pandas = "*"
 # dev
 altair = { version = "*", optional = true }
 bokeh = { version = "*", optional = true }
-coverage = { version = "*", extras = [ "toml" ], optional = true }
 freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
 mock = { version = "*", optional = true }
@@ -99,7 +98,6 @@ zenml = ["zenml"]
 dev = [
     "altair",
     "bokeh",
-    "coverage",
     "Faker",
     "freezegun",
     "matplotlib",
