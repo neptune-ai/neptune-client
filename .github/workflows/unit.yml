@@ -36,7 +36,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   unit-tests-notify:
-    needs: [ test, test-ubuntu-37 ]
+    needs: [ test ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
