@@ -70,7 +70,63 @@ class ModelVersion(MetadataContainer):
         mode: Optional[str] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
-    ):
+    ) -> None:
+        """Initializes a ModelVersion object from an existing or new model version.
+
+        You can use this function to create a new model version from code
+            or to perform actions on existing model versions.
+
+        Args:
+             with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
+                The identifier is stored in the object's sys/id field.
+                If omitted or None is passed, a new model version is created.
+            name: A custom name for the model version. Defaults to 'Untitled'.
+            model: Identifier of the model for which the new version should be created.
+                Required when creating a new model version. The identifier is stored in the model's sys/id field.
+            project: Name of a project in the form workspace-name/project-name.
+                If None, the value of the NEPTUNE_PROJECT environment variable is used.
+            api_token: User's API token. Defaults to None.
+                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
+                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
+                placing it in plain text in the source code.
+            mode: Connection mode in which the tracking will work.
+                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If no value was set for the environment variable, 'async' is used by default.
+                Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
+            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
+                Defaults to 5 (every 5 seconds).
+            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+                For more information, see the 'Proxies' section in the Requests documentation.
+
+        Returns:
+            ModelVersion object that is used to manage the model version and log metadata to it.
+
+        Examples:
+
+            >>> import neptune
+
+            >>> # Create a new model version for a model with identifier "CLS-PRE"
+            ... model_version = neptune.init_model_version(model="CLS-PRE")
+
+            >>> # You can provide the project parameter as an environment variable
+            ... # or directly in the init_model_version() function:
+            ... model_version = neptune.init_model_version(
+            ...    model="CLS-PRE",
+            ...    project="ml-team/classification",
+            ... )
+
+            >>> # Initialize an existing model version with identifier "CLS-PRE-12"
+            ... model_version = neptune.init_model_version(with_id="CLS-PRE-12")
+
+            >>> # To prevent modifications when connecting to an existing model version,
+            ... # you can connect in read-only mode:
+            ... model_version = neptune.init_model(with_id="CLS-PRE-12", mode="read-only")
+
+        For more, see the API reference:
+        https://docs.neptune.ai/api/neptune#init_model_version
+        and the `ModelVersion docs page`_.
+        https://docs.neptune.ai/api/model_version/
+        """
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("model", model, (str, type(None)))
@@ -139,7 +195,25 @@ class ModelVersion(MetadataContainer):
             model_id=self["sys/model_id"].fetch(),
         )
 
-    def change_stage(self, stage: str):
+    def change_stage(self, stage: str) -> None:
+        """
+        Changes the stage of the model version.
+        This method is always synchronous, which means that Neptune will wait for all other calls to reach the Neptune
+            servers before executing it.
+        Args:
+            stage (str): The new stage of the model version.
+                Possible values are "none", "staging", "production", and "archived".
+        Examples:
+            >>> import neptune
+            >>> model_version = neptune.init_model_version(with_id="CLS-TREE-3")
+            >>> # If the model is good enough, promote it to the staging
+            ... val_acc = model_version["validation/metrics/acc"].fetch()
+            >>> if val_acc >= ACC_THRESHOLD:
+            ...     model_version.change_stage("staging")
+        You may also want to check `change_stage docs page`_.
+        .. _change_stage docs page:
+            https://docs.neptune.ai/api/model_version/#change_stage
+        """
         mapped_stage = ModelVersionStage(stage)
 
         if isinstance(self._op_processor, OfflineOperationProcessor):
