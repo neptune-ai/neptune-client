@@ -78,6 +78,61 @@ class Model(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
     ):
+        """Initializes a Model object from an existing or new model.
+
+        You can use this to create a new model from code or to perform actions on existing models.
+
+        Args:
+             with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
+                The identifier is stored in the object's sys/id field.
+                If omitted or None is passed, a new model is created.
+            name: A custom name for the model.
+            key: Key for the new model. Required when creating a new model version.
+                Used together with the project key to form the model identifier.
+                Must be uppercase and unique within the workspace.
+            project: Name of a project in the form workspace-name/project-name.
+                If None, the value of the NEPTUNE_PROJECT environment variable is used.
+            api_token: User's API token. Defaults to None.
+                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
+                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
+                placing it in plain text in the source code.
+            mode: Connection mode in which the tracking will work.
+                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If no value was set for the environment variable, 'async' is used by default.
+                Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
+            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
+                Defaults to 5 (every 5 seconds).
+            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+                For more information, see the 'Proxies' section in the Requests documentation.
+
+        Returns:
+            Model object that is used to manage the model and log metadata to it.
+
+        Examples:
+
+            >>> import neptune
+
+            >>> # Create a new model
+            ... model = neptune.init_model(key="PRE")
+
+            >>> # You can provide the project parameter as an environment variable
+            ... # or directly in the init_model() function:
+            ... model = neptune.init_model(key="PRE", project="workspace-name/project-name")
+
+            >>> # When creating a model, you can give it a name:
+            ... model = neptune.init_model(key="PRE", name="Pre-trained model")
+
+            >>> # Initialize existing model with identifier "CLS-PRE"
+            ... model = neptune.init_model(with_id="CLS-PRE")
+
+            >>> # To prevent modifications when connecting to an existing model, you can connect in read-only mode
+            ... model = neptune.init_model(with_id="CLS-PRE", mode="read-only")
+
+        For more, see the API reference:
+        https://docs.neptune.ai/api/neptune#init_model
+        and the `Model docs page`_.
+        https://docs.neptune.ai/api/model/
+        """
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("key", key, (str, type(None)))
