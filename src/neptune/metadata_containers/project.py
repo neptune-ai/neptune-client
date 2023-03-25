@@ -66,27 +66,29 @@ class Project(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
     ):
-        """Starts a connection to an existing Neptune project. You can use it to retrieve information about runs,
-            models, and model versions within the project.
+        """Starts a connection to an existing Neptune project.
+
+        You can use the Project object to retrieve information about runs, models, and model versions
+        within the project.
 
         You can also log (and fetch) metadata common to the whole project,
-            such as information about datasets, links to documents, or key project metrics.
+        such as information about datasets, links to documents, or key project metrics.
 
         Args:
-            project: Name of a project in the form workspace-name/project-name.
+            project: Name of a project in the form "workspace-name/project-name".
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token. Defaults to None.
+            api_token: User's API token.
                 If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
                 Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
                 placing it in plain text in the source code.
             mode: Connection mode in which the tracking will work.
                 If None (default), the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, 'async' is used by default.
-                Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
+                If no value was set for the environment variable, "async" is used by default.
+                Possible values are "async", "sync", "offline", "read-only", and "debug".
             flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
                 Defaults to 5 (every 5 seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information, see the 'Proxies' section in the Requests documentation.
+                For more information about proxies, see the Requests documentation.
 
         Returns:
             Project object that can be used to interact with the project as a whole,
@@ -105,10 +107,11 @@ class Project(MetadataContainer):
             ...    mode="read-only",
             ... )
 
-        For more, see the API reference:
-        https://docs.neptune.ai/api/neptune#init_project
-        and the `Project docs page`_.
-        https://docs.neptune.ai/api/project/
+        For more, see the docs:
+            Initializing a project:
+                https://docs.neptune.ai/api/neptune#init_project
+            Project class reference:
+                https://docs.neptune.ai/api/project/
         """
         verify_type("mode", mode, (str, type(None)))
 
@@ -237,20 +240,16 @@ class Project(MetadataContainer):
             id: Neptune ID of a run, or list of several IDs.
                 Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
-                Defaults to `None`.
             state: Run state, or list of states.
                 Example: `"active"`.
-                Possible values: "inactive", "active".
-                Defaults to `None`.
+                Possible values: `"inactive"`, `"active"`.
                 Matching any element of the list is sufficient to pass the criterion.
             owner: Username of the run owner, or a list of owners.
                 Example: `"josh"` or `["frederic", "josh"]`.
                 The owner is the user who created the run.
-                Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
             tag: A tag or list of tags applied to the run.
                 Example: `"lightGBM"` or `["pytorch", "cycleLR"]`.
-                Defaults to `None`.
                 Only runs that have all specified tags will match this criterion.
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
@@ -286,7 +285,7 @@ class Project(MetadataContainer):
             You can also filter the runs table by state, owner, tag, or a combination of these:
 
             >>> # Fetch only inactive runs
-            ... runs_table_df = project.fetch_runs_table(state="Inactive").to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="inactive").to_pandas()
 
             >>> # Fetch only runs created by CI service
             ... runs_table_df = project.fetch_runs_table(owner="my_company_ci_service").to_pandas()
@@ -295,9 +294,9 @@ class Project(MetadataContainer):
             ... runs_table_df = project.fetch_runs_table(tag=["Exploration", "Optuna"]).to_pandas()
 
             >>> # You can combine conditions. Runs satisfying all conditions will be fetched
-            ... runs_table_df = project.fetch_runs_table(state="Inactive", tag="Exploration").to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="inactive", tag="Exploration").to_pandas()
 
-        You may also want to check the API reference in the docs:
+        See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_runs_table
         """
         ids = as_list("id", id)
