@@ -16,8 +16,6 @@
   <a href="https://neptune.ai/resources">Resource center</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://neptune.ai/blog">Blog</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/events">Podcast</a>
 &nbsp;
   <hr />
 </div>
