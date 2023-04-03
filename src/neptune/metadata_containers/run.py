@@ -91,7 +91,7 @@ from neptune.types.mode import Mode
 
 
 class Run(MetadataContainer):
-    """Logs ML model-building metadata to neptune.ai."""
+    """Starts a tracked run that logs ML model-building metadata to neptune.ai."""
 
     container_type = ContainerType.RUN
 
@@ -232,6 +232,9 @@ class Run(MetadataContainer):
             ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
             ... run = neptune.init_run()
 
+            >>> # Or initialize with the constructor
+            ... run = Run(project="ml-team/classification")
+
             >>> # Create a run with a name and description, with no sources files or Git info tracked:
             >>> run = neptune.init_run(
             ...     name="neural-net-mnist",
@@ -270,7 +273,7 @@ class Run(MetadataContainer):
 
             Using the Run object as context manager:
 
-            >>> with Run(project="workspace-name/project-name") as run:
+            >>> with Run() as run:
             ...     run["metric"].append(value)
 
         For more, see the docs:
