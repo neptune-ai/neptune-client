@@ -546,7 +546,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-sacred/.github/actions/e2e@master
+        uses: neptune-ai/neptune-sacred/.github/actions/e2e@main
         with:
           working_directory: neptune-sacred
 
