@@ -1,11 +1,10 @@
 name: integrations
 
 on:
-  push
-#  workflow_call:
-#  workflow_dispatch:
-#  schedule:
-#    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 
 env:
   WORKSPACE_NAME: e2e-tests
@@ -13,513 +12,513 @@ env:
   SLACK_WEBHOOK_URL: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 
 jobs:
-#  fastai:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest, windows-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#    - name: Checkout repository
-#      uses: actions/checkout@v3
-#      with:
-#        fetch-depth: 0
-#        ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#    - name: Install package
-#      uses: ./.github/actions/install-package
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#        os: ${{ matrix.os }}
-#
-#    - name: Test integration
-#      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-#      with:
-#        working_directory: neptune-fastai
-#
-#  fastai-notify:
-#    needs: [fastai]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.fastai.result }}
-#
-#  kedro:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.8", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#    - name: Checkout repository
-#      uses: actions/checkout@v3
-#      with:
-#        fetch-depth: 0
-#        ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#    - name: Install package
-#      uses: ./.github/actions/install-package
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#        os: ${{ matrix.os }}
-#
-#    - name: Test integration
-#      uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
-#      with:
-#        working_directory: kedro-neptune
-#
-#  kedro-notify:
-#    needs: [kedro]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.kedro.result }}
-#
-#  prophet:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'prophet (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#    - name: Checkout repository
-#      uses: actions/checkout@v3
-#      with:
-#        fetch-depth: 0
-#        ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#    - name: Install package
-#      uses: ./.github/actions/install-package
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#        os: ${{ matrix.os }}
-#
-#    - name: Test integration
-#      uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
-#      with:
-#        working_directory: neptune-prophet
-#
-#  prophet-notify:
-#    needs: [prophet]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.prophet.result }}
-#
-#  keras:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest, windows-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'keras (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#    - name: Checkout repository
-#      uses: actions/checkout@v3
-#      with:
-#        fetch-depth: 0
-#        ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#    - name: Install package
-#      uses: ./.github/actions/install-package
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#        os: ${{ matrix.os }}
-#
-#    - name: Test integration
-#      uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@master
-#      with:
-#        working_directory: neptune-tensorflow-keras
-#
-#  keras-notify:
-#    needs: [keras]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.keras.result }}
-#
-#  lightning:
-#    env:
-#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: lightning
-#          report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
-#
-#  lightning-notify:
-#    needs: [lightning]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.lightning.result }}
-#
-#  huggingface:
-#    env:
-#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: huggingface
-#          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
-#
-#  huggingface-notify:
-#    needs: [huggingface]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.huggingface.result }}
-#
-#  zenml:
-#    env:
-#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.8" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: zenml
-#          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
-#
-#  zenml-notify:
-#    needs: [zenml]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.zenml.result }}
-#
-#  detectron2:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.9" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'detectron2 (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Install package
-#        uses: ./.github/actions/install-package
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#
-#      - name: Test integration
-#        uses: neptune-ai/neptune-detectron2/.github/actions/e2e@main
-#        with:
-#          working_directory: neptune-detectron2
-#
-#  detectron2-notify:
-#    needs: [ detectron2 ]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.detectron2.result }}
-#
-#  rlang:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'R (${{ matrix.os }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Install package
-#        uses: ./.github/actions/install-package
-#        with:
-#          os: ${{ matrix.os }}
-#          python-version: "3.10"
-#
-#      - name: Test integration
-#        uses: neptune-ai/neptune-r/.github/actions/e2e@master
-#        with:
-#          working_directory: rlang
-#
-#  rlang-notify:
-#    needs: [ rlang ]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.rlang.result }}
-#
-#  sklearn:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.9" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'sklearn (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Install package
-#        uses: ./.github/actions/install-package
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#
-#      - name: Test integration
-#        uses: neptune-ai/neptune-sklearn/.github/actions/e2e@master
-#        with:
-#          working_directory: neptune-sklearn
-#
-#  sklearn-notify:
-#    needs: [ sklearn ]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.sklearn.result }}
-#
-#  xgboost:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.9" ]
-#        os: [ ubuntu-latest, macos-latest, windows-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'xgboost (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Install package
-#        uses: ./.github/actions/install-package
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#
-#      - name: Test integration
-#        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@master
-#        with:
-#          working_directory: neptune-xgboost
-#
-#  xgboost-notify:
-#    needs: [ xgboost ]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/master'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/job-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-#          job-status: ${{ needs.xgboost.result }}
+  fastai:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+
+    - name: Test integration
+      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+      with:
+        working_directory: neptune-fastai
+
+  fastai-notify:
+    needs: [fastai]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.fastai.result }}
+
+  kedro:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.8", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+
+    - name: Test integration
+      uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
+      with:
+        working_directory: kedro-neptune
+
+  kedro-notify:
+    needs: [kedro]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.kedro.result }}
+
+  prophet:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'prophet (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+
+    - name: Test integration
+      uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
+      with:
+        working_directory: neptune-prophet
+
+  prophet-notify:
+    needs: [prophet]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.prophet.result }}
+
+  keras:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'keras (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+
+    - name: Test integration
+      uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@master
+      with:
+        working_directory: neptune-tensorflow-keras
+
+  keras-notify:
+    needs: [keras]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.keras.result }}
+
+  lightning:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: lightning
+          report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+
+  lightning-notify:
+    needs: [lightning]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.lightning.result }}
+
+  huggingface:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: huggingface
+          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+
+  huggingface-notify:
+    needs: [huggingface]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.huggingface.result }}
+
+  zenml:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.8" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: zenml
+          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+
+  zenml-notify:
+    needs: [zenml]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.zenml.result }}
+
+  detectron2:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.9" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'detectron2 (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Install package
+        uses: ./.github/actions/install-package
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+
+      - name: Test integration
+        uses: neptune-ai/neptune-detectron2/.github/actions/e2e@main
+        with:
+          working_directory: neptune-detectron2
+
+  detectron2-notify:
+    needs: [ detectron2 ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.detectron2.result }}
+
+  rlang:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'R (${{ matrix.os }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Install package
+        uses: ./.github/actions/install-package
+        with:
+          os: ${{ matrix.os }}
+          python-version: "3.10"
+
+      - name: Test integration
+        uses: neptune-ai/neptune-r/.github/actions/e2e@master
+        with:
+          working_directory: rlang
+
+  rlang-notify:
+    needs: [ rlang ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.rlang.result }}
+
+  sklearn:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.9" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'sklearn (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Install package
+        uses: ./.github/actions/install-package
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+
+      - name: Test integration
+        uses: neptune-ai/neptune-sklearn/.github/actions/e2e@master
+        with:
+          working_directory: neptune-sklearn
+
+  sklearn-notify:
+    needs: [ sklearn ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.sklearn.result }}
+
+  xgboost:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.9" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'xgboost (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Install package
+        uses: ./.github/actions/install-package
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+
+      - name: Test integration
+        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@master
+        with:
+          working_directory: neptune-xgboost
+
+  xgboost-notify:
+    needs: [ xgboost ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.xgboost.result }}
 
   sacred:
     env:
