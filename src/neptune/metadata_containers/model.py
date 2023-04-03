@@ -56,24 +56,7 @@ from neptune.types.mode import Mode
 
 
 class Model(MetadataContainer):
-    """A class for managing a Neptune model and retrieving information from it.
-
-    Suitable for storing model metadata that common to all versions.
-
-    >>> # Initialize with the constructor:
-    ... model = Model(key="KEY")
-    ... model["metadata"] = some_metadata
-
-    >>> # Or as a context manager:
-    ... with Model(key="KEY") as model:
-    ...     model["metadata"] = some_metadata
-
-    For details, see the docs:
-        Initializing a model:
-            https://docs.neptune.ai/api/neptune#init_model
-        Model class reference:
-            https://docs.neptune.ai/api/model/
-    """
+    """Class for registering a model to neptune.ai and retrieving information from it."""
 
     container_type = ContainerType.MODEL
 
@@ -93,12 +76,16 @@ class Model(MetadataContainer):
 
         You can use this to create a new model from code or to perform actions on existing models.
 
-        A model object is intended for storing general model metadata that is not dependent on a particular version
-        (there are ModelVersion objects for storing this kind of metadata).
+        A Model object is suitable for storing model metadata that is common to all versions (you can use ModelVersion
+        objects to track version-specific metadata). It does not track background metrics or logs automatically,
+        but you can assign metadata to the Model object just like you can for runs.
+        To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+
+        You can also use the Model object as a context manager (see examples).
 
         Args:
              with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
-                The identifier is stored in the object's sys/id field.
+                The identifier is stored in the object's "sys/id" field.
                 If omitted or `None` is passed, a new model is created.
             name: A custom name for the model.
             key: Key for the new model. Required when creating a new model version.
@@ -126,15 +113,22 @@ class Model(MetadataContainer):
 
             >>> import neptune
 
-            >>> # Create a new model
-            ... model = neptune.init_model(key="PRE")
+            Creating a new model:
+
+            >>> model = neptune.init_model(key="PRE")
+            >>> model["metadata"] = some_metadata
+
+            >>> # Or initialize with the constructor
+            ... model = Model(key="PRE")
 
             >>> # You can provide the project parameter as an environment variable
-            ... # or directly in the init_model() function:
+            ... # or as an argument to the init_model() function:
             ... model = neptune.init_model(key="PRE", project="workspace-name/project-name")
 
             >>> # When creating a model, you can give it a name:
             ... model = neptune.init_model(key="PRE", name="Pre-trained model")
+
+            Connecting to an existing model:
 
             >>> # Initialize existing model with identifier "CLS-PRE"
             ... model = neptune.init_model(with_id="CLS-PRE")
@@ -142,10 +136,15 @@ class Model(MetadataContainer):
             >>> # To prevent modifications when connecting to an existing model, you can connect in read-only mode
             ... model = neptune.init_model(with_id="CLS-PRE", mode="read-only")
 
+            Using the Model object as context manager:
+
+            >>> with Model(key="PRE") as model:
+            ...     model["metadata"] = some_metadata
+
         For details, see the docs:
             Initializing a model:
                 https://docs.neptune.ai/api/neptune#init_model
-            ModelVersion class reference:
+            Model class reference:
                 https://docs.neptune.ai/api/model
         """
         verify_type("with_id", with_id, (str, type(None)))

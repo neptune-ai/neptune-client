@@ -49,24 +49,7 @@ from neptune.types.model_version_stage import ModelVersionStage
 
 
 class ModelVersion(MetadataContainer):
-    """A class for managing a Neptune model version and retrieving information from it.
-
-    Suitable for storing model metadata that is specific to a version.
-
-    >>> # Initialize with the constructor:
-    ... model_version1 = ModelVersion(model="PROJ-KEY")
-    ... model_version1["metadata"] = some_metadata
-
-    >>> # Or as a context manager:
-    ... with ModelVersion(model="PROJ-KEY") as model_version2:
-    ...     model_version2["metadata"] = some_metadata
-
-    For details, see the docs:
-        Initializing a model version:
-            https://docs.neptune.ai/api/neptune#init_model_version
-        ModelVersion class reference:
-            https://docs.neptune.ai/api/model_version
-    """
+    """Class for managing a version of a neptune.ai model and retrieving information from it."""
 
     container_type = ContainerType.MODEL_VERSION
 
@@ -84,16 +67,24 @@ class ModelVersion(MetadataContainer):
     ) -> None:
         """Initializes a ModelVersion object from an existing or new model version.
 
-        You can use this function to create a new model version from code
-        or to perform actions on existing model versions.
+        Before creating model versions, you must first register a model by creating a Model object.
+
+        A ModelVersion object is suitable for storing model metadata that is version-specific. It does not track
+        background metrics or logs automatically, but you can assign metadata to the model version just like you can
+        for runs. You can use the parent Model object to store metadata that is common to all versions of the model.
+        To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+
+        To manage the stage of a model version, use its `change_stage()` method or use the menu in the web app.
+
+        You can also use the ModelVersion object as a context manager (see examples).
 
         Args:
-             with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
-                The identifier is stored in the object's sys/id field.
+            with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
+                The identifier is stored in the object's "sys/id" field.
                 If omitted or None is passed, a new model version is created.
             name: A custom name for the model version. Defaults to "Untitled".
             model: Identifier of the model for which the new version should be created.
-                Required when creating a new model version. The identifier is stored in the model's sys/id field.
+                Required when creating a new model version. The identifier is stored in the model's "sys/id" field.
             project: Name of a project in the form `workspace-name/project-name`.
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
@@ -116,8 +107,11 @@ class ModelVersion(MetadataContainer):
 
             >>> import neptune
 
+            Creating a new model version:
+
             >>> # Create a new model version for a model with identifier "CLS-PRE"
             ... model_version = neptune.init_model_version(model="CLS-PRE")
+            >>> model_version["your/structure"] = some_metadata
 
             >>> # You can provide the project parameter as an environment variable
             ... # or directly in the init_model_version() function:
@@ -126,12 +120,22 @@ class ModelVersion(MetadataContainer):
             ...    project="ml-team/classification",
             ... )
 
+            >>> # Or initialize with the constructor:
+            ... model_version = ModelVersion(model="CLS-PRE")
+
+            Connecting to an existing model version:
+
             >>> # Initialize an existing model version with identifier "CLS-PRE-12"
             ... model_version = neptune.init_model_version(with_id="CLS-PRE-12")
 
             >>> # To prevent modifications when connecting to an existing model version,
             ... # you can connect in read-only mode:
             ... model_version = neptune.init_model(with_id="CLS-PRE-12", mode="read-only")
+
+            Using the ModelVersion object as context manager:
+
+            >>> with ModelVersion(model="CLS-PRE") as model_version:
+            ...     model_version["metadata"] = some_metadata
 
         For more, see the docs:
             Initializing a model version:
