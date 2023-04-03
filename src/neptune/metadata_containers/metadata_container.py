@@ -241,7 +241,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             >>> params = resumed_run["model/parameters"].fetch()
             >>> run_data = resumed_run.fetch()
             >>> print(run_data)
-            >>> # this will print out all Atom attributes stored in run as a dict
+            >>> # prints all Atom attributes stored in run as a dict
 
             Fetching metadata from an existing model version:
             >>> model_version = neptune.init_model_version(with_id="CLS-TREE-45")
@@ -270,8 +270,9 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         - when the script that created the run or other object finishes execution.
         - if using a context manager, on destruction of the Neptune context.
 
-        Note: in interactive sessions, such as Jupyter Notebook, objects are stopped automatically only when
-        the Python kernel stops.
+        Note: In interactive sessions, such as Jupyter Notebook, objects are stopped automatically only when
+        the Python kernel stops. However, background monitoring of system metrics and standard streams is disabled
+        unless explicitly enabled when initializing Neptune.
 
         Args:
             seconds: Seconds to wait for all metadata tracking calls to finish before stopping the object.
@@ -312,8 +313,8 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
 
-        This method can be used to traverse the run's (or other object's) metadata structure programmatically
-        when using Neptune in automated workflows.
+        This method can be used to programmatically traverse the metadata structure of a run, model,
+        or project object when using Neptune in automated workflows.
 
         Note: The returned object is a deep copy of the structure of the internal object.
 
@@ -435,18 +436,20 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         """Synchronizes the local representation of the object with the representation on the Neptune servers.
 
         Args:
-            wait: If `True` the process will only wait for data to be saved
+            wait: If `True`, the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
 
         Example:
             >>> import neptune
             >>> # Connect to a run from Worker #3
             ... worker_id = 3
-            >>> run = neptune.init_run(with_id="DIST-43", monitoring_namespace="monitoring/{}".format(worker_id))
+            >>> run = neptune.init_run(with_id="DIST-43", monitoring_namespace=f"monitoring/{worker_id}")
             >>> # Try to access logs that were created in the meantime by Worker #2
-            ... worker_2_status = run["status/2"].fetch() # Error if this field was created after this script starts
-            >>> run.sync() # Synchronizes local representation with Neptune servers.
-            >>> worker_2_status = run["status/2"].fetch() # No error
+            ... worker_2_status = run["status/2"].fetch()
+            ... # Error if this field was created after this script starts
+            >>> run.sync() # Synchronizes local representation with Neptune servers
+            >>> worker_2_status = run["status/2"].fetch()
+            ... # No error
 
         See also the API reference:
             https://docs.neptune.ai/api/universal/#sync
