@@ -47,13 +47,7 @@ from neptune.types.mode import Mode
 
 
 class Project(MetadataContainer):
-    """A class for managing a Neptune project and retrieving information from it.
-
-    You may also want to check `Project docs page`_.
-
-    .. _Project docs page:
-       https://docs.neptune.ai/api/project
-    """
+    """Class for tracking and retrieving project-level metadata of a neptune.ai project."""
 
     container_type = ContainerType.PROJECT
 
@@ -71,11 +65,16 @@ class Project(MetadataContainer):
         You can use the Project object to retrieve information about runs, models, and model versions
         within the project.
 
-        You can also log (and fetch) metadata common to the whole project,
-        such as information about datasets, links to documents, or key project metrics.
+        You can also log (and fetch) metadata common to the whole project, such as information about datasets,
+        links to documents, or key project metrics.
+
+        Note: If you want to instead create a project, use the
+        [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
+
+        You can also use the Project object as a context manager (see examples).
 
         Args:
-            project: Name of a project in the form "workspace-name/project-name".
+            project: Name of a project in the form `workspace-name/project-name`.
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
                 If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
@@ -84,7 +83,7 @@ class Project(MetadataContainer):
             mode: Connection mode in which the tracking will work.
                 If None (default), the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
-                Possible values are "async", "sync", "offline", "read-only", and "debug".
+                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
             flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
                 Defaults to 5 (every 5 seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
@@ -101,11 +100,19 @@ class Project(MetadataContainer):
             >>> # Connect to the project "classification" in the workspace "ml-team":
             ... project = neptune.init_project(project="ml-team/classification")
 
+            >>> # Or initialize with the constructor
+            ... project = Project(project="ml-team/classification")
+
             >>> # Connect to a project in read-only mode:
             ... project = neptune.init_project(
-            ...    project="ml-team/classification",
-            ...    mode="read-only",
+            ...     project="ml-team/classification",
+            ...     mode="read-only",
             ... )
+
+            Using the Project object as context manager:
+
+            >>> with Project(project="ml-team/classification") as project:
+            ...     project["metadata"] = some_metadata
 
         For more, see the docs:
             Initializing a project:
