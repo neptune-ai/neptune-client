@@ -91,45 +91,7 @@ from neptune.types.mode import Mode
 
 
 class Run(MetadataContainer):
-    """A Run is a representation of all metadata that you log to Neptune.
-
-    It begins when you start a run with the `neptune.init_run()` function and ends when the script finishes execution
-    or when you explicitly stop the Run object with the `stop()` method.
-
-    You can log many ML metadata types, including:
-        * metrics
-        * losses
-        * model weights
-        * artifact versions
-        * images
-        * interactive charts
-        * predictions
-
-    Examples:
-        >>> import neptune
-
-        >>> # Create new run
-        ... run = neptune.init_run(project="workspace-name/project-name")
-
-        >>> # Log parameters
-        ... params = {"max_epochs": 10, "optimizer": "Adam"}
-        ... run["parameters"] = params
-
-        >>> # Log metadata
-        ... run["train/metric_name"].append(value)
-        >>> run["predictions"].append(image)
-        >>> run["model"].upload(path_to_model)
-        >>> run["dataset_version"].track_files("./data/train.csv")
-
-        >>> # Stop tracking and synchronize
-        ... run.stop()
-
-    For details, see the docs:
-        Creating a run:
-            https://docs.neptune.ai/logging/new_run/
-        Run class reference:
-            https://docs.neptune.ai/api/run/
-    """
+    """Logs ML model-building metadata to neptune.ai."""
 
     container_type = ContainerType.RUN
 
@@ -179,9 +141,28 @@ class Run(MetadataContainer):
         git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
         **kwargs,
     ):
-        """Starts a new tracked run and adds it to the top of the runs table.
+        """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
 
-        If you provide the ID of an existing run, that run is resumed and no new run is created.
+        You can log metadata by assigning it to the initialized Run object:
+
+        ```
+        run = neptune.init_run()
+        run["your/structure"] = some_metadata
+        ```
+
+        Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
+        model weights, parameters, checkpoints, and interactive visualizations.
+
+        By default, the run automatically tracks hardware consumption, stdout/stderr, source code, and Git information.
+        If you're using Neptune in an interactive session, however, some background monitoring needs to be enabled
+        explicitly.
+
+        If you provide the ID of an existing run, that run is resumed and no new run is created. You may resume a run
+        either to log more metadata or to fetch metadata from it.
+
+        The run ends either when its `stop()` method is called or when the script finishes execution.
+
+        You can also use the Run object as a context manager (see examples).
 
         Args:
             project: Name of the project where the run should go, in the form `workspace-name/project_name`.
@@ -190,10 +171,9 @@ class Run(MetadataContainer):
                 If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
                 Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
                 placing it in plain text in the source code.
-            with_id: If you want to resume a run, pass the identifier of the existing run.
-                For example, "SAN-1". A run with such an ID must exist.
+            with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
                 If None (default) is passed, starts a new tracked run.
-            custom_run_id: A unique identifier to be used when running Neptune in pipelines.
+            custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
                 Make sure to use the same identifier throughout the whole pipeline execution.
             mode: Connection mode in which the tracking will work.
                 If None (default), the value of the NEPTUNE_MODE environment variable is used.
@@ -288,15 +268,18 @@ class Run(MetadataContainer):
             ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
             ... learning_rate = run["parameters/lr"].fetch()
 
-        For details, see the docs:
+            Using the Run object as context manager:
+
+            >>> with Run(project="workspace-name/project-name") as run:
+            ...     run["metric"].append(value)
+
+        For more, see the docs:
             Initializing a run:
                 https://docs.neptune.ai/api/neptune#init_run
             Run class reference:
                 https://docs.neptune.ai/api/run/
             Essential logging methods:
                 https://docs.neptune.ai/logging/methods/
-            What you can log and display:
-                https://docs.neptune.ai/logging/what_you_can_log/
             Resuming a run:
                 https://docs.neptune.ai/logging/to_existing_object/
             Setting a custom run ID:
