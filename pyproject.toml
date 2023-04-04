@@ -42,7 +42,6 @@ pandas = "*"
 # dev
 altair = { version = "*", optional = true }
 bokeh = { version = "*", optional = true }
-coverage = { version = "*", extras = [ "toml" ], optional = true }
 freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
 mock = { version = "*", optional = true }
@@ -54,6 +53,7 @@ pytest = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
+pytest-cov = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
@@ -98,7 +98,6 @@ zenml = ["zenml"]
 dev = [
     "altair",
     "bokeh",
-    "coverage",
     "Faker",
     "freezegun",
     "matplotlib",
@@ -111,6 +110,7 @@ dev = [
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
+    "pytest-cov",
     "tensorflow",
     "torch",
     "vega_datasets",
@@ -192,16 +192,3 @@ force_grid_wrap = 2
 [tool.flake8]
 max-line-length = 120
 extend-ignore = "E203"
-
-[tool.coverage.run]
-source_pkgs = ['neptune']
-branch = false
-relative_files = false
-
-[tool.coverage.paths]
-source = [
-    'src/neptune',
-    '/opt/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    '/Users/runner/hostedtoolcache/Python/*/x64/lib/python*/site-packages/neptune',
-    'C:\hostedtoolcache\windows\Python\*\x64\Lib\site-packages\neptune'
-]
