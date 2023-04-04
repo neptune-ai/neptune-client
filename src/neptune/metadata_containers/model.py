@@ -56,13 +56,7 @@ from neptune.types.mode import Mode
 
 
 class Model(MetadataContainer):
-    """A class for managing a Neptune model and retrieving information from it.
-
-    You may also want to check `Model docs page`_.
-
-    .. _Model docs page:
-       https://docs.neptune.ai/api/model
-    """
+    """Class for registering a model to neptune.ai and retrieving information from it."""
 
     container_type = ContainerType.MODEL
 
@@ -78,6 +72,81 @@ class Model(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
     ):
+        """Initializes a Model object from an existing or new model.
+
+        You can use this to create a new model from code or to perform actions on existing models.
+
+        A Model object is suitable for storing model metadata that is common to all versions (you can use ModelVersion
+        objects to track version-specific metadata). It does not track background metrics or logs automatically,
+        but you can assign metadata to the Model object just like you can for runs.
+        To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+
+        You can also use the Model object as a context manager (see examples).
+
+        Args:
+             with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
+                The identifier is stored in the object's "sys/id" field.
+                If omitted or `None` is passed, a new model is created.
+            name: A custom name for the model.
+            key: Key for the new model. Required when creating a new model version.
+                Used together with the project key to form the model identifier.
+                Must be uppercase and unique within the workspace.
+            project: Name of a project in the form `workspace-name/project-name`.
+                If None, the value of the NEPTUNE_PROJECT environment variable is used.
+            api_token: User's API token.
+                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
+                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
+                placing it in plain text in the source code.
+            mode: Connection mode in which the tracking will work.
+                If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
+                If no value was set for the environment variable, "async" is used by default.
+                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
+                (in seconds).
+            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+                For more information about proxies, see the Requests documentation.
+
+        Returns:
+            Model object that is used to manage the model and log metadata to it.
+
+        Examples:
+
+            >>> import neptune
+
+            Creating a new model:
+
+            >>> model = neptune.init_model(key="PRE")
+            >>> model["metadata"] = some_metadata
+
+            >>> # Or initialize with the constructor
+            ... model = Model(key="PRE")
+
+            >>> # You can provide the project parameter as an environment variable
+            ... # or as an argument to the init_model() function:
+            ... model = neptune.init_model(key="PRE", project="workspace-name/project-name")
+
+            >>> # When creating a model, you can give it a name:
+            ... model = neptune.init_model(key="PRE", name="Pre-trained model")
+
+            Connecting to an existing model:
+
+            >>> # Initialize existing model with identifier "CLS-PRE"
+            ... model = neptune.init_model(with_id="CLS-PRE")
+
+            >>> # To prevent modifications when connecting to an existing model, you can connect in read-only mode
+            ... model = neptune.init_model(with_id="CLS-PRE", mode="read-only")
+
+            Using the Model object as context manager:
+
+            >>> with Model(key="PRE") as model:
+            ...     model["metadata"] = some_metadata
+
+        For details, see the docs:
+            Initializing a model:
+                https://docs.neptune.ai/api/neptune#init_model
+            Model class reference:
+                https://docs.neptune.ai/api/model
+        """
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("key", key, (str, type(None)))
@@ -188,7 +257,7 @@ class Model(MetadataContainer):
             >>> # Extract the last model version ID
             ... last_model_version_id = model_versions_df["sys/id"].values[0]
 
-        You may also want to check the API referene in the docs:
+        See also the API referene:
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
         return MetadataContainer._fetch_entries(
