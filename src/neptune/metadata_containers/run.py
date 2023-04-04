@@ -91,46 +91,7 @@ from neptune.types.mode import Mode
 
 
 class Run(MetadataContainer):
-    """A Run in Neptune is a representation of all metadata that you log to Neptune.
-
-    Beginning when you start a tracked run with `neptune.init_run()` and ending when the script finishes
-    or when you explicitly stop the experiment with `.stop()`.
-
-    You can log many ML metadata types, including:
-        * metrics
-        * losses
-        * model weights
-        * images
-        * interactive charts
-        * predictions
-        * and much more
-
-    Examples:
-        >>> import neptune
-
-        >>> # Create new experiment
-        ... run = neptune.init_run(project='my_workspace/my_project')
-
-        >>> # Log parameters
-        ... params = {'max_epochs': 10, 'optimizer': 'Adam'}
-        ... run['parameters'] = params
-
-        >>> # Log metadata
-        ... run['train/metric_name'].log()
-        >>> run['predictions'].log(image)
-        >>> run['model'].upload(path_to_model)
-
-        >>> # Log whatever else you want
-        ... pass
-
-        >>> # Stop tracking and clean up
-        ... run.stop()
-
-    You may also want to check `Run docs page`_.
-
-    .. _Run docs page:
-       https://docs.neptune.ai/api/run
-    """
+    """Starts a tracked run that logs ML model-building metadata to neptune.ai."""
 
     container_type = ContainerType.RUN
 
@@ -180,60 +141,79 @@ class Run(MetadataContainer):
         git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
         **kwargs,
     ):
-        """Starts a new tracked run and adds it to the top of the runs table.
+        """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
 
-        If you provide the ID of an existing run, that run is resumed and no new run is created.
+        You can log metadata by assigning it to the initialized Run object:
+
+        ```
+        run = neptune.init_run()
+        run["your/structure"] = some_metadata
+        ```
+
+        Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
+        model weights, parameters, checkpoints, and interactive visualizations.
+
+        By default, the run automatically tracks hardware consumption, stdout/stderr, source code, and Git information.
+        If you're using Neptune in an interactive session, however, some background monitoring needs to be enabled
+        explicitly.
+
+        If you provide the ID of an existing run, that run is resumed and no new run is created. You may resume a run
+        either to log more metadata or to fetch metadata from it.
+
+        The run ends either when its `stop()` method is called or when the script finishes execution.
+
+        You can also use the Run object as a context manager (see examples).
 
         Args:
-            project: Name of the project where the run should go, in the form "workspace-name/project_name".
+            project: Name of the project where the run should go, in the form `workspace-name/project_name`.
             If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token. Defaults to None.
+            api_token: User's API token.
                 If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
                 Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
                 placing it in plain text in the source code.
-            with_id: If you want to resume a run, the identifier of the existing run.
-                For example, 'SAN-1'. A run with such an ID must exist.
+            with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
                 If None (default) is passed, starts a new tracked run.
-            custom_run_id: A unique identifier to be used when running Neptune in pipelines.
+            custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
                 Make sure to use the same identifier throughout the whole pipeline execution.
             mode: Connection mode in which the tracking will work.
                 If None (default), the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, 'async' is used by default.
-                Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
-            name: Editable name of the run. Defaults to 'Untitled'.
+                If no value was set for the environment variable, "async" is used by default.
+                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+            name: Editable name of the run. Defaults to "Untitled".
                 The name is displayed in the run details and as a column in the runs table.
-            description: Editable description of the run. Defaults to `''`.
+            description: Editable description of the run. Defaults to `""`.
                 The description is displayed in the run details and can be added to the runs table as a column.
             tags: Tags of the run as a list of strings. Defaults to `[]`.
                 Tags are displayed in the run details and in the runs table as a column.
                 You can edit the tags after the run is created, either through the app or the API.
             source_files: List of source files to be uploaded.
-                Uploaded source files are displayed in the 'Source code' tab of the run view.
+                Uploaded source files are displayed in the "Source code" tab of the run view.
                 To not upload anything, pass an empty list (`[]`).
                 Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
                 all Python files from the current directory.
                 If None is passed, the Python file from which the run was created will be uploaded.
-            capture_stdout: Whether to log the stdout of the run. Defaults to True.
-                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
-            capture_stderr:  Whether to log the stderr of the run. Defaults to True.
-                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+            capture_stdout: Whether to log the stdout of the run.
+                Defaults to `False` in interactive sessions and `True` otherwise.
+                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
+            capture_stderr: Whether to log the stderr of the run.
+                Defaults to `False` in interactive sessions and `True` otherwise.
+                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
             capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
-                Defaults to True.
-                The data is logged under the monitoring namespace (see the 'monitoring_namespace' parameter).
+                Defaults to `False` in interactive sessions and `True` otherwise.
+                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
             fail_on_exception: Whether to register an uncaught exception handler to this process and,
-                in case of an exception, set the 'sys/failed' field of the run to True.
+                in case of an exception, set the "sys/failed" field of the run to `True`.
                 An exception is always logged.
             monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
-                Defaults to 'monitoring/<hash>', where the hash is generated based on environment information,
+                Defaults to "monitoring/<hash>", where the hash is generated based on environment information,
                 to ensure that it's unique for each process.
-            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
-                Defaults to 5 (every 5 seconds).
+            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
+                (in seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information, see the 'Proxies' section in the Requests documentation.
-            capture_traceback:  Whether to log the traceback of the run in case of an exception.
-                Defaults to True.
-                The tracked metadata is stored in the '<monitoring_namespace>/traceback' namespace (see the
-                'monitoring_namespace' parameter).
+                For more information about proxies, see the Requests documentation.
+            capture_traceback: Whether to log the traceback of the run in case of an exception.
+                The tracked metadata is stored in the "<monitoring_namespace>/traceback" namespace (see the
+                `monitoring_namespace` parameter).
             git_ref: GitRef object containing information about the Git repository path.
                 If None, Neptune looks for a repository in the path of the script that is executed.
                 To specify a different location, set to GitRef(repository_path="path/to/repo").
@@ -251,6 +231,9 @@ class Run(MetadataContainer):
             >>> # Minimal invoke
             ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
             ... run = neptune.init_run()
+
+            >>> # Or initialize with the constructor
+            ... run = Run(project="ml-team/classification")
 
             >>> # Create a run with a name and description, with no sources files or Git info tracked:
             >>> run = neptune.init_run(
@@ -288,8 +271,26 @@ class Run(MetadataContainer):
             ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
             ... learning_rate = run["parameters/lr"].fetch()
 
-        For more, see the API reference:
-        https://docs.neptune.ai/api/neptune#init_run
+            Using the Run object as context manager:
+
+            >>> with Run() as run:
+            ...     run["metric"].append(value)
+
+        For more, see the docs:
+            Initializing a run:
+                https://docs.neptune.ai/api/neptune#init_run
+            Run class reference:
+                https://docs.neptune.ai/api/run/
+            Essential logging methods:
+                https://docs.neptune.ai/logging/methods/
+            Resuming a run:
+                https://docs.neptune.ai/logging/to_existing_object/
+            Setting a custom run ID:
+                https://docs.neptune.ai/logging/custom_run_id/
+            Logging to multiple runs at once:
+                https://docs.neptune.ai/logging/to_multiple_objects/
+            Accessing the run from multiple places:
+                https://docs.neptune.ai/logging/from_multiple_places/
         """
         check_for_extra_kwargs("Run", kwargs)
 

@@ -193,50 +193,62 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
-        """Assign values to multiple fields from a dictionary.
-        You can use this method to quickly log all run's parameters.
+        """Assigns values to multiple fields from a dictionary.
+
+        You can use this method to quickly log all parameters at once.
+
         Args:
-            value (dict): A dictionary with values to assign, where keys become the paths of the fields.
-                The dictionary can be nested - in such case the path will be a combination of all keys.
-            wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
-                This makes the call synchronous. Defaults to `False`.
+            value (dict): A dictionary with values to assign, where keys become paths of the fields.
+                The dictionary can be nested, in which case the path will be a combination of all the keys.
+            wait: If `True`, Neptune waits to send all tracked metadata to the server before executing the call.
+
         Examples:
             >>> import neptune
             >>> run = neptune.init_run()
-            >>> # Assign multiple fields from a dictionary
-            ... params = {"max_epochs": 10, "optimizer": "Adam"}
-            >>> run["parameters"] = params
-            >>> # You can always log explicitly parameters one by one
-            ... run["parameters/max_epochs"] = 10
-            >>> run["parameters/optimizer"] = "Adam"
-            >>> # Dictionaries can be nested
-            ... params = {"train": {"max_epochs": 10}}
-            >>> run["parameters"] = params
-            >>> # This will log 10 under path "parameters/train/max_epochs"
-        You may also want to check `assign docs page`_.
-        .. _assign docs page:
-            https://docs.neptune.ai/api/run#assign
+            >>> # Assign a single value with the Python "=" operator
+            >>> run["parameters/learning_rate"] = 0.8
+            >>> # or the assign() method
+            >>> run["parameters/learning_rate"].assign(0.8)
+            >>> # Assign a dictionary with the Python "=" operator
+            >>> run["parameters"] = {"max_epochs": 10, "optimizer": "Adam", "learning_rate": 0.8}
+            >>> # or the assign() method
+            >>> run.assign({"parameters": {"max_epochs": 10, "optimizer": "Adam", "learning_rate": 0.8}})
+
+            When operating on a handler object, you can use assign() to circumvent normal Python variable assignment.
+            >>> params = run["params"]
+            >>> params.assign({"max_epochs": 10, "optimizer": "Adam", "learning_rate": 0.8})
+
+        See also the API reference:
+            https://docs.neptune.ai/api/universal/#assign
         """
         self._get_root_handler().assign(value, wait=wait)
 
     @ensure_not_stopped
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
-        The result will preserve the hierarchical structure of the run's metadata, but will contain only non-File Atom
-        fields.
-        You can use this method to quickly retrieve previous run's parameters.
+
+        You can use this method to retrieve metadata from a started or resumed run.
+        The result preserves the hierarchical structure of the run's metadata, but only contains Atom fields.
+        This means fields that contain single values, as opposed to series, files, or sets.
+
         Returns:
-            `dict` containing all non-File Atom fields values.
+            `dict` containing the values of all non-File Atom fields.
+
         Examples:
+            Resuming an existing run and fetching metadata from it:
             >>> import neptune
-            >>> resumed_run = neptune.init_run(with_id="HEL-3")
-            >>> params = resumed_run['model/parameters'].fetch()
+            >>> resumed_run = neptune.init_run(with_id="CLS-3")
+            >>> params = resumed_run["model/parameters"].fetch()
             >>> run_data = resumed_run.fetch()
             >>> print(run_data)
-            >>> # this will print out all Atom attributes stored in run as a dict
-        You may also want to check `fetch docs page`_.
-        .. _fetch docs page:
-            https://docs.neptune.ai/api/run#fetch
+            >>> # prints all Atom attributes stored in run as a dict
+
+            Fetching metadata from an existing model version:
+            >>> model_version = neptune.init_model_version(with_id="CLS-TREE-45")
+            >>> optimizer = model["parameters/optimizer"].fetch()
+
+        See also the API reference:
+            https://docs.neptune.ai/api/universal#fetch
         """
         return self._get_root_handler().fetch()
 
@@ -250,48 +262,33 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self._state = ContainerState.STARTED
 
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
-        """Stops the tracked run and kills the synchronization thread.
-        `.stop()` will be automatically called when a script that created the run finishes or on the destruction
-        of Neptune context.
-        When using Neptune with Jupyter notebooks it's a good practice to stop the tracked run manually as it
-        will be stopped automatically only when the Jupyter kernel stops.
+        """Stops the connection and ends the synchronization thread.
+
+        You should stop any initialized runs or other objects when the connection to them is no longer needed.
+
+        This method is automatically called:
+        - when the script that created the run or other object finishes execution.
+        - if using a context manager, on destruction of the Neptune context.
+
+        Note: In interactive sessions, such as Jupyter Notebook, objects are stopped automatically only when
+        the Python kernel stops. However, background monitoring of system metrics and standard streams is disabled
+        unless explicitly enabled when initializing Neptune.
+
         Args:
-            seconds (int or float, optional): Seconds to wait for all tracking calls to finish
-                before stopping the tracked run.
-                If `None` will wait for all tracking calls to finish. Defaults to `True`.
-        Examples:
-            If you are creating tracked runs from the script you don't need to call `.stop()`:
+            seconds: Seconds to wait for all metadata tracking calls to finish before stopping the object.
+                If `None`, waits for all tracking calls to finish.
+
+        Example:
             >>> import neptune
             >>> run = neptune.init_run()
             >>> # Your training or monitoring code
-            ... pass
-            ... # If you are executing Python script .stop()
-            ... # is automatically called at the end for every run
-            If you are performing multiple training jobs from one script one after the other it is a good practice
-            to `.stop()` the finished tracked runs as every open run keeps an open connection with Neptune,
-            monitors hardware usage, etc. You can also use Context Managers - Neptune will automatically call `.stop()`
-            on the destruction of Run context:
-            >>> import neptune
-            >>> # If you are running consecutive training jobs from the same script
-            ... # stop the tracked runs manually at the end of single training job
-            ... for config in configs:
-            ...   run = neptune.init_run()
-            ...   # Your training or monitoring code
-            ...   pass
-            ...   run.stop()
-            >>> # You can also use with statement and context manager
-            ... for config in configs:
-            ...   with neptune.init_run() as run:
-            ...     # Your training or monitoring code
-            ...     pass
-            ...     # .stop() is automatically called
-            ...     # when code execution exits the with statement
-        .. warning::
-            If you are using Jupyter notebooks for creating your runs you need to manually invoke `.stop()` once the
-            training and evaluation is done.
-        You may also want to check `stop docs page`_.
-        .. _stop docs page:
-            https://docs.neptune.ai/api/run#stop
+            >>> run.stop()
+
+        See also the docs:
+            Best practices - Stopping objects
+                https://docs.neptune.ai/usage/best_practices/#stopping-runs-and-other-objects
+            API reference:
+                https://docs.neptune.ai/api/universal/#stop
         """
         verify_type("seconds", seconds, (float, int, type(None)))
         if self._state != ContainerState.STARTED:
@@ -314,19 +311,24 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self._state = ContainerState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:
-        """Returns a run's metadata structure in form of a dictionary.
-        This method can be used to traverse the run's metadata structure programmatically
-        when using Neptune in automated workflows.
-        .. danger::
-            The returned object is a deep copy of an internal run's structure.
-        Returns:
-            ``dict``: with the run's metadata structure.
+        """Returns the object's metadata structure as a dictionary.
+
+        This method can be used to programmatically traverse the metadata structure of a run, model,
+        or project object when using Neptune in automated workflows.
+
+        Note: The returned object is a deep copy of the structure of the internal object.
+
+        See also the API reference:
+            https://docs.neptune.ai/api/universal/#get_structure
         """
         return self._structure.get_structure().to_dict()
 
     def print_structure(self) -> None:
-        """Pretty prints the structure of the run's metadata.
+        """Pretty-prints the structure of the object's metadata.
+
         Paths are ordered lexicographically and the whole structure is neatly colored.
+
+        See also: https://docs.neptune.ai/api/universal/#print_structure
         """
         self._print_structure_impl(self.get_structure(), indent=0)
 
@@ -383,25 +385,26 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
     @ensure_not_stopped
     def pop(self, path: str, *, wait: bool = False) -> None:
-        """Removes the field stored under the path completely and all data associated with it.
+        """Removes the field stored under the path and all data associated with it.
+
         Args:
-            path (str): Path of the field to be removed.
-            wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
-                This makes the call synchronous. Defaults to `True`.
+            path: Path of the field to be removed.
+            wait: If `True`, Neptune waits to send all tracked metadata to the server before executing the call.
+
         Examples:
             >>> import neptune
             >>> run = neptune.init_run()
-            >>> run['parameters/learninggg_rata'] = 0.3
-            >>> # Delete a field along with it's data
-            ... run.pop('parameters/learninggg_rata')
-            >>> run['parameters/learning_rate'] = 0.3
+            >>> run["parameters/learninggg_rata"] = 0.3
+            >>> # Let's delete that misspelled field along with its data
+            ... run.pop("parameters/learninggg_rata")
+            >>> run["parameters/learning_rate"] = 0.3
             >>> # Training finished
-            ... run['trained_model'].upload('model.pt')
-            >>> # 'model_checkpoint' is a File field
-            ... run.pop('model_checkpoint')
-        You may also want to check `pop docs page`_.
-        .. _pop docs page:
-           https://docs.neptune.ai/api/run#pop
+            ... run["trained_model"].upload("model.pt")
+            >>> # "model_checkpoint" is a File field
+            ... run.pop("model_checkpoint")
+
+        See also the API reference:
+           https://docs.neptune.ai/api/universal/#pop
         """
         verify_type("path", path, str)
         self._get_root_handler().pop(path, wait=wait)
@@ -414,14 +417,14 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         return self._lock
 
     def wait(self, *, disk_only=False) -> None:
-        """Wait for all the tracking calls to finish.
+        """Wait for all the queued metadata tracking calls to reach the Neptune servers.
+
         Args:
-            disk_only (bool, optional, default is False): If `True` the process will only wait for data to be saved
+            disk_only: If `True`, the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
-                Defaults to `False`.
-        You may also want to check `wait docs page`_.
-        .. _wait docs page:
-            https://docs.neptune.ai/api/run#wait
+
+        See also the API reference:
+            https://docs.neptune.ai/api/universal/#wait
         """
         with self._lock:
             if disk_only:
@@ -430,23 +433,26 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
                 self._op_processor.wait()
 
     def sync(self, *, wait: bool = True) -> None:
-        """Synchronizes local representation of the run with Neptune servers.
+        """Synchronizes the local representation of the object with the representation on the Neptune servers.
+
         Args:
-            wait (bool, optional, default is True): If `True` the process will only wait for data to be saved
+            wait: If `True`, the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
-                Defaults to `True`.
-        Examples:
+
+        Example:
             >>> import neptune
             >>> # Connect to a run from Worker #3
             ... worker_id = 3
-            >>> run = neptune.init_run(with_id='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))
-            >>> # Try to access logs that were created in meantime by Worker #2
-            ... worker_2_status = run['status/2'].fetch() # Error if this field was created after this script starts
-            >>> run.sync() # Synchronizes local representation with Neptune servers.
-            >>> worker_2_status = run['status/2'].fetch() # No error
-        You may also want to check `sync docs page`_.
-        .. _sync docs page:
-            https://docs.neptune.ai/api/run#sync
+            >>> run = neptune.init_run(with_id="DIST-43", monitoring_namespace=f"monitoring/{worker_id}")
+            >>> # Try to access logs that were created in the meantime by Worker #2
+            ... worker_2_status = run["status/2"].fetch()
+            ... # Error if this field was created after this script starts
+            >>> run.sync() # Synchronizes local representation with Neptune servers
+            >>> worker_2_status = run["status/2"].fetch()
+            ... # No error
+
+        See also the API reference:
+            https://docs.neptune.ai/api/universal/#sync
         """
         with self._lock:
             if wait:
@@ -465,7 +471,12 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
     @abc.abstractmethod
     def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
+        """Returns a link to the object in the Neptune app.
+
+        The same link is printed in the console once the object has been initialized.
+
+        API reference: https://docs.neptune.ai/api/universal/#get_url
+        """
         ...
 
     def _startup(self, debug_mode):
