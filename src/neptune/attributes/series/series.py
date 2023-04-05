@@ -16,8 +16,6 @@
 __all__ = ["Series"]
 
 import abc
-import time
-from itertools import cycle
 from typing import (
     Collection,
     Generic,
@@ -30,7 +28,6 @@ from typing import (
 
 from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import LogOperation
-from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     verify_collection_type,
@@ -38,7 +35,6 @@ from neptune.internal.utils import (
 )
 from neptune.internal.utils.iteration import get_batches
 from neptune.types.series.series import Series as SeriesVal
-from neptune.utils import stringify_unsupported
 
 ValTV = TypeVar("ValTV", bound=SeriesVal)
 DataTV = TypeVar("DataTV")
@@ -50,23 +46,12 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         cls.max_batch_size = max_batch_size
         cls.operation_cls = operation_cls
 
-    def clear(self, *, wait: bool = False) -> None:
+    def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
-    def _get_log_operations_from_value(
-        self, value: ValTV, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
-    ) -> List[LogOperationTV]:
-        if steps is None:
-            steps = cycle([None])
-        else:
-            assert len(value) == len(steps)
-        if timestamps is None:
-            timestamps = cycle([time.time()])
-        else:
-            assert len(value) == len(timestamps)
-
+    def _get_log_operations_from_value(self, value: ValTV) -> List[LogOperationTV]:
         mapped_values = self._map_series_val(value)
-        values_with_step_and_ts = zip(mapped_values, steps, timestamps)
+        values_with_step_and_ts = zip(mapped_values, value.steps, value.timestamps)
         log_values = [self.operation_cls.ValueType(val, step=step, ts=ts) for val, step, ts in values_with_step_and_ts]
         return [
             self.operation_cls(self._path, chunk) for chunk in get_batches(log_values, batch_size=self.max_batch_size)
@@ -91,7 +76,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def _is_value_type(self, value) -> bool:
         pass
 
-    def assign(self, value, *, wait: bool = False) -> None:
+    def assign(self, value, wait: bool = False) -> None:
         if not self._is_value_type(value):
             value = self._data_to_value(value)
         clear_op = self._get_clear_operation()
@@ -103,7 +88,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
                 self._enqueue_operation(clear_op, wait=wait)
             else:
                 self._enqueue_operation(clear_op, wait=False)
-                ops = self._get_log_operations_from_value(value, steps=None, timestamps=None)
+                ops = self._get_log_operations_from_value(value)
                 for op in ops:
                     self._enqueue_operation(op, wait=wait)
 
@@ -116,30 +101,23 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         **kwargs,
     ) -> None:
         """log is a deprecated method, this code should be removed in future"""
-        from_stringify_value = False
-        if isinstance(value, StringifyValue):
-            from_stringify_value, value = True, value.value
-
-        if is_collection(value):
-            if step is not None and len(value) > 1:
-                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
-        else:
-            value = [value]
-
-        if from_stringify_value:
-            value = stringify_unsupported(value)
-
-        value = self._data_to_value(value, **kwargs)
-
         if step is not None:
             verify_type("step", step, (float, int))
         if timestamp is not None:
             verify_type("timestamp", timestamp, (float, int))
 
-        steps = None if step is None else [step]
-        timestamps = None if timestamp is None else [timestamp] * len(value)
+        if is_collection(value):
+            if step is not None and len(value) > 1:
+                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
+            steps = None if step is None else [step] * len(value)
+            timestamps = None if timestamp is None else [timestamp] * len(value)
+            value = self._data_to_value(value, steps=steps, timestamps=timestamps, **kwargs)
+        else:
+            steps = None if step is None else [step]
+            timestamps = None if timestamp is None else [timestamp]
+            value = self._data_to_value([value], steps=steps, timestamps=timestamps, **kwargs)
 
-        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        ops = self._get_log_operations_from_value(value)
 
         with self._container.lock():
             for op in ops:
@@ -148,26 +126,24 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def extend(
         self,
         values: Collection[DataTV],
-        *,
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
         **kwargs,
     ) -> None:
-        value = self._data_to_value(values, **kwargs)
-
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
-            if len(steps) != len(value):
-                raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(value)}")
+            if len(steps) != len(values):
+                raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(values)}")
         if timestamps is not None:
             verify_collection_type("timestamps", timestamps, (float, int))
-            if len(timestamps) != len(value):
+            if len(timestamps) != len(values):
                 raise ValueError(
-                    f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(value)}"
+                    f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(values)}"
                 )
 
-        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        value = self._data_to_value(values, steps=steps, timestamps=timestamps, **kwargs)
+        ops = self._get_log_operations_from_value(value)
 
         with self._container.lock():
             for op in ops:

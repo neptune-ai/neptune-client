@@ -17,10 +17,8 @@ __all__ = ["StringSeries"]
 
 from typing import (
     TYPE_CHECKING,
-    Collection,
     Iterable,
     List,
-    Union,
 )
 
 from neptune.attributes.series.fetchable_series import FetchableSeries
@@ -52,7 +50,8 @@ class StringSeries(
         self._value_truncation_occurred = False
 
     def _get_log_operations_from_value(
-        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+        self,
+        value: Val,
     ) -> List[LogOperation]:
         if not self._value_truncation_occurred and value.truncated:
             # the first truncation
@@ -65,16 +64,19 @@ class StringSeries(
                 MAX_STRING_SERIES_VALUE_LENGTH,
             )
 
-        return super()._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        return super()._get_log_operations_from_value(value)
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        steps = kwargs.pop("steps", None)
+        timestamps = kwargs.pop("timestamps", None)
+
         if kwargs:
             logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
 
-        return StringSeriesVal(values)
+        return StringSeriesVal(values, steps=steps, timestamps=timestamps)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
