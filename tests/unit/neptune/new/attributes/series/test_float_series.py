@@ -19,6 +19,7 @@ from mock import (
 )
 
 from neptune.attributes.series.float_series import FloatSeries
+from neptune.utils import stringify_unsupported
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -51,3 +52,7 @@ class TestFloatSeries(TestAttributeBase):
             values = list(var.fetch_values()["value"].array)
             expected = list(range(0, 5000))
             self.assertEqual(len(set(expected)), len(set(values)))
+
+    def test_handle_stringified_value(self):
+        val = FloatSeries(MagicMock(), MagicMock())._handle_stringified_value(stringify_unsupported(420.2137))
+        assert val == 420.2137
