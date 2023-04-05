@@ -17,6 +17,7 @@ __all__ = ["Series"]
 
 import abc
 from typing import (
+    Any,
     Collection,
     Generic,
     Iterable,
@@ -30,6 +31,7 @@ from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import LogOperation
 from neptune.internal.utils import (
     is_collection,
+    is_stringify_value,
     verify_collection_type,
     verify_type,
 )
@@ -76,6 +78,11 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def _is_value_type(self, value) -> bool:
         pass
 
+    @abc.abstractmethod
+    def _handle_stringified_value(self, value: Any) -> Any:
+        # type hints to be discussed
+        ...
+
     def assign(self, value, wait: bool = False) -> None:
         if not self._is_value_type(value):
             value = self._data_to_value(value)
@@ -105,6 +112,9 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
             verify_type("step", step, (float, int))
         if timestamp is not None:
             verify_type("timestamp", timestamp, (float, int))
+
+        if is_stringify_value(value):
+            value = self._handle_stringified_value(value)
 
         if is_collection(value):
             if step is not None and len(value) > 1:

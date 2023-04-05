@@ -29,6 +29,7 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
 )
+from neptune.internal.utils import is_collection
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
@@ -80,6 +81,14 @@ class StringSeries(
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
+
+    def _handle_stringified_value(self, value):
+        if is_collection(value.value):
+            value = list(map(str, value.value))
+        else:
+            value = str(value.value)
+
+        return value
 
     def fetch_last(self) -> str:
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
