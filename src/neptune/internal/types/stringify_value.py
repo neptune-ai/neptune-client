@@ -39,6 +39,12 @@ class StringifyValue:
     def __init__(self, value: Any):
         self.__value = value
 
+    def __len__(self) -> int:
+        return len(self.__value)
+
+    def __getitem__(self, item):
+        return self.__value.__getitem__(item)
+
     @property
     def value(self):
         return self.__value

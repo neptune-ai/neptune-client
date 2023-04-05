@@ -44,6 +44,12 @@ class Obj:
     def __init__(self, name: str = "A"):
         self._name = name
 
+    def __len__(self) -> int:
+        return len(self._name)
+
+    def __getitem__(self, item):
+        return self._name.__getitem__(item)
+
     def __repr__(self):
         return f"Object(name={self._name})"
 
