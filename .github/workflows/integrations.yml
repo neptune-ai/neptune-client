@@ -577,7 +577,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
-    name: 'sacred (${{ matrix.os }} - py${{ matrix.python-version }})'
+    name: 'aws (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
