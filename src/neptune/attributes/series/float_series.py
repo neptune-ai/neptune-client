@@ -74,6 +74,3 @@ class FloatSeries(
         return self._backend.get_float_series_values(
             self._container_id, self._container_type, self._path, offset, limit
         )
-
-    def _handle_stringified_value(self, value):
-        return value.value

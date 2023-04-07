@@ -17,7 +17,6 @@ __all__ = ["Series"]
 
 import abc
 from typing import (
-    Any,
     Collection,
     Generic,
     Iterable,
@@ -78,10 +77,8 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     def _is_value_type(self, value) -> bool:
         pass
 
-    @abc.abstractmethod
-    def _handle_stringified_value(self, value: Any) -> Any:
-        # type hints to be discussed
-        ...
+    def _handle_stringified_value(self, value):
+        return value.value
 
     def assign(self, value, wait: bool = False) -> None:
         if not self._is_value_type(value):

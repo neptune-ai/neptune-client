@@ -72,9 +72,6 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FileSeriesVal)
 
-    def _handle_stringified_value(self, value):
-        return value.value
-
     @staticmethod
     def _get_base64_image_content(file: File) -> str:
         if file.file_type is FileType.LOCAL_FILE:
