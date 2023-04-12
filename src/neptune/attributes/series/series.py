@@ -47,7 +47,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         cls.max_batch_size = max_batch_size
         cls.operation_cls = operation_cls
 
-    def clear(self, wait: bool = False) -> None:
+    def clear(self, *, wait: bool = False) -> None:
         self._clear_impl(wait)
 
     def _get_log_operations_from_value(self, value: ValTV) -> List[LogOperationTV]:
