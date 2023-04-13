@@ -72,10 +72,8 @@ flags:
 component_management:
   default_rules:
     statuses:
-      - type: project
-        target: auto
-        branches:
-          - "!master"
+      project: off
+      patch: off
 
   individual_components:
     - component_id: client
