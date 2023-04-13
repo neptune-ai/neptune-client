@@ -70,11 +70,6 @@ flags:
     carryforward: true
 
 component_management:
-  default_rules:
-    statuses:
-      project: off
-      patch: off
-
   individual_components:
     - component_id: client
       name: client
