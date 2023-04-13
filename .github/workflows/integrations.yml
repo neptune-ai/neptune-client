@@ -297,6 +297,7 @@ jobs:
       ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
       ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
       SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+      ZENML_ANALYTICS_OPT_IN: false
     timeout-minutes: 75
     strategy:
       fail-fast: false
