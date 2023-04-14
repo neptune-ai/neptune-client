@@ -19,7 +19,6 @@ from mock import (
 )
 
 from neptune.attributes.series.string_series import StringSeries
-from neptune.utils import stringify_unsupported
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -46,7 +45,3 @@ class TestStringSeries(TestAttributeBase):
             values = list(var.fetch_values()["value"].array)
             expected = list(range(0, 5000))
             self.assertEqual(len(set(expected)), len(set(values)))
-
-    def test_handle_stringified_value(self):
-        val = StringSeries(MagicMock(), MagicMock())._handle_stringified_value(stringify_unsupported(("abc", "def")))
-        assert val == ["abc", "def"]

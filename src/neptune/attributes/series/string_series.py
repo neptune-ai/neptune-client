@@ -19,6 +19,7 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     List,
+    Union,
 )
 
 from neptune.attributes.series.fetchable_series import FetchableSeries
@@ -82,13 +83,10 @@ class StringSeries(
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
 
-    def _handle_stringified_value(self, value):
+    def _handle_stringified_value(self, value) -> Union[List[str], str]:
         if is_collection(value.value):
-            value = list(map(str, value.value))
-        else:
-            value = str(value.value)
-
-        return value
+            return list(map(str, value.value))
+        return str(value.value)
 
     def fetch_last(self) -> str:
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
