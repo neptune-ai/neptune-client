@@ -15,9 +15,13 @@
 #
 __all__ = ["FileSeries"]
 
+import time
+from itertools import cycle
 from typing import (
     TYPE_CHECKING,
     List,
+    Optional,
+    Sequence,
     TypeVar,
 )
 
@@ -34,7 +38,9 @@ Ret = TypeVar("Ret")
 
 
 class FileSeries(Series):
-    def __init__(self, values, **kwargs):
+    def __init__(
+        self, values, timestamps: Optional[Sequence[float]] = None, steps: Optional[Sequence[float]] = None, **kwargs
+    ):
         values = extract_if_stringify_value(values)
 
         if not is_collection(values):
@@ -45,6 +51,26 @@ class FileSeries(Series):
         self.description = kwargs.pop("description", None)
         if kwargs:
             logger.error("Warning: unexpected arguments (%s) in FileSeries", kwargs)
+
+        if steps is None:
+            self._steps = cycle([None])
+        else:
+            assert len(values) == len(steps)
+            self._steps = steps
+
+        if timestamps is None:
+            self._timestamps = cycle([time.time()])
+        else:
+            assert len(values) == len(timestamps)
+            self._timestamps = timestamps
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_image_series(self)

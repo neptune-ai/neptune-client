@@ -31,7 +31,6 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils import verify_type
-from neptune.internal.utils.logger import logger
 from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 
 Val = FloatSeriesVal
@@ -62,9 +61,7 @@ class FloatSeries(
         return ConfigFloatSeries(self._path, value.min, value.max, value.unit)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
-        if kwargs:
-            logger.warning("Warning: unexpected arguments (%s) in FloatSeries", kwargs)
-        return FloatSeriesVal(values)
+        return FloatSeriesVal(values, **kwargs)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FloatSeriesVal)

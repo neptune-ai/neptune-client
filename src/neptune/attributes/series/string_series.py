@@ -17,7 +17,6 @@ __all__ = ["StringSeries"]
 
 from typing import (
     TYPE_CHECKING,
-    Collection,
     Iterable,
     List,
     Union,
@@ -31,6 +30,7 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
 )
+from neptune.internal.utils import is_collection
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
@@ -52,7 +52,8 @@ class StringSeries(
         self._value_truncation_occurred = False
 
     def _get_log_operations_from_value(
-        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+        self,
+        value: Val,
     ) -> List[LogOperation]:
         if not self._value_truncation_occurred and value.truncated:
             # the first truncation
@@ -65,19 +66,27 @@ class StringSeries(
                 MAX_STRING_SERIES_VALUE_LENGTH,
             )
 
-        return super()._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+        return super()._get_log_operations_from_value(value)
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        steps = kwargs.pop("steps", None)
+        timestamps = kwargs.pop("timestamps", None)
+
         if kwargs:
             logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
 
-        return StringSeriesVal(values)
+        return StringSeriesVal(values, steps=steps, timestamps=timestamps)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
+
+    def _handle_stringified_value(self, value) -> Union[List[str], str]:
+        if is_collection(value.value):
+            return list(map(str, value.value))
+        return str(value.value)
 
     def fetch_last(self) -> str:
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
