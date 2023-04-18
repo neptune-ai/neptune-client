@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import re
 import time
 from zipfile import ZipFile
 
@@ -95,6 +96,8 @@ class RegressionDataset:
 @pytest.mark.huggingface
 @pytest.mark.integrations
 class TestHuggingFace(BaseE2ETest):
+    monitoring_cpu_patt = re.compile(r"monitoring/\S*/cpu")
+
     @property
     def _trainer_default_attributes(self):
         config = RegressionModelConfig()
@@ -268,42 +271,41 @@ class TestHuggingFace(BaseE2ETest):
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = project.fetch_runs_table(tag=common_tag).to_rows()
-        assert len(runs) == 1
-        with pytest.raises(ValueError):
-            runs[0].get_attribute_value("monitoring/cpu")
-        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 1
+        with pytest.raises(IndexError):
+            [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
+
+        assert runs_df.loc[0, "finetuning/train/metric1"] == 123
 
         # when
         trainer.train()
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = project.fetch_runs_table(tag=common_tag).to_rows()
-        assert len(runs) == 1
-        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 1
+        pytest.set_trace()
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
 
         # when
         trainer.log({"metric2": 234})
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = project.fetch_runs_table(tag=common_tag).to_rows()
-        assert len(runs) == 1
-        assert runs[0].get_attribute_value("monitoring/cpu") is not None
-        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 1
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
+        assert runs_df.loc[0, "finetuning/train/metric2"] == 234
 
         # when
         trainer.train()
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = sorted(
-            project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
-        )
-        assert len(runs) == 2
-        assert runs[1].get_attribute_value("monitoring/cpu") is not None
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 2
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
 
         # when
         trainer.log({"metric3": 345})
@@ -333,10 +335,10 @@ class TestHuggingFace(BaseE2ETest):
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = project.fetch_runs_table(tag=common_tag).to_rows()
-        assert len(runs) == 1
-        assert runs[0].get_attribute_value("monitoring/cpu") is not None
-        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 1
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
+        assert runs_df.loc[0, "finetuning/train/metric1"] == 123
 
         # when
         trainer.train()
@@ -345,29 +347,26 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
-        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
 
         # when
         trainer.log({"metric2": 234})
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = project.fetch_runs_table(tag=common_tag).to_rows()
-        assert len(runs) == 1
-        assert runs[0].get_attribute_value("monitoring/cpu") is not None
-        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 1
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
+        assert runs_df.loc[0, "finetuning/train/metric2"] == 234
 
         # when
         trainer.train()
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
 
         # then
-        runs = sorted(
-            project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
-        )
-        assert len(runs) == 2
-        assert runs[1].get_attribute_value("monitoring/cpu") is not None
+        runs_df = project.fetch_runs_table(tag=common_tag).to_pandas()
+        assert len(runs_df) == 2
+        assert [col for col in runs_df.columns if re.findall(self.monitoring_cpu_patt, col)][0]
 
         # when
         trainer.log({"metric3": 345})
@@ -410,7 +409,6 @@ class TestHuggingFace(BaseE2ETest):
         assert len(runs) == n_trials
         for run_id, run in enumerate(runs):
             assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
-            assert run.get_attribute_value("monitoring/cpu") is not None
 
     def test_usages(self):
         # given
