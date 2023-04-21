@@ -90,7 +90,7 @@ class Model(MetadataContainer):
             name: A custom name for the model.
             key: Key for the new model. Required when creating a new model version.
                 Used together with the project key to form the model identifier.
-                Must be uppercase and unique within the workspace.
+                Must be uppercase and unique within the project.
             project: Name of a project in the form `workspace-name/project-name`.
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
