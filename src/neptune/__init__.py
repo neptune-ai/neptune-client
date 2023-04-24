@@ -25,11 +25,17 @@ Functions:
     init_model_version()
     init_project()
 
+Classes:
+    Run
+    Model
+    ModelVersion
+    Project
+
 Constants:
     ANONYMOUS_API_TOKEN
 
-Runs
-----
+Tracking runs
+-------------
 The run will track some things automatically during the execution of your model training
 script, such as hardware consumption, source code, and Git information. You can also
 assign any metadata to the run manually and organize it in a structure of your choosing.
@@ -39,31 +45,43 @@ assign any metadata to the run manually and organize it in a structure of your c
 
 Model registry
 --------------
-Create a model object for a model you're working on:
+Create a model object to register a model:
 
->>> model = neptune.init_model(key="KEY")
+>>> model = neptune.init_model(key="MOD")
 >>> model["signature"].upload("signature.json")
 
-Create as many versions of the model as you need, tracking their metadata and
+Then create as many versions of the model as you need, tracking their metadata and
 lifecycles separately:
 
->>> model_version = neptune.init_model_version(model="???-KEY")
+>>> model_version = neptune.init_model_version(model="PROJ-MOD")
 >>> model_version["dataset_version"].track_files("./data/train.csv")
 >>> model_version.change_stage("staging")
 
-Project-level metadata
-----------------------
+Project metadata
+----------------
 Initialize your entire Neptune project and log metadata on project-level:
 
 >>> project = neptune.init_project(project="ml-team/classification")
 >>> project["datasets"].upload("./data/")
 
+Initializing with class constructor
+-----------------------------------
+You can also use the class constructor to initialize a Neptune object.
+
+>>> from neptune import Run
+>>> run = Run()
+
+>>> from neptune import ModelVersion
+>>> model_version = ModelVersion(with_id="PROJ-MOD-3")  # connect to existing model version
+>>> model_version.change_stage("production")
+
 Anonymous logging
 -----------------
-To try out Neptune without registering, you can use the "ANONYMOUS_API_TOKEN" when
-initializing Neptune.
+To try out Neptune without registering, you can pass the ANONYMOUS_API_TOKEN constant
+to the api_token argument when initializing Neptune.
 
->>> run = neptune.init_run(api_token=neptune.ANONYMOUS_API_TOKEN)
+>>> with neptune.init_run(api_token=neptune.ANONYMOUS_API_TOKEN) as run:
+...     ...
 
 ---
 
