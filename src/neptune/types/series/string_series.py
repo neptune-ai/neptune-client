@@ -15,9 +15,13 @@
 #
 __all__ = ["StringSeries"]
 
+import time
+from itertools import cycle
 from typing import (
     TYPE_CHECKING,
     Iterable,
+    Optional,
+    Sequence,
     TypeVar,
     Union,
 )
@@ -38,7 +42,12 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 class StringSeries(Series):
-    def __init__(self, values: Union[Iterable[str], StringifyValue]):
+    def __init__(
+        self,
+        values: Union[Iterable[str], StringifyValue],
+        timestamps: Optional[Sequence[float]] = None,
+        steps: Optional[Sequence[float]] = None,
+    ):
         if is_stringify_value(values):
             values = list(map(str, values.value))
 
@@ -47,6 +56,26 @@ class StringSeries(Series):
 
         self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values])
         self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values]
+
+        if steps is None:
+            self._steps = cycle([None])
+        else:
+            assert len(values) == len(steps)
+            self._steps = steps
+
+        if timestamps is None:
+            self._timestamps = cycle([time.time()])
+        else:
+            assert len(values) == len(timestamps)
+            self._timestamps = timestamps
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)

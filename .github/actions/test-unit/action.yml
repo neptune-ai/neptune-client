@@ -11,10 +11,10 @@ inputs:
   report_job:
     description: "Job name to update by JUnit report"
     required: true
-  coverage-artifacts-name:
-    description: "Artifact name for storing coverage report"
+  codecov-token:
+    description: "Codecov token"
     required: false
-    default: unit-coverage
+    default: ""
 
 runs:
   using: "composite"
@@ -23,22 +23,16 @@ runs:
       uses: ./.github/actions/install-package
       with:
         python-version: ${{ inputs.python-version }}
-        os: ${{ inputs.os }}
+        os: ${{ inputs.os }}-latest
 
     - name: Test
       run: |
-        coverage run -p -m pytest -v -n 2 ./tests/unit/ \
+        pytest --cov=neptune --cov-report xml \
+        -v -n 2 ./tests/unit/ \
         --timeout=120 --timeout_method=thread \
         --color=yes \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
-
-    - name: Upload test coverage
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: ${{ inputs.coverage-artifacts-name }}
-        path: ./.coverage*
 
     - name: Upload test reports
       uses: actions/upload-artifact@v3
@@ -46,6 +40,14 @@ runs:
       with:
         name: test-artifacts
         path: ./test-results
+
+    - name: Upload Pull Request coverage report do Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ inputs.codecov-token }}
+        files: ./coverage.xml
+        flags: unit,${{ inputs.os }},py${{ inputs.python-version }}
+        fail_ci_if_error: false
 
     - name: Report
       uses: mikepenz/action-junit-report@v3.6.2

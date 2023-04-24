@@ -13,10 +13,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu]
         python-version: ["3.7"]
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,10 +24,9 @@ jobs:
           fetch-depth: 0
 
       - name: Run tests
-        uses: ./.github/actions/test-unit-with-pull-request-coverage
+        uses: ./.github/actions/test-unit
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
-          coverage-artifacts-name: unit-pull-request-coverage
           codecov-token: ${{ secrets.CODECOV_TOKEN }}

@@ -24,8 +24,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+        os: [ ubuntu, macos, windows ]
+    runs-on: ${{ matrix.os }}-latest
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
@@ -42,7 +42,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: "not s3 and not integrations"
+          name: "standard"
           report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_management:
     timeout-minutes: 75
@@ -50,8 +52,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+        os: [ ubuntu, macos, windows ]
+    runs-on: ${{ matrix.os }}-latest
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
@@ -68,7 +70,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: management
+          name: management
           report_job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_s3_gcs:
     timeout-minutes: 75
@@ -76,8 +80,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+        os: [ ubuntu, macos, windows ]
+    runs-on: ${{ matrix.os }}-latest
     name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
@@ -99,6 +103,7 @@ jobs:
           module: s3
           name: s3-gcs
           report_job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_s3:
     timeout-minutes: 75
@@ -106,8 +111,8 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
-    runs-on: ${{ matrix.os }}
+        os: [ ubuntu, macos, windows ]
+    runs-on: ${{ matrix.os }}-latest
     name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
@@ -126,7 +131,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: s3
+          name: s3
           report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e-tests-notify:
     needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3 ]
@@ -143,19 +150,3 @@ jobs:
         uses: ./.github/actions/workflow-notify
         with:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
-
-  coverage:
-    needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3 ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Coverage report
-        uses: ./.github/actions/coverage
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          kind: e2e

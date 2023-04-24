@@ -2,3 +2,96 @@ coverage:
   status:
     project: off
     patch: off
+
+flags:
+  unit:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  ubuntu:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  macos:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  windows:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.7:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.8:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.9:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.10:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e-standard:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e-management:
+    paths:
+      - src/neptune/management
+    carryforward: true
+
+  e2e-s3-gcs:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  e2e-s3:
+    paths:
+      - src/neptune
+    carryforward: true
+
+component_management:
+  individual_components:
+    - component_id: client
+      name: client
+      paths:
+        - src/neptune/attributes/**
+        - src/neptune/cli/**
+        - src/neptune/common/**
+        - src/neptune/internal/**
+        - src/neptune/logging/**
+        - src/neptune/metadata_containers/**
+        - src/neptune/new/**
+        - src/netpune/types/**
+        - src/neptune/vendor/**
+        - src/neptune/*.py
+
+    - component_id: legacy
+      name: legacy
+      paths:
+        - src/neptune/legacy/**
+        - src/neptune/common/**
+
+    - component_id: management
+      name: management
+      paths:
+        - src/neptune/management/**

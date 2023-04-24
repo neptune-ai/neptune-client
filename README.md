@@ -16,8 +16,6 @@
   <a href="https://neptune.ai/resources">Resource center</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://neptune.ai/blog">Blog</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/events">Podcast</a>
 &nbsp;
   <hr />
 </div>
@@ -33,7 +31,7 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 
 &nbsp;
 <div align="center">
-    <a href="https://youtu.be/mv9jxexmbBk">
+    <a href="https://youtu.be/L2CAYip0DmI">
       <img border="0" alt="neptune.ai explainer video" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-explainer-video.png" width="600">
     </a>
 </div>

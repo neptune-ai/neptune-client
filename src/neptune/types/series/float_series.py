@@ -15,9 +15,12 @@
 #
 __all__ = ["FloatSeries"]
 
+import time
+from itertools import cycle
 from typing import (
     TYPE_CHECKING,
     Optional,
+    Sequence,
     TypeVar,
     Union,
 )
@@ -39,6 +42,8 @@ class FloatSeries(Series):
         min: Optional[Union[float, int]] = None,
         max: Optional[Union[float, int]] = None,
         unit: Optional[str] = None,
+        timestamps: Optional[Sequence[float]] = None,
+        steps: Optional[Sequence[float]] = None,
     ):
         values = extract_if_stringify_value(values)
 
@@ -49,6 +54,26 @@ class FloatSeries(Series):
         self._min = min
         self._max = max
         self._unit = unit
+
+        if steps is None:
+            self._steps = cycle([None])
+        else:
+            assert len(values) == len(steps)
+            self._steps = steps
+
+        if timestamps is None:
+            self._timestamps = cycle([time.time()])
+        else:
+            assert len(values) == len(timestamps)
+            self._timestamps = timestamps
+
+    @property
+    def steps(self):
+        return self._steps
+
+    @property
+    def timestamps(self):
+        return self._timestamps
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_float_series(self)

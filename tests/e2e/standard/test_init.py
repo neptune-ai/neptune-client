@@ -71,6 +71,7 @@ class TestInitRun(BaseE2ETest):
         exp.sync()
         assert exp.exists("source_code/git")
 
+    @pytest.mark.skip("In CI we are running this in root directory with git repository")
     def test_git_default(self, environment):
         exp = neptune.init_run(
             git_ref=GitRef(),
