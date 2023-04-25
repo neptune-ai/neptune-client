@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+"""Utility functions to support neptune.ai metadata logging."""
 __all__ = ["stringify_unsupported"]
 
 from typing import (
@@ -26,8 +27,10 @@ from neptune.internal.types.stringify_value import StringifyValue
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     """Helper function that converts unsupported values in a collection or dictionary to strings.
+
     Args:
         value (Any): A dictionary with values or a collection
+
     Example:
         >>> import neptune
         >>> run = neptune.init_run()
