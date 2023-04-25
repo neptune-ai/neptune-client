@@ -2,6 +2,7 @@
 
 ### Changes
 - Neptune objects and universal methods covered with docstrings ([#1309](https://github.com/neptune-ai/neptune-client/pull/1309))
+- Added docstrings for Neptune packages and modules ([#1332](https://github.com/neptune-ai/neptune-client/pull/1332))
 
 ### Features
 - Series objects accept `timestamps` and `steps` in their constructors ([#1318](https://github.com/neptune-ai/neptune-client/pull/1318))
