@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Utility functions to support neptune.ai metadata logging."""
+"""Utility functions to support ML metadata logging with neptune.ai."""
 __all__ = ["stringify_unsupported"]
 
 from typing import (
