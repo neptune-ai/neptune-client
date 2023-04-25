@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Perform various Neptune administration actions programmatically.
+"""The management API lets you perform various neptune.ai administration actions.
 
 - Create and delete projects
 - List projects you can access
 - Add and remove project members
 - List members of projects and workspaces
 
-Most mangement actions can also be performed by service accounts.
+Most actions can also be performed by service accounts.
 
 Functions:
     get_project_list()

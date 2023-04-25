@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-"""Log and organize all your ML model metadata in a single place.
+"""Log and organize all your ML model metadata with neptune.ai.
 
-The neptune package contains the functions needed to initialize Neptune objects.
+There are four kinds of Neptune object: run, model, model version, and project.
 These help you track, store, and visualize metadata related to your model-training experiments.
-You can organize your metadata per experiment, model, model version, or project.
+The package contains the functions and constructors needed to initialize the objects.
+You can either create new objects or connect to existing ones (to, for example, fetch or add more metadata).
 
 Functions:
     init_run()
@@ -36,7 +37,7 @@ Constants:
 
 Tracking runs
 -------------
-The run will track some things automatically during the execution of your model training
+A Neptune run tracks some things automatically during the execution of your model training
 script, such as hardware consumption, source code, and Git information. You can also
 assign any metadata to the run manually and organize it in a structure of your choosing.
 
@@ -77,8 +78,8 @@ You can also use the class constructor to initialize a Neptune object.
 
 Anonymous logging
 -----------------
-To try out Neptune without registering, you can pass the ANONYMOUS_API_TOKEN constant
-to the api_token argument when initializing Neptune.
+To try out Neptune without registering, you can pass the `ANONYMOUS_API_TOKEN` constant
+to the `api_token` argument when initializing Neptune.
 
 >>> with neptune.init_run(api_token=neptune.ANONYMOUS_API_TOKEN) as run:
 ...     ...
