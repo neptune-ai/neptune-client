@@ -100,6 +100,7 @@ Move one or more Neptune objects to the project trash:
 See also the API reference in the docs: https://docs.neptune.ai/api/management
 """
 from .internal.api import (
+    WorkspaceMemberRole,
     add_project_member,
     add_project_service_account,
     create_project,
@@ -109,6 +110,7 @@ from .internal.api import (
     get_project_service_account_list,
     get_workspace_member_list,
     get_workspace_service_account_list,
+    invite_to_workspace,
     remove_project_member,
     remove_project_service_account,
     trash_objects,
@@ -126,6 +128,8 @@ __all__ = [
     "add_project_member",
     "remove_project_member",
     "get_workspace_member_list",
+    "invite_to_workspace",
+    "WorkspaceMemberRole",
     "add_project_service_account",
     "remove_project_service_account",
     "get_project_service_account_list",

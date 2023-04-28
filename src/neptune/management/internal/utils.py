@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import re
+from enum import Enum
 from typing import Optional
 
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -50,3 +51,8 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
     extracted_workspace_name, extracted_project_name = extract_project_and_workspace(name=name, workspace=workspace)
 
     return f"{extracted_workspace_name}/{extracted_project_name}"
+
+
+class WorkspaceMemberRole(Enum):
+    MEMBER = "member"
+    ADMIN = "admin"
