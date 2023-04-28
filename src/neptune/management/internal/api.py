@@ -578,7 +578,7 @@ def invite_to_workspace(
     role: WorkspaceMemberRole = WorkspaceMemberRole.MEMBER,
     add_to_all_projects: bool = False,
 ) -> None:
-    """Created invitation to Neptune workspace.
+    """Creates invitation to Neptune workspace.
 
     Args:
         username: username of the user to invite.
