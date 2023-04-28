@@ -47,6 +47,7 @@ from neptune.management import (
     get_project_list,
     get_project_member_list,
     get_workspace_member_list,
+    invite_to_workspace,
     remove_project_member,
 )
 from neptune.management.exceptions import (
@@ -114,6 +115,29 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         self.assertEqual(["org1/project1", "org2/project2"], returned_projects)
+
+    def test_invite_to_workspace(self, swagger_client_factory):
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        invite_to_workspace(
+            username="tester1",
+            workspace="org2",
+            api_token=API_TOKEN,
+        )
+
+        self.assertEqual(swagger_client.api.createOrganizationInvitations.call_count, 1)
+
+        called_kwargs = swagger_client.api.createOrganizationInvitations.call_args.kwargs
+
+        self.assertEqual(
+            {"invitee": "tester1", "invitationType": "user", "roleGrant": "member", "addToAllProjects": False},
+            called_kwargs["newOrganizationInvitations"]["invitationsEntries"][0],
+        )
+
+        self.assertEqual(called_kwargs["newOrganizationInvitations"]["organizationIdentifier"], "org2")
+
+    def test_invite_to_workspace_no_username_email_raises(self, swagger_client_factory):
+        self.assertRaises(ValueError, invite_to_workspace, workspace="org2", api_token=API_TOKEN)
 
     def test_workspace_members(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
