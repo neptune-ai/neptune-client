@@ -30,11 +30,16 @@ from neptune.management import (
     get_project_service_account_list,
     get_workspace_member_list,
     get_workspace_service_account_list,
+    invite_to_workspace,
     remove_project_member,
     remove_project_service_account,
     trash_objects,
 )
-from neptune.management.exceptions import UserNotExistsOrWithoutAccess
+from neptune.management.exceptions import (
+    UserAlreadyInvited,
+    UserNotExistsOrWithoutAccess,
+    WorkspaceOrUserNotFound,
+)
 from neptune.management.internal.utils import normalize_project_name
 from tests.e2e.base import (
     BaseE2ETest,
@@ -347,6 +352,22 @@ class TestManagement(BaseE2ETest):
         delete_project(project=created_project_identifier, api_token=environment.admin_token)
 
         assert project_identifier not in get_project_list(api_token=environment.user_token)
+
+    def test_invite_to_workspace(self, environment: "Environment"):
+        with pytest.raises(UserAlreadyInvited):
+            invite_to_workspace(
+                username=environment.user, workspace=environment.workspace, api_token=environment.admin_token
+            )
+
+        with pytest.raises(WorkspaceOrUserNotFound):
+            invite_to_workspace(
+                username="non-existent-user", workspace=environment.workspace, api_token=environment.admin_token
+            )
+
+        with pytest.raises(WorkspaceOrUserNotFound):
+            invite_to_workspace(
+                username=environment.user, workspace="non-existent-workspace", api_token=environment.admin_token
+            )
 
 
 @pytest.mark.management
