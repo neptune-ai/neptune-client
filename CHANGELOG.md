@@ -6,6 +6,7 @@
 
 ### Features
 - Series objects accept `timestamps` and `steps` in their constructors ([#1318](https://github.com/neptune-ai/neptune-client/pull/1318))
+- Users can be invited to the workspace with `management` api ([#1333](https://github.com/neptune-ai/neptune-client/pull/1333))
 
 ## neptune 1.1.1
 
