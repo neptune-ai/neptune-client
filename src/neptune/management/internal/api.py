@@ -581,27 +581,28 @@ def invite_to_workspace(
     """Creates invitation to Neptune workspace.
 
     Args:
-        username: username of the user to invite.
-        email: email of the user to invite.
-            Note: at least one of the above parameters are needed.
-            If neither the username nor the email is passed, will raise ValueError.
+        username: Username of the user to invite.
+        email: Email address of the user to invite.
+            Note: at least one of the above parameters is needed.
             If both are filled email will be ignored.
         workspace: Name of your Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
-        role: the workspace role that is to be granted to the invited user.
-        add_to_all_projects: whether to add the user to all projects in the workspace.
-    Returns:
-        None
+        role: The workspace role that is to be granted to the invited user.
+        You can choose between the following values:
+        - Administrator: `WorkspaceMemberRole.ADMIN`
+        - Member: `WorkspaceMemberRole.MEMBER`
+        add_to_all_projects: Whether to add the user to all projects in the workspace.
 
     Example:
         >>> from neptune import management
+        >>> from management import WorkspaceMemberRole
         >>> management.invite_to_workspace(
         ...     username="user",
         ...     workspace="ml-team",
-        ...     role=management.WorkspaceMemberRole.ADMIN
+        ...     role=WorkspaceMemberRole.ADMIN,
         ... )
 
     You may also want to check the management API reference:
