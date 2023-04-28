@@ -81,8 +81,10 @@ from neptune.management.exceptions import (
     ServiceAccountNotExistsOrWithoutAccess,
     ServiceAccountNotFound,
     UserAlreadyHasAccess,
+    UserAlreadyInvited,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
+    WorkspaceOrUserNotFound,
 )
 from neptune.management.internal.dto import (
     ProjectMemberRoleDTO,
@@ -637,8 +639,12 @@ def invite_to_workspace(
     }
 
     backend_client = _get_backend_client(api_token=api_token)
-
-    backend_client.api.createOrganizationInvitations(**params)
+    try:
+        backend_client.api.createOrganizationInvitations(**params)
+    except HTTPNotFound:
+        raise WorkspaceOrUserNotFound(workspace=workspace, user=invitee)
+    except HTTPConflict:
+        raise UserAlreadyInvited(user=invitee, workspace=workspace)
 
 
 @with_api_exceptions_handler
