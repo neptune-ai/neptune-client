@@ -15,6 +15,7 @@
 #
 __all__ = ["Integer"]
 
+import logging
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
@@ -26,7 +27,14 @@ if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
+_logger = logging.getLogger(__name__)
+
+
 class Integer(CopiableAtom):
+
+    MAX_32_BIT_INT = 2147483647
+    MIN_32_BIT_INT = -2147483648
+
     @staticmethod
     def create_assignment_operation(path, value: int):
         return AssignInt(path, value)
@@ -44,6 +52,18 @@ class Integer(CopiableAtom):
     def assign(self, value: typing.Union[IntegerVal, float, int], *, wait: bool = False):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)
+
+        if value.value > Integer.MAX_32_BIT_INT or value.value < Integer.MIN_32_BIT_INT:
+            _logger.warning(
+                "WARNING: The value you're trying to log is outside the range of 32-bit integers "
+                "(%s to %s) and will be skipped. "
+                "We'll support 64-bit integers in the future. "
+                'For now, try logging the value as a float instead: run["field"] = float(%s)',
+                Integer.MIN_32_BIT_INT,
+                Integer.MAX_32_BIT_INT,
+                value.value,
+            )
+            return
 
         with self._container.lock():
             self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait=wait)
