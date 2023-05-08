@@ -575,16 +575,17 @@ def invite_to_workspace(
     email: Optional[str] = None,
     workspace: str,
     api_token: Optional[str] = None,
-    role: WorkspaceMemberRole = WorkspaceMemberRole.MEMBER,
+    role: Union[WorkspaceMemberRole, str] = WorkspaceMemberRole.MEMBER,
     add_to_all_projects: bool = False,
 ) -> None:
     """Creates invitation to Neptune workspace.
 
     Args:
-        username: Username of the user to invite.
-        email: Email address of the user to invite.
-            Note: at least one of the above parameters is needed.
-            If both are filled email will be ignored.
+        username: username of the user to invite.
+        email: email of the user to invite.
+            Note: at least one of the above parameters are needed.
+            If neither the username nor the email is passed, will raise ValueError.
+            If both are filled, will raise ValueError.
         workspace: Name of your Neptune workspace.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
@@ -609,11 +610,14 @@ def invite_to_workspace(
     https://docs.neptune.ai/api/management
     """
     verify_type("workspace", workspace, str)
-    verify_type("role", role, WorkspaceMemberRole)
+    verify_type("role", role, (WorkspaceMemberRole, str))
     verify_type("add_to_all_projects", add_to_all_projects, bool)
     verify_type("username", username, (str, type(None)))
     verify_type("email", email, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
+
+    if username and email:
+        raise ValueError("Cannot specify both `username` and `email`.")
 
     if username:
         invitee = username
@@ -624,13 +628,24 @@ def invite_to_workspace(
     else:
         raise ValueError("Neither `username` nor `email` arguments filled. At least one needs to be passed")
 
+    if isinstance(role, str):
+        if role.lower() not in {"admin", "owner", "member"}:
+            raise ValueError(f"Unrecognized role: {role}")
+
+        role = role.lower()
+
+        role = role if role != "admin" else "owner"
+
+    if isinstance(role, WorkspaceMemberRole):
+        role = role.value
+
     params = {
         "newOrganizationInvitations": {
             "invitationsEntries": [
                 {
                     "invitee": invitee,
                     "invitationType": invitation_type,
-                    "roleGrant": role.value,
+                    "roleGrant": role,
                     "addToAllProjects": add_to_all_projects,
                 }
             ],

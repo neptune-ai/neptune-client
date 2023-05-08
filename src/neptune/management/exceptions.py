@@ -172,9 +172,9 @@ class ObjectNotFound(ManagementOperationFailure):
 
 class WorkspaceOrUserNotFound(ManagementOperationFailure):
     code = 23
-    description = "Workspace {workspace} or user {user} could not be found."
+    description = "Workspace '{workspace}' or user '{user}' could not be found."
 
 
 class UserAlreadyInvited(ManagementOperationFailure):
     code = 24
-    description = "User {user} has already been invited to the workspace {workspace}."
+    description = "User '{user}' has already been invited to the workspace '{workspace}'."

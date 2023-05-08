@@ -55,4 +55,4 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
 
 class WorkspaceMemberRole(Enum):
     MEMBER = "member"
-    ADMIN = "admin"
+    ADMIN = "owner"
