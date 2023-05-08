@@ -50,7 +50,7 @@ class Integer(CopiableAtom):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)
 
-        if Integer.MIN_32_BIT_INT < value.value < Integer.MAX_32_BIT_INT:
+        if value.value < Integer.MIN_32_BIT_INT or value.value > Integer.MAX_32_BIT_INT:
             logger.warning(
                 "WARNING: The value you're trying to log is outside the range of 32-bit integers "
                 "(%s to %s) and will be skipped. "
