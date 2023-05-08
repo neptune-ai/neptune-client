@@ -141,8 +141,33 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
             **DEFAULT_REQUEST_KWARGS,
         )
 
-    def test_invite_to_workspace_no_username_email_raises(self, swagger_client_factory):
+    def test_invite_to_workspace_username_email_raises(self, swagger_client_factory):
+
+        # neither specified
         self.assertRaises(ValueError, invite_to_workspace, workspace="org2", api_token=API_TOKEN)
+
+        # both specified
+        self.assertRaises(
+            ValueError,
+            invite_to_workspace,
+            workspace="org2",
+            api_token=API_TOKEN,
+            username="user",
+            email="email@email.com",
+        )
+
+    def test_invite_to_workspace_invalid_role_raises(self, swagger_client_factory):
+        self.assertRaises(
+            ValueError,
+            invite_to_workspace,
+            workspace="org2",
+            username="user",
+            api_token=API_TOKEN,
+            role="non-existent-role",
+        )
+        self.assertRaises(
+            ValueError, invite_to_workspace, workspace="org2", username="user", api_token=API_TOKEN, role="owner"
+        )
 
     def test_workspace_members(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

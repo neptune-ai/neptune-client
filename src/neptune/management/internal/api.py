@@ -629,7 +629,7 @@ def invite_to_workspace(
         raise ValueError("Neither `username` nor `email` arguments filled. At least one needs to be passed")
 
     if isinstance(role, str):
-        if role.lower() not in {"admin", "owner", "member"}:
+        if role.lower() not in {"admin", "member"}:
             raise ValueError(f"Unrecognized role: {role}")
 
         role = role.lower()

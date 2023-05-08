@@ -359,6 +359,14 @@ class TestManagement(BaseE2ETest):
                 username=environment.user, workspace=environment.workspace, api_token=environment.admin_token
             )
 
+        with pytest.raises(UserAlreadyInvited):
+            invite_to_workspace(
+                username=environment.user,
+                workspace=environment.workspace,
+                api_token=environment.admin_token,
+                role="admin",
+            )
+
         with pytest.raises(WorkspaceOrUserNotFound):
             invite_to_workspace(
                 username="non-existent-user", workspace=environment.workspace, api_token=environment.admin_token
