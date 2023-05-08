@@ -15,19 +15,16 @@
 #
 __all__ = ["Integer"]
 
-import logging
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignInt
+from neptune.internal.utils.logger import logger
 from neptune.types.atoms.integer import Integer as IntegerVal
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
-
-
-_logger = logging.getLogger(__name__)
 
 
 class Integer(CopiableAtom):
@@ -53,8 +50,8 @@ class Integer(CopiableAtom):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)
 
-        if value.value > Integer.MAX_32_BIT_INT or value.value < Integer.MIN_32_BIT_INT:
-            _logger.warning(
+        if Integer.MIN_32_BIT_INT < value.value < Integer.MAX_32_BIT_INT:
+            logger.warning(
                 "WARNING: The value you're trying to log is outside the range of 32-bit integers "
                 "(%s to %s) and will be skipped. "
                 "We'll support 64-bit integers in the future. "
