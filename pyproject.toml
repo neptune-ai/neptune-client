@@ -72,6 +72,7 @@ neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
 neptune-optuna = { version = "*", optional = true }
 neptune-prophet = { version = "*", optional = true }
+neptune-pytorch = { version = "*", optional = true }
 neptune-sacred = { version = "*", optional = true }
 neptune-sklearn = { version = "*", optional = true }
 neptune-tensorflow-keras = { version = "*", optional = true }
@@ -88,6 +89,7 @@ kedro = ["kedro-neptune"]
 lightgbm = ["neptune-lightgbm"]
 optuna = ["neptune-optuna"]
 prophet = ["neptune-prophet"]
+pytorch = ["neptune-pytorch"]
 pytorch-lightning = ["pytorch-lightning"]
 sacred = ["neptune-sacred"]
 sklearn = ["neptune-sklearn"]

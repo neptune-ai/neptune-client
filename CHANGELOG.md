@@ -6,6 +6,7 @@
 
 ### Features
 - Series objects accept `timestamps` and `steps` in their constructors ([#1318](https://github.com/neptune-ai/neptune-client/pull/1318))
+- Added support for `pytorch` integration ([#1337](https://github.com/neptune-ai/neptune-client/pull/1337))
 
 ## neptune 1.1.1
 
