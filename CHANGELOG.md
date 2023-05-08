@@ -7,6 +7,10 @@
 ### Features
 - Series objects accept `timestamps` and `steps` in their constructors ([#1318](https://github.com/neptune-ai/neptune-client/pull/1318))
 - Users can be invited to the workspace with `management` api ([#1333](https://github.com/neptune-ai/neptune-client/pull/1333))
+- Added support for `pytorch` integration ([#1337](https://github.com/neptune-ai/neptune-client/pull/1337))
+
+### Fixes
+- Print warning instead of crashing syncing thread when logging big integers ([#1336](https://github.com/neptune-ai/neptune-client/pull/1336))
 
 ## neptune 1.1.1
 
