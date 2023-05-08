@@ -7,6 +7,9 @@
 ### Features
 - Series objects accept `timestamps` and `steps` in their constructors ([#1318](https://github.com/neptune-ai/neptune-client/pull/1318))
 
+### Fixes
+- Print warning instead of crashing syncing thread when logging big integers ([#1336](https://github.com/neptune-ai/neptune-client/pull/1336))
+
 ## neptune 1.1.1
 
 ### Fixes
