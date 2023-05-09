@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.1.2
+## [UNRELEASED] neptune 1.2.0
 
 ### Changes
 - Neptune objects and universal methods covered with docstrings ([#1309](https://github.com/neptune-ai/neptune-client/pull/1309))
