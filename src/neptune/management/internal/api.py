@@ -22,6 +22,8 @@ __all__ = [
     "add_project_member",
     "remove_project_member",
     "get_workspace_member_list",
+    "invite_to_workspace",
+    "WorkspaceMemberRole",
     "add_project_service_account",
     "remove_project_service_account",
     "get_project_service_account_list",
@@ -79,8 +81,10 @@ from neptune.management.exceptions import (
     ServiceAccountNotExistsOrWithoutAccess,
     ServiceAccountNotFound,
     UserAlreadyHasAccess,
+    UserAlreadyInvited,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
+    WorkspaceOrUserNotFound,
 )
 from neptune.management.internal.dto import (
     ProjectMemberRoleDTO,
@@ -90,6 +94,7 @@ from neptune.management.internal.dto import (
 )
 from neptune.management.internal.types import ProjectVisibility
 from neptune.management.internal.utils import (
+    WorkspaceMemberRole,
     extract_project_and_workspace,
     normalize_project_name,
 )
@@ -561,6 +566,93 @@ def get_workspace_service_account_list(workspace: str, *, api_token: Optional[st
         service_account_name: WorkspaceMemberRoleDTO.to_domain("member")
         for service_account_name, _ in service_accounts.items()
     }
+
+
+@with_api_exceptions_handler
+def invite_to_workspace(
+    *,
+    username: Optional[str] = None,
+    email: Optional[str] = None,
+    workspace: str,
+    api_token: Optional[str] = None,
+    role: Union[WorkspaceMemberRole, str] = WorkspaceMemberRole.MEMBER,
+    add_to_all_projects: bool = False,
+) -> None:
+    """Creates invitation to Neptune workspace.
+
+    Args:
+        username: username of the user to invite.
+        email: email of the user to invite.
+            Note: at least one of the above parameters are needed.
+            If neither the username nor the email is passed, will raise ValueError.
+            If both are filled, will raise ValueError.
+        workspace: Name of your Neptune workspace.
+        api_token: Account's API token.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+        role: The workspace role that is to be granted to the invited user.
+        You can choose between the following values:
+        - Administrator: `WorkspaceMemberRole.ADMIN`
+        - Member: `WorkspaceMemberRole.MEMBER`
+        add_to_all_projects: Whether to add the user to all projects in the workspace.
+
+    Example:
+        >>> from neptune import management
+        >>> from management import WorkspaceMemberRole
+        >>> management.invite_to_workspace(
+        ...     username="user",
+        ...     workspace="ml-team",
+        ...     role=WorkspaceMemberRole.ADMIN,
+        ... )
+
+    You may also want to check the management API reference:
+    https://docs.neptune.ai/api/management
+    """
+    verify_type("workspace", workspace, str)
+    verify_type("role", role, (WorkspaceMemberRole, str))
+    verify_type("add_to_all_projects", add_to_all_projects, bool)
+    verify_type("username", username, (str, type(None)))
+    verify_type("email", email, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    if username and email:
+        raise ValueError("Cannot specify both `username` and `email`.")
+
+    if username:
+        invitee = username
+        invitation_type = "user"
+    elif email:
+        invitee = email
+        invitation_type = "emailRecipient"
+    else:
+        raise ValueError("Neither `username` nor `email` arguments filled. At least one needs to be passed")
+
+    if isinstance(role, str):
+        role = WorkspaceMemberRole(role)
+
+    params = {
+        "newOrganizationInvitations": {
+            "invitationsEntries": [
+                {
+                    "invitee": invitee,
+                    "invitationType": invitation_type,
+                    "roleGrant": role.to_api(),
+                    "addToAllProjects": add_to_all_projects,
+                }
+            ],
+            "organizationIdentifier": workspace,
+        },
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    backend_client = _get_backend_client(api_token=api_token)
+    try:
+        backend_client.api.createOrganizationInvitations(**params)
+    except HTTPNotFound:
+        raise WorkspaceOrUserNotFound(workspace=workspace, user=invitee)
+    except HTTPConflict:
+        raise UserAlreadyInvited(user=invitee, workspace=workspace)
 
 
 @with_api_exceptions_handler

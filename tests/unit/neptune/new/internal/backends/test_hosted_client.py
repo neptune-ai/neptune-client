@@ -31,6 +31,7 @@ from mock import (
 )
 
 from neptune.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
     _get_token_client,
     create_artifacts_client,
     create_backend_client,
@@ -47,6 +48,7 @@ from neptune.management import (
     get_project_list,
     get_project_member_list,
     get_workspace_member_list,
+    invite_to_workspace,
     remove_project_member,
 )
 from neptune.management.exceptions import (
@@ -114,6 +116,56 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # then:
         self.assertEqual(["org1/project1", "org2/project2"], returned_projects)
+
+    def test_invite_to_workspace(self, swagger_client_factory):
+        # given:
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        # when:
+        invite_to_workspace(
+            username="tester1",
+            workspace="org2",
+            api_token=API_TOKEN,
+        )
+
+        # then:
+        swagger_client.api.createOrganizationInvitations.assert_called_once_with(
+            newOrganizationInvitations={
+                "invitationsEntries": [
+                    {"invitee": "tester1", "invitationType": "user", "roleGrant": "member", "addToAllProjects": False}
+                ],
+                "organizationIdentifier": "org2",
+            },
+            **DEFAULT_REQUEST_KWARGS,
+        )
+
+    def test_invite_to_workspace_username_email_raises(self, swagger_client_factory):
+
+        # neither specified
+        self.assertRaises(ValueError, invite_to_workspace, workspace="org2", api_token=API_TOKEN)
+
+        # both specified
+        self.assertRaises(
+            ValueError,
+            invite_to_workspace,
+            workspace="org2",
+            api_token=API_TOKEN,
+            username="user",
+            email="email@email.com",
+        )
+
+    def test_invite_to_workspace_invalid_role_raises(self, swagger_client_factory):
+        self.assertRaises(
+            ValueError,
+            invite_to_workspace,
+            workspace="org2",
+            username="user",
+            api_token=API_TOKEN,
+            role="non-existent-role",
+        )
+        self.assertRaises(
+            ValueError, invite_to_workspace, workspace="org2", username="user", api_token=API_TOKEN, role="owner"
+        )
 
     def test_workspace_members(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
