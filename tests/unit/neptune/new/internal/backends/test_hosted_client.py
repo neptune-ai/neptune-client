@@ -129,8 +129,6 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        self.assertEqual(swagger_client.api.createOrganizationInvitations.call_count, 1)
-
         swagger_client.api.createOrganizationInvitations.assert_called_once_with(
             newOrganizationInvitations={
                 "invitationsEntries": [

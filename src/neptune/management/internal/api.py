@@ -629,15 +629,7 @@ def invite_to_workspace(
         raise ValueError("Neither `username` nor `email` arguments filled. At least one needs to be passed")
 
     if isinstance(role, str):
-        if role.lower() not in {"admin", "member"}:
-            raise ValueError(f"Unrecognized role: {role}")
-
-        role = role.lower()
-
-        role = role if role != "admin" else "owner"
-
-    if isinstance(role, WorkspaceMemberRole):
-        role = role.value
+        role = WorkspaceMemberRole(role)
 
     params = {
         "newOrganizationInvitations": {
@@ -645,7 +637,7 @@ def invite_to_workspace(
                 {
                     "invitee": invitee,
                     "invitationType": invitation_type,
-                    "roleGrant": role,
+                    "roleGrant": role.to_api(),
                     "addToAllProjects": add_to_all_projects,
                 }
             ],

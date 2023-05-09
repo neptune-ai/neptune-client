@@ -55,4 +55,9 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
 
 class WorkspaceMemberRole(Enum):
     MEMBER = "member"
-    ADMIN = "owner"
+    ADMIN = "admin"
+
+    def to_api(self) -> str:
+        if self.value == "admin":
+            return "owner"
+        return self.value
