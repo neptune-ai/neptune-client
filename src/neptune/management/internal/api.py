@@ -592,18 +592,15 @@ def invite_to_workspace(
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
         role: The workspace role that is to be granted to the invited user.
-        You can choose between the following values:
-        - Administrator: `WorkspaceMemberRole.ADMIN`
-        - Member: `WorkspaceMemberRole.MEMBER`
+            You can choose between the following values: "admin" and "member".
         add_to_all_projects: Whether to add the user to all projects in the workspace.
 
     Example:
         >>> from neptune import management
-        >>> from management import WorkspaceMemberRole
         >>> management.invite_to_workspace(
         ...     username="user",
         ...     workspace="ml-team",
-        ...     role=WorkspaceMemberRole.ADMIN,
+        ...     role="admin",
         ... )
 
     You may also want to check the management API reference:
