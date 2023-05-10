@@ -15,6 +15,7 @@
 #
 __all__ = ["ApiMethodWrapper", "SwaggerClientWrapper"]
 
+from collections.abc import Callable
 from typing import Optional
 
 from bravado.client import SwaggerClient
@@ -28,77 +29,63 @@ from neptune.exceptions import (
 
 
 class ApiMethodWrapper:
-    ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED = "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED"
-    INCORRECT_IDENTIFIER = "INCORRECT_IDENTIFIER"
-    WORKSPACE_IN_READ_ONLY_MODE = "WORKSPACE_IN_READ_ONLY_MODE"
-    PROJECT_KEY_COLLISION = "PROJECT_KEY_COLLISION"
-    PROJECT_NAME_COLLISION = "PROJECT_NAME_COLLISION"
-    PROJECT_KEY_INVALID = "PROJECT_KEY_INVALID"
-    PROJECT_NAME_INVALID = "PROJECT_NAME_INVALID"
-    EXPERIMENT_NOT_FOUND = "EXPERIMENT_NOT_FOUND"
-    AUTHORIZATION_TOKEN_EXPIRED = "AUTHORIZATION_TOKEN_EXPIRED"
-    VISIBILITY_RESTRICTED = "VISIBILITY_RESTRICTED"
-
     def __init__(self, api_method):
         self._api_method = api_method
 
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
+        from neptune.management.exceptions import (
+            IncorrectIdentifierException,
+            ManagementOperationFailure,
+            ObjectNotFound,
+            ProjectKeyCollision,
+            ProjectKeyInvalid,
+            ProjectNameCollision,
+            ProjectPrivacyRestrictedException,
+        )
+
         try:
             body = response.json() or dict()
         except Exception:
             body = {}
 
+        error_processors: dict[str, Callable[[dict], ManagementOperationFailure]] = {
+            "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
+                limit=response_body.get("limit", "<unknown limit>"),
+                container_type=response_body.get("experimentType", "object"),
+                identifier=response_body.get("experimentQualifiedName", "<unknown identifier>"),
+            ),
+            "AUTHORIZATION_TOKEN_EXPIRED": lambda _: NeptuneAuthTokenExpired(),
+            "EXPERIMENT_NOT_FOUND": lambda _: ObjectNotFound(),
+            "INCORRECT_IDENTIFIER": lambda response_body: IncorrectIdentifierException(
+                identifier=response_body.get("identifier", "<Unknown identifier>")
+            ),
+            "PROJECT_KEY_COLLISION": lambda response_body: ProjectKeyCollision(
+                key=response_body.get("key", "<unknown key>")
+            ),
+            "PROJECT_KEY_INVALID": lambda response_body: ProjectKeyInvalid(
+                key=response_body.get("key", "<unknown key>"),
+                reason=response_body.get("reason", "Unknown reason"),
+            ),
+            "PROJECT_NAME_COLLISION": lambda response_body: ProjectKeyCollision(
+                key=response_body.get("key", "<unknown key>")
+            ),
+            "PROJECT_NAME_INVALID": lambda response_body: ProjectNameCollision(
+                name=response_body.get("name", "<unknown name>")
+            ),
+            "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestrictedException(
+                requested=response_body.get("requestedValue", "the selected"),
+                allowed=response_body.get("allowedValues"),
+            ),
+            "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
+                reason=response_body.get("title", "Unknown reason")
+            ),
+        }
+
         error_type: Optional[str] = body.get("errorType")
-        if error_type == ApiMethodWrapper.ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED:
-            raise NeptuneFieldCountLimitExceedException(
-                limit=body.get("limit", "<unknown limit>"),
-                container_type=body.get("experimentType", "object"),
-                identifier=body.get("experimentQualifiedName", "<unknown identifier>"),
-            )
-        elif error_type == ApiMethodWrapper.AUTHORIZATION_TOKEN_EXPIRED:
-            raise NeptuneAuthTokenExpired() from exception
-        elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
-            raise NeptuneLimitExceedException(reason=body.get("title", "Unknown reason")) from exception
-        elif error_type == ApiMethodWrapper.INCORRECT_IDENTIFIER:
-            from neptune.management.exceptions import IncorrectIdentifierException
-
-            identifier = body.get("identifier", "<Unknown identifier>")
-            raise IncorrectIdentifierException(identifier=identifier) from exception
-        elif error_type == ApiMethodWrapper.PROJECT_KEY_COLLISION:
-            from neptune.management.exceptions import ProjectKeyCollision
-
-            raise ProjectKeyCollision(key=body.get("key", "<unknown key>")) from exception
-        elif error_type == ApiMethodWrapper.PROJECT_NAME_COLLISION:
-            from neptune.management.exceptions import ProjectNameCollision
-
-            raise ProjectNameCollision(name=body.get("name", "<unknown name>")) from exception
-        elif error_type == ApiMethodWrapper.PROJECT_KEY_INVALID:
-            from neptune.management.exceptions import ProjectKeyInvalid
-
-            raise ProjectKeyInvalid(
-                key=body.get("key", "<unknown key>"), reason=body.get("reason", "Unknown reason")
-            ) from exception
-        elif error_type == ApiMethodWrapper.PROJECT_NAME_INVALID:
-            from neptune.management.exceptions import ProjectNameInvalid
-
-            raise ProjectNameInvalid(
-                name=body.get("name", "<unknown name>"), reason=body.get("reason", "Unknown reason")
-            ) from exception
-        elif error_type == ApiMethodWrapper.EXPERIMENT_NOT_FOUND:
-            from neptune.management.exceptions import ObjectNotFound
-
-            raise ObjectNotFound() from exception
-        elif error_type == ApiMethodWrapper.VISIBILITY_RESTRICTED:
-            from neptune.management.exceptions import ProjectPrivacyRestrictedException
-
-            allowed_values: Optional[list[str]] = body.get("allowedValues")
-            raise ProjectPrivacyRestrictedException(
-                requested=body.get("requestedValue", "the selected"),
-                followup="Allowed values are: {values}".format(values=", ".join(allowed_values))
-                if allowed_values
-                else "",
-            ) from exception
+        error_processor = error_processors.get(error_type)
+        if error_processor:
+            raise error_processor(body) from exception
         elif exception:
             raise exception
 

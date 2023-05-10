@@ -183,3 +183,10 @@ class UserAlreadyInvited(ManagementOperationFailure):
 class ProjectPrivacyRestrictedException(ManagementOperationFailure):
     code = 25
     description = "Cannot set {requested} visibility for project. {followup}"
+
+    def __init__(self, **kwargs):
+        generated_followup = ""
+        allowed = kwargs.get("allowed")
+        if allowed:
+            generated_followup = "Allowed values are: {allowed}".format(allowed=", ".join(kwargs["allowed"]))
+        super().__init__(**({"followup": generated_followup} | kwargs))
