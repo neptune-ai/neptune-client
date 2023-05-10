@@ -37,6 +37,7 @@ class ApiMethodWrapper:
     PROJECT_NAME_INVALID = "PROJECT_NAME_INVALID"
     EXPERIMENT_NOT_FOUND = "EXPERIMENT_NOT_FOUND"
     AUTHORIZATION_TOKEN_EXPIRED = "AUTHORIZATION_TOKEN_EXPIRED"
+    VISIBILITY_RESTRICTED = "VISIBILITY_RESTRICTED"
 
     def __init__(self, api_method):
         self._api_method = api_method
@@ -88,6 +89,16 @@ class ApiMethodWrapper:
             from neptune.management.exceptions import ObjectNotFound
 
             raise ObjectNotFound() from exception
+        elif error_type == ApiMethodWrapper.VISIBILITY_RESTRICTED:
+            from neptune.management.exceptions import ProjectPrivacyRestrictedException
+
+            allowed_values: Optional[list[str]] = body.get("allowedValues")
+            raise ProjectPrivacyRestrictedException(
+                requested=body.get("requestedValue", "the selected"),
+                followup="Allowed values are: {values}".format(values=", ".join(allowed_values))
+                if allowed_values
+                else "",
+            ) from exception
         elif exception:
             raise exception
 

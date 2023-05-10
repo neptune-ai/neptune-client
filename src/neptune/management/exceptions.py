@@ -178,3 +178,8 @@ class WorkspaceOrUserNotFound(ManagementOperationFailure):
 class UserAlreadyInvited(ManagementOperationFailure):
     code = 24
     description = "User '{user}' has already been invited to the workspace '{workspace}'."
+
+
+class ProjectPrivacyRestrictedException(ManagementOperationFailure):
+    code = 25
+    description = "Cannot set {requested} visibility for project. {followup}"
