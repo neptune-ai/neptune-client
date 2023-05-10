@@ -42,6 +42,7 @@ class ApiMethodWrapper:
             ProjectKeyInvalid,
             ProjectNameCollision,
             ProjectPrivacyRestrictedException,
+            ProjectsLimitReached,
         )
 
         try:
@@ -60,6 +61,7 @@ class ApiMethodWrapper:
             "INCORRECT_IDENTIFIER": lambda response_body: IncorrectIdentifierException(
                 identifier=response_body.get("identifier", "<Unknown identifier>")
             ),
+            "LIMIT_OF_PROJECTS_REACHED": lambda _: ProjectsLimitReached(),
             "PROJECT_KEY_COLLISION": lambda response_body: ProjectKeyCollision(
                 key=response_body.get("key", "<unknown key>")
             ),
