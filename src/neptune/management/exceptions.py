@@ -185,8 +185,9 @@ class ProjectPrivacyRestrictedException(ManagementOperationFailure):
     description = "Cannot set {requested} visibility for project. {followup}"
 
     def __init__(self, **kwargs):
-        generated_followup = ""
+        modified_kwargs = {"followup": ""}
         allowed = kwargs.get("allowed")
-        if allowed:
-            generated_followup = "Allowed values are: {allowed}".format(allowed=", ".join(kwargs["allowed"]))
-        super().__init__(**({"followup": generated_followup} | kwargs))
+        if allowed and isinstance(allowed, list):
+            modified_kwargs["followup"] = "Allowed values are: {allowed}".format(allowed=", ".join(allowed))
+        modified_kwargs.update(kwargs)
+        super().__init__(**modified_kwargs)
