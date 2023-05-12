@@ -310,7 +310,7 @@ class Run(MetadataContainer):
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, type(None)))
-        verify_type("dependencies", dependencies, (str, os.PathLike, None))
+        verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
 
         if tags is not None:
             if isinstance(tags, str):
