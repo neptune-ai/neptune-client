@@ -365,6 +365,9 @@ class Run(MetadataContainer):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+        if self._dependencies:
+            self._track_dependencies()
+
         super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
 
     def _get_or_create_api_object(self) -> ApiExperiment:
@@ -454,6 +457,16 @@ class Run(MetadataContainer):
         if self._with_id is None or self._source_files is not None:
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=self._source_files, run=self)
+
+    def _track_dependencies(self) -> None:
+        if self._dependencies == "infer":
+            # using pipreqs here
+            return
+
+        if not os.path.exists(self._dependencies):
+            raise FileNotFoundError(f"Dependency file {self._dependencies} not found.")
+
+        # uploading dependencies file provided by the user
 
     @property
     def monitoring_namespace(self) -> str:
