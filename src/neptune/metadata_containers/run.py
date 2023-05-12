@@ -16,6 +16,7 @@
 __all__ = ["Run"]
 
 import os
+import subprocess
 import threading
 from platform import node as get_hostname
 from typing import (
@@ -461,12 +462,28 @@ class Run(MetadataContainer):
     def _track_dependencies(self) -> None:
         if self._dependencies == "infer":
             # using pipreqs here
-            return
+            file_name = "neptune-tracked-dependencies.txt"
+            status_code = subprocess.check_call(["pipreqs", "--force", "--savepath", file_name, "."])
+            if status_code != 0:
+                from neptune.internal.utils.logger import logger
 
-        if not os.path.exists(self._dependencies):
-            raise FileNotFoundError(f"Dependency file {self._dependencies} not found.")
+                logger.error(
+                    f"Could not generate requirements file. Call to 'pipreqs' returned a non-zero code: {status_code}"
+                )
+                return
 
-        # uploading dependencies file provided by the user
+            self["source_code/files"].upload(file_name)
+        else:
+            # uploading dependencies file provided by the user
+            if not os.path.exists(self._dependencies):
+                from neptune.internal.utils.logger import logger
+
+                logger.error(
+                    f"File {self._dependencies} not found. The dependencies will not be tracked in the current run."
+                )
+                return
+
+            self["source_code/files"].upload(self._dependencies)
 
     @property
     def monitoring_namespace(self) -> str:
