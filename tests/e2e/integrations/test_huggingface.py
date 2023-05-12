@@ -118,7 +118,7 @@ class TestHuggingFace(BaseE2ETest):
 
         time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         run = init_run(
-            run=run_id,
+            with_id=run_id,
             project=environment.project,
             api_token=environment.user_token,
             mode="read-only",
