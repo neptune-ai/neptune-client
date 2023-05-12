@@ -124,6 +124,7 @@ e2e = [
     "scikit-learn",
     "torchvision",
     "transformers",
+    "accelerate",
     "zenml",
 ]
 
