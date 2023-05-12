@@ -221,3 +221,14 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert exp["monitoring/some_hash/hostname"].fetch() == "localhost"
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
+
+    def test_dependencies_inferred(self):
+        with patch("subprocess.check_call", return_value=0) as mock_check_call, patch(
+            "neptune.attributes.FileSet.upload_files"
+        ) as mock_upload_files:
+            with init_run(mode="debug", dependencies="infer"):
+
+                mock_check_call.assert_called_once_with(
+                    ["pipreqs", "--force", "--savepath", "neptune-tracked-dependencies.txt", "."]
+                )
+                mock_upload_files.assert_called_with("neptune-tracked-dependencies.txt", wait=False)

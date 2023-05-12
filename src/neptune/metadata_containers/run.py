@@ -366,10 +366,10 @@ class Run(MetadataContainer):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+
         if self._dependencies:
             self._track_dependencies()
-
-        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace
@@ -464,6 +464,7 @@ class Run(MetadataContainer):
             # using pipreqs here
             file_name = "neptune-tracked-dependencies.txt"
             status_code = subprocess.check_call(["pipreqs", "--force", "--savepath", file_name, "."])
+
             if status_code != 0:
                 from neptune.internal.utils.logger import logger
 
@@ -472,7 +473,8 @@ class Run(MetadataContainer):
                 )
                 return
 
-            self["source_code/files"].upload(file_name)
+            self["source_code/files"].upload_files(file_name)
+
         else:
             # uploading dependencies file provided by the user
             if not os.path.exists(self._dependencies):
@@ -483,7 +485,7 @@ class Run(MetadataContainer):
                 )
                 return
 
-            self["source_code/files"].upload(self._dependencies)
+            self["source_code/files"].upload_files(self._dependencies)
 
     @property
     def monitoring_namespace(self) -> str:
