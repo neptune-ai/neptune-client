@@ -139,6 +139,7 @@ class Run(MetadataContainer):
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
         git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
+        dependencies: Optional[Union[str, os.PathLike]] = None,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -308,6 +309,8 @@ class Run(MetadataContainer):
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, type(None)))
+        verify_type("dependencies", dependencies, (str, os.PathLike, None))
+
         if tags is not None:
             if isinstance(tags, str):
                 tags = [tags]
@@ -331,6 +334,7 @@ class Run(MetadataContainer):
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
         self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref
+        self._dependencies: Optional[str, os.PathLike] = dependencies
 
         self._monitoring_namespace: str = (
             monitoring_namespace
