@@ -15,6 +15,7 @@
 #
 import os
 import unittest
+from unittest.mock import Mock
 
 from mock import patch
 
@@ -227,23 +228,32 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug"):
             mock_track_dependencies.assert_not_called()
 
-    @patch("subprocess.check_call", return_value=0)
-    @patch("neptune.attributes.FileSet.upload_files")
-    def test_dependencies_inferred(self, mock_upload_files, mock_check_call):
+    @patch("subprocess.Popen")
+    @patch("neptune.handler.Handler.upload")
+    @patch("neptune.types.atoms.file.File")
+    def test_dependencies_inferred(self, mock_file, mock_upload, mock_popen):
+        mock_proc = Mock()
+        mock_proc.communicate = Mock()
+        mock_proc.communicate.return_value = (b"dep1\ndep2\ndep3",)
+        mock_popen.return_value = mock_proc
+
         with init_run(mode="debug", dependencies="infer"):
 
-            mock_check_call.assert_called_once_with(
-                ["pipreqs", "--force", "--savepath", "neptune-tracked-dependencies.txt", "."]
-            )
-            mock_upload_files.assert_called_with("neptune-tracked-dependencies.txt", wait=False)
+            mock_popen.assert_called_with(["pipreqs", "--print", "."], stdout=-1)
+            mock_upload.assert_called_once()
 
-    @patch("subprocess.check_call", return_value=1)
+    @patch("subprocess.Popen")
     @patch("logging.Logger.error")
-    def test_error_while_generating_requirements(self, mock_log, mock_check_call):
+    def test_error_while_generating_requirements(self, mock_log, mock_popen):
+        mock_proc = Mock()
+        mock_proc.communicate = Mock()
+        mock_proc.communicate.return_value = (b"",)
+        mock_popen.return_value = mock_proc
+
         with init_run(mode="debug", dependencies="infer"):
-            mock_check_call.assert_called_once()
+            self.assertEqual(mock_proc.communicate.call_count, 1)
             mock_log.assert_called_once_with(
-                "Could not generate requirements file. Call to 'pipreqs' returned a non-zero code: 1"
+                "Could not generate requirements file. Call to 'pipreqs' returned an empty string."
             )
 
     @patch("logging.Logger.error")
