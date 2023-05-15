@@ -182,12 +182,22 @@ class UserAlreadyInvited(ManagementOperationFailure):
 
 class ProjectPrivacyRestrictedException(ManagementOperationFailure):
     code = 25
-    description = "Cannot set {requested} visibility for project. {followup}"
+    description = (
+        "Cannot set {requested} visibility for project. {followup}This might be caused by workspace "
+        "settings or limited by your plan."
+    )
 
     def __init__(self, **kwargs):
         modified_kwargs = {"followup": ""}
         allowed = kwargs.get("allowed")
         if allowed and isinstance(allowed, list):
-            modified_kwargs["followup"] = "Allowed values are: {allowed}".format(allowed=", ".join(allowed))
+            modified_kwargs["followup"] = "Allowed values are: {allowed}. ".format(
+                allowed=", ".join(['"' + option + '"' for option in allowed])
+            )
         modified_kwargs.update(kwargs)
+        requested = modified_kwargs.get("requested")
+        if not requested:
+            modified_kwargs["requested"] = "the selected"
+        else:
+            modified_kwargs["requested"] = '"' + requested + '"'
         super().__init__(**modified_kwargs)

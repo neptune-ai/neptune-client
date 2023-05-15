@@ -76,7 +76,7 @@ class ApiMethodWrapper:
                 name=response_body.get("name", "<unknown name>")
             ),
             "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestrictedException(
-                requested=response_body.get("requestedValue", "the selected"),
+                requested=response_body.get("requestedValue"),
                 allowed=response_body.get("allowedValues"),
             ),
             "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
