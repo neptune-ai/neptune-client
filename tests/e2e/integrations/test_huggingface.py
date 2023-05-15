@@ -34,6 +34,7 @@ from transformers.integrations import (
 from transformers.utils import logging
 
 from neptune import init_run
+from neptune.metadata_containers.metadata_containers_table import TableEntry
 from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import (
     catch_time,
@@ -124,6 +125,16 @@ class TestHuggingFace(BaseE2ETest):
             mode="read-only",
         )
         post(run)
+
+    def _test_monitoring_cpu_present(self, environment, table_entry: TableEntry) -> bool:
+        with init_run(
+            with_id=table_entry.get_attribute_value("sys/id"),
+            project=environment.project,
+            api_token=environment.user_token,
+        ) as neptune_run:
+            hash_key = list(neptune_run.get_structure()["monitoring"].keys())[0]
+
+            return neptune_run.exists(f"monitoring/{hash_key}/cpu")
 
     def test_every_train_should_create_new_run(self, environment, project, common_tag):
         trainer = Trainer(
@@ -281,7 +292,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
-        # assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[0])
 
         # when
         trainer.log({"metric2": 234})
@@ -303,7 +314,7 @@ class TestHuggingFace(BaseE2ETest):
             key=lambda run: run.get_attribute_value("sys/id"),
         )
         assert len(runs) == 2
-        # assert runs[1].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[1])
 
         # when
         trainer.log({"metric3": 345})
@@ -335,7 +346,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
-        # assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[0])
         assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
 
         # when
@@ -345,7 +356,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
-        # assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[0])
 
         # when
         trainer.log({"metric2": 234})
@@ -354,7 +365,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
-        # assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[0])
         assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
 
         # when
@@ -367,7 +378,7 @@ class TestHuggingFace(BaseE2ETest):
             key=lambda run: run.get_attribute_value("sys/id"),
         )
         assert len(runs) == 2
-        # assert runs[1].get_attribute_value("monitoring/cpu") is not None
+        assert self._test_monitoring_cpu_present(environment, runs[0])
 
         # when
         trainer.log({"metric3": 345})
@@ -410,7 +421,7 @@ class TestHuggingFace(BaseE2ETest):
         assert len(runs) == n_trials
         for run_id, run in enumerate(runs):
             assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
-            # assert run.get_attribute_value("monitoring/cpu") is not None
+            assert self._test_monitoring_cpu_present(environment, run)
 
     def test_usages(self):
         # given
