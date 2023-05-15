@@ -220,6 +220,9 @@ class Run(MetadataContainer):
                 If None, Neptune looks for a repository in the path of the script that is executed.
                 To specify a different location, set to GitRef(repository_path="path/to/repo").
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
+            dependencies: If you want to track the project dependencies pass a path to your dependency file.
+                If None, no dependency file will be uploaded.
+                If 'infer' is passed, Neptune will generate and upload a requirements file using `pipreqs`.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
