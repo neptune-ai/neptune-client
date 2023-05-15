@@ -243,5 +243,5 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", dependencies="infer"):
             mock_check_call.assert_called_once()
             mock_log.assert_called_once_with(
-                "Could not generate requirements file. Call to 'pipreqs' returned a " "non-zero code: 1"
+                "Could not generate requirements file. Call to 'pipreqs' returned a non-zero code: 1"
             )
