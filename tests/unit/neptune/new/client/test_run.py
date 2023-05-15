@@ -245,3 +245,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             mock_log.assert_called_once_with(
                 "Could not generate requirements file. Call to 'pipreqs' returned a non-zero code: 1"
             )
+
+    @patch("logging.Logger.error")
+    def test_invalid_dependencies_path_provided(self, mock_log):
+        with init_run(mode="debug", dependencies="non-existent-requirements-file"):
+            mock_log.assert_called_once_with(
+                "File 'non-existent-requirements-file' not found or is not a file. The dependencies will not be "
+                "tracked in the current run."
+            )

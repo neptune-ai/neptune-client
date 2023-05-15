@@ -480,11 +480,12 @@ class Run(MetadataContainer):
 
         else:
             # uploading dependencies file provided by the user
-            if not os.path.exists(self._dependencies):
+            if not os.path.exists(self._dependencies) or not os.path.isfile(self._dependencies):
                 from neptune.internal.utils.logger import logger
 
                 logger.error(
-                    f"File {self._dependencies} not found. The dependencies will not be tracked in the current run."
+                    f"File '{self._dependencies}' not found or is not a file. The dependencies will not be tracked in "
+                    f"the current run."
                 )
                 return
 
