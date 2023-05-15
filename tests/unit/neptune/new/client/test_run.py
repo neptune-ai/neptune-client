@@ -253,7 +253,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", dependencies="infer"):
             self.assertEqual(mock_proc.communicate.call_count, 1)
             mock_log.assert_called_once_with(
-                "Could not generate requirements file. Call to 'pipreqs' returned an empty string."
+                "Could not generate requirements. Call to 'pipreqs' returned an empty string."
             )
 
     @patch("logging.Logger.error")

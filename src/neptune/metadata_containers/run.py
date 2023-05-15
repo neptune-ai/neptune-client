@@ -223,8 +223,8 @@ class Run(MetadataContainer):
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
             dependencies: To track the project dependencies, pass a path to your dependency file.
                 If None, no dependency file is uploaded.
-                If you pass `"infer"`, Neptune uses [pipreqs](https://pypi.org/project/pipreqs) to generate and upload
-                a requirements file. The file is named "neptune-tracked-dependencies.txt".
+                If you pass `"infer"`, Neptune uses [pipreqs](https://pypi.org/project/pipreqs) to upload
+                the requirements.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -475,7 +475,7 @@ class Run(MetadataContainer):
             if not dependencies_str:
                 from neptune.internal.utils.logger import logger
 
-                logger.error("Could not generate requirements file. Call to 'pipreqs' returned an empty string.")
+                logger.error("Could not generate requirements. Call to 'pipreqs' returned an empty string.")
                 return
 
             self["source_code/files/requirements"].upload(File.from_content(dependencies_str))
