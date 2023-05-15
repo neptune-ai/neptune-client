@@ -63,6 +63,7 @@ Faker = { version = "*", optional = true }
 optuna = { version = "*", optional = true }
 scikit-learn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
+accelerate = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
@@ -124,6 +125,7 @@ e2e = [
     "scikit-learn",
     "torchvision",
     "transformers",
+    "accelerate",
     "zenml",
 ]
 
