@@ -400,7 +400,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        with self.assertRaisesRegex(ProjectPrivacyRestrictedException, ".*priv visibility.*"):
+        with self.assertRaisesRegex(ProjectPrivacyRestrictedException, '.*"priv" visibility.*'):
             create_project(name="org/proj", key="PRJ", visibility="priv", api_token=API_TOKEN)
 
     def test_create_project_private_not_allowed_no_details(self, swagger_client_factory):
