@@ -36,11 +36,11 @@ class ApiMethodWrapper:
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
         from neptune.management.exceptions import (
             IncorrectIdentifierException,
-            ManagementOperationFailure,
             ObjectNotFound,
             ProjectKeyCollision,
             ProjectKeyInvalid,
             ProjectNameCollision,
+            ProjectNameInvalid,
             ProjectPrivacyRestrictedException,
             ProjectsLimitReached,
         )
@@ -50,7 +50,7 @@ class ApiMethodWrapper:
         except Exception:
             body = {}
 
-        error_processors: dict[str, Callable[[dict], ManagementOperationFailure]] = {
+        error_processors: dict[str, Callable[[dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
                 limit=response_body.get("limit", "<unknown limit>"),
                 container_type=response_body.get("experimentType", "object"),
@@ -69,10 +69,10 @@ class ApiMethodWrapper:
                 key=response_body.get("key", "<unknown key>"),
                 reason=response_body.get("reason", "Unknown reason"),
             ),
-            "PROJECT_NAME_COLLISION": lambda response_body: ProjectKeyCollision(
+            "PROJECT_NAME_COLLISION": lambda response_body: ProjectNameCollision(
                 key=response_body.get("key", "<unknown key>")
             ),
-            "PROJECT_NAME_INVALID": lambda response_body: ProjectNameCollision(
+            "PROJECT_NAME_INVALID": lambda response_body: ProjectNameInvalid(
                 name=response_body.get("name", "<unknown name>")
             ),
             "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestrictedException(
