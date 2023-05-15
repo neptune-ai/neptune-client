@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.2.1
+## [UNRELEASED] neptune 1.3.0
 
 ### Features
 - Added automatic tracking of dependencies ([#1345](https://github.com/neptune-ai/neptune-client/pull/1345))

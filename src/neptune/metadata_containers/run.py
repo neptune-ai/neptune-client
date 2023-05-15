@@ -84,6 +84,7 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.types import (
+    File,
     GitRef,
     StringSeries,
 )
@@ -466,18 +467,18 @@ class Run(MetadataContainer):
     def _track_dependencies(self) -> None:
         if self._dependencies == "infer":
             # using pipreqs here
-            file_name = "neptune-tracked-dependencies.txt"
-            status_code = subprocess.check_call(["pipreqs", "--force", "--savepath", file_name, "."])
+            proc = subprocess.Popen(["pipreqs", "--print", "."], stdout=subprocess.PIPE)
+            proc.wait()
 
-            if status_code != 0:
+            dependencies_str = proc.communicate()[0].decode(encoding="utf-8")
+
+            if not dependencies_str:
                 from neptune.internal.utils.logger import logger
 
-                logger.error(
-                    f"Could not generate requirements file. Call to 'pipreqs' returned a non-zero code: {status_code}"
-                )
+                logger.error("Could not generate requirements file. Call to 'pipreqs' returned an empty string.")
                 return
 
-            self["source_code/files"].upload_files(file_name)
+            self["source_code/files/requirements"].upload(File.from_content(dependencies_str))
 
         else:
             # uploading dependencies file provided by the user
