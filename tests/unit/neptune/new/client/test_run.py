@@ -222,6 +222,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
 
+    @patch("neptune.metadata_containers.run.Run._track_dependencies")
+    def test_track_dependencies_not_called_if_default(self, mock_track_dependencies):
+        with init_run(mode="debug"):
+            mock_track_dependencies.assert_not_called()
+
     @patch("subprocess.check_call", return_value=0)
     @patch("neptune.attributes.FileSet.upload_files")
     def test_dependencies_inferred(self, mock_upload_files, mock_check_call):
@@ -231,3 +236,12 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 ["pipreqs", "--force", "--savepath", "neptune-tracked-dependencies.txt", "."]
             )
             mock_upload_files.assert_called_with("neptune-tracked-dependencies.txt", wait=False)
+
+    @patch("subprocess.check_call", return_value=1)
+    @patch("logging.Logger.error")
+    def test_error_while_generating_requirements(self, mock_log, mock_check_call):
+        with init_run(mode="debug", dependencies="infer"):
+            mock_check_call.assert_called_once()
+            mock_log.assert_called_once_with(
+                "Could not generate requirements file. Call to 'pipreqs' returned a " "non-zero code: 1"
+            )
