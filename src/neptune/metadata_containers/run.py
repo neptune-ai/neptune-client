@@ -373,9 +373,6 @@ class Run(MetadataContainer):
 
         super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
 
-        if self._dependencies:
-            self._track_dependencies()
-
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace
         project_name = self._project_api_object.name
@@ -464,8 +461,14 @@ class Run(MetadataContainer):
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=self._source_files, run=self)
 
+        if self._dependencies:
+            self._track_dependencies()
+
     def _track_dependencies(self) -> None:
         if self._dependencies == "infer":
+            from neptune.internal.utils.logger import logger
+
+            logger.info("Calling pipreqs to generate requirements based on project imports.")
             # using pipreqs here
             proc = subprocess.Popen(["pipreqs", "--print", "."], stdout=subprocess.PIPE)
             proc.wait()
@@ -473,12 +476,11 @@ class Run(MetadataContainer):
             dependencies_str = proc.communicate()[0].decode(encoding="utf-8")
 
             if not dependencies_str:
-                from neptune.internal.utils.logger import logger
 
                 logger.error("Could not generate requirements. Call to 'pipreqs' returned an empty string.")
                 return
 
-            self["source_code/files/requirements"].upload(File.from_content(dependencies_str))
+            self["source_code/requirements"].upload(File.from_content(dependencies_str))
 
         else:
             # uploading dependencies file provided by the user
@@ -491,7 +493,7 @@ class Run(MetadataContainer):
                 )
                 return
 
-            self["source_code/files"].upload_files(self._dependencies)
+            self["source_code/requirements"].upload(self._dependencies)
 
     @property
     def monitoring_namespace(self) -> str:
