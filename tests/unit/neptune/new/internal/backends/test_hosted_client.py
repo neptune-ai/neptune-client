@@ -56,6 +56,8 @@ from neptune.management.exceptions import (
     AccessRevokedOnMemberRemoval,
     ProjectAlreadyExists,
     ProjectNotFound,
+    ProjectPrivacyRestrictedException,
+    ProjectsLimitReached,
     UnsupportedValue,
     UserAlreadyHasAccess,
     UserNotExistsOrWithoutAccess,
@@ -347,6 +349,84 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(WorkspaceNotFound):
             create_project(name="not_an_org/proj", key="PRJ", api_token=API_TOKEN)
+
+    def test_create_project_limit_reached(self, swagger_client_factory):
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        # given:
+        organization = Mock(id=str(uuid.uuid4()))
+        organization.name = "org"
+        organizations = [organization]
+
+        # when:
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
+        )
+        response = response_mock()
+        response.json.return_value = {
+            "errorCode": 422,
+            "errorType": "LIMIT_OF_PROJECTS_REACHED",
+            "message": "Maximum number of projects (1000) reached",
+        }
+        swagger_client.api.createProject.side_effect = HTTPUnprocessableEntity(
+            response=response,
+        )
+
+        # then:
+        with self.assertRaises(ProjectsLimitReached):
+            create_project(name="org/proj", key="PRJ", api_token=API_TOKEN)
+
+    def test_create_project_private_not_allowed(self, swagger_client_factory):
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        # given:
+        organization = Mock(id=str(uuid.uuid4()))
+        organization.name = "org"
+        organizations = [organization]
+
+        # when:
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
+        )
+        response = response_mock()
+        response.json.return_value = {
+            "errorType": "VISIBILITY_RESTRICTED",
+            "message": "Cannot set visibility priv for project. You are limited to: pub, workspace",
+            "requestedValue": "priv",
+            "allowedValues": ["pub", "workspace"],
+        }
+        swagger_client.api.createProject.side_effect = HTTPUnprocessableEntity(
+            response=response,
+        )
+
+        # then:
+        with self.assertRaisesRegex(ProjectPrivacyRestrictedException, '.*"priv" visibility.*'):
+            create_project(name="org/proj", key="PRJ", visibility="priv", api_token=API_TOKEN)
+
+    def test_create_project_private_not_allowed_no_details(self, swagger_client_factory):
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        # given:
+        organization = Mock(id=str(uuid.uuid4()))
+        organization.name = "org"
+        organizations = [organization]
+
+        # when:
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
+        )
+        response = response_mock()
+        response.json.return_value = {
+            "errorType": "VISIBILITY_RESTRICTED",
+            "message": "Cannot set visibility priv for project. You are limited to: pub, workspace",
+        }
+        swagger_client.api.createProject.side_effect = HTTPUnprocessableEntity(
+            response=response,
+        )
+
+        # then:
+        with self.assertRaisesRegex(ProjectPrivacyRestrictedException, ".*selected visibility.*"):
+            create_project(name="org/proj", key="PRJ", visibility="priv", api_token=API_TOKEN)
 
     def test_create_project(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

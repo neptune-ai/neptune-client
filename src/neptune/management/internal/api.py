@@ -76,7 +76,6 @@ from neptune.management.exceptions import (
     BadRequestException,
     ProjectAlreadyExists,
     ProjectNotFound,
-    ProjectsLimitReached,
     ServiceAccountAlreadyHasAccess,
     ServiceAccountNotExistsOrWithoutAccess,
     ServiceAccountNotFound,
@@ -261,8 +260,6 @@ def _create_project(backend_client, project_qualified_name: str, params: dict):
         if "ERR_NOT_UNIQUE" in validation_errors:
             raise ProjectAlreadyExists(name=project_qualified_name) from e
         raise BadRequestException(validation_errors=validation_errors)
-    except HTTPUnprocessableEntity as e:
-        raise ProjectsLimitReached() from e
 
 
 @with_api_exceptions_handler

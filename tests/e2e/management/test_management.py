@@ -21,6 +21,7 @@ import pytest
 from neptune import init_model_version
 from neptune.internal.container_type import ContainerType
 from neptune.management import (
+    ProjectVisibility,
     add_project_member,
     add_project_service_account,
     create_project,
@@ -36,6 +37,7 @@ from neptune.management import (
     trash_objects,
 )
 from neptune.management.exceptions import (
+    ProjectPrivacyRestrictedException,
     UserAlreadyInvited,
     UserNotExistsOrWithoutAccess,
     WorkspaceOrUserNotFound,
@@ -243,6 +245,29 @@ class TestManagement(BaseE2ETest):
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
         delete_project(project=created_project_identifier, api_token=environment.admin_token)
+
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
+
+    def test_invalid_visibility(self, environment: "Environment"):
+        project_name = a_project_name(project_slug=f"{fake.slug()}-create")
+        project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
+
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
+        self._assure_presence_and_role(
+            username=environment.user,
+            expected_role="member",
+            member_list=get_workspace_member_list(workspace=environment.workspace, api_token=environment.user_token),
+        )
+
+        with pytest.raises(ProjectPrivacyRestrictedException):
+            create_project(
+                name=project_name,
+                workspace=environment.workspace,
+                api_token=environment.user_token,
+                # TODO(bartosz.prusak): this is an invalid setting because workspaces have "public" setting banned as
+                #  default. The test should check if the workspace used has this ban set (and if not - skip this test).
+                visibility=ProjectVisibility.PUBLIC,
+            )
 
         assert project_identifier not in get_project_list(api_token=environment.user_token)
 
