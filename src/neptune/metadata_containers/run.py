@@ -468,19 +468,22 @@ class Run(MetadataContainer):
         if self._dependencies == "infer":
             from neptune.internal.utils.logger import logger
 
-            logger.info("Calling pipreqs to generate requirements based on project imports.")
+            logger.info("INFO: Calling pipreqs to generate requirements based on project imports.")
             # using pipreqs here
-            proc = subprocess.Popen(["pipreqs", "--print", "."], stdout=subprocess.PIPE)
-            proc.wait()
-
-            dependencies_str = proc.communicate()[0].decode(encoding="utf-8")
+            try:
+                proc = subprocess.Popen(["pipreqs", "--print", "."], stdout=subprocess.PIPE)
+                proc.wait()
+                dependencies_str = proc.communicate()[0].decode(encoding="utf-8")
+            except subprocess.SubprocessError as exp:
+                logger.error("ERROR: {}".format(exp))
+                dependencies_str = ""
 
             if not dependencies_str:
 
-                logger.error("Could not generate requirements. Call to 'pipreqs' returned an empty string.")
+                logger.error("ERROR: Could not generate requirements. Call to 'pipreqs' returned an empty string.")
                 return
 
-            self["source_code/requirements"].upload(File.from_content(dependencies_str))
+            self["source_code/requirements.txt"].upload(File.from_content(dependencies_str))
 
         else:
             # uploading dependencies file provided by the user
@@ -493,7 +496,7 @@ class Run(MetadataContainer):
                 )
                 return
 
-            self["source_code/requirements"].upload(self._dependencies)
+            self["source_code/files"].upload_files(self._dependencies)
 
     @property
     def monitoring_namespace(self) -> str:
