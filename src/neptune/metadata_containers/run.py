@@ -16,7 +16,6 @@
 __all__ = ["Run"]
 
 import os
-import subprocess
 import threading
 from platform import node as get_hostname
 from typing import (
@@ -71,6 +70,10 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
+from neptune.internal.utils.dependency_tracking import (
+    FileDependenciesStrategy,
+    InferDependenciesStrategy,
+)
 from neptune.internal.utils.git import to_git_info
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
@@ -84,7 +87,6 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.types import (
-    File,
     GitRef,
     StringSeries,
 )
@@ -466,37 +468,12 @@ class Run(MetadataContainer):
 
     def _track_dependencies(self) -> None:
         if self._dependencies == "infer":
-            from neptune.internal.utils.logger import logger
-
-            logger.info("INFO: Calling pipreqs to generate requirements based on project imports.")
-            # using pipreqs here
-            try:
-                proc = subprocess.Popen(["pipreqs", "--print", "."], stdout=subprocess.PIPE)
-                proc.wait()
-                dependencies_str = proc.communicate()[0].decode(encoding="utf-8")
-            except subprocess.SubprocessError as exp:
-                logger.error("ERROR: {}".format(exp))
-                dependencies_str = ""
-
-            if not dependencies_str:
-
-                logger.error("ERROR: Could not generate requirements. Call to 'pipreqs' returned an empty string.")
-                return
-
-            self["source_code/requirements.txt"].upload(File.from_content(dependencies_str))
+            strategy = InferDependenciesStrategy(run=self)
 
         else:
-            # uploading dependencies file provided by the user
-            if not os.path.exists(self._dependencies) or not os.path.isfile(self._dependencies):
-                from neptune.internal.utils.logger import logger
+            strategy = FileDependenciesStrategy(run=self, path=self._dependencies)
 
-                logger.error(
-                    f"File '{self._dependencies}' not found or is not a file. The dependencies will not be tracked in "
-                    f"the current run."
-                )
-                return
-
-            self["source_code/files"].upload_files(self._dependencies)
+        strategy.track_dependencies()
 
     @property
     def monitoring_namespace(self) -> str:

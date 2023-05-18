@@ -15,7 +15,6 @@
 #
 import os
 import unittest
-from unittest.mock import Mock
 
 from mock import patch
 
@@ -228,38 +227,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug"):
             mock_track_dependencies.assert_not_called()
 
-    @patch("subprocess.Popen")
-    @patch("neptune.handler.Handler.upload")
-    @patch("neptune.types.atoms.file.File")
-    def test_dependencies_inferred(self, mock_file, mock_upload, mock_popen):
-        mock_proc = Mock()
-        mock_proc.communicate = Mock()
-        mock_proc.communicate.return_value = (b"dep1\ndep2\ndep3",)
-        mock_popen.return_value = mock_proc
-
+    @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.track_dependencies")
+    @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.track_dependencies")
+    def test_correct_dependency_strategy_called(self, mock_file_method, mock_infer_method):
         with init_run(mode="debug", dependencies="infer"):
+            mock_infer_method.assert_called_once()
 
-            mock_popen.assert_called_with(["pipreqs", "--print", "."], stdout=-1)
-            mock_upload.assert_called_once()
-
-    @patch("subprocess.Popen")
-    @patch("logging.Logger.error")
-    def test_error_while_generating_requirements(self, mock_log, mock_popen):
-        mock_proc = Mock()
-        mock_proc.communicate = Mock()
-        mock_proc.communicate.return_value = (b"",)
-        mock_popen.return_value = mock_proc
-
-        with init_run(mode="debug", dependencies="infer"):
-            self.assertEqual(mock_proc.communicate.call_count, 1)
-            mock_log.assert_called_once_with(
-                "ERROR: Could not generate requirements. Call to 'pipreqs' returned an empty string."
-            )
-
-    @patch("logging.Logger.error")
-    def test_invalid_dependencies_path_provided(self, mock_log):
-        with init_run(mode="debug", dependencies="non-existent-requirements-file"):
-            mock_log.assert_called_once_with(
-                "File 'non-existent-requirements-file' not found or is not a file. The dependencies will not be "
-                "tracked in the current run."
-            )
+        with init_run(mode="debug", dependencies="some_file_path.txt"):
+            mock_file_method.assert_called_once()
