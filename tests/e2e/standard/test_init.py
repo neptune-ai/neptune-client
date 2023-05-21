@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from zipfile import ZipFile
+
 import pytest
 
 import neptune
@@ -101,6 +103,26 @@ class TestInitRun(BaseE2ETest):
         exp.sync()
 
         assert exp.exists("source_code/requirements")
+
+    def test_upload_dependency_file(self, environment):
+        filename = fake.file_name(extension="txt")
+        with open(filename, "w") as file:
+            file.write("some-dependency==1.0.0")
+
+        exp = neptune.init_run(
+            project=environment.project,
+            dependencies=filename,
+        )
+
+        exp.sync()
+
+        exp["source_code/files"].download("downloaded1.zip")
+
+        with ZipFile("downloaded1.zip") as zipped:
+            assert filename in zipped.namelist()
+
+            with zipped.open(filename, "r") as file:
+                assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
 
 class TestInitProject(BaseE2ETest):
