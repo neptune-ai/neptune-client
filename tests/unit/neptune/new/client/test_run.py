@@ -222,16 +222,12 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
 
-    @patch("neptune.metadata_containers.run.Run._track_dependencies")
-    def test_track_dependencies_not_called_if_default(self, mock_track_dependencies):
-        with init_run(mode="debug"):
-            mock_track_dependencies.assert_not_called()
-
-    @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.track_dependencies")
-    @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.track_dependencies")
-    def test_correct_dependency_strategy_called(self, mock_file_method, mock_infer_method):
+    @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.log_dependencies")
+    def test_infer_dependency_strategy_called(self, mock_infer_method):
         with init_run(mode="debug", dependencies="infer"):
             mock_infer_method.assert_called_once()
 
+    @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.log_dependencies")
+    def test_file_dependency_strategy_called(self, mock_file_method):
         with init_run(mode="debug", dependencies="some_file_path.txt"):
             mock_file_method.assert_called_once()

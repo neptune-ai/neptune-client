@@ -464,16 +464,13 @@ class Run(MetadataContainer):
             upload_source_code(source_files=self._source_files, run=self)
 
         if self._dependencies:
-            self._track_dependencies()
+            if self._dependencies == "infer":
+                dependency_strategy = InferDependenciesStrategy()
 
-    def _track_dependencies(self) -> None:
-        if self._dependencies == "infer":
-            strategy = InferDependenciesStrategy(run=self)
+            else:
+                dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
 
-        else:
-            strategy = FileDependenciesStrategy(run=self, path=self._dependencies)
-
-        strategy.track_dependencies()
+            dependency_strategy.log_dependencies(run=self)
 
     @property
     def monitoring_namespace(self) -> str:

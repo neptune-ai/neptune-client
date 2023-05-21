@@ -92,6 +92,16 @@ class TestInitRun(BaseE2ETest):
         exp.sync()
         assert not exp.exists("source_code/git")
 
+    def test_infer_dependencies(self, environment):
+        exp = neptune.init_run(
+            project=environment.project,
+            dependencies="infer",
+        )
+
+        exp.sync()
+
+        assert exp.exists("source_code/requirements")
+
 
 class TestInitProject(BaseE2ETest):
     def test_resuming_project(self, environment):
