@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 class DependencyTrackingStrategy(ABC):
     @abstractmethod
-    def log_dependencies(self, run) -> None:
+    def log_dependencies(self, run: "Run") -> None:
         ...
 
 
