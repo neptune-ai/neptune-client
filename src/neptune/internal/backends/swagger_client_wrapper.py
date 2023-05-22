@@ -84,7 +84,7 @@ class ApiMethodWrapper:
                 reason=response_body.get("title", "Unknown reason")
             ),
             "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
-                currentQuota=response_body.get("currentQuota", "<unknown key>")
+                currentQuota=response_body.get("currentQuota", "<unknown quota>")
             ),
         }
 
