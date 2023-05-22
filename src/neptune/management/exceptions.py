@@ -201,3 +201,8 @@ class ProjectPrivacyRestrictedException(ManagementOperationFailure):
         else:
             modified_kwargs["requested"] = '"' + requested + '"'
         super().__init__(**modified_kwargs)
+
+
+class ActiveProjectsLimitReachedException(ManagementOperationFailure):
+    code = 26
+    description = "Limit of active projects reached. You can have up to {currentQuota} active projects simultaneously."

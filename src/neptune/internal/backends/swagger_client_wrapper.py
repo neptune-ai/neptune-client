@@ -35,6 +35,7 @@ class ApiMethodWrapper:
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
         from neptune.management.exceptions import (
+            ActiveProjectsLimitReachedException,
             IncorrectIdentifierException,
             ObjectNotFound,
             ProjectKeyCollision,
@@ -81,6 +82,9 @@ class ApiMethodWrapper:
             ),
             "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
                 reason=response_body.get("title", "Unknown reason")
+            ),
+            "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
+                currentQuota=response_body.get("currentQuota", "<unknown key>")
             ),
         }
 
