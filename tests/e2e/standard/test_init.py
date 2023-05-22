@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from zipfile import ZipFile
+
 import pytest
 
 import neptune
@@ -37,60 +39,88 @@ from tests.e2e.utils import (
 class TestInitRun(BaseE2ETest):
     def test_custom_run_id(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
-        run = neptune.init_run(custom_run_id=custom_run_id, project=environment.project)
+        with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as run:
 
-        key = self.gen_key()
-        val = fake.word()
-        run[key] = val
-        run.sync()
+            key = self.gen_key()
+            val = fake.word()
+            run[key] = val
+            run.sync()
 
-        run.stop()
-
-        exp2 = neptune.init_run(custom_run_id=custom_run_id, project=environment.project)
-        assert exp2[key].fetch() == val
+        with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as exp2:
+            assert exp2[key].fetch() == val
 
     def test_send_source_code(self, environment):
-        exp = neptune.init_run(
+        with neptune.init_run(
             source_files="**/*.py",
             name="E2e init source code",
             project=environment.project,
-        )
+        ) as exp:
 
-        # download sources
-        exp.sync()
-        with with_check_if_file_appears("files.zip"):
-            exp["source_code/files"].download()
+            # download sources
+            exp.sync()
+            with with_check_if_file_appears("files.zip"):
+                exp["source_code/files"].download()
 
     def test_git_client_repository(self, environment):
-        exp = neptune.init_run(
+        with neptune.init_run(
             git_ref=GitRef(repository_path="."),
             project=environment.project,
-        )
+        ) as exp:
 
-        # download sources
-        exp.sync()
-        assert exp.exists("source_code/git")
+            # download sources
+            exp.sync()
+            assert exp.exists("source_code/git")
 
     @pytest.mark.skip("In CI we are running this in root directory with git repository")
     def test_git_default(self, environment):
-        exp = neptune.init_run(
+        with neptune.init_run(
             git_ref=GitRef(),
             project=environment.project,
-        )
+        ) as exp:
 
-        # download sources
-        exp.sync()
-        assert not exp.exists("source_code/git")
+            # download sources
+            exp.sync()
+            assert not exp.exists("source_code/git")
 
     def test_git_disabled(self, environment):
-        exp = neptune.init_run(
+        with neptune.init_run(
             git_ref=GitRef.DISABLED,
             project=environment.project,
-        )
+        ) as exp:
 
-        # download sources
-        exp.sync()
-        assert not exp.exists("source_code/git")
+            # download sources
+            exp.sync()
+            assert not exp.exists("source_code/git")
+
+    def test_infer_dependencies(self, environment):
+        with neptune.init_run(
+            project=environment.project,
+            dependencies="infer",
+        ) as exp:
+
+            exp.sync()
+
+            assert exp.exists("source_code/requirements")
+
+    def test_upload_dependency_file(self, environment):
+        filename = fake.file_name(extension="txt")
+        with open(filename, "w") as file:
+            file.write("some-dependency==1.0.0")
+
+        with neptune.init_run(
+            project=environment.project,
+            dependencies=filename,
+        ) as exp:
+
+            exp.sync()
+
+            exp["source_code/files"].download("downloaded1.zip")
+
+        with ZipFile("downloaded1.zip") as zipped:
+            assert filename in zipped.namelist()
+
+            with zipped.open(filename, "r") as file:
+                assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
 
 class TestInitProject(BaseE2ETest):
@@ -161,3 +191,5 @@ class TestReinitialization(BaseE2ETest):
             project=environment.project,
         )
         assert reinitialized[key].fetch() == val
+
+        reinitialized.stop()

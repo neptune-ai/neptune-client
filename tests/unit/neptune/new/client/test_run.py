@@ -221,3 +221,13 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert exp["monitoring/some_hash/hostname"].fetch() == "localhost"
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
+
+    @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.log_dependencies")
+    def test_infer_dependency_strategy_called(self, mock_infer_method):
+        with init_run(mode="debug", dependencies="infer"):
+            mock_infer_method.assert_called_once()
+
+    @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.log_dependencies")
+    def test_file_dependency_strategy_called(self, mock_file_method):
+        with init_run(mode="debug", dependencies="some_file_path.txt"):
+            mock_file_method.assert_called_once()

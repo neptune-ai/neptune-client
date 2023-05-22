@@ -70,6 +70,10 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
+from neptune.internal.utils.dependency_tracking import (
+    FileDependenciesStrategy,
+    InferDependenciesStrategy,
+)
 from neptune.internal.utils.git import to_git_info
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
@@ -139,6 +143,7 @@ class Run(MetadataContainer):
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
         git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
+        dependencies: Optional[Union[str, os.PathLike]] = None,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -218,6 +223,10 @@ class Run(MetadataContainer):
                 If None, Neptune looks for a repository in the path of the script that is executed.
                 To specify a different location, set to GitRef(repository_path="path/to/repo").
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
+            dependencies: To track the project dependencies, pass a path to your dependency file.
+                If None, no dependency file is uploaded.
+                If you pass `"infer"`, Neptune uses [pipreqs](https://pypi.org/project/pipreqs) to upload
+                the requirements.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -308,6 +317,8 @@ class Run(MetadataContainer):
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, type(None)))
+        verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
+
         if tags is not None:
             if isinstance(tags, str):
                 tags = [tags]
@@ -331,6 +342,7 @@ class Run(MetadataContainer):
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
         self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref
+        self._dependencies: Optional[str, os.PathLike] = dependencies
 
         self._monitoring_namespace: str = (
             monitoring_namespace
@@ -450,6 +462,15 @@ class Run(MetadataContainer):
         if self._with_id is None or self._source_files is not None:
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=self._source_files, run=self)
+
+        if self._dependencies:
+            if self._dependencies == "infer":
+                dependency_strategy = InferDependenciesStrategy()
+
+            else:
+                dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
+
+            dependency_strategy.log_dependencies(run=self)
 
     @property
     def monitoring_namespace(self) -> str:
