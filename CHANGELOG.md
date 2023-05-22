@@ -7,7 +7,7 @@
 - Added support of project visibility exception ([#1343](https://github.com/neptune-ai/neptune-client/pull/1343))
 
 ### Changes
-- Added support of active projects limit exception
+- Added support of active projects limit exception ([#1348](https://github.com/neptune-ai/neptune-client/pull/1348))
 
 ## neptune 1.2.0
 
