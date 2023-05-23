@@ -117,3 +117,15 @@ class TestDiffTracker:
 
         assert repo_mock.merge_base.call_count == 3
         assert repo_mock.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
+
+    def test_detached_head(self):
+        repo_mock = MagicMock()
+        repo_mock.active_branch.tracking_branch.side_effect = TypeError
+        repo_mock.git.diff = MagicMock()
+
+        tracker = DiffTracker(repo_mock)
+        diff = tracker.get_upstream_index_diff()
+
+        assert diff is None
+        assert tracker.upstream_commit_sha is None
+        repo_mock.git.diff.assert_not_called()
