@@ -25,6 +25,9 @@ from typing import (
     Union,
 )
 
+import git
+from git.exc import GitCommandError
+
 from neptune.types.atoms.git_ref import (
     GitRef,
     GitRefDisabled,
@@ -100,8 +103,53 @@ class DiffTracker:
 
         self.repo = get_git_repo(repo_path=initial_repo_path) if initial_repo_path else None
 
+        self.head = self.repo.head
+
+        self._upstream_commit_sha = None
+
     def get_head_index_diff(self) -> Optional[str]:
         if not self.repo:
             return
 
-        return self.repo.git.diff("HEAD")
+        try:
+            return self.repo.git.diff(self.head.name)
+        except GitCommandError:
+            return
+
+    def get_upstream_index_diff(self) -> Optional[str]:
+        upstream_commit = self._get_relevant_upstream_commit()
+
+        if upstream_commit and upstream_commit != self.head.commit:
+
+            self._upstream_commit_sha = upstream_commit.hexsha
+
+            try:
+                return self.repo.git.diff(upstream_commit.hexsha)
+            except GitCommandError:
+                return
+
+    def _get_relevant_upstream_commit(self) -> Optional[git.Commit]:
+        try:
+            tracking_branch = self.repo.active_branch.tracking_branch()
+        except (TypeError, ValueError):
+            return
+
+        if tracking_branch:
+            return tracking_branch.commit
+
+        return self._search_for_most_recent_ancestor()
+
+    def _search_for_most_recent_ancestor(self) -> Optional[git.Commit]:
+        most_recent_ancestor: Optional[git.Commit] = None
+
+        try:
+            for branch in self.repo.branches:
+                tracking_branch = branch.tracking_branch()
+                if tracking_branch:
+                    for ancestor in self.repo.merge_base(self.head, tracking_branch.commit):
+                        if not most_recent_ancestor or self.repo.is_ancestor(most_recent_ancestor, ancestor):
+                            most_recent_ancestor = ancestor
+        except GitCommandError:
+            pass
+
+        return most_recent_ancestor
