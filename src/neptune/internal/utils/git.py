@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["to_git_info", "GitInfo"]
+__all__ = ["to_git_info", "GitInfo", "get_head_index_diff"]
 
 import logging
 import warnings
@@ -90,3 +90,21 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
         )
     except:  # noqa: E722
         return None
+
+
+def get_head_index_diff(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[str]:
+    if git_ref == GitRef.DISABLED:
+        return None
+
+    initial_repo_path = git_ref.resolve_path()
+    if initial_repo_path is None:
+        return None
+
+    repo = get_git_repo(repo_path=initial_repo_path)
+
+    repo.active_branch.tracked_branch()
+
+    if not repo:
+        return
+
+    return repo.git.diff("HEAD")
