@@ -97,43 +97,47 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
 
 class DiffTracker:
     def __init__(self, git_ref: Union[GitRef, GitRefDisabled]):
-        self.git_ref = git_ref
+        self._git_ref = git_ref
 
-        initial_repo_path = self.git_ref.resolve_path() if self.git_ref != GitRef.DISABLED else None
+        initial_repo_path = self._git_ref.resolve_path() if self._git_ref != GitRef.DISABLED else None
 
-        self.repo = get_git_repo(repo_path=initial_repo_path) if initial_repo_path else None
+        self._repo = get_git_repo(repo_path=initial_repo_path) if initial_repo_path else None
 
-        self.head = self.repo.head
+        self._head = self._repo.head
 
         self._upstream_commit_sha = None
 
+    @property
+    def upstream_commit_sha(self) -> Optional[str]:
+        return self._upstream_commit_sha
+
     def get_head_index_diff(self) -> Optional[str]:
-        if not self.repo or not self.repo.is_dirty():
+        if not self._repo or not self._repo.is_dirty():
             return
 
         try:
-            return self.repo.git.diff(self.head.name)
+            return self._repo.git.diff(self._head.name)
         except GitCommandError:
             return
 
     def get_upstream_index_diff(self) -> Optional[str]:
-        if not self.repo or not self.repo.is_dirty():
+        if not self._repo or not self._repo.is_dirty():
             return
 
         upstream_commit = self._get_relevant_upstream_commit()
 
-        if upstream_commit and upstream_commit != self.head.commit:
+        if upstream_commit and upstream_commit != self._head.commit:
 
             self._upstream_commit_sha = upstream_commit.hexsha
 
             try:
-                return self.repo.git.diff(upstream_commit.hexsha)
+                return self._repo.git.diff(upstream_commit.hexsha)
             except GitCommandError:
                 return
 
     def _get_relevant_upstream_commit(self) -> Optional[git.Commit]:
         try:
-            tracking_branch = self.repo.active_branch.tracking_branch()
+            tracking_branch = self._repo.active_branch.tracking_branch()
         except (TypeError, ValueError):
             return
 
@@ -146,11 +150,11 @@ class DiffTracker:
         most_recent_ancestor: Optional[git.Commit] = None
 
         try:
-            for branch in self.repo.branches:
+            for branch in self._repo.branches:
                 tracking_branch = branch.tracking_branch()
                 if tracking_branch:
-                    for ancestor in self.repo.merge_base(self.head, tracking_branch.commit):
-                        if not most_recent_ancestor or self.repo.is_ancestor(most_recent_ancestor, ancestor):
+                    for ancestor in self._repo.merge_base(self._head, tracking_branch.commit):
+                        if not most_recent_ancestor or self._repo.is_ancestor(most_recent_ancestor, ancestor):
                             most_recent_ancestor = ancestor
         except GitCommandError:
             pass
