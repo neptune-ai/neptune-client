@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["to_git_info", "GitInfo", "get_head_index_diff"]
+__all__ = ["to_git_info", "GitInfo", "DiffTracker"]
 
 import logging
 import warnings
@@ -92,19 +92,16 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
         return None
 
 
-def get_head_index_diff(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[str]:
-    if git_ref == GitRef.DISABLED:
-        return None
+class DiffTracker:
+    def __init__(self, git_ref: Union[GitRef, GitRefDisabled]):
+        self.git_ref = git_ref
 
-    initial_repo_path = git_ref.resolve_path()
-    if initial_repo_path is None:
-        return None
+        initial_repo_path = self.git_ref.resolve_path() if self.git_ref != GitRef.DISABLED else None
 
-    repo = get_git_repo(repo_path=initial_repo_path)
+        self.repo = get_git_repo(repo_path=initial_repo_path) if initial_repo_path else None
 
-    repo.active_branch.tracked_branch()
+    def get_head_index_diff(self) -> Optional[str]:
+        if not self.repo:
+            return
 
-    if not repo:
-        return
-
-    return repo.git.diff("HEAD")
+        return self.repo.git.diff("HEAD")
