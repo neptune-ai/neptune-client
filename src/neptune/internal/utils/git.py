@@ -96,15 +96,9 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
 
 
 class DiffTracker:
-    def __init__(self, git_ref: Union[GitRef, GitRefDisabled]):
-        self._git_ref = git_ref
-
-        initial_repo_path = self._git_ref.resolve_path() if self._git_ref != GitRef.DISABLED else None
-
-        self._repo = get_git_repo(repo_path=initial_repo_path) if initial_repo_path else None
-
+    def __init__(self, repo: git.Repo):
+        self._repo = repo
         self._head = self._repo.head
-
         self._upstream_commit_sha = None
 
     @property
@@ -112,18 +106,12 @@ class DiffTracker:
         return self._upstream_commit_sha
 
     def get_head_index_diff(self) -> Optional[str]:
-        if not self._repo or not self._repo.is_dirty():
-            return
-
         try:
             return self._repo.git.diff(self._head.name)
         except GitCommandError:
             return
 
     def get_upstream_index_diff(self) -> Optional[str]:
-        if not self._repo or not self._repo.is_dirty():
-            return
-
         upstream_commit = self._get_relevant_upstream_commit()
 
         if upstream_commit and upstream_commit != self._head.commit:
