@@ -108,7 +108,7 @@ class DiffTracker:
         self._upstream_commit_sha = None
 
     def get_head_index_diff(self) -> Optional[str]:
-        if not self.repo:
+        if not self.repo or not self.repo.is_dirty():
             return
 
         try:
@@ -117,6 +117,9 @@ class DiffTracker:
             return
 
     def get_upstream_index_diff(self) -> Optional[str]:
+        if not self.repo or not self.repo.is_dirty():
+            return
+
         upstream_commit = self._get_relevant_upstream_commit()
 
         if upstream_commit and upstream_commit != self.head.commit:
