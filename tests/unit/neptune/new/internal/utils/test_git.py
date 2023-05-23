@@ -21,6 +21,7 @@ from mock import (
 )
 
 from neptune.internal.utils.git import (
+    DiffTracker,
     GitInfo,
     to_git_info,
 )
@@ -59,3 +60,32 @@ class TestGit:
             branch="master",
             remotes=[],
         )
+
+
+class TestDiffTracker:
+    def test_get_head_index_diff(self):
+        repo_mock = MagicMock()
+        repo_mock.git.diff.return_value = "some_diff"
+        repo_mock.head.name = "HEAD"
+
+        tracker = DiffTracker(repo_mock)
+
+        diff = tracker.get_head_index_diff()
+
+        repo_mock.git.diff.assert_called_once_with("HEAD")
+        assert diff == "some_diff"
+
+    def test_upstream_index_diff_tracking_branch_present(self):
+        repo_mock = MagicMock()
+        repo_mock.git.diff.return_value = "some_diff"
+        tracking_branch = MagicMock()
+        tracking_branch.commit.hexsha = "sha1234"
+        repo_mock.active_branch.tracking_branch.return_value = tracking_branch
+
+        tracker = DiffTracker(repo_mock)
+
+        diff = tracker.get_upstream_index_diff()
+
+        repo_mock.git.diff.assert_called_once_with("sha1234")
+        assert diff == "some_diff"
+        assert tracker.upstream_commit_sha == "sha1234"
