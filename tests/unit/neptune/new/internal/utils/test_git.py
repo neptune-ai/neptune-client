@@ -89,3 +89,31 @@ class TestDiffTracker:
         repo_mock.git.diff.assert_called_once_with("sha1234")
         assert diff == "some_diff"
         assert tracker.upstream_commit_sha == "sha1234"
+
+    def test_upstream_index_diff_tracking_branch_not_present(self):
+        repo_mock = MagicMock()
+        repo_mock.git.diff.return_value = "some_diff"
+        repo_mock.active_branch.tracking_branch.return_value = None
+
+        tracking_branch = MagicMock()
+        branch = MagicMock()
+        branch.tracking_branch.return_value = tracking_branch
+        repo_mock.branches = [branch, branch, branch]
+
+        repo_mock.is_ancestor.return_value = True
+        ancestor = MagicMock()
+        ancestor.hexsha = "sha1234"
+        repo_mock.merge_base.return_value = [ancestor, ancestor]
+
+        tracker = DiffTracker(repo_mock)
+
+        diff = tracker.get_upstream_index_diff()
+
+        assert diff == "some_diff"
+        assert tracker.upstream_commit_sha == "sha1234"
+
+        repo_mock.git.diff.assert_called_once_with("sha1234")
+        repo_mock.active_branch.tracking_branch.assert_called_once()
+
+        assert repo_mock.merge_base.call_count == 3
+        assert repo_mock.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
