@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["to_git_info", "GitInfo", "DiffTracker"]
+__all__ = ["to_git_info", "GitInfo", "track_uncommitted_changes"]
 
 import logging
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     List,
     Optional,
     Union,
@@ -28,10 +29,14 @@ from typing import (
 import git
 from git.exc import GitCommandError
 
+from neptune.types import File
 from neptune.types.atoms.git_ref import (
     GitRef,
     GitRefDisabled,
 )
+
+if TYPE_CHECKING:
+    from neptune import Run
 
 _logger = logging.getLogger(__name__)
 
@@ -102,6 +107,24 @@ class DiffTracker:
         self._upstream_commit_sha = None
 
     @property
+    def repo_dirty(self) -> bool:
+        return self._repo.is_dirty()
+
+    @classmethod
+    def from_git_ref(cls, git_ref: Union[GitRef, GitRefDisabled]) -> Optional["DiffTracker"]:
+        if git_ref == GitRef.DISABLED:
+            return None
+
+        initial_repo_path = git_ref.resolve_path()
+        if initial_repo_path is None:
+            return None
+
+        repo = get_git_repo(repo_path=initial_repo_path)
+
+        if repo:
+            return cls(repo)
+
+    @property
     def upstream_commit_sha(self) -> Optional[str]:
         return self._upstream_commit_sha
 
@@ -148,3 +171,20 @@ class DiffTracker:
             pass
 
         return most_recent_ancestor
+
+
+def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
+    tracker = DiffTracker.from_git_ref(git_ref)
+
+    if not tracker.repo_dirty:
+        return
+
+    diff_head = tracker.get_head_index_diff()
+    diff_upstream = tracker.get_upstream_index_diff()
+    upstream_sha = tracker.upstream_commit_sha
+
+    if diff_head:
+        run["source_code/diff"].upload(File.from_content(diff_head, extension="patch"))
+
+    if diff_upstream:
+        run[f"source_code/upstream_diff_{upstream_sha}"].upload(File.from_content(diff_upstream, extension="patch"))

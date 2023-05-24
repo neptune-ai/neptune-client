@@ -74,7 +74,10 @@ from neptune.internal.utils.dependency_tracking import (
     FileDependenciesStrategy,
     InferDependenciesStrategy,
 )
-from neptune.internal.utils.git import to_git_info
+from neptune.internal.utils.git import (
+    to_git_info,
+    track_uncommitted_changes,
+)
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
@@ -471,6 +474,12 @@ class Run(MetadataContainer):
                 dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
 
             dependency_strategy.log_dependencies(run=self)
+
+        if self._git_ref:
+            track_uncommitted_changes(
+                git_ref=self._git_ref,
+                run=self,
+            )
 
     @property
     def monitoring_namespace(self) -> str:
