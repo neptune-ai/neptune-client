@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["to_git_info", "GitInfo", "track_uncommitted_changes"]
+__all__ = [
+    "to_git_info",
+    "GitInfo",
+    "track_uncommitted_changes",
+]
 
 import logging
 import warnings
