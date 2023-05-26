@@ -16,6 +16,8 @@
 from zipfile import ZipFile
 
 import pytest
+from git import Repo
+from git.exc import InvalidGitRepositoryError
 
 import neptune
 from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
@@ -121,6 +123,24 @@ class TestInitRun(BaseE2ETest):
 
             with zipped.open(filename, "r") as file:
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
+
+    def test_tracking_uncommitted_changes(self, environment):
+        try:
+            # local setup
+            repo = Repo(".")
+        except InvalidGitRepositoryError:
+            # CI
+            repo = Repo.init()
+
+        with open("some_file.txt", "w") as fp:
+            fp.write("some-content\n")
+
+        repo.git.add("some_file.txt")
+
+        assert repo.is_dirty()
+        with neptune.init_run(project=environment.project) as run:
+            run.sync()
+            assert run.exists("source_code/diff")
 
 
 class TestInitProject(BaseE2ETest):

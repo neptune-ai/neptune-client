@@ -475,11 +475,10 @@ class Run(MetadataContainer):
 
             dependency_strategy.log_dependencies(run=self)
 
-        if self._git_ref:
-            track_uncommitted_changes(
-                git_ref=self._git_ref,
-                run=self,
-            )
+        track_uncommitted_changes(
+            git_ref=self._git_ref or GitRef(),
+            run=self,
+        )
 
     @property
     def monitoring_namespace(self) -> str:
