@@ -24,6 +24,7 @@ from neptune.internal.utils.git import (
     DiffTracker,
     GitInfo,
     to_git_info,
+    track_uncommitted_changes,
 )
 from neptune.types import GitRef
 
@@ -129,3 +130,15 @@ class TestDiffTracker:
         assert diff is None
         assert tracker.upstream_commit_sha is None
         repo_mock.git.diff.assert_not_called()
+
+    @patch("neptune.internal.utils.git.File")
+    @patch("neptune.metadata_containers.Run")
+    def test_track_uncommitted_changes(self, mock_run, mock_file):
+        mock_tracker = MagicMock()
+
+        with patch("neptune.internal.utils.git.DiffTracker.from_git_ref", return_value=mock_tracker):
+            track_uncommitted_changes(GitRef(), mock_run)
+
+            mock_tracker.get_head_index_diff.assert_called_once()
+            mock_tracker.get_upstream_index_diff.assert_called_once()
+            assert mock_file.from_content.call_count == 2

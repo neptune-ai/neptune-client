@@ -17,6 +17,7 @@ __all__ = [
     "to_git_info",
     "GitInfo",
     "track_uncommitted_changes",
+    "DiffTracker",
 ]
 
 import logging
