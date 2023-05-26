@@ -2,6 +2,7 @@
 
 ### Features
 - Added automatic tracking of dependencies ([#1345](https://github.com/neptune-ai/neptune-client/pull/1345))
+- Added automatic tracking of uncommitted changes ([#1350]https://github.com/neptune-ai/neptune-client/pull/1350)
 
 ## neptune 1.2.0
 
