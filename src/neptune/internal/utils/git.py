@@ -31,7 +31,11 @@ from typing import (
 )
 
 import git
-from git.exc import GitCommandError
+from git.exc import (
+    GitCommandError,
+    InvalidGitRepositoryError,
+    NoSuchPathError,
+)
 
 from neptune.types import File
 from neptune.types.atoms.git_ref import (
@@ -122,8 +126,10 @@ class DiffTracker:
         initial_repo_path = git_ref.resolve_path()
         if initial_repo_path is None:
             return None
-
-        repo = get_git_repo(repo_path=initial_repo_path)
+        try:
+            repo = get_git_repo(repo_path=initial_repo_path)
+        except (NoSuchPathError, InvalidGitRepositoryError):
+            repo = None
 
         if repo:
             return cls(repo)
@@ -180,7 +186,7 @@ class DiffTracker:
 def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
     tracker = DiffTracker.from_git_ref(git_ref)
 
-    if not tracker.repo_dirty:
+    if not tracker or not tracker.repo_dirty:
         return
 
     diff_head = tracker.get_head_index_diff()
