@@ -3,6 +3,12 @@
 ### Features
 - Added automatic tracking of dependencies ([#1345](https://github.com/neptune-ai/neptune-client/pull/1345))
 
+### Fixes
+- Added support of project visibility exception ([#1343](https://github.com/neptune-ai/neptune-client/pull/1343))
+
+### Changes
+- Added support of active projects limit exception ([#1348](https://github.com/neptune-ai/neptune-client/pull/1348))
+
 ## neptune 1.2.0
 
 ### Changes
