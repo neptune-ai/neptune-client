@@ -19,6 +19,10 @@ from datetime import datetime
 
 import pytest
 from faker import Faker
+from git import (
+    InvalidGitRepositoryError,
+    Repo,
+)
 
 from neptune import init_project
 from neptune.internal.utils.s3 import get_boto_s3_client
@@ -123,3 +127,15 @@ def common_tag():
 @pytest.fixture(scope="session")
 def project(environment):
     yield init_project(mode="read-only", project=environment.project, api_token=environment.user_token)
+
+
+@pytest.fixture(scope="session")
+def repo() -> Repo:
+    try:
+        # local setup
+        repo = Repo(".")
+    except InvalidGitRepositoryError:
+        # CI
+        repo = Repo.init()
+
+    return repo

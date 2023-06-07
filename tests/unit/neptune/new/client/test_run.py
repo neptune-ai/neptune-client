@@ -234,6 +234,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             mock_file_method.assert_called_once()
 
     @patch("neptune.metadata_containers.run.track_uncommitted_changes")
+    def test_track_uncommitted_changes_called_given_default_git_ref(self, mock_track_changes):
+        with init_run(mode="debug"):
+            mock_track_changes.assert_called_once()
+
+    @patch("neptune.metadata_containers.run.track_uncommitted_changes")
     def test_track_uncommitted_changes_called(self, mock_track_changes):
         git_ref = GitRef()
         with init_run(mode="debug", git_ref=git_ref) as run:
