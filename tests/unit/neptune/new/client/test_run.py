@@ -246,3 +246,12 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 git_ref=git_ref,
                 run=run,
             )
+
+    @patch("neptune.internal.utils.git.DiffTracker.get_head_index_diff")
+    @patch("neptune.internal.utils.git.DiffTracker.get_upstream_index_diff")
+    def test_track_uncommitted_changes_not_called_given_git_ref_disabled(
+        self, mock_get_head_index_diff, mock_get_upstream_index_diff
+    ):
+        with init_run(mode="debug", git_ref=GitRef.DISABLED):
+            mock_get_head_index_diff.assert_not_called()
+            mock_get_upstream_index_diff.assert_not_called()
