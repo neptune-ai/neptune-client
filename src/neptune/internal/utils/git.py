@@ -17,7 +17,6 @@ __all__ = [
     "to_git_info",
     "GitInfo",
     "track_uncommitted_changes",
-    "DiffTracker",
 ]
 
 import logging
@@ -112,8 +111,8 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
 class DiffTracker:
     def __init__(self, repo: git.Repo):
         self._repo = repo
-        self._head = self._repo.head
-        self._upstream_commit_sha = None
+        self._head: git.HEAD = self._repo.head
+        self._upstream_commit_sha: Optional[str] = None
 
     @property
     def repo_dirty(self) -> bool:
@@ -130,10 +129,9 @@ class DiffTracker:
         try:
             repo = get_git_repo(repo_path=initial_repo_path)
         except (NoSuchPathError, InvalidGitRepositoryError):
-            repo = None
+            return None
 
-        if repo:
-            return cls(repo)
+        return cls(repo)
 
     @property
     def upstream_commit_sha(self) -> Optional[str]:
