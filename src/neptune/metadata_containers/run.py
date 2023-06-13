@@ -344,7 +344,7 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
-        self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref
+        self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref or GitRef()
         self._dependencies: Optional[str, os.PathLike] = dependencies
 
         self._monitoring_namespace: str = (
@@ -392,8 +392,7 @@ class Run(MetadataContainer):
             if self._mode == Mode.READ_ONLY:
                 raise NeedExistingRunForReadOnlyMode()
 
-            git_ref = self._git_ref or GitRef()
-            git_info = to_git_info(git_ref=git_ref)
+            git_info = to_git_info(git_ref=self._git_ref)
 
             custom_run_id = self._custom_run_id
             if custom_run_id_exceeds_length(self._custom_run_id):
@@ -476,7 +475,7 @@ class Run(MetadataContainer):
             dependency_strategy.log_dependencies(run=self)
 
         track_uncommitted_changes(
-            git_ref=self._git_ref or GitRef(),
+            git_ref=self._git_ref,
             run=self,
         )
 

@@ -33,7 +33,7 @@ class TestGit:
     def test_disabled(self):
         assert to_git_info(GitRef.DISABLED) is None
 
-    @patch("git.Repo", return_value=MagicMock())
+    @patch("git.Repo")
     def test_getting_git_info(self, repo_mock):
         # given
         now = datetime.datetime.now()
@@ -64,35 +64,40 @@ class TestGit:
 
 
 class TestDiffTracker:
-    def test_get_head_index_diff(self):
-        repo_mock = MagicMock()
+    @patch("git.Repo")
+    def test_get_head_index_diff(self, repo_mock):
+        # given
         repo_mock.git.diff.return_value = "some_diff"
         repo_mock.head.name = "HEAD"
-
         tracker = DiffTracker(repo_mock)
 
+        # when
         diff = tracker.get_head_index_diff()
 
+        # then
         repo_mock.git.diff.assert_called_once_with("HEAD")
         assert diff == "some_diff"
 
-    def test_upstream_index_diff_tracking_branch_present(self):
-        repo_mock = MagicMock()
+    @patch("git.Repo")
+    def test_upstream_index_diff_tracking_branch_present(self, repo_mock):
+        # given
         repo_mock.git.diff.return_value = "some_diff"
         tracking_branch = MagicMock()
         tracking_branch.commit.hexsha = "sha1234"
         repo_mock.active_branch.tracking_branch.return_value = tracking_branch
-
         tracker = DiffTracker(repo_mock)
 
+        # when
         diff = tracker.get_upstream_index_diff()
 
+        # then
         repo_mock.git.diff.assert_called_once_with("sha1234")
         assert diff == "some_diff"
         assert tracker.upstream_commit_sha == "sha1234"
 
-    def test_upstream_index_diff_tracking_branch_not_present(self):
-        repo_mock = MagicMock()
+    @patch("git.Repo")
+    def test_upstream_index_diff_tracking_branch_not_present(self, repo_mock):
+        # given
         repo_mock.git.diff.return_value = "some_diff"
         repo_mock.active_branch.tracking_branch.return_value = None
 
@@ -108,8 +113,10 @@ class TestDiffTracker:
 
         tracker = DiffTracker(repo_mock)
 
+        # when
         diff = tracker.get_upstream_index_diff()
 
+        # then
         assert diff == "some_diff"
         assert tracker.upstream_commit_sha == "sha1234"
 
@@ -119,14 +126,17 @@ class TestDiffTracker:
         assert repo_mock.merge_base.call_count == 3
         assert repo_mock.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
 
-    def test_detached_head(self):
-        repo_mock = MagicMock()
+    @patch("git.Repo")
+    def test_detached_head(self, repo_mock):
+        # given
         repo_mock.active_branch.tracking_branch.side_effect = TypeError
-        repo_mock.git.diff = MagicMock()
 
         tracker = DiffTracker(repo_mock)
+
+        # when
         diff = tracker.get_upstream_index_diff()
 
+        # then
         assert diff is None
         assert tracker.upstream_commit_sha is None
         repo_mock.git.diff.assert_not_called()
@@ -134,11 +144,15 @@ class TestDiffTracker:
     @patch("neptune.internal.utils.git.File")
     @patch("neptune.metadata_containers.Run")
     def test_track_uncommitted_changes(self, mock_run, mock_file):
+        # given
         mock_tracker = MagicMock()
 
         with patch("neptune.internal.utils.git.DiffTracker.from_git_ref", return_value=mock_tracker):
+
+            # when
             track_uncommitted_changes(GitRef(), mock_run)
 
+            # then
             mock_tracker.get_head_index_diff.assert_called_once()
             mock_tracker.get_upstream_index_diff.assert_called_once()
             assert mock_file.from_content.call_count == 2
