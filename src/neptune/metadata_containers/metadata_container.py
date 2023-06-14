@@ -18,6 +18,8 @@ __all__ = ["MetadataContainer"]
 import abc
 import atexit
 import itertools
+import os
+import sys
 import threading
 import time
 import traceback
@@ -107,6 +109,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         verify_type("proxies", proxies, (dict, type(None)))
 
         self._mode: Mode = mode
+        self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()
         self._state: ContainerState = ContainerState.CREATED
 
@@ -142,6 +145,25 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             self._write_initial_attributes()
 
         self._startup(debug_mode=mode == Mode.DEBUG)
+
+        if sys.version_info >= (3, 7):
+            try:
+                os.register_at_fork(after_in_child=self._handle_fork_in_child)
+            except AttributeError:
+                pass
+
+    def _handle_fork_in_child(self):
+        self._op_processor: OperationProcessor = get_operation_processor(
+            mode=self._mode,
+            container_id=self._id,
+            container_type=self.container_type,
+            backend=self._backend,
+            lock=self._lock,
+            flush_period=self._flush_period,
+        )
+        self._bg_job = BackgroundJobList([])
+        if self._state == ContainerState.STARTED:
+            self._op_processor.start()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
         if self._mode != Mode.READ_ONLY:

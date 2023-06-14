@@ -18,6 +18,7 @@ __all__ = ["with_api_exceptions_handler"]
 import itertools
 import logging
 import os
+import ssl
 import time
 
 import requests
@@ -68,7 +69,10 @@ def with_api_exceptions_handler(func):
                     raise NeptuneInvalidApiTokenException()
                 raise
             except requests.exceptions.SSLError as e:
-                raise NeptuneSSLVerificationError() from e
+                if retry == 0:
+                    continue
+                else:
+                    raise NeptuneSSLVerificationError() from e
             except (
                 BravadoConnectionError,
                 BravadoTimeoutError,
