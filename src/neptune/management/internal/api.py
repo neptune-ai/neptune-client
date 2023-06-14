@@ -758,19 +758,13 @@ def add_project_service_account(
     except KeyError as e:
         raise ServiceAccountNotFound(service_account_name=service_account_name, workspace=workspace) from e
 
-    params = {
-        "projectIdentifier": project_qualified_name,
-        "account": {
-            "serviceAccountId": service_account.id,
-            "role": ProjectMemberRoleDTO.from_str(role).value,
-        },
-        **DEFAULT_REQUEST_KWARGS,
-    }
-
     try:
-        backend_client.api.addProjectServiceAccount(**params).response()
-    except HTTPNotFound as e:
-        raise ProjectNotFound(name=project_qualified_name) from e
+        api_operations.add_project_service_account(
+            client=backend_client,
+            project_identifier=project_qualified_name,
+            service_account_id=service_account.id,
+            role=role,
+        )
     except HTTPConflict as e:
         service_accounts = get_project_service_account_list(project=project, workspace=workspace, api_token=api_token)
         service_account_role = service_accounts.get(service_account_name)
@@ -782,7 +776,6 @@ def add_project_service_account(
         ) from e
 
 
-@with_api_exceptions_handler
 def remove_project_service_account(
     project: str,
     service_account_name: str,
@@ -834,24 +827,9 @@ def remove_project_service_account(
     except KeyError as e:
         raise ServiceAccountNotFound(service_account_name=service_account_name, workspace=workspace) from e
 
-    params = {
-        "projectIdentifier": project_qualified_name,
-        "serviceAccountId": service_account.id,
-        **DEFAULT_REQUEST_KWARGS,
-    }
-
-    try:
-        backend_client.api.deleteProjectServiceAccount(**params).response()
-    except HTTPNotFound as e:
-        raise ProjectNotFound(name=project_qualified_name) from e
-    except HTTPUnprocessableEntity as e:
-        raise ServiceAccountNotExistsOrWithoutAccess(
-            service_account_name=service_account_name, project=project_qualified_name
-        ) from e
-    except HTTPForbidden as e:
-        raise AccessRevokedOnServiceAccountRemoval(
-            service_account_name=service_account_name, project=project_qualified_name
-        ) from e
+    api_operations.delete_project_service_account(
+        client=backend_client, project_identifier=project_qualified_name, service_account_id=service_account.id
+    )
 
 
 def trash_objects(

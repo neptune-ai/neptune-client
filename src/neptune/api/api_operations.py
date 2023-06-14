@@ -20,6 +20,57 @@ from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 
 
+def add_project_service_account(
+    *, client: SwaggerClientWrapper, project_identifier: str, service_account_id: str, role: str
+) -> None:
+    params = {
+        "projectIdentifier": project_identifier,
+        "account": {
+            "serviceAccountId": service_account_id,
+            "role": ProjectMemberRoleDTO.from_str(role).value,
+        },
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        client.api.addProjectServiceAccount(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_qualified_name) from e
+    except HTTPConflict as e:
+        service_accounts = get_project_service_account_list(project=project, workspace=workspace, api_token=api_token)
+        service_account_role = service_accounts.get(service_account_name)
+
+        raise ServiceAccountAlreadyHasAccess(
+            service_account_name=service_account_name,
+            project=project_qualified_name,
+            role=service_account_role,
+        ) from e
+
+
+@with_api_exceptions_handler
+def delete_project_service_account(
+    *, client: SwaggerClientWrapper, project_identifier: str, service_account_id: str
+) -> None:
+    params = {
+        "projectIdentifier": project_identifier,
+        "serviceAccountId": service_account_id,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        client.api.deleteProjectServiceAccount(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_qualified_name) from e
+    except HTTPUnprocessableEntity as e:
+        raise ServiceAccountNotExistsOrWithoutAccess(
+            service_account_name=service_account_name, project=project_qualified_name
+        ) from e
+    except HTTPForbidden as e:
+        raise AccessRevokedOnServiceAccountRemoval(
+            service_account_name=service_account_name, project=project_qualified_name
+        ) from e
+
+
 @with_api_exceptions_handler
 def trash_experiments(*, client: SwaggerClientWrapper, project_identifier: str, batch_ids: List[str]):
     params = {
