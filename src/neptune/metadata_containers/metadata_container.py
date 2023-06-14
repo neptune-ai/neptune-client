@@ -19,8 +19,6 @@ import abc
 import atexit
 import itertools
 import os
-import ssl
-import sys
 import threading
 import time
 import traceback

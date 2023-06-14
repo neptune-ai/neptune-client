@@ -18,7 +18,6 @@ __all__ = ["with_api_exceptions_handler"]
 import itertools
 import logging
 import os
-import ssl
 import time
 
 import requests
@@ -35,7 +34,6 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
-from neptune.common.utils import reset_internal_ssl_state
 from urllib3.exceptions import NewConnectionError
 
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
@@ -48,6 +46,7 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
+from neptune.common.utils import reset_internal_ssl_state
 
 _logger = logging.getLogger(__name__)
 
