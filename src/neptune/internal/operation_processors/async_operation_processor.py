@@ -72,8 +72,6 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_id = container_id
         self._container_type = container_type
         self._backend = backend
-        self._lock = lock
-        self._sleep_time = sleep_time
         self._batch_size = batch_size
         self._last_version = 0
         self._consumed_version = 0
@@ -86,7 +84,7 @@ class AsyncOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        data_path = f"{container_dir}/exec-{os.getpid()}-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return data_path
 

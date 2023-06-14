@@ -40,6 +40,7 @@ from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
+from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MetadataInconsistency,
@@ -147,13 +148,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
         self._startup(debug_mode=mode == Mode.DEBUG)
 
-        if sys.version_info >= (3, 7):
-            try:
-                os.register_at_fork(
-                    after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent
-                )
-            except AttributeError:
-                pass
+        os.register_at_fork(after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent)
 
     """
     OpenSSL's internal random number generator does not properly handle forked processes.
@@ -165,10 +160,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     """
 
     def _handle_fork_in_parent(self):
-        ssl.RAND_bytes(100)
+        reset_internal_ssl_state()
 
     def _handle_fork_in_child(self):
-        ssl.RAND_bytes(100)
+        reset_internal_ssl_state()
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=self._mode,
             container_id=self._id,

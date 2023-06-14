@@ -20,6 +20,7 @@ import logging
 import math
 import os
 import re
+import ssl
 import sys
 
 import numpy as np
@@ -41,6 +42,10 @@ _logger = logging.getLogger(__name__)
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
+
+
+def reset_internal_ssl_state():
+    ssl.RAND_bytes(100)
 
 
 def map_values(f_value, dictionary):

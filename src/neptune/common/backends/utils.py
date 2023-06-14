@@ -35,6 +35,7 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
+from neptune.common.utils import reset_internal_ssl_state
 from urllib3.exceptions import NewConnectionError
 
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
@@ -82,7 +83,7 @@ def with_api_exceptions_handler(func):
                 """
                 if not ssl_error_occurred:
                     ssl_error_occurred = True
-                    ssl.RAND_bytes(100)
+                    reset_internal_ssl_state()
                     continue
                 raise NeptuneSSLVerificationError() from e
             except (
