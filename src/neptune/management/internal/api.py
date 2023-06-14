@@ -48,6 +48,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.api import api_operations
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.internal.backends.hosted_client import (
@@ -904,12 +905,9 @@ def trash_objects(
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
     errors = list()
     for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
-        params = {
-            "projectIdentifier": project_qualified_name,
-            "experimentIdentifiers": batch_ids,
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        response = leaderboard_client.api.trashExperiments(**params).response()
+        response = api_operations.trash_experiments(
+            client=leaderboard_client, project_identifier=project_qualified_name, batch_ids=batch_ids
+        )
         errors += response.result.errors
 
     for error in errors:

@@ -206,7 +206,7 @@ class ProjectPrivacyRestrictedException(ManagementOperationFailure):
 class ActiveProjectsLimitReachedException(ManagementOperationFailure):
     code = 26
     description = (
-        "Limit of active projects reached. You can have up to {currentQuota} active projects simultaneously. "
+        "Limit of active projects reached. You can have up to {current_quota} active projects simultaneously. "
         "To create a new project, you need to either archive an active project or increase the quota of active "
         "projects in the workspace."
     )

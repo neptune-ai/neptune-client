@@ -38,6 +38,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.api.exceptions import ObjectNotFound
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -135,7 +136,6 @@ from neptune.internal.utils.generic_attribute_mapper import map_attribute_result
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.management.exceptions import ObjectNotFound
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:

@@ -19,6 +19,7 @@ import itertools
 import logging
 import os
 import time
+from functools import wraps
 
 import requests
 from bravado.exception import (
@@ -54,6 +55,7 @@ retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 
 def with_api_exceptions_handler(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         last_exception = None
         start_time = time.monotonic()
@@ -90,6 +92,7 @@ def with_api_exceptions_handler(func):
             except HTTPUnauthorized:
                 raise Unauthorized()
             except HTTPForbidden:
+                # TODO: Support of read-only leaderboard
                 raise Forbidden()
             except HTTPClientError as e:
                 raise ClientHttpError(e.status_code, e.response.text) from e

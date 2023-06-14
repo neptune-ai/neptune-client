@@ -21,6 +21,17 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
+from neptune.api.exceptions import (
+    ActiveProjectsLimitReached,
+    IncorrectIdentifier,
+    ObjectNotFound,
+    ProjectKeyCollision,
+    ProjectKeyInvalid,
+    ProjectNameCollision,
+    ProjectNameInvalid,
+    ProjectPrivacyRestricted,
+    ProjectsLimitReached,
+)
 from neptune.common.exceptions import NeptuneAuthTokenExpired
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
@@ -34,18 +45,6 @@ class ApiMethodWrapper:
 
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
-        from neptune.management.exceptions import (
-            ActiveProjectsLimitReachedException,
-            IncorrectIdentifierException,
-            ObjectNotFound,
-            ProjectKeyCollision,
-            ProjectKeyInvalid,
-            ProjectNameCollision,
-            ProjectNameInvalid,
-            ProjectPrivacyRestrictedException,
-            ProjectsLimitReached,
-        )
-
         try:
             body = response.json() or dict()
         except Exception:
@@ -59,7 +58,7 @@ class ApiMethodWrapper:
             ),
             "AUTHORIZATION_TOKEN_EXPIRED": lambda _: NeptuneAuthTokenExpired(),
             "EXPERIMENT_NOT_FOUND": lambda _: ObjectNotFound(),
-            "INCORRECT_IDENTIFIER": lambda response_body: IncorrectIdentifierException(
+            "INCORRECT_IDENTIFIER": lambda response_body: IncorrectIdentifier(
                 identifier=response_body.get("identifier", "<Unknown identifier>")
             ),
             "LIMIT_OF_PROJECTS_REACHED": lambda _: ProjectsLimitReached(),
@@ -76,15 +75,15 @@ class ApiMethodWrapper:
             "PROJECT_NAME_INVALID": lambda response_body: ProjectNameInvalid(
                 name=response_body.get("name", "<unknown name>")
             ),
-            "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestrictedException(
+            "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestricted(
                 requested=response_body.get("requestedValue"),
                 allowed=response_body.get("allowedValues"),
             ),
             "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
                 reason=response_body.get("title", "Unknown reason")
             ),
-            "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
-                currentQuota=response_body.get("currentQuota", "<unknown quota>")
+            "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReached(
+                current_quota=response_body.get("currentQuota", "<unknown quota>")
             ),
         }
 
