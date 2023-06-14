@@ -20,6 +20,7 @@ import logging
 import math
 import os
 import re
+import ssl
 import sys
 
 import numpy as np
@@ -41,6 +42,16 @@ _logger = logging.getLogger(__name__)
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
+
+
+def reset_internal_ssl_state():
+    """
+    OpenSSL's internal random number generator does not properly handle forked processes.
+    Applications must change the PRNG state of the parent process if they use any SSL feature with os.fork().
+    Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
+    https://docs.python.org/3/library/ssl.html#multi-processing
+    """
+    ssl.RAND_bytes(100)
 
 
 def map_values(f_value, dictionary):
