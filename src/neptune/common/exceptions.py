@@ -408,3 +408,16 @@ class NotAFile(NeptuneException):
 class NotADirectory(NeptuneException):
     def __init__(self, path):
         super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
+
+
+class WritingToArchivedProjectException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----WritingToArchivedProjectException-----------------------------------------------------------------------
+{end}
+?
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super(WritingToArchivedProjectException, self).__init__(message.format(**STYLES))

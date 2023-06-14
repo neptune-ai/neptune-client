@@ -13,12 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_api_exceptions_handler"]
+__all__ = ["with_api_exceptions_handler", "handle_json_errors"]
 
 import itertools
 import logging
 import os
 import time
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Optional,
+)
 
 import requests
 from bravado.exception import (
@@ -45,12 +52,39 @@ from neptune.common.exceptions import (
     NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
     Unauthorized,
+    WritingToArchivedProjectException,
 )
+
+if TYPE_CHECKING:
+    from bravado.requests_client import RequestsResponseAdapter
 
 _logger = logging.getLogger(__name__)
 
 MAX_RETRY_TIME = 30
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
+
+
+def ensure_json_body(response: "RequestsResponseAdapter") -> Dict[str, Any]:
+    try:
+        return response.json() or dict()
+    except Exception:
+        return {}
+
+
+def handle_json_errors(
+    response,
+    source_exception: Exception,
+    error_processors: Dict[str, Callable[[Dict[str, Any]], Exception]],
+    default_exception: Optional[Exception] = None,
+):
+    body = ensure_json_body(response)
+
+    error_type: Optional[str] = body.get("errorType")
+    error_processor = error_processors.get(error_type)
+    if error_processor:
+        raise error_processor(body) from source_exception
+    elif default_exception:
+        raise default_exception from source_exception
 
 
 def with_api_exceptions_handler(func):
@@ -89,8 +123,15 @@ def with_api_exceptions_handler(func):
                 continue
             except HTTPUnauthorized:
                 raise Unauthorized()
-            except HTTPForbidden:
-                raise Forbidden()
+            except HTTPForbidden as e:
+                handle_json_errors(
+                    response=e.response,
+                    error_processors={
+                        "WRITE_ACCESS_DENIED_TO_ARCHIVED_PROJECT": lambda _: WritingToArchivedProjectException()
+                    },
+                    source_exception=e,
+                    default_exception=Forbidden(),
+                )
             except HTTPClientError as e:
                 raise ClientHttpError(e.status_code, e.response.text) from e
             except requests.exceptions.RequestException as e:
