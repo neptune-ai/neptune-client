@@ -19,6 +19,7 @@ import abc
 import atexit
 import itertools
 import os
+import ssl
 import sys
 import threading
 import time
@@ -148,11 +149,26 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
         if sys.version_info >= (3, 7):
             try:
-                os.register_at_fork(after_in_child=self._handle_fork_in_child)
+                os.register_at_fork(
+                    after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent
+                )
             except AttributeError:
                 pass
 
+    """
+    OpenSSL's internal random number generator does not properly handle forked processes.
+    Applications must change the PRNG state of the parent process if they use any SSL feature with os.fork().
+    Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
+    https://docs.python.org/3/library/ssl.html#multi-processing
+
+    On Linux it looks like it does not help much but does not break anything either.
+    """
+
+    def _handle_fork_in_parent(self):
+        ssl.RAND_bytes(100)
+
     def _handle_fork_in_child(self):
+        ssl.RAND_bytes(100)
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=self._mode,
             container_id=self._id,
@@ -161,7 +177,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             lock=self._lock,
             flush_period=self._flush_period,
         )
+
+        # TODO: Every implementation of background job should handle fork by itself.
         self._bg_job = BackgroundJobList([])
+
         if self._state == ContainerState.STARTED:
             self._op_processor.start()
 
