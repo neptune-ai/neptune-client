@@ -21,8 +21,12 @@ from mock import (
 )
 
 from neptune.internal.utils.git import (
-    DiffTracker,
     GitInfo,
+    get_diff,
+    get_relevant_upstream_commit,
+    get_uncommitted_changes,
+    get_upstream_index_sha,
+    search_for_most_recent_ancestor,
     to_git_info,
     track_uncommitted_changes,
 )
@@ -34,10 +38,10 @@ class TestGit:
         assert to_git_info(GitRef.DISABLED) is None
 
     @patch("git.Repo")
-    def test_getting_git_info(self, repo_mock):
+    def test_getting_git_info(self, mock_repo):
         # given
         now = datetime.datetime.now()
-        repo = repo_mock.return_value
+        repo = mock_repo.return_value
         repo.is_dirty.return_value = True
         repo.head.commit.hexsha = "sha"
         repo.head.commit.message = "message"
@@ -63,96 +67,131 @@ class TestGit:
         )
 
 
-class TestDiffTracker:
-    @patch("git.Repo")
-    def test_get_head_index_diff(self, repo_mock):
-        # given
-        repo_mock.git.diff.return_value = "some_diff"
-        repo_mock.head.name = "HEAD"
-        tracker = DiffTracker(repo_mock)
+@patch("git.Repo")
+def test_get_diff(mock_repo: MagicMock):
+    # when
+    get_diff(mock_repo, "some_ref")
 
-        # when
-        diff = tracker.get_head_index_diff()
+    # then
+    mock_repo.git.diff.assert_called_once_with("some_ref")
 
-        # then
-        repo_mock.git.diff.assert_called_once_with("HEAD")
-        assert diff == "some_diff"
 
-    @patch("git.Repo")
-    def test_upstream_index_diff_tracking_branch_present(self, repo_mock):
-        # given
-        repo_mock.git.diff.return_value = "some_diff"
-        tracking_branch = MagicMock()
-        tracking_branch.commit.hexsha = "sha1234"
-        repo_mock.active_branch.tracking_branch.return_value = tracking_branch
-        tracker = DiffTracker(repo_mock)
+@patch("git.Repo")
+def test_search_for_most_recent_ancestor(mock_repo: MagicMock):
+    # given
+    mock_repo.active_branch.tracking_branch.return_value = None
 
-        # when
-        diff = tracker.get_upstream_index_diff()
+    tracking_branch = MagicMock()
+    branch = MagicMock()
+    branch.tracking_branch.return_value = tracking_branch
+    mock_repo.heads = [branch, branch, branch]
 
-        # then
-        repo_mock.git.diff.assert_called_once_with("sha1234")
-        assert diff == "some_diff"
-        assert tracker.upstream_commit_sha == "sha1234"
+    mock_repo.is_ancestor.return_value = True
+    ancestor = MagicMock()
+    ancestor_to_be_chosen = MagicMock()
+    ancestor_to_be_chosen.hexsha = "sha1234"
+    mock_repo.merge_base.return_value = [ancestor, ancestor_to_be_chosen]
 
-    @patch("git.Repo")
-    def test_upstream_index_diff_tracking_branch_not_present(self, repo_mock):
-        # given
-        repo_mock.git.diff.return_value = "some_diff"
-        repo_mock.active_branch.tracking_branch.return_value = None
+    # when
+    searched_ancestor = search_for_most_recent_ancestor(mock_repo)
 
-        tracking_branch = MagicMock()
-        branch = MagicMock()
-        branch.tracking_branch.return_value = tracking_branch
-        repo_mock.branches = [branch, branch, branch]
+    # then
+    assert searched_ancestor.hexsha == "sha1234"
 
-        repo_mock.is_ancestor.return_value = True
-        ancestor = MagicMock()
-        ancestor.hexsha = "sha1234"
-        repo_mock.merge_base.return_value = [ancestor, ancestor]
+    assert mock_repo.merge_base.call_count == 3
+    assert mock_repo.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
 
-        tracker = DiffTracker(repo_mock)
 
-        # when
-        diff = tracker.get_upstream_index_diff()
+@patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
+@patch("git.Repo")
+def test_get_relevant_upstream_commit_no_search(mock_repo: MagicMock, mock_search: MagicMock):
+    # when
+    upstream_commit = get_relevant_upstream_commit(mock_repo)
 
-        # then
-        assert diff == "some_diff"
-        assert tracker.upstream_commit_sha == "sha1234"
+    # then
+    assert upstream_commit == mock_repo.active_branch.tracking_branch.return_value.commit
+    mock_search.assert_not_called()
 
-        repo_mock.git.diff.assert_called_once_with("sha1234")
-        repo_mock.active_branch.tracking_branch.assert_called_once()
 
-        assert repo_mock.merge_base.call_count == 3
-        assert repo_mock.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
+@patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
+@patch("git.Repo")
+def test_get_relevant_upstream_commit_with_search(mock_repo: MagicMock, mock_search: MagicMock):
+    # given
+    mock_repo.active_branch.tracking_branch.return_value = None
 
-    @patch("git.Repo")
-    def test_detached_head(self, repo_mock):
-        # given
-        repo_mock.active_branch.tracking_branch.side_effect = TypeError
+    # when
+    upstream_commit = get_relevant_upstream_commit(mock_repo)
 
-        tracker = DiffTracker(repo_mock)
+    # then
+    assert upstream_commit == mock_search.return_value
+    mock_search.assert_called_once_with(mock_repo)
 
-        # when
-        diff = tracker.get_upstream_index_diff()
 
-        # then
-        assert diff is None
-        assert tracker.upstream_commit_sha is None
-        repo_mock.git.diff.assert_not_called()
+@patch("neptune.internal.utils.git.get_relevant_upstream_commit")
+@patch("git.Repo")
+def test_get_upstream_index_sha(mock_repo: MagicMock, mock_get_upstream_commit: MagicMock):
+    # given
+    mock_get_upstream_commit.return_value.hexsha = "test_sha"
 
-    @patch("neptune.internal.utils.git.File")
-    @patch("neptune.metadata_containers.Run")
-    def test_track_uncommitted_changes(self, mock_run, mock_file):
-        # given
-        mock_tracker = MagicMock()
+    # when
+    sha = get_upstream_index_sha(mock_repo)
 
-        with patch("neptune.internal.utils.git.DiffTracker.from_git_ref", return_value=mock_tracker):
+    # then
+    assert sha == "test_sha"
+    mock_get_upstream_commit.assert_called_once_with(mock_repo)
 
-            # when
-            track_uncommitted_changes(GitRef(), mock_run)
 
-            # then
-            mock_tracker.get_head_index_diff.assert_called_once()
-            mock_tracker.get_upstream_index_diff.assert_called_once()
-            assert mock_file.from_content.call_count == 2
+@patch("git.Repo")
+def test_detached_head(mock_repo: MagicMock):
+    # given
+    mock_repo.active_branch.tracking_branch.side_effect = TypeError
+
+    # when
+    sha = get_upstream_index_sha(mock_repo)
+
+    # then
+    assert sha is None
+    mock_repo.git.diff.assert_not_called()
+
+
+@patch("git.Repo")
+@patch("neptune.internal.utils.git.get_upstream_index_sha", return_value="test_sha")
+def test_get_uncommitted_changes(mock_get_sha, mock_repo):
+    # given
+    mock_repo.git.diff.return_value = "some_diff"
+    mock_repo.head.name = "HEAD"
+
+    # when
+    uncommitted_changes = get_uncommitted_changes(mock_repo)
+
+    # then
+    assert mock_repo.git.diff.call_count == 2
+    assert mock_get_sha.call_count == 1
+    assert uncommitted_changes.diff_head == "some_diff"
+    assert uncommitted_changes.upstream_sha == "test_sha"
+    assert uncommitted_changes.diff_upstream == "some_diff"
+
+
+@patch("neptune.internal.utils.git.File")
+@patch("neptune.metadata_containers.Run")
+def test_git_ref_disabled(mock_run: MagicMock, mock_file: MagicMock):
+    # when
+    track_uncommitted_changes(GitRef.DISABLED, mock_run)
+
+    # then
+    mock_file.assert_not_called()
+
+
+@patch("neptune.internal.utils.git.get_uncommitted_changes")
+@patch("neptune.internal.utils.git.File")
+@patch("neptune.metadata_containers.Run")
+def test_track_uncommitted_changes(mock_run, mock_file, mock_get_changes):
+    # given
+    git_ref = GitRef()
+
+    # when
+    track_uncommitted_changes(git_ref, mock_run)
+
+    # then
+    assert mock_file.from_content.call_count == 2
+    mock_get_changes.assert_called_once()
