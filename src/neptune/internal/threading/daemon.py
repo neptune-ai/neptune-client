@@ -31,11 +31,21 @@ class Daemon(threading.Thread):
         self._interrupted = False
         self._event = threading.Event()
         self._is_running = False
+        self._paused = False
+        self._paused_event = threading.Event()
         self.last_backoff_time = 0  # used only with ConnectionRetryWrapper decorator
 
     def interrupt(self):
         self._interrupted = True
         self.wake_up()
+
+    def pause(self):
+        self._paused = True
+        self._paused_event.wait()
+
+    def resume(self):
+        self._paused = False
+        self._event.set()
 
     def wake_up(self):
         self._event.set()
@@ -51,7 +61,10 @@ class Daemon(threading.Thread):
         try:
             while not self._interrupted:
                 self.work()
-                if self._sleep_time > 0 and not self._interrupted:
+                if self._paused:
+                    self._paused_event.set()
+                    self._event.wait()
+                elif self._sleep_time > 0 and not self._interrupted:
                     self._event.wait(timeout=self._sleep_time)
                     self._event.clear()
         finally:
