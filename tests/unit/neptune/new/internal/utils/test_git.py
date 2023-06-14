@@ -15,6 +15,7 @@
 #
 import datetime
 
+import git
 from mock import (
     MagicMock,
     patch,
@@ -24,6 +25,7 @@ from neptune.internal.utils.git import (
     GitInfo,
     get_diff,
     get_relevant_upstream_commit,
+    get_repo_from_git_ref,
     get_uncommitted_changes,
     get_upstream_index_sha,
     search_for_most_recent_ancestor,
@@ -67,8 +69,30 @@ class TestGit:
         )
 
 
+def test_get_repo_from_git_ref_disabled():
+    # given
+    git_ref = GitRef.DISABLED
+
+    # when
+    repo = get_repo_from_git_ref(git_ref)
+
+    # then
+    assert repo is None
+
+
+def test_get_repo_from_git_ref():
+    # given
+    git_ref = GitRef()
+
+    # when
+    repo = get_repo_from_git_ref(git_ref)
+
+    # then
+    assert isinstance(repo, git.Repo)
+
+
 @patch("git.Repo")
-def test_get_diff(mock_repo: MagicMock):
+def test_get_diff(mock_repo):
     # when
     get_diff(mock_repo, "some_ref")
 
@@ -77,7 +101,20 @@ def test_get_diff(mock_repo: MagicMock):
 
 
 @patch("git.Repo")
-def test_search_for_most_recent_ancestor(mock_repo: MagicMock):
+def test_get_diff_command_error(mock_repo):
+    # given
+    mock_repo.git.diff.side_effect = git.GitCommandError("diff")
+
+    # when
+    diff = get_diff(mock_repo, "some_ref")
+
+    # then
+    mock_repo.git.diff.assert_called_once_with("some_ref")
+    assert diff is None
+
+
+@patch("git.Repo")
+def test_search_for_most_recent_ancestor(mock_repo):
     # given
     mock_repo.active_branch.tracking_branch.return_value = None
 
@@ -104,7 +141,7 @@ def test_search_for_most_recent_ancestor(mock_repo: MagicMock):
 
 @patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
 @patch("git.Repo")
-def test_get_relevant_upstream_commit_no_search(mock_repo: MagicMock, mock_search: MagicMock):
+def test_get_relevant_upstream_commit_no_search(mock_repo, mock_search):
     # when
     upstream_commit = get_relevant_upstream_commit(mock_repo)
 
@@ -115,7 +152,7 @@ def test_get_relevant_upstream_commit_no_search(mock_repo: MagicMock, mock_searc
 
 @patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
 @patch("git.Repo")
-def test_get_relevant_upstream_commit_with_search(mock_repo: MagicMock, mock_search: MagicMock):
+def test_get_relevant_upstream_commit_with_search(mock_repo, mock_search):
     # given
     mock_repo.active_branch.tracking_branch.return_value = None
 
@@ -129,7 +166,7 @@ def test_get_relevant_upstream_commit_with_search(mock_repo: MagicMock, mock_sea
 
 @patch("neptune.internal.utils.git.get_relevant_upstream_commit")
 @patch("git.Repo")
-def test_get_upstream_index_sha(mock_repo: MagicMock, mock_get_upstream_commit: MagicMock):
+def test_get_upstream_index_sha(mock_repo, mock_get_upstream_commit):
     # given
     mock_get_upstream_commit.return_value.hexsha = "test_sha"
 
@@ -142,7 +179,7 @@ def test_get_upstream_index_sha(mock_repo: MagicMock, mock_get_upstream_commit: 
 
 
 @patch("git.Repo")
-def test_detached_head(mock_repo: MagicMock):
+def test_detached_head(mock_repo):
     # given
     mock_repo.active_branch.tracking_branch.side_effect = TypeError
 
@@ -172,20 +209,33 @@ def test_get_uncommitted_changes(mock_get_sha, mock_repo):
     assert uncommitted_changes.diff_upstream == "some_diff"
 
 
-@patch("neptune.internal.utils.git.File")
+@patch("git.Repo")
+def test_get_uncommitted_changes_clean_repo(mock_repo):
+    # given
+    mock_repo.is_dirty.return_value = False
+
+    # when
+    uncommitted_changes = get_uncommitted_changes(mock_repo)
+
+    # then
+    assert uncommitted_changes is None
+
+
+@patch("neptune.internal.utils.git.get_uncommitted_changes")
 @patch("neptune.metadata_containers.Run")
-def test_git_ref_disabled(mock_run: MagicMock, mock_file: MagicMock):
+def test_git_ref_disabled(mock_run, mock_get_changes):
     # when
     track_uncommitted_changes(GitRef.DISABLED, mock_run)
 
     # then
-    mock_file.assert_not_called()
+    mock_get_changes.assert_not_called()
 
 
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
+@patch("neptune.internal.utils.git.get_repo_from_git_ref")
 @patch("neptune.internal.utils.git.File")
 @patch("neptune.metadata_containers.Run")
-def test_track_uncommitted_changes(mock_run, mock_file, mock_get_changes):
+def test_track_uncommitted_changes(mock_run, mock_file, mock_get_repo, mock_get_changes):
     # given
     git_ref = GitRef()
 
@@ -194,4 +244,5 @@ def test_track_uncommitted_changes(mock_run, mock_file, mock_get_changes):
 
     # then
     assert mock_file.from_content.call_count == 2
+    mock_get_repo.assert_called_once_with(git_ref)
     mock_get_changes.assert_called_once()

@@ -126,7 +126,7 @@ class UncommittedChanges:
     upstream_sha: Optional[str]
 
 
-def get_diff(repo: git.Repo, commit_ref: str):
+def get_diff(repo: git.Repo, commit_ref: str) -> Optional[str]:
     try:
         return repo.git.diff(commit_ref)
     except GitCommandError:
@@ -170,7 +170,7 @@ def get_upstream_index_sha(repo: git.Repo) -> Optional[str]:
 
 
 def get_uncommitted_changes(repo: Optional[git.Repo]) -> Optional[UncommittedChanges]:
-    if not repo or not repo.is_dirty():
+    if not repo.is_dirty():
         return
 
     head_index_diff = get_diff(repo, repo.head.name)
@@ -184,6 +184,9 @@ def get_uncommitted_changes(repo: Optional[git.Repo]) -> Optional[UncommittedCha
 
 def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
     repo = get_repo_from_git_ref(git_ref)
+
+    if not repo:
+        return
 
     uncommitted_changes = get_uncommitted_changes(repo)
 
