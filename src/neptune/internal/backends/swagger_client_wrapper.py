@@ -88,7 +88,6 @@ class ApiMethodWrapper:
             response=response,
             error_processors=error_processors,
             source_exception=exception,
-            default_exception=exception,
         )
 
     def __call__(self, *args, **kwargs):

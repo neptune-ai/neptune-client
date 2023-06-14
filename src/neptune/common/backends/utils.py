@@ -85,6 +85,7 @@ def handle_json_errors(
         raise error_processor(body) from source_exception
     elif default_exception:
         raise default_exception from source_exception
+    raise source_exception
 
 
 def with_api_exceptions_handler(func):

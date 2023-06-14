@@ -416,7 +416,9 @@ class WritingToArchivedProjectException(NeptuneException):
 {h1}
 ----WritingToArchivedProjectException-----------------------------------------------------------------------
 {end}
-?
+You're trying to write to a project that was archived.
+
+Mark the project as active again or use "read-only" mode to read from it.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
