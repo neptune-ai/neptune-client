@@ -14,6 +14,7 @@
 
 ### Changes
 - Added support of active projects limit exception ([#1348](https://github.com/neptune-ai/neptune-client/pull/1348))
+- Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
 
 ## neptune 1.2.0
 
