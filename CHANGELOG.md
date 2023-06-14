@@ -5,7 +5,6 @@
 
 ### Fixes
 - Added support of project visibility exception ([#1343](https://github.com/neptune-ai/neptune-client/pull/1343))
-- Fix SSL errors after forking process ([#1353](https://github.com/neptune-ai/neptune-client/pull/1353))
 
 ### Changes
 - Added support of active projects limit exception ([#1348](https://github.com/neptune-ai/neptune-client/pull/1348))

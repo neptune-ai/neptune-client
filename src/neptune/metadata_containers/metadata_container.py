@@ -18,7 +18,6 @@ __all__ = ["MetadataContainer"]
 import abc
 import atexit
 import itertools
-import os
 import threading
 import time
 import traceback
@@ -38,7 +37,6 @@ from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
-from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MetadataInconsistency,
@@ -109,7 +107,6 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         verify_type("proxies", proxies, (dict, type(None)))
 
         self._mode: Mode = mode
-        self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()
         self._state: ContainerState = ContainerState.CREATED
 
@@ -145,37 +142,6 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             self._write_initial_attributes()
 
         self._startup(debug_mode=mode == Mode.DEBUG)
-
-        os.register_at_fork(after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent)
-
-    """
-    OpenSSL's internal random number generator does not properly handle forked processes.
-    Applications must change the PRNG state of the parent process if they use any SSL feature with os.fork().
-    Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
-    https://docs.python.org/3/library/ssl.html#multi-processing
-
-    On Linux it looks like it does not help much but does not break anything either.
-    """
-
-    def _handle_fork_in_parent(self):
-        reset_internal_ssl_state()
-
-    def _handle_fork_in_child(self):
-        reset_internal_ssl_state()
-        self._op_processor: OperationProcessor = get_operation_processor(
-            mode=self._mode,
-            container_id=self._id,
-            container_type=self.container_type,
-            backend=self._backend,
-            lock=self._lock,
-            flush_period=self._flush_period,
-        )
-
-        # TODO: Every implementation of background job should handle fork by itself.
-        self._bg_job = BackgroundJobList([])
-
-        if self._state == ContainerState.STARTED:
-            self._op_processor.start()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
         if self._mode != Mode.READ_ONLY:
