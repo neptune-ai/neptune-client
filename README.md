@@ -31,14 +31,14 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 
 &nbsp;
 <div align="center">
-    <a href="https://youtu.be/L2CAYip0DmI">
+    <a href="https://www.youtube.com/watch?v=bQzgnqM5J6U">
       <img border="0" alt="neptune.ai explainer video" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-explainer-video.png" width="600">
     </a>
 </div>
 &nbsp;
 
 &nbsp;
-<a href="https://app.neptune.ai/showcase/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=eccd5adf-42b3-497e-9cc2-9fa2655429b3"><b>Play with a live neptune.ai app →</b></a>
+<a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Play with a live neptune.ai app →</b></a>
 &nbsp;
 
 &nbsp;
@@ -82,7 +82,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="all metadata metrics" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/all-metadata-metrics.gif" width="600">
+      <img border="0" alt="all metadata metrics" src="https://neptune.ai/wp-content/uploads/2023/06/log_metrics.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -93,16 +93,16 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
 &nbsp;
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="organize dashboards" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/organize-dashboards.gif" width="600">
+      <img border="0" alt="organize dashboards" src="https://neptune.ai/wp-content/uploads/2023/06/organize_custom_dashboards.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -113,20 +113,20 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 Visualize training live in the neptune.ai web app. See how different parameters and configs affect the results. Optimize models quicker.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Compare:</b></a> learning curves, parameters, images, datasets.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Compare:</b></a> learning curves, parameters, images, datasets.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
 
-* <a href="https://app.neptune.ai/o/showcase/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370"><b>Group by:</b></a> dataset versions, parameters.
+* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Group by:</b></a> dataset versions, parameters.
 &nbsp;
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="compare, search, filter" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/compare-search-filter.gif" width="600">
+      <img border="0" alt="compare, search, filter" src="https://neptune.ai/wp-content/uploads/2023/06/organize_search_sort_filter.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -146,7 +146,7 @@ Version, review, and access production-ready models and metadata associated with
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="register stages" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/register-stages.gif" width="600">
+      <img border="0" alt="register models" src="https://neptune.ai/wp-content/uploads/2023/06/register_models.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -161,14 +161,14 @@ Have a single place where your team can see the results and access all models an
 
 * <a href="https://docs.neptune.ai/usage/querying_metadata/"><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
 
-* <a href="https://neptune.ai/pricing"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
+* <a href="https://docs.neptune.ai/management/"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
 
 * <a href="https://neptune.ai/pricing"><b>Add your entire org:</b></a> get unlimited users on every paid plan. So you can invite your entire organization, including product managers and subject matter experts at no extra cost.
 &nbsp;
 
 &nbsp;
 <div align="center">
-      <img border="0" alt="share persistent link" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/share-persistent-link.gif" width="600">
+      <img border="0" alt="share persistent link" src="https://neptune.ai/wp-content/uploads/2023/06/share_send_link.gif" width="600">
     </a>
 </div>
 &nbsp;
