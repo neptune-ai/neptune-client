@@ -30,13 +30,6 @@ from typing import (
     Union,
 )
 
-import git
-from git.exc import (
-    GitCommandError,
-    InvalidGitRepositoryError,
-    NoSuchPathError,
-)
-
 from neptune.attributes.constants import (
     DIFF_HEAD_INDEX_PATH,
     UPSTREAM_INDEX_DIFF,
@@ -48,6 +41,8 @@ from neptune.types.atoms.git_ref import (
 )
 
 if TYPE_CHECKING:
+    import git
+
     from neptune import Run
 
 _logger = logging.getLogger(__name__)
@@ -76,7 +71,7 @@ def get_git_repo(repo_path):
         warnings.warn("GitPython could not be initialized")
 
 
-def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[git.Repo]:
+def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional["git.Repo"]:
     if git_ref == GitRef.DISABLED:
         return None
 
@@ -85,8 +80,16 @@ def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[gi
         return None
 
     try:
-        return get_git_repo(repo_path=initial_repo_path)
-    except (NoSuchPathError, InvalidGitRepositoryError):
+        from git.exc import (
+            InvalidGitRepositoryError,
+            NoSuchPathError,
+        )
+
+        try:
+            return get_git_repo(repo_path=initial_repo_path)
+        except (NoSuchPathError, InvalidGitRepositoryError):
+            return None
+    except ImportError:
         return None
 
 
@@ -126,14 +129,19 @@ class UncommittedChanges:
     upstream_sha: Optional[str]
 
 
-def get_diff(repo: git.Repo, commit_ref: str) -> Optional[str]:
+def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
     try:
-        return repo.git.diff(commit_ref)
-    except GitCommandError:
-        return
+        from git.exc import GitCommandError
+
+        try:
+            return repo.git.diff(commit_ref)
+        except GitCommandError:
+            return
+    except ImportError:
+        return None
 
 
-def get_relevant_upstream_commit(repo: git.Repo) -> Optional[git.Commit]:
+def get_relevant_upstream_commit(repo: "git.Repo") -> Optional["git.Commit"]:
     try:
         tracking_branch = repo.active_branch.tracking_branch()
     except (TypeError, ValueError):
@@ -145,23 +153,28 @@ def get_relevant_upstream_commit(repo: git.Repo) -> Optional[git.Commit]:
     return search_for_most_recent_ancestor(repo)
 
 
-def search_for_most_recent_ancestor(repo: git.Repo) -> Optional[git.Commit]:
-    most_recent_ancestor: Optional[git.Commit] = None
+def search_for_most_recent_ancestor(repo: "git.Repo") -> Optional["git.Commit"]:
+    most_recent_ancestor: Optional["git.Commit"] = None
 
     try:
-        for branch in repo.heads:
-            tracking_branch = branch.tracking_branch()
-            if tracking_branch:
-                for ancestor in repo.merge_base(repo.head, tracking_branch.commit):
-                    if not most_recent_ancestor or repo.is_ancestor(most_recent_ancestor, ancestor):
-                        most_recent_ancestor = ancestor
-    except GitCommandError:
-        pass
+        from git.exc import GitCommandError
+
+        try:
+            for branch in repo.heads:
+                tracking_branch = branch.tracking_branch()
+                if tracking_branch:
+                    for ancestor in repo.merge_base(repo.head, tracking_branch.commit):
+                        if not most_recent_ancestor or repo.is_ancestor(most_recent_ancestor, ancestor):
+                            most_recent_ancestor = ancestor
+        except GitCommandError:
+            pass
+    except ImportError:
+        return None
 
     return most_recent_ancestor
 
 
-def get_upstream_index_sha(repo: git.Repo) -> Optional[str]:
+def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
     upstream_commit = get_relevant_upstream_commit(repo)
 
     if upstream_commit and upstream_commit != repo.head.commit:
@@ -169,7 +182,7 @@ def get_upstream_index_sha(repo: git.Repo) -> Optional[str]:
         return upstream_commit.hexsha
 
 
-def get_uncommitted_changes(repo: Optional[git.Repo]) -> Optional[UncommittedChanges]:
+def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedChanges]:
     if not repo.is_dirty():
         return
 
