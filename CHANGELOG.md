@@ -1,3 +1,8 @@
+## neptune 1.3.1
+
+### Fixes
+- Fix ImportError when git is missing ([#1359](https://github.com/neptune-ai/neptune-client/pull/1359))
+
 ## neptune 1.3.0
 
 ### Features
