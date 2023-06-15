@@ -77,7 +77,7 @@ def handle_json_errors(
     source_exception: Exception,
     error_processors: Dict[str, Callable[[Dict[str, Any]], Exception]],
     default_exception: Optional[Exception] = None,
-):
+) -> None:
     body = ensure_json_body(response)
 
     error_type: Optional[str] = body.get("errorType")
