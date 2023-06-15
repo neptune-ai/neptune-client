@@ -161,7 +161,7 @@ Have a single place where your team can see the results and access all models an
 
 * <a href="https://docs.neptune.ai/usage/querying_metadata/"><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
 
-* <a href="https://neptune.ai/pricing"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
+* <a href="https://docs.neptune.ai/management/"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
 
 * <a href="https://neptune.ai/pricing"><b>Add your entire org:</b></a> get unlimited users on every paid plan. So you can invite your entire organization, including product managers and subject matter experts at no extra cost.
 &nbsp;
