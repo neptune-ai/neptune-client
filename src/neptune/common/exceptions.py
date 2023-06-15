@@ -418,8 +418,8 @@ class WritingToArchivedProjectException(NeptuneException):
 {end}
 You're trying to write to a project that was archived.
 
-Mark the project as active again or use "read-only" mode to read from it.
+Set the project as active again or use mode="read-only" at initialization to fetch metadata from it.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs.neptune.ai/help/error_writing_to_archived_project/
 """
         super(WritingToArchivedProjectException, self).__init__(message.format(**STYLES))
