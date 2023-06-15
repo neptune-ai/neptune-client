@@ -35,6 +35,7 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.types import GitRef
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_run
 
@@ -231,3 +232,22 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     def test_file_dependency_strategy_called(self, mock_file_method):
         with init_run(mode="debug", dependencies="some_file_path.txt"):
             mock_file_method.assert_called_once()
+
+    @patch("neptune.metadata_containers.run.track_uncommitted_changes")
+    def test_track_uncommitted_changes_called_given_default_git_ref(self, mock_track_changes):
+        with init_run(mode="debug"):
+            mock_track_changes.assert_called_once()
+
+    @patch("neptune.metadata_containers.run.track_uncommitted_changes")
+    def test_track_uncommitted_changes_called(self, mock_track_changes):
+        git_ref = GitRef()
+        with init_run(mode="debug", git_ref=git_ref) as run:
+            mock_track_changes.assert_called_once_with(
+                git_ref=git_ref,
+                run=run,
+            )
+
+    @patch("neptune.internal.utils.git.get_diff")
+    def test_track_uncommitted_changes_not_called_given_git_ref_disabled(self, mock_get_diff):
+        with init_run(mode="debug", git_ref=GitRef.DISABLED):
+            mock_get_diff.assert_not_called()

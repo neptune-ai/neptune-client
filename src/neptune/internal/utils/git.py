@@ -13,22 +13,42 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["to_git_info", "GitInfo"]
+__all__ = [
+    "to_git_info",
+    "GitInfo",
+    "track_uncommitted_changes",
+]
 
 import logging
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     List,
     Optional,
     Union,
 )
 
+import git
+from git.exc import (
+    GitCommandError,
+    InvalidGitRepositoryError,
+    NoSuchPathError,
+)
+
+from neptune.attributes.constants import (
+    DIFF_HEAD_INDEX_PATH,
+    UPSTREAM_INDEX_DIFF,
+)
+from neptune.types import File
 from neptune.types.atoms.git_ref import (
     GitRef,
     GitRefDisabled,
 )
+
+if TYPE_CHECKING:
+    from neptune import Run
 
 _logger = logging.getLogger(__name__)
 
@@ -56,16 +76,23 @@ def get_git_repo(repo_path):
         warnings.warn("GitPython could not be initialized")
 
 
+def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[git.Repo]:
+    if git_ref == GitRef.DISABLED:
+        return None
+
+    initial_repo_path = git_ref.resolve_path()
+    if initial_repo_path is None:
+        return None
+
+    try:
+        return get_git_repo(repo_path=initial_repo_path)
+    except (NoSuchPathError, InvalidGitRepositoryError):
+        return None
+
+
 def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
     try:
-        if git_ref == GitRef.DISABLED:
-            return None
-
-        initial_repo_path = git_ref.resolve_path()
-        if initial_repo_path is None:
-            return None
-
-        repo = get_git_repo(repo_path=initial_repo_path)
+        repo = get_repo_from_git_ref(git_ref)
         commit = repo.head.commit
 
         active_branch = ""
@@ -90,3 +117,86 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
         )
     except:  # noqa: E722
         return None
+
+
+@dataclass
+class UncommittedChanges:
+    diff_head: Optional[str]
+    diff_upstream: Optional[str]
+    upstream_sha: Optional[str]
+
+
+def get_diff(repo: git.Repo, commit_ref: str) -> Optional[str]:
+    try:
+        return repo.git.diff(commit_ref)
+    except GitCommandError:
+        return
+
+
+def get_relevant_upstream_commit(repo: git.Repo) -> Optional[git.Commit]:
+    try:
+        tracking_branch = repo.active_branch.tracking_branch()
+    except (TypeError, ValueError):
+        return
+
+    if tracking_branch:
+        return tracking_branch.commit
+
+    return search_for_most_recent_ancestor(repo)
+
+
+def search_for_most_recent_ancestor(repo: git.Repo) -> Optional[git.Commit]:
+    most_recent_ancestor: Optional[git.Commit] = None
+
+    try:
+        for branch in repo.heads:
+            tracking_branch = branch.tracking_branch()
+            if tracking_branch:
+                for ancestor in repo.merge_base(repo.head, tracking_branch.commit):
+                    if not most_recent_ancestor or repo.is_ancestor(most_recent_ancestor, ancestor):
+                        most_recent_ancestor = ancestor
+    except GitCommandError:
+        pass
+
+    return most_recent_ancestor
+
+
+def get_upstream_index_sha(repo: git.Repo) -> Optional[str]:
+    upstream_commit = get_relevant_upstream_commit(repo)
+
+    if upstream_commit and upstream_commit != repo.head.commit:
+
+        return upstream_commit.hexsha
+
+
+def get_uncommitted_changes(repo: Optional[git.Repo]) -> Optional[UncommittedChanges]:
+    if not repo.is_dirty():
+        return
+
+    head_index_diff = get_diff(repo, repo.head.name)
+
+    upstream_sha = get_upstream_index_sha(repo)
+
+    upstream_index_diff = get_diff(repo, upstream_sha)
+
+    return UncommittedChanges(head_index_diff, upstream_index_diff, upstream_sha)
+
+
+def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
+    repo = get_repo_from_git_ref(git_ref)
+
+    if not repo:
+        return
+
+    uncommitted_changes = get_uncommitted_changes(repo)
+
+    if not uncommitted_changes:
+        return
+
+    if uncommitted_changes.diff_head:
+        run[DIFF_HEAD_INDEX_PATH].upload(File.from_content(uncommitted_changes.diff_head, extension="patch"))
+
+    if uncommitted_changes.diff_upstream:
+        run[f"{UPSTREAM_INDEX_DIFF}{uncommitted_changes.upstream_sha}"].upload(
+            File.from_content(uncommitted_changes.diff_upstream, extension="patch")
+        )

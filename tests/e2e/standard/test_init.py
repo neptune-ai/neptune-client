@@ -71,8 +71,7 @@ class TestInitRun(BaseE2ETest):
             exp.sync()
             assert exp.exists("source_code/git")
 
-    @pytest.mark.skip("In CI we are running this in root directory with git repository")
-    def test_git_default(self, environment):
+    def test_git_default(self, environment, repo):
         with neptune.init_run(
             git_ref=GitRef(),
             project=environment.project,
@@ -80,7 +79,7 @@ class TestInitRun(BaseE2ETest):
 
             # download sources
             exp.sync()
-            assert not exp.exists("source_code/git")
+            assert exp.exists("source_code/git")
 
     def test_git_disabled(self, environment):
         with neptune.init_run(
@@ -121,6 +120,20 @@ class TestInitRun(BaseE2ETest):
 
             with zipped.open(filename, "r") as file:
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
+
+    def test_tracking_uncommitted_changes(self, repo, environment):
+        with open("some_file.txt", "w") as fp:
+            fp.write("some-content\n")
+
+        repo.git.add("some_file.txt")
+
+        assert repo.is_dirty()
+        with neptune.init_run(project=environment.project) as run:
+            run.sync()
+            assert run.exists("source_code/diff")
+            run["source_code/diff"].download()
+            with open("diff.patch") as fp:
+                assert "some-content" in fp.read()
 
 
 class TestInitProject(BaseE2ETest):
