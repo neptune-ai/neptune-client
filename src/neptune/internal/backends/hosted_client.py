@@ -34,7 +34,6 @@ from bravado.requests_client import RequestsClient
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
-from neptune.common.utils import IS_WINDOWS
 from neptune.envs import NEPTUNE_REQUEST_TIMEOUT
 from neptune.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.internal.backends.api_model import ClientConfig
@@ -67,16 +66,18 @@ DEFAULT_REQUEST_KWARGS = {
 }
 
 
-def _clear_connection_pool_on_fork(session: requests.Session):
-    if not IS_WINDOWS:
+def _close_connections_on_fork(session: requests.Session):
+    try:
         os.register_at_fork(before=session.close, after_in_child=session.close, after_in_parent=session.close)
+    except AttributeError:
+        pass
 
 
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
 
-    _clear_connection_pool_on_fork(http_client.session)
+    _close_connections_on_fork(http_client.session)
 
     update_session_proxies(http_client.session, proxies)
 
