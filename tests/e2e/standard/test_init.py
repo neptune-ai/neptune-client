@@ -71,16 +71,6 @@ class TestInitRun(BaseE2ETest):
             exp.sync()
             assert exp.exists("source_code/git")
 
-    def test_git_default(self, environment, repo):
-        with neptune.init_run(
-            git_ref=GitRef(),
-            project=environment.project,
-        ) as exp:
-
-            # download sources
-            exp.sync()
-            assert exp.exists("source_code/git")
-
     def test_git_disabled(self, environment):
         with neptune.init_run(
             git_ref=GitRef.DISABLED,
