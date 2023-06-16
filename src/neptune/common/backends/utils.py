@@ -41,9 +41,9 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
-from requests.exceptions import JSONDecodeError
 from urllib3.exceptions import NewConnectionError
 
+from neptune.api.requests_utils import ensure_json_response
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -65,20 +65,13 @@ MAX_RETRY_TIME = 30
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 
-def ensure_json_body(response: "IncomingResponse") -> Dict[str, Any]:
-    try:
-        return response.json() or dict()
-    except JSONDecodeError:
-        return {}
-
-
 def handle_json_errors(
     response: "IncomingResponse",
     source_exception: Exception,
     error_processors: Dict[str, Callable[[Dict[str, Any]], Exception]],
     default_exception: Optional[Exception] = None,
 ) -> None:
-    body = ensure_json_body(response)
+    body = ensure_json_response(response)
 
     error_type: Optional[str] = body.get("errorType")
     error_processor = error_processors.get(error_type)
