@@ -146,7 +146,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
         self._startup(debug_mode=mode == Mode.DEBUG)
 
-        os.register_at_fork(after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent)
+        try:
+            os.register_at_fork(after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent)
+        except AttributeError:
+            pass
 
     """
     OpenSSL's internal random number generator does not properly handle forked processes.
