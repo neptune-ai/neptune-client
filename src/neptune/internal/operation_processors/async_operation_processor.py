@@ -114,13 +114,6 @@ class AsyncOperationProcessor(OperationProcessor):
     def start(self):
         self._consumer.start()
 
-    def pause(self):
-        self._consumer.pause()
-        self._queue.flush()
-
-    def resume(self):
-        self._consumer.resume()
-
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
         waiting_start = monotonic()
         time_elapsed = 0
@@ -205,9 +198,6 @@ class AsyncOperationProcessor(OperationProcessor):
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
-        self._queue.close()
-
-    def close(self):
         self._queue.close()
 
     class ConsumerThread(Daemon):

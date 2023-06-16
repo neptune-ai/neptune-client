@@ -38,15 +38,6 @@ class OperationProcessor(abc.ABC):
     def start(self):
         pass
 
-    def pause(self):
-        pass
-
-    def resume(self):
-        pass
-
     @abc.abstractmethod
     def stop(self, seconds: Optional[float] = None):
         pass
-
-    def close(self):
-        self.stop()
