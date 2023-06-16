@@ -13,19 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_api_exceptions_handler", "handle_json_errors"]
+__all__ = ["with_api_exceptions_handler"]
 
 import itertools
 import logging
 import os
 import time
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Optional,
-)
 
 import requests
 from bravado.exception import (
@@ -43,6 +36,7 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
+from neptune.api.exceptions_utils import handle_json_errors
 from neptune.api.requests_utils import ensure_json_response
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.common.exceptions import (
@@ -56,30 +50,10 @@ from neptune.common.exceptions import (
     WritingToArchivedProjectException,
 )
 
-if TYPE_CHECKING:
-    from bravado_core.response import IncomingResponse
-
 _logger = logging.getLogger(__name__)
 
 MAX_RETRY_TIME = 30
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
-
-
-def handle_json_errors(
-    response: "IncomingResponse",
-    source_exception: Exception,
-    error_processors: Dict[str, Callable[[Dict[str, Any]], Exception]],
-    default_exception: Optional[Exception] = None,
-) -> None:
-    body = ensure_json_response(response)
-
-    error_type: Optional[str] = body.get("errorType")
-    error_processor = error_processors.get(error_type)
-    if error_processor:
-        raise error_processor(body) from source_exception
-    elif default_exception:
-        raise default_exception from source_exception
-    raise source_exception
 
 
 def with_api_exceptions_handler(func):
@@ -120,7 +94,7 @@ def with_api_exceptions_handler(func):
                 raise Unauthorized()
             except HTTPForbidden as e:
                 handle_json_errors(
-                    response=e.response,
+                    content=ensure_json_response(e.response),
                     error_processors={
                         "WRITE_ACCESS_DENIED_TO_ARCHIVED_PROJECT": lambda _: WritingToArchivedProjectException()
                     },

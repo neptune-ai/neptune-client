@@ -21,7 +21,8 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
-from neptune.common.backends.utils import handle_json_errors
+from neptune.api.exceptions_utils import handle_json_errors
+from neptune.api.requests_utils import ensure_json_response
 from neptune.common.exceptions import NeptuneAuthTokenExpired
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
@@ -85,7 +86,7 @@ class ApiMethodWrapper:
         }
 
         handle_json_errors(
-            response=response,
+            content=ensure_json_response(response),
             error_processors=error_processors,
             source_exception=exception,
         )
