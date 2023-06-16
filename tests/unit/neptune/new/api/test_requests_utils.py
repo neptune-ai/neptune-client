@@ -19,28 +19,15 @@ from requests import Response
 from neptune.api.requests_utils import ensure_json_response
 
 
-class EmptyResponse(Response):
-    def __init__(self):
+class TestResponse(Response):
+    def __init__(self, content: bytes) -> None:
         super().__init__()
-        self._content = b""
-
-
-class InvalidResponse(Response):
-    def __init__(self):
-        super().__init__()
-        self._content = b"deadbeef"
-
-
-class JsonResponse(Response):
-    def __init__(self):
-        super().__init__()
-        self.headers["Content-Type"] = "application/json"
-        self._content = '{"key": "value"}'.encode("utf-8")
+        self._content = content
 
 
 def test_ensure_json_body__if_empty():
-    # given - response with no json body
-    empty_server_response = RequestsResponseAdapter(requests_lib_response=EmptyResponse())
+    # given
+    empty_server_response = RequestsResponseAdapter(TestResponse(content=b""))
 
     # when
     body = ensure_json_response(empty_server_response)
@@ -50,8 +37,8 @@ def test_ensure_json_body__if_empty():
 
 
 def test_ensure_json_body__invalid():
-    # given - response with no json body
-    empty_server_response = RequestsResponseAdapter(requests_lib_response=InvalidResponse())
+    # given
+    empty_server_response = RequestsResponseAdapter(TestResponse(content=b"deadbeef"))
 
     # when
     body = ensure_json_response(empty_server_response)
@@ -61,8 +48,8 @@ def test_ensure_json_body__invalid():
 
 
 def test_ensure_json_body__standard():
-    # given - response with no json body
-    empty_server_response = RequestsResponseAdapter(requests_lib_response=JsonResponse())
+    # given
+    empty_server_response = RequestsResponseAdapter(TestResponse(content='{"key": "value"}'.encode("utf-8")))
 
     # when
     body = ensure_json_response(empty_server_response)
