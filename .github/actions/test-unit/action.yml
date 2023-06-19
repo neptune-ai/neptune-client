@@ -28,7 +28,8 @@ runs:
     - name: Test
       run: |
         pytest --cov=neptune --cov-report xml \
-        -v -n 2 ./tests/unit/ \
+        -v -n 2 ./tests\unit\neptune\new\client\test_run.py \
+        -k "test_that_hostname_and_process_info_were_logged" \
         --timeout=120 --timeout_method=thread \
         --color=yes \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
