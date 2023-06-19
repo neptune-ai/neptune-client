@@ -147,7 +147,11 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self._startup(debug_mode=mode == Mode.DEBUG)
 
         try:
-            os.register_at_fork(after_in_child=self._handle_fork_in_child, after_in_parent=self._handle_fork_in_parent)
+            os.register_at_fork(
+                before=self._before_fork,
+                after_in_child=self._handle_fork_in_child,
+                after_in_parent=self._handle_fork_in_parent,
+            )
         except AttributeError:
             pass
 
@@ -162,9 +166,11 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
     def _handle_fork_in_parent(self):
         reset_internal_ssl_state()
+        self._op_processor.resume()
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
+        self._op_processor.close()
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=self._mode,
             container_id=self._id,
@@ -179,6 +185,9 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
         if self._state == ContainerState.STARTED:
             self._op_processor.start()
+
+    def _before_fork(self):
+        self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
         if self._mode != Mode.READ_ONLY:
