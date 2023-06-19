@@ -36,6 +36,8 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
+from neptune.api.exceptions_utils import handle_json_errors
+from neptune.api.requests_utils import ensure_json_response
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -45,6 +47,7 @@ from neptune.common.exceptions import (
     NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
     Unauthorized,
+    WritingToArchivedProjectException,
 )
 
 _logger = logging.getLogger(__name__)
@@ -89,8 +92,15 @@ def with_api_exceptions_handler(func):
                 continue
             except HTTPUnauthorized:
                 raise Unauthorized()
-            except HTTPForbidden:
-                raise Forbidden()
+            except HTTPForbidden as e:
+                handle_json_errors(
+                    content=ensure_json_response(e.response),
+                    error_processors={
+                        "WRITE_ACCESS_DENIED_TO_ARCHIVED_PROJECT": lambda _: WritingToArchivedProjectException()
+                    },
+                    source_exception=e,
+                    default_exception=Forbidden(),
+                )
             except HTTPClientError as e:
                 raise ClientHttpError(e.status_code, e.response.text) from e
             except requests.exceptions.RequestException as e:

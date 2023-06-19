@@ -21,6 +21,8 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
+from neptune.api.exceptions_utils import handle_json_errors
+from neptune.api.requests_utils import ensure_json_response
 from neptune.common.exceptions import NeptuneAuthTokenExpired
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
@@ -45,11 +47,6 @@ class ApiMethodWrapper:
             ProjectPrivacyRestrictedException,
             ProjectsLimitReached,
         )
-
-        try:
-            body = response.json() or dict()
-        except Exception:
-            body = {}
 
         error_processors: dict[str, Callable[[dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
@@ -88,12 +85,11 @@ class ApiMethodWrapper:
             ),
         }
 
-        error_type: Optional[str] = body.get("errorType")
-        error_processor = error_processors.get(error_type)
-        if error_processor:
-            raise error_processor(body) from exception
-        elif exception:
-            raise exception
+        handle_json_errors(
+            content=ensure_json_response(response),
+            error_processors=error_processors,
+            source_exception=exception,
+        )
 
     def __call__(self, *args, **kwargs):
         try:

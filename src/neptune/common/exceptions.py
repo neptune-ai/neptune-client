@@ -408,3 +408,18 @@ class NotAFile(NeptuneException):
 class NotADirectory(NeptuneException):
     def __init__(self, path):
         super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
+
+
+class WritingToArchivedProjectException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----WritingToArchivedProjectException-----------------------------------------------------------------------
+{end}
+You're trying to write to a project that was archived.
+
+Set the project as active again or use mode="read-only" at initialization to fetch metadata from it.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/help/error_writing_to_archived_project/
+"""
+        super(WritingToArchivedProjectException, self).__init__(message.format(**STYLES))
