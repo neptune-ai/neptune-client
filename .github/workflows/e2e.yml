@@ -24,7 +24,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu, macos, windows ]
+        os: [ ubuntu, macos-13, macos, windows ]
     runs-on: ${{ matrix.os }}-latest
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu, macos, windows ]
+        os: [ ubuntu, macos-13, macos, windows ]
     runs-on: ${{ matrix.os }}-latest
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -80,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu, macos, windows ]
+        os: [ ubuntu, macos-13, macos, windows ]
     runs-on: ${{ matrix.os }}-latest
     name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -111,7 +111,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu, macos, windows ]
+        os: [ ubuntu, macos-13, macos, windows ]
     runs-on: ${{ matrix.os }}-latest
     name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
