@@ -183,7 +183,7 @@ def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
 
 
 def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedChanges]:
-    if not repo.is_dirty():
+    if not repo.is_dirty(untracked_files=True):
         return
 
     head_index_diff = get_diff(repo, repo.head.name)
