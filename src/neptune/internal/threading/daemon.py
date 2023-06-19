@@ -51,7 +51,7 @@ class Daemon(threading.Thread):
             if self._state != Daemon.DaemonState.PAUSED:
                 self._state = Daemon.DaemonState.PAUSING
                 self._wait_condition.notify_all()
-                self._wait_condition.wait_for(lambda: self._state == Daemon.DaemonState.PAUSED)
+                self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSING)
 
     def resume(self):
         with self._wait_condition:
