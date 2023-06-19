@@ -184,7 +184,11 @@ class DiskQueue(Generic[T]):
 
         parent = path.parent
 
-        files = os.listdir(parent)
+        try:
+            files = os.listdir(parent)
+        except FileNotFoundError:
+            files = []
+
         if len(files) == 0:
             try:
                 os.rmdir(parent)

@@ -41,6 +41,12 @@ class StdoutCaptureBackgroundJob(BackgroundJob):
     def stop(self):
         self._logger.close()
 
+    def pause(self):
+        self._logger.pause()
+
+    def resume(self):
+        self._logger.resume()
+
     def join(self, seconds: Optional[float] = None):
         pass
 
@@ -55,6 +61,12 @@ class StderrCaptureBackgroundJob(BackgroundJob):
 
     def stop(self):
         self._logger.close()
+
+    def pause(self):
+        self._logger.pause()
+
+    def resume(self):
+        self._logger.resume()
 
     def join(self, seconds: Optional[float] = None):
         pass

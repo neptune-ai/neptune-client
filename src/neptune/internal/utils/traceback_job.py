@@ -58,3 +58,9 @@ class TracebackJob(BackgroundJob):
 
     def join(self, seconds: Optional[float] = None):
         pass
+
+    def pause(self):
+        pass
+
+    def resume(self):
+        pass

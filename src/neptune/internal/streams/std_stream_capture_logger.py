@@ -20,6 +20,7 @@ import threading
 from queue import Queue
 from typing import TextIO
 
+from neptune.internal.threading.daemon import Daemon
 from neptune.logging import Logger as NeptuneLogger
 from neptune.metadata_containers import MetadataContainer
 
@@ -31,8 +32,15 @@ class StdStreamCaptureLogger:
         self._thread_local = threading.local()
         self.enabled = True
         self._log_data_queue = Queue()
-        self._logging_thread = threading.Thread(target=self.__proces_logs, daemon=True)
+        self._logging_thread = self.ReportingThread(self, "NeptuneThread_" + attribute_name)
         self._logging_thread.start()
+
+    def pause(self):
+        self._log_data_queue.put_nowait(None)
+        self._logging_thread.pause()
+
+    def resume(self):
+        self._logging_thread.resume()
 
     def write(self, data: str):
         self.stream.write(data)
@@ -42,16 +50,24 @@ class StdStreamCaptureLogger:
         return getattr(self.stream, attr)
 
     def close(self):
+        if self.enabled:
+            self._logging_thread.interrupt()
         self.enabled = False
         self._log_data_queue.put_nowait(None)
         self._logging_thread.join()
 
-    def __proces_logs(self):
-        while True:
-            data = self._log_data_queue.get()
-            if data is None:
-                break
-            self._logger.log(data)
+    class ReportingThread(Daemon):
+        def __init__(self, logger: "StdStreamCaptureLogger", name: str):
+            super().__init__(sleep_time=0, name=name)
+            self._logger = logger
+
+        @Daemon.ConnectionRetryWrapper(kill_message="Killing Neptune STD capturing thread.")
+        def work(self) -> None:
+            while True:
+                data = self._logger._log_data_queue.get()
+                if data is None:
+                    break
+                self._logger._logger.log(data)
 
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):

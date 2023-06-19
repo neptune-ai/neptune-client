@@ -167,11 +167,12 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     def _handle_fork_in_parent(self):
         reset_internal_ssl_state()
         self._op_processor.resume()
+        self._bg_job.resume()
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
         self._op_processor.close()
-        self._op_processor: OperationProcessor = get_operation_processor(
+        self._op_processor = get_operation_processor(
             mode=self._mode,
             container_id=self._id,
             container_type=self.container_type,
@@ -187,6 +188,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             self._op_processor.start()
 
     def _before_fork(self):
+        self._bg_job.pause()
         self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
