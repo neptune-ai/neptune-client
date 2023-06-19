@@ -29,33 +29,34 @@ class Daemon(threading.Thread):
     class DaemonState(Enum):
         INIT = 1
         RUNNING = 2
-        PAUSED = 3
-        INTERRUPTED = 4
-        STOPPED = 5
+        PAUSING = 3
+        PAUSED = 4
+        INTERRUPTED = 5
+        STOPPED = 6
 
     def __init__(self, sleep_time: float, name):
         super().__init__(daemon=True, name=name)
         self._sleep_time = sleep_time
         self._state: Daemon.DaemonState = Daemon.DaemonState.INIT
         self._wait_condition = threading.Condition()
-        self._state_change_notice_condition = threading.Condition()
         self.last_backoff_time = 0  # used only with ConnectionRetryWrapper decorator
 
     def interrupt(self):
-        with self._state_change_notice_condition:
+        with self._wait_condition:
             self._state = Daemon.DaemonState.INTERRUPTED
-            self.wake_up()
+            self._wait_condition.notify_all()
 
     def pause(self):
-        with self._state_change_notice_condition:
-            self._state = Daemon.DaemonState.PAUSED
-            self.wake_up()
-            self._state_change_notice_condition.wait()
+        with self._wait_condition:
+            if self._state != Daemon.DaemonState.PAUSED:
+                self._state = Daemon.DaemonState.PAUSING
+                self._wait_condition.notify_all()
+                self._wait_condition.wait_for(lambda: self._state == Daemon.DaemonState.PAUSED)
 
     def resume(self):
-        with self._state_change_notice_condition:
+        with self._wait_condition:
             self._state = Daemon.DaemonState.RUNNING
-            self.wake_up()
+            self._wait_condition.notify_all()
 
     def wake_up(self):
         with self._wait_condition:
@@ -74,20 +75,15 @@ class Daemon(threading.Thread):
         self._state = Daemon.DaemonState.RUNNING
         try:
             while not self._is_interrupted():
-                start_state = self._state
-                with self._state_change_notice_condition:
-                    self._state_change_notice_condition.notify_all()
+                with self._wait_condition:
+                    if self._state == Daemon.DaemonState.PAUSING:
+                        self._state = Daemon.DaemonState.PAUSED
+                        self._wait_condition.notify_all()
+                        self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSED)
 
-                if self._state == Daemon.DaemonState.PAUSED:
-                    pass
-                if self._state == Daemon.DaemonState.INTERRUPTED:
-                    pass
-                if self._state == Daemon.DaemonState.RUNNING:
-                    self.work()
-
-                if self._sleep_time > 0 and not self._is_interrupted():
-                    with self._wait_condition:
-                        if self._state == start_state:
+                    if self._state == Daemon.DaemonState.RUNNING:
+                        self.work()
+                        if self._sleep_time > 0 and not self._is_interrupted():
                             self._wait_condition.wait(timeout=self._sleep_time)
         finally:
             self._state = Daemon.DaemonState.STOPPED
