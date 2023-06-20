@@ -19,43 +19,79 @@ import abc
 import functools
 import threading
 import time
+from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.internal.utils.logger import logger
 
 
 class Daemon(threading.Thread):
+    class DaemonState(Enum):
+        INIT = 1
+        WORKING = 2
+        PAUSING = 3
+        PAUSED = 4
+        INTERRUPTED = 5
+        STOPPED = 6
+
     def __init__(self, sleep_time: float, name):
         super().__init__(daemon=True, name=name)
         self._sleep_time = sleep_time
-        self._interrupted = False
-        self._event = threading.Event()
-        self._is_running = False
+        self._state: Daemon.DaemonState = Daemon.DaemonState.INIT
+        self._wait_condition = threading.Condition()
         self.last_backoff_time = 0  # used only with ConnectionRetryWrapper decorator
 
     def interrupt(self):
-        self._interrupted = True
-        self.wake_up()
+        with self._wait_condition:
+            self._state = Daemon.DaemonState.INTERRUPTED
+            self._wait_condition.notify_all()
+
+    def pause(self):
+        with self._wait_condition:
+            if self._state != Daemon.DaemonState.PAUSED:
+                self._state = Daemon.DaemonState.PAUSING
+                self._wait_condition.notify_all()
+                self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSING)
+
+    def resume(self):
+        with self._wait_condition:
+            self._state = Daemon.DaemonState.WORKING
+            self._wait_condition.notify_all()
 
     def wake_up(self):
-        self._event.set()
+        with self._wait_condition:
+            self._wait_condition.notify_all()
 
     def disable_sleep(self):
         self._sleep_time = 0
 
     def is_running(self) -> bool:
-        return self._is_running
+        return self._state in (
+            Daemon.DaemonState.WORKING,
+            Daemon.DaemonState.PAUSING,
+            Daemon.DaemonState.PAUSED,
+        )
+
+    def _is_interrupted(self) -> bool:
+        return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
     def run(self):
-        self._is_running = True
+        self._state = Daemon.DaemonState.WORKING
         try:
-            while not self._interrupted:
-                self.work()
-                if self._sleep_time > 0 and not self._interrupted:
-                    self._event.wait(timeout=self._sleep_time)
-                    self._event.clear()
+            while not self._is_interrupted():
+                with self._wait_condition:
+                    if self._state == Daemon.DaemonState.PAUSING:
+                        self._state = Daemon.DaemonState.PAUSED
+                        self._wait_condition.notify_all()
+                        self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSED)
+
+                if self._state == Daemon.DaemonState.WORKING:
+                    self.work()
+                    with self._wait_condition:
+                        if self._sleep_time > 0 and not self._is_interrupted():
+                            self._wait_condition.wait(timeout=self._sleep_time)
         finally:
-            self._is_running = False
+            self._state = Daemon.DaemonState.STOPPED
 
     @abc.abstractmethod
     def work(self):
@@ -71,7 +107,7 @@ class Daemon(threading.Thread):
         def __call__(self, func):
             @functools.wraps(func)
             def wrapper(self_: Daemon, *args, **kwargs):
-                while not self_._interrupted:
+                while not self_._is_interrupted():
                     try:
                         result = func(self_, *args, **kwargs)
                         if self_.last_backoff_time > 0:

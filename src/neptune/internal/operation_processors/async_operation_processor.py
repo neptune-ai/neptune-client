@@ -17,7 +17,6 @@ __all__ = ("AsyncOperationProcessor",)
 
 import logging
 import os
-import sys
 import threading
 from datetime import datetime
 from time import (
@@ -77,31 +76,19 @@ class AsyncOperationProcessor(OperationProcessor):
         self._last_version = 0
         self._consumed_version = 0
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
-        self._drop_operations = False
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
-
-        if sys.version_info >= (3, 7):
-            try:
-                os.register_at_fork(after_in_child=self._handle_fork_in_child)
-            except AttributeError:
-                pass
 
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return data_path
 
-    def _handle_fork_in_child(self):
-        self._drop_operations = True
-
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
-        if self._drop_operations:
-            return
         self._last_version = self._queue.put(op)
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
@@ -126,6 +113,13 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def start(self):
         self._consumer.start()
+
+    def pause(self):
+        self._consumer.pause()
+        self._queue.flush()
+
+    def resume(self):
+        self._consumer.resume()
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
         waiting_start = monotonic()
@@ -211,6 +205,9 @@ class AsyncOperationProcessor(OperationProcessor):
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
+        self._queue.close()
+
+    def close(self):
         self._queue.close()
 
     class ConsumerThread(Daemon):

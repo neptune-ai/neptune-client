@@ -28,6 +28,7 @@ from typing import (
     Tuple,
 )
 
+import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
@@ -65,9 +66,18 @@ DEFAULT_REQUEST_KWARGS = {
 }
 
 
+def _close_connections_on_fork(session: requests.Session):
+    try:
+        os.register_at_fork(before=session.close, after_in_child=session.close, after_in_parent=session.close)
+    except AttributeError:
+        pass
+
+
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
+
+    _close_connections_on_fork(http_client.session)
 
     update_session_proxies(http_client.session, proxies)
 

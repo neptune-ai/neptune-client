@@ -45,3 +45,11 @@ class BackgroundJobList(BackgroundJob):
         for job in self._jobs:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             job.join(sec_left)
+
+    def pause(self):
+        for job in self._jobs:
+            job.pause()
+
+    def resume(self):
+        for job in self._jobs:
+            job.resume()

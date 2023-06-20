@@ -37,3 +37,11 @@ class BackgroundJob:
     @abc.abstractmethod
     def join(self, seconds: Optional[float] = None):
         pass
+
+    @abc.abstractmethod
+    def pause(self):
+        pass
+
+    @abc.abstractmethod
+    def resume(self):
+        pass

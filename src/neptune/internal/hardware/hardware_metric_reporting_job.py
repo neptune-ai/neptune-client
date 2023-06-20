@@ -82,6 +82,12 @@ class HardwareMetricReportingJob(BackgroundJob):
             return
         self._thread.interrupt()
 
+    def pause(self):
+        self._thread.pause()
+
+    def resume(self):
+        self._thread.resume()
+
     def join(self, seconds: Optional[float] = None):
         if not self._started:
             return

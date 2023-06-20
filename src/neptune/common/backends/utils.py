@@ -49,6 +49,7 @@ from neptune.common.exceptions import (
     Unauthorized,
     WritingToArchivedProjectException,
 )
+from neptune.common.utils import reset_internal_ssl_state
 
 _logger = logging.getLogger(__name__)
 
@@ -58,6 +59,7 @@ retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
+        ssl_error_occurred = False
         last_exception = None
         start_time = time.monotonic()
         for retry in itertools.count(0):
@@ -71,6 +73,20 @@ def with_api_exceptions_handler(func):
                     raise NeptuneInvalidApiTokenException()
                 raise
             except requests.exceptions.SSLError as e:
+                """
+                OpenSSL's internal random number generator does not properly handle forked processes.
+                Applications must change the PRNG state of the parent process
+                if they use any SSL feature with os.fork().
+                Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
+                https://docs.python.org/3/library/ssl.html#multi-processing
+
+                On Linux it looks like it does not help much but does not break anything either.
+                But single retry seems to solve the issue.
+                """
+                if not ssl_error_occurred:
+                    ssl_error_occurred = True
+                    reset_internal_ssl_state()
+                    continue
                 raise NeptuneSSLVerificationError() from e
             except (
                 BravadoConnectionError,

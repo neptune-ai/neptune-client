@@ -33,7 +33,7 @@ _logger = logging.getLogger(__name__)
 class PingBackgroundJob(BackgroundJob):
     def __init__(self, period: float = 10):
         self._period = period
-        self._thread = None
+        self._thread: PingBackgroundJob.ReportingThread = None
         self._started = False
 
     def start(self, container: "MetadataContainer"):
@@ -45,6 +45,12 @@ class PingBackgroundJob(BackgroundJob):
         if not self._started:
             return
         self._thread.interrupt()
+
+    def pause(self):
+        self._thread.pause()
+
+    def resume(self):
+        self._thread.resume()
 
     def join(self, seconds: Optional[float] = None):
         if not self._started:
