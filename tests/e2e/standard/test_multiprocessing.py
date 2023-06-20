@@ -39,4 +39,4 @@ class TestStageTransitions(BaseE2ETest):
         assert container[key].fetch() == value
 
         if child_pid != 0:
-            os.waitpid(child_pid)
+            os.waitpid(child_pid, 0)
