@@ -161,6 +161,9 @@ class ThreadSafeRepo:
         self._repo = get_git_repo(repo_path=initial_repo_path)
         self.git = ThreadSafeGit(self._lock, self._repo.git)
 
+    def __bool__(self) -> bool:
+        return bool(self._repo)
+
     def __getattr__(self, item):
         original_attribute = self._repo.__getattribute__(item)
 
