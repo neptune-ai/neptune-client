@@ -28,7 +28,7 @@ from neptune.internal.utils.logger import logger
 class Daemon(threading.Thread):
     class DaemonState(Enum):
         INIT = 1
-        RUNNING = 2
+        WORKING = 2
         PAUSING = 3
         PAUSED = 4
         INTERRUPTED = 5
@@ -55,7 +55,7 @@ class Daemon(threading.Thread):
 
     def resume(self):
         with self._wait_condition:
-            self._state = Daemon.DaemonState.RUNNING
+            self._state = Daemon.DaemonState.WORKING
             self._wait_condition.notify_all()
 
     def wake_up(self):
@@ -66,13 +66,17 @@ class Daemon(threading.Thread):
         self._sleep_time = 0
 
     def is_running(self) -> bool:
-        return self._state == Daemon.DaemonState.RUNNING
+        return self._state in (
+            Daemon.DaemonState.WORKING,
+            Daemon.DaemonState.PAUSING,
+            Daemon.DaemonState.PAUSED,
+        )
 
     def _is_interrupted(self) -> bool:
-        return self._state == Daemon.DaemonState.INTERRUPTED
+        return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
     def run(self):
-        self._state = Daemon.DaemonState.RUNNING
+        self._state = Daemon.DaemonState.WORKING
         try:
             while not self._is_interrupted():
                 with self._wait_condition:
@@ -81,7 +85,7 @@ class Daemon(threading.Thread):
                         self._wait_condition.notify_all()
                         self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSED)
 
-                if self._state == Daemon.DaemonState.RUNNING:
+                if self._state == Daemon.DaemonState.WORKING:
                     self.work()
                     with self._wait_condition:
                         if self._sleep_time > 0 and not self._is_interrupted():
