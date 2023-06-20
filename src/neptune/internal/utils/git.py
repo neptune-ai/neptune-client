@@ -23,8 +23,10 @@ import logging
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
+from threading import RLock
 from typing import (
     TYPE_CHECKING,
+    Callable,
     List,
     Optional,
     Union,
@@ -65,37 +67,23 @@ def get_git_repo(repo_path):
     # which consists in failure during the preparation of conda package
     try:
         import git
-
-        return git.Repo(repo_path, search_parent_directories=True)
-    except ImportError:
-        warnings.warn("GitPython could not be initialized")
-
-
-def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional["git.Repo"]:
-    if git_ref == GitRef.DISABLED:
-        return None
-
-    initial_repo_path = git_ref.resolve_path()
-    if initial_repo_path is None:
-        return None
-
-    try:
-        from git.exc import (
+        from git import (
             InvalidGitRepositoryError,
             NoSuchPathError,
         )
-
-        try:
-            return get_git_repo(repo_path=initial_repo_path)
-        except (NoSuchPathError, InvalidGitRepositoryError):
-            return None
     except ImportError:
-        return None
+        warnings.warn("GitPython could not be initialized")
+        return
+
+    try:
+        return git.Repo(repo_path, search_parent_directories=True)
+    except (NoSuchPathError, InvalidGitRepositoryError):
+        return
 
 
 def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
     try:
-        repo = get_repo_from_git_ref(git_ref)
+        repo = ThreadSafeRepo(git_ref)
         commit = repo.head.commit
 
         active_branch = ""
@@ -129,7 +117,60 @@ class UncommittedChanges:
     upstream_sha: Optional[str]
 
 
-def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
+class ThreadSafeMethod:
+    def __init__(self, lock: RLock, method: Callable):
+        self._lock = lock
+        self.method = method
+
+    def __call__(self, *args, **kwargs):
+        self._lock.acquire()
+        res = self.method(*args, **kwargs)
+        self._lock.release()
+
+        return res
+
+
+class ThreadSafeGit:
+    def __init__(self, lock: RLock, git):
+        self._lock = lock
+        self._git = git
+
+    def __getattr__(self, item: str):
+        return ThreadSafeMethod(self._lock, self._git.__getattr__(item))
+
+
+class ThreadSafeRepo:
+    def __init__(self, git_ref: Union[GitRef, GitRefDisabled]):
+        self.git_ref = git_ref
+
+        self._lock = RLock()
+
+        self._repo = None
+        self.git = None
+
+        self.get_repo_from_git_ref()
+
+    def get_repo_from_git_ref(self) -> None:
+        if self.git_ref == GitRef.DISABLED:
+            return
+
+        initial_repo_path = self.git_ref.resolve_path()
+        if initial_repo_path is None:
+            return
+
+        self._repo = get_git_repo(repo_path=initial_repo_path)
+        self.git = ThreadSafeGit(self._lock, self._repo.git)
+
+    def __getattr__(self, item):
+        original_attribute = self._repo.__getattribute__(item)
+
+        if callable(original_attribute):
+            return ThreadSafeMethod(self._lock, self._repo.__getattribute__(item))
+
+        return original_attribute
+
+
+def get_diff(repo: ThreadSafeRepo, commit_ref: str) -> Optional[str]:
     try:
         from git.exc import GitCommandError
 
@@ -141,7 +182,7 @@ def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
         return None
 
 
-def get_relevant_upstream_commit(repo: "git.Repo") -> Optional["git.Commit"]:
+def get_relevant_upstream_commit(repo: ThreadSafeRepo) -> Optional["git.Commit"]:
     try:
         tracking_branch = repo.active_branch.tracking_branch()
     except (TypeError, ValueError):
@@ -153,7 +194,7 @@ def get_relevant_upstream_commit(repo: "git.Repo") -> Optional["git.Commit"]:
     return search_for_most_recent_ancestor(repo)
 
 
-def search_for_most_recent_ancestor(repo: "git.Repo") -> Optional["git.Commit"]:
+def search_for_most_recent_ancestor(repo: ThreadSafeRepo) -> Optional["git.Commit"]:
     most_recent_ancestor: Optional["git.Commit"] = None
 
     try:
@@ -174,7 +215,7 @@ def search_for_most_recent_ancestor(repo: "git.Repo") -> Optional["git.Commit"]:
     return most_recent_ancestor
 
 
-def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
+def get_upstream_index_sha(repo: ThreadSafeRepo) -> Optional[str]:
     upstream_commit = get_relevant_upstream_commit(repo)
 
     if upstream_commit and upstream_commit != repo.head.commit:
@@ -182,7 +223,7 @@ def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
         return upstream_commit.hexsha
 
 
-def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedChanges]:
+def get_uncommitted_changes(repo: ThreadSafeRepo) -> Optional[UncommittedChanges]:
     if not repo.is_dirty(untracked_files=True):
         return
 
@@ -196,7 +237,7 @@ def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedC
 
 
 def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
-    repo = get_repo_from_git_ref(git_ref)
+    repo = ThreadSafeRepo(git_ref)
 
     if not repo:
         return
@@ -209,7 +250,7 @@ def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run"
     if uncommitted_changes.diff_head:
         run[DIFF_HEAD_INDEX_PATH].upload(File.from_content(uncommitted_changes.diff_head, extension="patch"))
 
-    if uncommitted_changes.diff_upstream:
+    if uncommitted_changes.diff_upstream and uncommitted_changes.upstream_sha:
         run[f"{UPSTREAM_INDEX_DIFF}{uncommitted_changes.upstream_sha}"].upload(
             File.from_content(uncommitted_changes.diff_upstream, extension="patch")
         )
