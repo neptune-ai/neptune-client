@@ -68,14 +68,16 @@ class Daemon(threading.Thread):
         self._sleep_time = 0
 
     def is_running(self) -> bool:
-        return self._state in (
-            Daemon.DaemonState.WORKING,
-            Daemon.DaemonState.PAUSING,
-            Daemon.DaemonState.PAUSED,
-        )
+        with self._wait_condition:
+            return self._state in (
+                Daemon.DaemonState.WORKING,
+                Daemon.DaemonState.PAUSING,
+                Daemon.DaemonState.PAUSED,
+            )
 
     def _is_interrupted(self) -> bool:
-        return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
+        with self._wait_condition:
+            return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
     def run(self):
         if not self._is_interrupted():
