@@ -48,15 +48,16 @@ class Daemon(threading.Thread):
 
     def pause(self):
         with self._wait_condition:
-            if self._state != Daemon.DaemonState.PAUSED:
+            if self._state != Daemon.DaemonState.PAUSED and not self._is_interrupted():
                 self._state = Daemon.DaemonState.PAUSING
                 self._wait_condition.notify_all()
                 self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSING)
 
     def resume(self):
         with self._wait_condition:
-            self._state = Daemon.DaemonState.WORKING
-            self._wait_condition.notify_all()
+            if not self._is_interrupted():
+                self._state = Daemon.DaemonState.WORKING
+                self._wait_condition.notify_all()
 
     def wake_up(self):
         with self._wait_condition:
