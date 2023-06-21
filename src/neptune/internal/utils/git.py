@@ -20,6 +20,7 @@ __all__ = [
 ]
 
 import logging
+import threading
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
@@ -46,6 +47,7 @@ if TYPE_CHECKING:
     from neptune import Run
 
 _logger = logging.getLogger(__name__)
+GIT_LOCK = threading.RLock()
 
 
 @dataclass
@@ -94,32 +96,33 @@ def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional["g
 
 
 def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
-    try:
-        repo = get_repo_from_git_ref(git_ref)
-        commit = repo.head.commit
-
-        active_branch = ""
-
+    with GIT_LOCK:
         try:
-            active_branch = repo.active_branch.name
-        except TypeError as e:
-            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
-                active_branch = "Detached HEAD"
+            repo = get_repo_from_git_ref(git_ref)
+            commit = repo.head.commit
 
-        remote_urls = [remote.url for remote in repo.remotes]
+            active_branch = ""
 
-        return GitInfo(
-            commit_id=commit.hexsha,
-            message=commit.message,
-            author_name=commit.author.name,
-            author_email=commit.author.email,
-            commit_date=commit.committed_datetime,
-            dirty=repo.is_dirty(untracked_files=True),
-            branch=active_branch,
-            remotes=remote_urls,
-        )
-    except:  # noqa: E722
-        return None
+            try:
+                active_branch = repo.active_branch.name
+            except TypeError as e:
+                if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
+                    active_branch = "Detached HEAD"
+
+            remote_urls = [remote.url for remote in repo.remotes]
+
+            return GitInfo(
+                commit_id=commit.hexsha,
+                message=commit.message,
+                author_name=commit.author.name,
+                author_email=commit.author.email,
+                commit_date=commit.committed_datetime,
+                dirty=repo.is_dirty(untracked_files=True),
+                branch=active_branch,
+                remotes=remote_urls,
+            )
+        except:  # noqa: E722
+            return None
 
 
 @dataclass
@@ -196,20 +199,21 @@ def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedC
 
 
 def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
-    repo = get_repo_from_git_ref(git_ref)
+    with GIT_LOCK:
+        repo = get_repo_from_git_ref(git_ref)
 
-    if not repo:
-        return
+        if not repo:
+            return
 
-    uncommitted_changes = get_uncommitted_changes(repo)
+        uncommitted_changes = get_uncommitted_changes(repo)
 
-    if not uncommitted_changes:
-        return
+        if not uncommitted_changes:
+            return
 
-    if uncommitted_changes.diff_head:
-        run[DIFF_HEAD_INDEX_PATH].upload(File.from_content(uncommitted_changes.diff_head, extension="patch"))
+        if uncommitted_changes.diff_head:
+            run[DIFF_HEAD_INDEX_PATH].upload(File.from_content(uncommitted_changes.diff_head, extension="patch"))
 
-    if uncommitted_changes.diff_upstream:
-        run[f"{UPSTREAM_INDEX_DIFF}{uncommitted_changes.upstream_sha}"].upload(
-            File.from_content(uncommitted_changes.diff_upstream, extension="patch")
-        )
+        if uncommitted_changes.diff_upstream:
+            run[f"{UPSTREAM_INDEX_DIFF}{uncommitted_changes.upstream_sha}"].upload(
+                File.from_content(uncommitted_changes.diff_upstream, extension="patch")
+            )
