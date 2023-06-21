@@ -78,6 +78,7 @@ neptune-pytorch = { version = "*", optional = true }
 neptune-sacred = { version = "*", optional = true }
 neptune-sklearn = { version = "*", optional = true }
 neptune-tensorflow-keras = { version = "*", optional = true }
+neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
@@ -96,6 +97,7 @@ pytorch-lightning = ["pytorch-lightning"]
 sacred = ["neptune-sacred"]
 sklearn = ["neptune-sklearn"]
 tensorflow-keras = ["neptune-tensorflow-keras"]
+tensorboard = ["neptune-tensorboard"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]

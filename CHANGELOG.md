@@ -3,6 +3,9 @@
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
 
+### Features
+- Added support for `tensorboard` integration ([#]())
+
 ## neptune 1.3.1
 
 ### Fixes
