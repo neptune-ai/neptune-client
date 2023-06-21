@@ -80,8 +80,9 @@ class Daemon(threading.Thread):
             return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
     def run(self):
-        if not self._is_interrupted():
-            self._state = Daemon.DaemonState.WORKING
+        with self._wait_condition:
+            if not self._is_interrupted():
+                self._state = Daemon.DaemonState.WORKING
         try:
             while not self._is_interrupted():
                 with self._wait_condition:
