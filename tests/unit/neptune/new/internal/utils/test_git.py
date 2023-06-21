@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import datetime
+import threading
 
 import git
 from mock import (
@@ -23,9 +24,9 @@ from mock import (
 
 from neptune.internal.utils.git import (
     GitInfo,
+    ThreadSafeRepo,
     get_diff,
     get_relevant_upstream_commit,
-    get_repo_from_git_ref,
     get_uncommitted_changes,
     get_upstream_index_sha,
     search_for_most_recent_ancestor,
@@ -37,7 +38,7 @@ from neptune.types import GitRef
 
 class TestGit:
     def test_disabled(self):
-        assert to_git_info(GitRef.DISABLED) is None
+        assert to_git_info(GitRef.DISABLED, threading.RLock()) is None
 
     @patch("git.Repo")
     def test_getting_git_info(self, mock_repo):
@@ -54,7 +55,7 @@ class TestGit:
         repo.remotes = []
 
         # when
-        git_info = to_git_info(GitRef("."))
+        git_info = to_git_info(GitRef("."), threading.RLock())
 
         # then
         assert git_info == GitInfo(
@@ -74,10 +75,10 @@ def test_get_repo_from_git_ref_disabled():
     git_ref = GitRef.DISABLED
 
     # when
-    repo = get_repo_from_git_ref(git_ref)
+    repo = ThreadSafeRepo(git_ref, threading.RLock())
 
     # then
-    assert repo is None
+    assert not repo
 
 
 def test_get_repo_from_git_ref():
@@ -85,10 +86,10 @@ def test_get_repo_from_git_ref():
     git_ref = GitRef()
 
     # when
-    repo = get_repo_from_git_ref(git_ref)
+    repo = ThreadSafeRepo(git_ref, threading.RLock())
 
     # then
-    assert isinstance(repo, git.Repo)
+    assert isinstance(repo._repo, git.Repo)
 
 
 @patch("git.Repo")
@@ -225,24 +226,23 @@ def test_get_uncommitted_changes_clean_repo(mock_repo):
 @patch("neptune.metadata_containers.Run")
 def test_git_ref_disabled(mock_run, mock_get_changes):
     # when
-    track_uncommitted_changes(GitRef.DISABLED, mock_run)
+    track_uncommitted_changes(GitRef.DISABLED, mock_run, threading.RLock())
 
     # then
     mock_get_changes.assert_not_called()
 
 
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
-@patch("neptune.internal.utils.git.get_repo_from_git_ref")
+@patch("neptune.internal.utils.git.ThreadSafeRepo")
 @patch("neptune.internal.utils.git.File")
 @patch("neptune.metadata_containers.Run")
-def test_track_uncommitted_changes(mock_run, mock_file, mock_get_repo, mock_get_changes):
+def test_track_uncommitted_changes(mock_run, mock_file, mock_repo, mock_get_changes):
     # given
     git_ref = GitRef()
 
     # when
-    track_uncommitted_changes(git_ref, mock_run)
+    track_uncommitted_changes(git_ref, mock_run, threading.RLock())
 
     # then
     assert mock_file.from_content.call_count == 2
-    mock_get_repo.assert_called_once_with(git_ref)
     mock_get_changes.assert_called_once()

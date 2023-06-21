@@ -245,6 +245,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             mock_track_changes.assert_called_once_with(
                 git_ref=git_ref,
                 run=run,
+                lock=run._git_lock,
             )
 
     @patch("neptune.internal.utils.git.get_diff")
