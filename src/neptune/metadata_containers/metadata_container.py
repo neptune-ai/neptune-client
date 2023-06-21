@@ -188,6 +188,7 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             self._op_processor.start()
 
     def _before_fork(self):
+        logger.error("Fork process")
         self._bg_job.pause()
         self._op_processor.pause()
 
