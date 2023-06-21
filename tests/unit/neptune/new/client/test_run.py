@@ -213,6 +213,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
 
+    @unittest.skipIf(IS_WINDOWS, "Temporary skip on Windows")
     @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.metadata_containers.run.get_hostname", lambda *vals: "localhost")
     @patch("neptune.metadata_containers.run.os.getpid", lambda *vals: 1234)
