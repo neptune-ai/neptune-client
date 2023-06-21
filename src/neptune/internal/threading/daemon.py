@@ -49,13 +49,15 @@ class Daemon(threading.Thread):
     def pause(self):
         with self._wait_condition:
             if self._state != Daemon.DaemonState.PAUSED:
-                self._state = Daemon.DaemonState.PAUSING
+                if not self._is_interrupted():
+                    self._state = Daemon.DaemonState.PAUSING
                 self._wait_condition.notify_all()
                 self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSING)
 
     def resume(self):
         with self._wait_condition:
-            self._state = Daemon.DaemonState.WORKING
+            if not self._is_interrupted():
+                self._state = Daemon.DaemonState.WORKING
             self._wait_condition.notify_all()
 
     def wake_up(self):
@@ -76,7 +78,8 @@ class Daemon(threading.Thread):
         return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
     def run(self):
-        self._state = Daemon.DaemonState.WORKING
+        if not self._is_interrupted():
+            self._state = Daemon.DaemonState.WORKING
         try:
             while not self._is_interrupted():
                 with self._wait_condition:
@@ -91,7 +94,9 @@ class Daemon(threading.Thread):
                         if self._sleep_time > 0 and not self._is_interrupted():
                             self._wait_condition.wait(timeout=self._sleep_time)
         finally:
-            self._state = Daemon.DaemonState.STOPPED
+            with self._wait_condition:
+                self._state = Daemon.DaemonState.STOPPED
+                self._wait_condition.notify_all()
 
     @abc.abstractmethod
     def work(self):
