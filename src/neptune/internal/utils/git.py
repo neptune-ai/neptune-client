@@ -19,14 +19,12 @@ __all__ = [
     "track_uncommitted_changes",
 ]
 
-import logging
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
 from threading import RLock
 from typing import (
     TYPE_CHECKING,
-    Callable,
     List,
     Optional,
     Union,
@@ -46,8 +44,6 @@ if TYPE_CHECKING:
     import git
 
     from neptune import Run
-
-_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -81,9 +77,13 @@ def get_git_repo(repo_path):
         return
 
 
-def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
+def to_git_info(git_ref: Union[GitRef, GitRefDisabled], lock: RLock) -> Optional[GitInfo]:
     try:
-        repo = ThreadSafeRepo(git_ref)
+        repo = ThreadSafeRepo(git_ref, lock)
+
+        if not repo:
+            return
+
         commit = repo.head.commit
 
         active_branch = ""
@@ -117,35 +117,23 @@ class UncommittedChanges:
     upstream_sha: Optional[str]
 
 
-class ThreadSafeMethod:
-    def __init__(self, lock: RLock, method: Callable):
-        self._lock = lock
-        self.method = method
-
-    def __call__(self, *args, **kwargs):
-        self._lock.acquire()
-        res = self.method(*args, **kwargs)
-        self._lock.release()
-
-        return res
-
-
 class ThreadSafeGit:
     def __init__(self, lock: RLock, git):
         self._lock = lock
         self._git = git
 
-    def __getattr__(self, item: str):
-        return ThreadSafeMethod(self._lock, self._git.__getattr__(item))
+    def diff(self, *args, **kwargs) -> str:
+        with self._lock:
+            return self._git.diff(*args, **kwargs)
 
 
 class ThreadSafeRepo:
-    def __init__(self, git_ref: Union[GitRef, GitRefDisabled]):
+    def __init__(self, git_ref: Union[GitRef, GitRefDisabled], lock: RLock):
         self.git_ref = git_ref
 
-        self._lock = RLock()
+        self._lock = lock
 
-        self._repo = None
+        self._repo: Optional["git.Repo"] = None
         self.git = None
 
         self.get_repo_from_git_ref()
@@ -161,16 +149,40 @@ class ThreadSafeRepo:
         self._repo = get_git_repo(repo_path=initial_repo_path)
         self.git = ThreadSafeGit(self._lock, self._repo.git)
 
-    def __bool__(self) -> bool:
+    def __bool__(self) -> True:
         return bool(self._repo)
 
-    def __getattr__(self, item):
-        original_attribute = self._repo.__getattribute__(item)
+    def is_dirty(self, *args, **kwargs) -> bool:
+        with self._lock:
+            return self._repo.is_dirty(*args, **kwargs)
 
-        if callable(original_attribute):
-            return ThreadSafeMethod(self._lock, self._repo.__getattribute__(item))
+    @property
+    def head(self) -> "git.HEAD":
+        with self._lock:
+            return self._repo.head
 
-        return original_attribute
+    @property
+    def active_branch(self) -> "git.Head":
+        with self._lock:
+            return self._repo.active_branch
+
+    @property
+    def remotes(self):
+        with self._lock:
+            return self._repo.remotes
+
+    @property
+    def heads(self):
+        with self._lock:
+            return self._repo.heads
+
+    def is_ancestor(self, *args, **kwargs) -> bool:
+        with self._lock:
+            return self._repo.is_ancestor(*args, **kwargs)
+
+    def merge_base(self, *args, **kwargs):
+        with self._lock:
+            return self._repo.merge_base(*args, **kwargs)
 
 
 def get_diff(repo: ThreadSafeRepo, commit_ref: str) -> Optional[str]:
@@ -227,7 +239,7 @@ def get_upstream_index_sha(repo: ThreadSafeRepo) -> Optional[str]:
 
 
 def get_uncommitted_changes(repo: ThreadSafeRepo) -> Optional[UncommittedChanges]:
-    if not repo.is_dirty(untracked_files=True):
+    if not repo or not repo.is_dirty(untracked_files=True):
         return
 
     head_index_diff = get_diff(repo, repo.head.name)
@@ -239,9 +251,8 @@ def get_uncommitted_changes(repo: ThreadSafeRepo) -> Optional[UncommittedChanges
     return UncommittedChanges(head_index_diff, upstream_index_diff, upstream_sha)
 
 
-def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
-    repo = ThreadSafeRepo(git_ref)
-
+def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run", lock: RLock) -> None:
+    repo = ThreadSafeRepo(git_ref, lock)
     if not repo:
         return
 

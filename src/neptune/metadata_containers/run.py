@@ -353,6 +353,8 @@ class Run(MetadataContainer):
             or generate_monitoring_namespace(self._hostname, self._pid, self._tid)
         )
 
+        self._git_lock = threading.RLock()
+
         # for backward compatibility imports
         mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
 
@@ -392,7 +394,7 @@ class Run(MetadataContainer):
             if self._mode == Mode.READ_ONLY:
                 raise NeedExistingRunForReadOnlyMode()
 
-            git_info = to_git_info(git_ref=self._git_ref)
+            git_info = to_git_info(git_ref=self._git_ref, lock=self._git_lock)
 
             custom_run_id = self._custom_run_id
             if custom_run_id_exceeds_length(self._custom_run_id):
@@ -477,6 +479,7 @@ class Run(MetadataContainer):
         track_uncommitted_changes(
             git_ref=self._git_ref,
             run=self,
+            lock=self._git_lock,
         )
 
     @property
