@@ -167,7 +167,7 @@ class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
 {end}
 {type} has no attribute {attribute}.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs.neptune.ai/help/error_type_does_not_support_attribute.md
 """
         self._msg = message.format(type=type_, attribute=attribute, **STYLES)
         super().__init__(self._msg)
