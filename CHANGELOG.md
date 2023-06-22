@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.3.2
+## [UNRELEASED] neptune 1.4.0
 
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
