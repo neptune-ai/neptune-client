@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune 1.3.2
 
+### Fixes
+- Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
+
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
 
