@@ -1,7 +1,6 @@
 name: pull-request-unittests
 
 on:
-  pull_request:
   workflow_dispatch:
   push:
     branches-ignore:
