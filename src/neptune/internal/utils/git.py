@@ -114,7 +114,7 @@ def to_git_info(git_ref: Union[GitRef, GitRefDisabled]) -> Optional[GitInfo]:
             author_name=commit.author.name,
             author_email=commit.author.email,
             commit_date=commit.committed_datetime,
-            dirty=repo.is_dirty(untracked_files=True),
+            dirty=repo.is_dirty(index=False, untracked_files=True),
             branch=active_branch,
             remotes=remote_urls,
         )
@@ -183,7 +183,7 @@ def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
 
 
 def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedChanges]:
-    if not repo.is_dirty():
+    if not repo.is_dirty(index=False):
         return
 
     head_index_diff = get_diff(repo, repo.head.name)
