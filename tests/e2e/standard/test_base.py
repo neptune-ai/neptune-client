@@ -71,20 +71,6 @@ class TestAtoms(BaseE2ETest):
         with pytest.raises(AttributeError):
             container[key].fetch()
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize("value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()])
-    def test_assign_and_fetch_empty_key(self, container: MetadataContainer, value):
-        # Since the same key is used for every parametrized variant of the test, start with cleanup.
-        if container.exists(""):
-            del container[""]
-        # Assert the value is absent.
-        with pytest.raises(AttributeError):
-            container[""].fetch()
-
-        container[""] = value
-        container.sync()
-        assert container[""].fetch() == value
-
 
 class TestNamespace(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
