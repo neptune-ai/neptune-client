@@ -23,7 +23,7 @@ def _remove_empty_paths(paths: List[str]) -> List[str]:
 
 
 def parse_path(path: str) -> List[str]:
-    return _remove_empty_paths(path.split("/"))
+    return _remove_empty_paths(path.split("/")) or [path]
 
 
 def path_to_str(path: List[str]) -> str:
