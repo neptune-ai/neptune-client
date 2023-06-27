@@ -3,6 +3,7 @@
 ### Fixes
 - Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
 - Fix SSL errors after forking process ([#1353](https://github.com/neptune-ai/neptune-client/pull/1353))
+- Using an empty key in dict saved to a container (e.g. a run) now raises a ValueError ([#1374](https://github.com/neptune-ai/neptune-client/pull/1374))
 
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
