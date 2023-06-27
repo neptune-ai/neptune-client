@@ -439,8 +439,8 @@ class TestStringifyUnsupported:
 
     def test_append__float(self, run):
         with assert_no_warnings():
-            run["stringified"].append(stringify_unsupported(1.0))
-            run["stringified"].append(stringify_unsupported(2.0))
+            run["stringified"].append(stringify_unsupported(1.0), step=0)
+            run["stringified"].append(stringify_unsupported(2.0), step=1)
 
         with assert_no_warnings():
             run["regular"].append(1.0)
