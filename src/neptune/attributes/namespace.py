@@ -99,6 +99,11 @@ class Namespace(Attribute, MutableMapping):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():
+            if len(parse_path(k)) == 0:
+                raise ValueError(
+                    f'Key "{k}" can\'t be used in Namespaces and dicts stored in Neptune. Please use a non-empty key '
+                    f"instead."
+                )
             self._container[f"{self._str_path}/{k}"].assign(v, wait=wait)
 
     def _collect_atom_values(self, attribute_dict) -> dict:

@@ -302,6 +302,22 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
+    def test_assign__rejects_dict_with_practically_empty_key(self, run):
+        with raises(ValueError):
+            run["unsupported"] = {"": Obj()}
+        with raises(ValueError):
+            run["unsupported"] = {"///": Obj()}
+
+        with raises(ValueError):
+            run["stringified"] = stringify_unsupported({"": Obj()})
+        with raises(ValueError):
+            run["stringified"] = stringify_unsupported({"///": Obj()})
+
+        with raises(ValueError):
+            run["regular"] = {"": str(Obj())}
+        with raises(ValueError):
+            run["regular"] = {"///": str(Obj())}
+
     def test_assign__dict__reassign(self, run):
         with assert_unsupported_warning():
             run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
