@@ -16,6 +16,7 @@
 __all__ = ["Namespace", "NamespaceBuilder"]
 
 import argparse
+import logging
 from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
@@ -41,6 +42,8 @@ from neptune.internal.utils.paths import (
     path_to_str,
 )
 from neptune.types.namespace import Namespace as NamespaceVal
+
+_logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
@@ -100,10 +103,13 @@ class Namespace(Attribute, MutableMapping):
 
         for k, v in value.value.items():
             if len(parse_path(k)) == 0:
-                raise ValueError(
-                    f'Key "{k}" can\'t be used in Namespaces and dicts stored in Neptune. Please use a non-empty key '
-                    f"instead."
+                _logger.warning(
+                    'Key "%s" can\'t be used in Namespaces and dicts stored in Neptune. Please use a non-empty key '
+                    "instead. The value %r will be dropped.",
+                    k,
+                    v,
                 )
+                continue
             self._container[f"{self._str_path}/{k}"].assign(v, wait=wait)
 
     def _collect_atom_values(self, attribute_dict) -> dict:
