@@ -439,12 +439,23 @@ class TestStringifyUnsupported:
 
     def test_append__float(self, run):
         with assert_no_warnings():
-            run["stringified"].append(stringify_unsupported(1.0), step=0)
-            run["stringified"].append(stringify_unsupported(2.0), step=1)
+            run["stringified"].append(stringify_unsupported(1.0))
+            run["stringified"].append(stringify_unsupported(2.0))
 
         with assert_no_warnings():
             run["regular"].append(1.0)
             run["regular"].append(2.0)
+
+        assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
+
+    def test_append__float_with_steps(self, run):
+        with assert_no_warnings():
+            run["stringified"].append(stringify_unsupported(1.0), step=5)
+            run["stringified"].append(stringify_unsupported(2.0), step=6)
+
+        with assert_no_warnings():
+            run["regular"].append(1.0, step=5)
+            run["regular"].append(2.0, step=6)
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
