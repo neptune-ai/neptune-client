@@ -65,6 +65,7 @@ optuna = { version = "*", optional = true }
 scikit-learn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
 accelerate = { version = "*", optional = true }
+backoff = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
