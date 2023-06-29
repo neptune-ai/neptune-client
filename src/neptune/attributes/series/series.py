@@ -28,6 +28,7 @@ from typing import (
 
 from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import LogOperation
+from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
     is_stringify_value,
@@ -132,16 +133,20 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
     def extend(
         self,
-        values: Collection[DataTV],
+        values: Union[Collection[DataTV], StringifyValue],
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
         **kwargs,
     ) -> None:
+        if is_stringify_value(values):
+            values = self._handle_stringified_value(values)
+
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
             if len(steps) != len(values):
                 raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(values)}")
+
         if timestamps is not None:
             verify_collection_type("timestamps", timestamps, (float, int))
             if len(timestamps) != len(values):

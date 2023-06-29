@@ -204,7 +204,7 @@ def get_git_info(repo_path=None):
             author_name=commit.author.name,
             author_email=commit.author.email,
             commit_date=commit.committed_datetime,
-            repository_dirty=repo.is_dirty(untracked_files=True),
+            repository_dirty=repo.is_dirty(index=False, untracked_files=True),
             active_branch=active_branch,
             remote_urls=remote_urls,
         )

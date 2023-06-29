@@ -3,6 +3,7 @@
 ### Fixes
 - Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
 - Fix SSL errors after forking process ([#1353](https://github.com/neptune-ai/neptune-client/pull/1353))
+- Fixed support of stringify value in series attributes with step ([#1373](https://github.com/neptune-ai/neptune-client/pull/1373))
 - `dict`s and `Namespace`s that are written to runs and contain an empty string "" key now produce a warning and drop
   the entry with such key instead of raising an
   exception ([#1374](https://github.com/neptune-ai/neptune-client/pull/1374))
