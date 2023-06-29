@@ -40,7 +40,6 @@ class TestInitRun(BaseE2ETest):
     def test_custom_run_id(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
         with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as run:
-
             key = self.gen_key()
             val = fake.word()
             run[key] = val
@@ -55,7 +54,6 @@ class TestInitRun(BaseE2ETest):
             name="E2e init source code",
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             with with_check_if_file_appears("files.zip"):
@@ -66,7 +64,6 @@ class TestInitRun(BaseE2ETest):
             git_ref=GitRef(repository_path="."),
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             assert exp.exists("source_code/git")
@@ -76,7 +73,6 @@ class TestInitRun(BaseE2ETest):
             git_ref=GitRef.DISABLED,
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             assert not exp.exists("source_code/git")
@@ -86,7 +82,6 @@ class TestInitRun(BaseE2ETest):
             project=environment.project,
             dependencies="infer",
         ) as exp:
-
             exp.sync()
 
             assert exp.exists("source_code/requirements")
@@ -100,7 +95,6 @@ class TestInitRun(BaseE2ETest):
             project=environment.project,
             dependencies=filename,
         ) as exp:
-
             exp.sync()
 
             exp["source_code/files"].download("downloaded1.zip")
@@ -115,7 +109,10 @@ class TestInitRun(BaseE2ETest):
         with open("some_file.txt", "w") as fp:
             fp.write("some-content\n")
 
-        with neptune.init_run(project=environment.project) as run:
+        repo.git.add("some_file.txt")
+
+        assert repo.is_dirty(index=False)
+        with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=".")) as run:
             run.sync()
             assert run.exists("source_code/diff")
             run["source_code/diff"].download()
