@@ -82,6 +82,7 @@ neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
 neptune-aws = { version = "*", optional = true }
+mlflow = { version = ">1.24", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
@@ -99,6 +100,7 @@ tensorflow-keras = ["neptune-tensorflow-keras"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
+mlflow = ["mlflow"]
 dev = [
     "altair",
     "bokeh",
@@ -128,6 +130,7 @@ e2e = [
     "transformers",
     "accelerate",
     "zenml",
+    "mlflow",
 ]
 
 [tool.poetry]
