@@ -106,12 +106,13 @@ class TestInitRun(BaseE2ETest):
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
     def test_tracking_uncommitted_changes(self, repo, environment):
-        with open("some_file.txt", "w") as fp:
+        file = repo.working_dir + "/some_file.txt"
+        with open(file, "w") as fp:
             fp.write("some-content\n")
 
-        repo.git.add("some_file.txt")
+        repo.git.add(file)
 
-        with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=".")) as run:
+        with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=repo.working_dir)) as run:
             run.sync()
             assert run.exists("source_code/diff")
             run["source_code/diff"].download()
