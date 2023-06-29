@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from time import sleep
-from typing import Dict
+from typing import (
+    Callable,
+    Dict,
+    List,
+)
 
+import backoff
 import pytest
 
 from neptune import init_model_version
@@ -43,6 +47,7 @@ from neptune.management.exceptions import (
     WorkspaceOrUserNotFound,
 )
 from neptune.management.internal.utils import normalize_project_name
+from neptune.metadata_containers.metadata_containers_table import Table
 from tests.e2e.base import (
     BaseE2ETest,
     fake,
@@ -415,49 +420,41 @@ class TestTrashObjects(BaseE2ETest):
         run2_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
         model1_id = initialize_container(ContainerType.MODEL, project=environment.project)["sys/id"].fetch()
         model2_id = initialize_container(ContainerType.MODEL, project=environment.project)["sys/id"].fetch()
+        # wait for elastic index to refresh
+        self.wait_for_containers([run1_id, run2_id], project.fetch_runs_table)
+        self.wait_for_containers([model1_id, model2_id], project.fetch_models_table)
 
         # WHEN trash one run and one model
         trash_objects(environment.project, [run1_id, model1_id])
-        # wait for the elasticsearch cache to fill
-        sleep(5)
 
-        # THEN trashed runs are marked as trashed
-        runs = project.fetch_runs_table().to_pandas()
-        runs_ids = runs["sys/id"].tolist()
-        assert run1_id not in runs_ids
-        assert run2_id in runs_ids
-
-        # AND trashed models are marked as trashed
-        models = project.fetch_models_table().to_pandas()
-        models_ids = models["sys/id"].tolist()
-        assert model1_id not in models_ids
-        assert model2_id in models_ids
+        # THEN trashed runs are not fetched
+        self.wait_for_containers([run2_id], project.fetch_runs_table)
+        # AND trashed models are not fetched
+        self.wait_for_containers([model2_id], project.fetch_models_table)
 
     def test_trash_model_version(self, environment):
         # WITH model
         model = initialize_container(ContainerType.MODEL, project=environment.project)
         model_id = model["sys/id"].fetch()
-
         # AND model's model versions
-        model_version1 = init_model_version(model=model_id, project=environment.project)["sys/id"].fetch()
-        model_version2 = init_model_version(model=model_id, project=environment.project)["sys/id"].fetch()
+        model_version1_id = init_model_version(model=model_id, project=environment.project)["sys/id"].fetch()
+        model_version2_id = init_model_version(model=model_id, project=environment.project)["sys/id"].fetch()
+        self.wait_for_containers([model_version1_id, model_version2_id], model.fetch_model_versions_table)
 
         # WHEN model version is trashed
-        trash_objects(environment.project, model_version1)
-        # wait for the elasticsearch cache to fill
-        sleep(5)
+        trash_objects(environment.project, model_version1_id)
 
-        # THEN expect this version to be trashed
-        model_versions = model.fetch_model_versions_table().to_pandas()
-        model_versions_ids = model_versions["sys/id"].tolist()
-        assert model_version1 not in model_versions_ids
-        assert model_version2 in model_versions_ids
+        # THEN expect this version to not be fetched anymore
+        self.wait_for_containers([model_version2_id], model.fetch_model_versions_table)
 
         # WHEN whole model is trashed
         trash_objects(environment.project, model_id)
-        # wait for the elasticsearch cache to fill
-        sleep(5)
 
-        # THEN expect all its versions to be trashed
-        model_versions = model.fetch_model_versions_table().to_pandas()
-        assert len(model_versions) == 0
+        # THEN expect none of its versions to be fetched anymore
+        self.wait_for_containers([], model.fetch_model_versions_table)
+
+    @backoff.on_exception(backoff.expo, Exception, max_time=5)
+    def wait_for_containers(self, ids: List[str], container_provider: Callable[[], Table]):
+        fetched_entries = container_provider().to_pandas()
+        actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []
+        assert sorted(actual_ids) == sorted(ids)
