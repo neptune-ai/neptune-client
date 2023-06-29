@@ -21,6 +21,8 @@ from typing import (
     TypeVar,
 )
 
+from neptune.internal.utils.logger import logger
+from neptune.internal.utils.paths import parse_path
 from neptune.types.value import Value
 
 if TYPE_CHECKING:
@@ -36,6 +38,15 @@ class Namespace(Value):
 
     def __init__(self, value):
         self.value = value
+        empty_keys = [k for k in self.value.keys() if not parse_path(k)]
+        if empty_keys:
+            all_keys = ", ".join(['"' + k + '"' for k in empty_keys])
+            logger.warning(
+                f"Key(s) {all_keys} can't be used in Namespaces and dicts stored in Neptune. Please use non-empty "
+                f"keys instead. The value(s) will be dropped.",
+            )
+            self.value = value.copy()
+            [self.value.pop(key) for key in empty_keys]
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_namespace(self)

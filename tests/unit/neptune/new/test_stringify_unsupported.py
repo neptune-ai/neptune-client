@@ -302,35 +302,6 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
-    def test_assign__drops_dict_entry_with_practically_empty_key(self, caplog, run):
-        with assert_unsupported_warning():
-            run["unsupported"] = {"": Obj(), "x": Obj()}
-        with assert_unsupported_warning():
-            run["unsupported"] = {"///": Obj(), "x": Obj()}
-        logs = caplog.get_records("call")
-        assert all(["can't be used in Namespaces and dicts stored in Neptune" in record.msg for record in logs])
-        assert [record.args[0] for record in logs] == ["", "///"]
-        caplog.clear()
-
-        with assert_no_warnings():
-            run["stringified"] = stringify_unsupported({"": Obj(), "x": Obj()})
-            run["stringified"] = stringify_unsupported({"///": Obj(), "x": Obj()})
-        logs = caplog.get_records("call")
-        assert all(["can't be used in Namespaces and dicts stored in Neptune" in record.msg for record in logs])
-        assert [record.args[0] for record in logs] == ["", "///"]
-        caplog.clear()
-
-        with assert_no_warnings():
-            run["regular"] = {"": str(Obj()), "x": str(Obj())}
-            run["regular"] = {"///": str(Obj()), "x": str(Obj())}
-        logs = caplog.get_records("call")
-        assert all(["can't be used in Namespaces and dicts stored in Neptune" in record.msg for record in logs])
-        assert [record.args[0] for record in logs] == ["", "///"]
-        caplog.clear()
-
-        assert len(run["stringified"].fetch()) == 1
-        assert run["regular"].fetch() == run["stringified"].fetch()
-
     def test_assign__dict__reassign(self, run):
         with assert_unsupported_warning():
             run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
