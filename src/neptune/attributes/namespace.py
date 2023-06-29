@@ -36,6 +36,7 @@ from neptune.internal.utils.generic_attribute_mapper import (
     NoValue,
     atomic_attribute_types_map,
 )
+from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import (
     parse_path,
     path_to_str,
@@ -55,6 +56,12 @@ class Namespace(Attribute, MutableMapping):
         self._str_path = path_to_str(path)
 
     def __setitem__(self, k: str, v: Attribute) -> None:
+        if not parse_path(k):
+            logger.warning(
+                f'Key "{k}" can\'t be used in Namespaces and dicts stored in Neptune. Please use a non-empty key '
+                f"instead. The value {v!r} will be dropped.",
+            )
+            return
         self._attributes[k] = v
 
     def __delitem__(self, k: str) -> None:
