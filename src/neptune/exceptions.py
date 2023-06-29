@@ -530,11 +530,11 @@ class NeedExistingExperimentForReadOnlyMode(NeptuneException):
 {end}
 Read-only mode can be used only with an existing {container_type}.
 
-The {python}{container_type}{end} parameter of {python}{callback_name}{end} must be provided and reference
-an existing run when using {python}mode="read-only"{end}.
+Pass the ID of a {container_type} to the {python}with_id{end} argument of {python}{callback_name}{end}
+when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/logging/to_existing_object/
+    - https://docs.neptune.ai/usage/resuming_run/
     - https://docs.neptune.ai/api/connection_modes/#read-only-mode
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
