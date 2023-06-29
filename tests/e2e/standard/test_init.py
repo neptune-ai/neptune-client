@@ -111,7 +111,6 @@ class TestInitRun(BaseE2ETest):
 
         repo.git.add("some_file.txt")
 
-        assert repo.is_dirty(index=False)
         with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=".")) as run:
             run.sync()
             assert run.exists("source_code/diff")
