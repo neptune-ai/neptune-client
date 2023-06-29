@@ -188,8 +188,8 @@ def get_uncommitted_changes(repo: Optional["git.Repo"]) -> Optional[UncommittedC
     upstream_sha = get_upstream_index_sha(repo)
 
     upstream_index_diff = get_diff(repo, upstream_sha)
-
-    return UncommittedChanges(head_index_diff, upstream_index_diff, upstream_sha)
+    if head_index_diff or upstream_sha or upstream_index_diff:
+        return UncommittedChanges(head_index_diff, upstream_index_diff, upstream_sha)
 
 
 def track_uncommitted_changes(git_ref: Union[GitRef, GitRefDisabled], run: "Run") -> None:
