@@ -82,7 +82,7 @@ neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
 neptune-aws = { version = "*", optional = true }
-mlflow = { version = ">1.24", optional = true }
+mlflow = { version = ">1.30", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
