@@ -116,7 +116,7 @@ class TestInitRun(BaseE2ETest):
             fp.write("some-content\n")
 
         assert repo.is_dirty(index=False, untracked_files=True)
-        
+
         with neptune.init_run(project=environment.project) as run:
             run.sync()
             assert run.exists("source_code/diff")
