@@ -98,7 +98,7 @@ def test_get_diff(mock_repo):
     get_diff(mock_repo, "some_ref")
 
     # then
-    mock_repo.git.diff.assert_called_once_with("some_ref")
+    mock_repo.git.diff.assert_called_once_with("some_ref", index=False)
 
 
 @patch("git.Repo")
@@ -110,7 +110,7 @@ def test_get_diff_command_error(mock_repo):
     diff = get_diff(mock_repo, "some_ref")
 
     # then
-    mock_repo.git.diff.assert_called_once_with("some_ref")
+    mock_repo.git.diff.assert_called_once_with("some_ref", index=False)
     assert diff is None
 
 
