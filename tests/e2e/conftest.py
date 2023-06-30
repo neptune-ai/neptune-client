@@ -15,14 +15,12 @@
 #
 import os
 import time
+import uuid
 from datetime import datetime
 
 import pytest
 from faker import Faker
-from git import (
-    InvalidGitRepositoryError,
-    Repo,
-)
+from git import Repo
 
 from neptune import init_project
 from neptune.internal.utils.s3 import get_boto_s3_client
@@ -130,12 +128,13 @@ def project(environment):
 
 
 @pytest.fixture(scope="session")
-def repo() -> Repo:
-    try:
-        # local setup
-        repo = Repo(".")
-    except InvalidGitRepositoryError:
-        # CI
-        repo = Repo.init()
+def repo(tmp_path_factory) -> Repo:
+    path = tmp_path_factory.mktemp("git_repo")
+    repo = Repo.init(path)
+    file = path / f"{uuid.uuid4()}.txt"
+    with open(file, "w") as fp:
+        fp.write(str(uuid.uuid4()))
 
+    repo.git.add(all=True)
+    repo.index.commit("Init commit")
     return repo
