@@ -534,7 +534,7 @@ Pass the ID of a {container_type} to the {python}with_id{end} argument of {pytho
 when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/usage/resuming_run/
+    - https://docs.neptune.ai/usage/resume_run/
     - https://docs.neptune.ai/api/connection_modes/#read-only-mode
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
