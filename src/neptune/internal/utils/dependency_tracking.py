@@ -6,6 +6,7 @@ __all__ = [
 
 import os
 import subprocess
+import sys
 from abc import (
     ABC,
     abstractmethod,
