@@ -106,7 +106,7 @@ class TestInitRun(BaseE2ETest):
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
     def test_warning_raised_if_dependency_file_non_existent(self):
-        with pytest.warns():
+        with pytest.warns(Warning, match=".+ 'some_non_existent_file' does not exist .+"):
             with neptune.init_run(dependencies="some_non_existent_file"):
                 ...
 
