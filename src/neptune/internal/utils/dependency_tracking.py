@@ -7,6 +7,7 @@ __all__ = [
 import os
 import subprocess
 import sys
+import warnings
 from abc import (
     ABC,
     abstractmethod,
@@ -46,3 +47,5 @@ class FileDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
         if os.path.isfile(self._path):
             run["source_code/files"].upload_files(os.path.basename(self._path))
+        else:
+            warnings.warn(f"File '{self._path}' does not exist - skipping dependency file upload.")

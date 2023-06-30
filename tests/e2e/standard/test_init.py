@@ -105,6 +105,11 @@ class TestInitRun(BaseE2ETest):
             with zipped.open(filename, "r") as file:
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
+    def test_warning_raised_if_dependency_file_non_existent(self):
+        with pytest.warns():
+            with neptune.init_run(dependencies="some_non_existent_file"):
+                ...
+
     def test_tracking_uncommitted_changes(self, repo, environment):
         file = repo.working_dir + "/some_file.txt"
         with open(file, "w") as fp:
