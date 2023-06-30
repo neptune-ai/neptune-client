@@ -228,7 +228,7 @@ class Run(MetadataContainer):
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
             dependencies: To track the project dependencies, pass a path to your dependency file.
                 If None, no dependency file is uploaded.
-                If you pass `"infer"`, Neptune uses [pipreqs](https://pypi.org/project/pipreqs) to upload
+                If you pass `"infer"`, Neptune will run `pip freeze` to generate and upload
                 the requirements.
 
         Returns:
