@@ -21,7 +21,6 @@ future = ">=0.17.1"
 # Utility
 packaging = "*"
 click = ">=7.0"
-pipreqs = ">=0.4"
 
 # Networking
 bravado = "^11.0.0"

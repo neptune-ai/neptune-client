@@ -30,7 +30,7 @@ class DependencyTrackingStrategy(ABC):
 class InferDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
         try:
-            dependencies_str = subprocess.check_output(["pipreqs", "--print", "."]).decode("utf-8")
+            dependencies_str = subprocess.check_output(["pip", "freeze"]).decode("utf-8")
         except subprocess.SubprocessError:
             return
 
