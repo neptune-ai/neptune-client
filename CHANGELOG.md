@@ -11,6 +11,7 @@
 
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
+- Dependency tracking feature will raise warning if a given file path doesn't exist ([#1385](https://github.com/neptune-ai/neptune-client/pull/1385))
 
 ## neptune 1.3.1
 
