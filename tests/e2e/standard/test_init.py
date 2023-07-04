@@ -105,10 +105,13 @@ class TestInitRun(BaseE2ETest):
             with zipped.open(filename, "r") as file:
                 assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
 
-    def test_warning_raised_if_dependency_file_non_existent(self, environment):
-        with pytest.warns(Warning, match="^.*some_non_existent_file.*$"):
-            with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
-                ...
+    def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
+        with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
+            ...
+
+        captured = capsys.readouterr()
+        assert "'some_non_existent_file' does not exist" in captured.out
+        assert "ERROR" in captured.out
 
     def test_tracking_uncommitted_changes(self, repo, environment):
         file = repo.working_dir + "/some_file.txt"

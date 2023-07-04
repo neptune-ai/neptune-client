@@ -1,4 +1,11 @@
-## [UNRELEASED] neptune 1.3.2
+##  [UNRELEASED] neptune 1.3.3
+
+### Changes
+- Dependency tracking feature will log an error if a given file path doesn't exist ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
+- Use `pip list --format=freeze` instead of `pip freeze` in dependency tracking ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
+- Log both uploaded and inferred requirements to the same namespace ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
+
+## neptune 1.3.2
 
 ### Fixes
 - Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
@@ -11,7 +18,6 @@
 
 ### Changes
 - Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
-- Dependency tracking feature will raise warning if a given file path doesn't exist ([#1385](https://github.com/neptune-ai/neptune-client/pull/1385))
 
 ## neptune 1.3.1
 
