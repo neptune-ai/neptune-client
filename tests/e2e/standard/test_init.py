@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zipfile import ZipFile
-
 import pytest
 
 import neptune
@@ -97,13 +95,10 @@ class TestInitRun(BaseE2ETest):
         ) as exp:
             exp.sync()
 
-            exp["source_code/files"].download("downloaded1.zip")
+            exp["source_code/requirements"].download("requirements.txt")
 
-        with ZipFile("downloaded1.zip") as zipped:
-            assert filename in zipped.namelist()
-
-            with zipped.open(filename, "r") as file:
-                assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
+        with open("requirements.txt", "r") as file:
+            assert file.read() == "some-dependency==1.0.0"
 
     def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
         with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
