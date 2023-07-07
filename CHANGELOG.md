@@ -5,6 +5,9 @@
 - Use `pip list --format=freeze` instead of `pip freeze` in dependency tracking ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 - Log both uploaded and inferred requirements to the same namespace ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 
+### Fixes
+- Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
+
 ## neptune 1.3.2
 
 ### Fixes
