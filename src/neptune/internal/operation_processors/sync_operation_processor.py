@@ -15,9 +15,7 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
-import os
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from neptune.constants import (
@@ -42,10 +40,7 @@ class SyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
-        cwd = Path(os.getcwd())
-        container_dir = str(
-            cwd / f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        )
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return data_path
 
