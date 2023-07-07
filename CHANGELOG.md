@@ -2,9 +2,11 @@
 
 ### Changes
 - Dependency tracking feature will log an error if a given file path doesn't exist ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
-- Use `pip list --format=freeze` instead of `pip freeze` in dependency tracking ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
+- Use `importlib` instead of `pip freeze` in dependency tracking ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 - Log both uploaded and inferred requirements to the same namespace ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 
+### Fixes
+- Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
 ## neptune 1.3.2
 
 ### Fixes
