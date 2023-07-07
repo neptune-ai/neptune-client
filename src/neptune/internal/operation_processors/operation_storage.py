@@ -64,9 +64,16 @@ class OperationStorage:
     def close(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
 
-        parent = self.data_path.parent
+        try:
+            parent = self.data_path.parent
 
-        files = os.listdir(parent)
+            files = os.listdir(parent)
+        except FileNotFoundError:
+            # cwd is not the same as the script directory
+            parent = self.data_path_abs.parent
+
+            files = os.listdir(parent)
+
         if len(files) == 0:
             try:
                 os.rmdir(parent)
