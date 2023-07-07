@@ -246,7 +246,7 @@ class UploadFile(Operation):
         if self.file_path:
             return self.file_path
         elif self.tmp_file_name:
-            return str(operation_storage.upload_path / self.tmp_file_name)
+            return str(operation_storage.upload_path_abs / self.tmp_file_name)
 
         raise NeptuneException("Expected 'file_path' or 'tmp_file_name' to be filled.")
 

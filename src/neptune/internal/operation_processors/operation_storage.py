@@ -39,15 +39,23 @@ class OperationStorage:
         os.makedirs(self.upload_path, exist_ok=True)
 
         cwd = Path(os.getcwd())
-        self._data_path = cwd / self._data_path
+        self._data_path_abs = cwd / self._data_path
 
     @property
     def data_path(self) -> Path:
         return self._data_path
 
     @property
+    def data_path_abs(self) -> Path:
+        return self._data_path_abs
+
+    @property
     def upload_path(self) -> Path:
         return self.data_path / "upload_path"
+
+    @property
+    def upload_path_abs(self) -> Path:
+        return self.data_path_abs / "upload_path"
 
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
