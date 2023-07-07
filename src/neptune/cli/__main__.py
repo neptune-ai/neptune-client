@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+import warnings
+
 import click
 import pkg_resources
 
@@ -36,4 +38,11 @@ main.add_command(clear)
 plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
 
 for name, entry_point in plugins.items():
-    main.add_command(entry_point.load(), name)
+    # loading an entry_point may fail and this
+    # will cause all CLI commands to fail.
+    # So, we load the plug-ins in try and except block.
+    try:
+        loaded_plugin = entry_point.load()
+    except Exception as e:
+        warnings.warn(f"Failed loading neptune plug-in `{name}` with exception: {e}")
+    main.add_command(loaded_plugin, name)
