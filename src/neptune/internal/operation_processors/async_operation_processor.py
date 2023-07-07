@@ -85,7 +85,7 @@ class AsyncOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
         cwd = Path(os.getcwd())
-        container_dir = (
+        container_dir = str(
             cwd / f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         )
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"

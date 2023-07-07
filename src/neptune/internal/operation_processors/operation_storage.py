@@ -49,7 +49,9 @@ class OperationStorage:
 
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
-        return f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{container_type.create_dir_name(container_id)}"
+        return str(
+            Path(os.getcwd()) / f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{container_type.create_dir_name(container_id)}"
+        )
 
     def close(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
