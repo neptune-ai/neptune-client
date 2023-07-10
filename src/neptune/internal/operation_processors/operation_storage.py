@@ -31,31 +31,20 @@ from neptune.internal.utils.logger import logger
 class OperationStorage:
     def __init__(self, data_path: Union[str, Path]):
         if isinstance(data_path, Path):
-            self._data_path = data_path
+            self._data_path = data_path.resolve()
         else:
-            self._data_path = Path(data_path)
+            self._data_path = Path(data_path).resolve()
         # initialize directories
         os.makedirs(self.data_path, exist_ok=True)
         os.makedirs(self.upload_path, exist_ok=True)
-
-        cwd = Path(os.getcwd())
-        self._data_path_abs = cwd / self._data_path
 
     @property
     def data_path(self) -> Path:
         return self._data_path
 
     @property
-    def data_path_abs(self) -> Path:
-        return self._data_path_abs
-
-    @property
     def upload_path(self) -> Path:
         return self.data_path / "upload_path"
-
-    @property
-    def upload_path_abs(self) -> Path:
-        return self.data_path_abs / "upload_path"
 
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
@@ -64,15 +53,8 @@ class OperationStorage:
     def close(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
 
-        try:
-            parent = self.data_path.parent
-
-            files = os.listdir(parent)
-        except FileNotFoundError:
-            # cwd is not the same as the script directory
-            parent = self.data_path_abs.parent
-
-            files = os.listdir(parent)
+        parent = self.data_path.parent
+        files = os.listdir(parent)
 
         if len(files) == 0:
             try:
