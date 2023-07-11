@@ -466,13 +466,22 @@ class Run(MetadataContainer):
             upload_source_code(source_files=self._source_files, run=self)
 
         if self._dependencies:
-            if self._dependencies == "infer":
-                dependency_strategy = InferDependenciesStrategy()
+            try:
+                if self._dependencies == "infer":
+                    dependency_strategy = InferDependenciesStrategy()
 
-            else:
-                dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
+                else:
+                    dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
 
-            dependency_strategy.log_dependencies(run=self)
+                dependency_strategy.log_dependencies(run=self)
+            except Exception as e:
+                warn_once(
+                    "An exception occurred in automatic dependency tracking."
+                    "Skipping upload of requirement files."
+                    "Exception: " + str(e),
+                    exception=NeptuneWarning,
+                )
+
         try:
             track_uncommitted_changes(
                 git_ref=self._git_ref,
