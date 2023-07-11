@@ -189,28 +189,32 @@ class TestUpload(BaseE2ETest):
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
 
-    def test_upload_with_changed_working_directory(self, container: MetadataContainer):
+    def test_upload_with_changed_working_directory(self, environment):
         os.makedirs("some_other_folder", exist_ok=True)
 
         key_in_mem = self.gen_key()
         key_from_disk = self.gen_key()
 
         with os.chdir("some_other_folder"):
-
+            run = initialize_container(
+                container_type="run",
+                project=environment.project,
+            )
             # upload file from memory
-            container[key_in_mem].upload(File.from_content("abcd"))
+            run[key_in_mem].upload(File.from_content("abcd"))
 
             # upload file from disk
             filename = fake.file_name()
             with open(filename, "w") as fp:
                 fp.write("test content")
 
-            container[key_from_disk].upload(filename)
+            run[key_from_disk].upload(filename)
 
-            container.sync()
+            run.sync()
 
-        assert container.exists(key_in_mem)
-        assert container.exists(key_from_disk)
+        assert run.exists(key_in_mem)
+        assert run.exists(key_from_disk)
+        run.stop()
 
 
 class TestFileSet(BaseE2ETest):
