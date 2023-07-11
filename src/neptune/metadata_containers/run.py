@@ -473,11 +473,18 @@ class Run(MetadataContainer):
                 dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
 
             dependency_strategy.log_dependencies(run=self)
-
-        track_uncommitted_changes(
-            git_ref=self._git_ref,
-            run=self,
-        )
+        try:
+            track_uncommitted_changes(
+                git_ref=self._git_ref,
+                run=self,
+            )
+        except Exception as e:
+            warn_once(
+                "An exception occurred in tracking uncommitted changes."
+                "Skipping upload of patch files."
+                "Exception: " + str(e),
+                exception=NeptuneWarning,
+            )
 
     @property
     def monitoring_namespace(self) -> str:
