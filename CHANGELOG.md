@@ -1,4 +1,4 @@
-##  [UNRELEASED] neptune 1.3.3
+##  neptune 1.3.3
 
 ### Changes
 - Dependency tracking feature will log an error if a given file path doesn't exist ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
