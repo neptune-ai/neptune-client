@@ -30,15 +30,13 @@ from neptune.internal.utils.logger import logger
 
 class OperationStorage:
     def __init__(self, data_path: Union[str, Path]):
-        if isinstance(data_path, Path):
-            self._data_path = data_path
-        else:
-            self._data_path = Path(data_path)
+        self._data_path = Path(data_path)
+
         # initialize directories
         os.makedirs(self.data_path, exist_ok=True)
         os.makedirs(self.upload_path, exist_ok=True)
 
-        self._data_path = self._data_path.resolve()
+        self._data_path = Path(data_path).resolve()
 
     @property
     def data_path(self) -> Path:
