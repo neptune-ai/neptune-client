@@ -5,6 +5,9 @@
 - Use `pip list --format=freeze` instead of `pip freeze` in dependency tracking ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 - Log both uploaded and inferred requirements to the same namespace ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
 
+### Fixes
+- Tracking uncommitted changes and dependencies will be skipped in case of any exception, to not disturb the run initialization ([#1395](https://github.com/neptune-ai/neptune-client/pull/1395))
+
 ## neptune 1.3.2
 
 ### Fixes
