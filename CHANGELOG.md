@@ -1,4 +1,4 @@
-##  [UNRELEASED] neptune 1.3.3
+##  neptune 1.3.3
 
 ### Changes
 - Dependency tracking feature will log an error if a given file path doesn't exist ([#1389](https://github.com/neptune-ai/neptune-client/pull/1389))
@@ -7,6 +7,7 @@
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
+- Tracking uncommitted changes and dependencies will be skipped in case of any exception, to not disturb the run initialization ([#1395](https://github.com/neptune-ai/neptune-client/pull/1395))
 
 ## neptune 1.3.2
 
