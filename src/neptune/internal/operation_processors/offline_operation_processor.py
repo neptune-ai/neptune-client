@@ -16,6 +16,7 @@
 __all__ = ("OfflineOperationProcessor",)
 
 import threading
+from pathlib import Path
 from typing import Optional
 
 from neptune.constants import (
@@ -42,8 +43,8 @@ class OfflineOperationProcessor(OperationProcessor):
         )
 
     @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType):
-        return f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{container_type.create_dir_name(container_id)}"
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
+        return Path(f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{container_type.create_dir_name(container_id)}")
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)

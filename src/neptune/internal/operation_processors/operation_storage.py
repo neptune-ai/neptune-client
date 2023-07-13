@@ -20,7 +20,6 @@ __all__ = [
 import os
 import shutil
 from pathlib import Path
-from typing import Union
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
@@ -29,12 +28,13 @@ from neptune.internal.utils.logger import logger
 
 
 class OperationStorage:
-    def __init__(self, data_path: Union[str, Path]):
-        self._data_path = Path(data_path)
+    UPLOAD_PATH: str = "upload_path"
 
-        # initialize directories
-        os.makedirs(self.data_path, exist_ok=True)
-        os.makedirs(self.upload_path, exist_ok=True)
+    def __init__(self, data_path: Path):
+        self._data_path = Path(data_path).resolve()
+
+        # initialize directory
+        os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
         self._data_path = Path(data_path).resolve()
 
