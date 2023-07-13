@@ -36,8 +36,6 @@ class OperationStorage:
         # initialize directory
         os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
-        self._data_path = Path(data_path).resolve()
-
     @property
     def data_path(self) -> Path:
         return self._data_path
