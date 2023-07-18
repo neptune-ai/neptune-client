@@ -5,7 +5,7 @@ __all__ = [
 ]
 
 import os
-import subprocess
+import sys
 from abc import (
     ABC,
     abstractmethod,
@@ -15,6 +15,12 @@ from typing import (
     Union,
 )
 
+if sys.version_info >= (3, 8):
+    from importlib.metadata import distributions
+else:
+    from importlib_metadata import distributions
+
+from neptune.internal.utils.logger import logger
 from neptune.types import File
 
 if TYPE_CHECKING:
@@ -29,10 +35,14 @@ class DependencyTrackingStrategy(ABC):
 
 class InferDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
-        try:
-            dependencies_str = subprocess.check_output(["pipreqs", "--print", "."]).decode("utf-8")
-        except subprocess.SubprocessError:
-            return
+        dependencies = []
+        dists = list(sorted(distributions(), key=lambda d: d.metadata["Name"]))
+
+        for dist in dists:
+            name, version = dist.metadata["Name"], dist.metadata["Version"]
+            dependencies.append(f"{name}=={version}")
+
+        dependencies_str = "\n".join(dependencies)
 
         if dependencies_str:
             run["source_code/requirements"].upload(File.from_content(dependencies_str))
@@ -44,4 +54,6 @@ class FileDependenciesStrategy(DependencyTrackingStrategy):
 
     def log_dependencies(self, run: "Run") -> None:
         if os.path.isfile(self._path):
-            run["source_code/files"].upload_files(os.path.basename(self._path))
+            run["source_code/requirements"].upload(os.path.basename(self._path))
+        else:
+            logger.error("[ERROR] File '%s' does not exist - skipping dependency file upload.", self._path)

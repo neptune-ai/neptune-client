@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from zipfile import ZipFile
-
 import pytest
 
 import neptune
@@ -40,7 +38,6 @@ class TestInitRun(BaseE2ETest):
     def test_custom_run_id(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
         with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as run:
-
             key = self.gen_key()
             val = fake.word()
             run[key] = val
@@ -55,7 +52,6 @@ class TestInitRun(BaseE2ETest):
             name="E2e init source code",
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             with with_check_if_file_appears("files.zip"):
@@ -66,7 +62,6 @@ class TestInitRun(BaseE2ETest):
             git_ref=GitRef(repository_path="."),
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             assert exp.exists("source_code/git")
@@ -76,7 +71,6 @@ class TestInitRun(BaseE2ETest):
             git_ref=GitRef.DISABLED,
             project=environment.project,
         ) as exp:
-
             # download sources
             exp.sync()
             assert not exp.exists("source_code/git")
@@ -86,7 +80,6 @@ class TestInitRun(BaseE2ETest):
             project=environment.project,
             dependencies="infer",
         ) as exp:
-
             exp.sync()
 
             assert exp.exists("source_code/requirements")
@@ -100,25 +93,29 @@ class TestInitRun(BaseE2ETest):
             project=environment.project,
             dependencies=filename,
         ) as exp:
-
             exp.sync()
 
-            exp["source_code/files"].download("downloaded1.zip")
+            exp["source_code/requirements"].download("requirements.txt")
 
-        with ZipFile("downloaded1.zip") as zipped:
-            assert filename in zipped.namelist()
+        with open("requirements.txt", "r") as file:
+            assert file.read() == "some-dependency==1.0.0"
 
-            with zipped.open(filename, "r") as file:
-                assert file.read().decode(encoding="utf-8") == "some-dependency==1.0.0"
+    def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
+        with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
+            ...
+
+        captured = capsys.readouterr()
+        assert "'some_non_existent_file' does not exist" in captured.out
+        assert "ERROR" in captured.out
 
     def test_tracking_uncommitted_changes(self, repo, environment):
-        with open("some_file.txt", "w") as fp:
+        file = repo.working_dir + "/some_file.txt"
+        with open(file, "w") as fp:
             fp.write("some-content\n")
 
-        repo.git.add("some_file.txt")
+        repo.git.add(file)
 
-        assert repo.is_dirty(index=False)
-        with neptune.init_run(project=environment.project) as run:
+        with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=repo.working_dir)) as run:
             run.sync()
             assert run.exists("source_code/diff")
             run["source_code/diff"].download()

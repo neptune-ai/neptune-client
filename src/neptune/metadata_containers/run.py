@@ -228,7 +228,7 @@ class Run(MetadataContainer):
                 To turn off Git tracking for the run, set to GitRef.DISABLED.
             dependencies: To track the project dependencies, pass a path to your dependency file.
                 If None, no dependency file is uploaded.
-                If you pass `"infer"`, Neptune uses [pipreqs](https://pypi.org/project/pipreqs) to upload
+                If you pass `"infer"`, Neptune will run `pip freeze` to generate and upload
                 the requirements.
 
         Returns:
@@ -466,18 +466,34 @@ class Run(MetadataContainer):
             upload_source_code(source_files=self._source_files, run=self)
 
         if self._dependencies:
-            if self._dependencies == "infer":
-                dependency_strategy = InferDependenciesStrategy()
+            try:
+                if self._dependencies == "infer":
+                    dependency_strategy = InferDependenciesStrategy()
 
-            else:
-                dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
+                else:
+                    dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
 
-            dependency_strategy.log_dependencies(run=self)
+                dependency_strategy.log_dependencies(run=self)
+            except Exception as e:
+                warn_once(
+                    "An exception occurred in automatic dependency tracking."
+                    "Skipping upload of requirement files."
+                    "Exception: " + str(e),
+                    exception=NeptuneWarning,
+                )
 
-        track_uncommitted_changes(
-            git_ref=self._git_ref,
-            run=self,
-        )
+        try:
+            track_uncommitted_changes(
+                git_ref=self._git_ref,
+                run=self,
+            )
+        except Exception as e:
+            warn_once(
+                "An exception occurred in tracking uncommitted changes."
+                "Skipping upload of patch files."
+                "Exception: " + str(e),
+                exception=NeptuneWarning,
+            )
 
     @property
     def monitoring_namespace(self) -> str:

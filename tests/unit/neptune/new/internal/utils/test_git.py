@@ -16,6 +16,7 @@
 import datetime
 
 import git
+from git import Repo
 from mock import (
     MagicMock,
     patch,
@@ -97,7 +98,7 @@ def test_get_diff(mock_repo):
     get_diff(mock_repo, "some_ref")
 
     # then
-    mock_repo.git.diff.assert_called_once_with("some_ref")
+    mock_repo.git.diff.assert_called_once_with("some_ref", index=False)
 
 
 @patch("git.Repo")
@@ -109,7 +110,7 @@ def test_get_diff_command_error(mock_repo):
     diff = get_diff(mock_repo, "some_ref")
 
     # then
-    mock_repo.git.diff.assert_called_once_with("some_ref")
+    mock_repo.git.diff.assert_called_once_with("some_ref", index=False)
     assert diff is None
 
 
@@ -210,12 +211,13 @@ def test_get_uncommitted_changes(mock_get_sha, mock_repo):
 
 
 @patch("git.Repo")
-def test_get_uncommitted_changes_clean_repo(mock_repo):
+def test_get_uncommitted_changes_clean_repo(tmp_path_factory):
     # given
-    mock_repo.is_dirty.return_value = False
+    path = tmp_path_factory.mktemp("git_repo")
+    repo = Repo.init(path)
 
     # when
-    uncommitted_changes = get_uncommitted_changes(mock_repo)
+    uncommitted_changes = get_uncommitted_changes(repo)
 
     # then
     assert uncommitted_changes is None

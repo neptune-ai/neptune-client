@@ -16,6 +16,7 @@
 __all__ = ("SyncOperationProcessor",)
 
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from neptune.constants import (
@@ -38,11 +39,11 @@ class SyncOperationProcessor(OperationProcessor):
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
     @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType):
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
-        return data_path
+        return Path(data_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(

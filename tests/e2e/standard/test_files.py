@@ -52,6 +52,7 @@ from tests.e2e.utils import (
     SIZE_1KB,
     SIZE_1MB,
     initialize_container,
+    preserve_cwd,
     tmp_context,
 )
 
@@ -188,6 +189,30 @@ class TestUpload(BaseE2ETest):
                 content = file.read()
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
+
+    def test_upload_with_changed_working_directory(self, environment):
+        os.makedirs("some_other_folder", exist_ok=True)
+
+        key_in_mem = self.gen_key()
+        key_from_disk = self.gen_key()
+
+        with preserve_cwd("some_other_folder"):
+            run = initialize_container(container_type="run", project=environment.project)
+            # upload file from memory
+            run[key_in_mem].upload(File.from_content("abcd"))
+
+            # upload file from disk
+            filename = fake.file_name()
+            with open(filename, "w") as fp:
+                fp.write("test content")
+
+            run[key_from_disk].upload(filename)
+
+            run.sync()
+
+        assert run.exists(key_in_mem)
+        assert run.exists(key_from_disk)
+        run.stop()
 
 
 class TestFileSet(BaseE2ETest):
