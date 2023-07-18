@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune 1.3.2
 
+### Features
+- Added support for `mlflow` integration ([#1381](https://github.com/neptune-ai/neptune-client/pull/1381))
+
 ### Fixes
 - Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
 - Fix SSL errors after forking process ([#1353](https://github.com/neptune-ai/neptune-client/pull/1353))
