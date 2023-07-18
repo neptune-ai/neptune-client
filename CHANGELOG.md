@@ -3,6 +3,10 @@
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
 
+### Features
+- Added support for `mlflow` integration ([#1381](https://github.com/neptune-ai/neptune-client/pull/1381))
+
+
 ##  neptune 1.3.3rc0
 
 ### Changes
@@ -15,9 +19,6 @@
 - Tracking uncommitted changes and dependencies will be skipped in case of any exception, to not disturb the run initialization ([#1395](https://github.com/neptune-ai/neptune-client/pull/1395))
 
 ## neptune 1.3.2
-
-### Features
-- Added support for `mlflow` integration ([#1381](https://github.com/neptune-ai/neptune-client/pull/1381))
 
 ### Fixes
 - Fixed GitPython `is_dirty` failing on Windows ([#1371](https://github.com/neptune-ai/neptune-client/pull/1371))
