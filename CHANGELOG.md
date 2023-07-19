@@ -1,9 +1,10 @@
-## [UNRELEASED] neptune 1.3.3
+## [UNRELEASED] neptune 1.4.0
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
 
 ### Features
+- Added support for `tensorboard` integration ([#1368](https://github.com/neptune-ai/neptune-client/pull/1368))
 - Added support for `mlflow` integration ([#1381](https://github.com/neptune-ai/neptune-client/pull/1381))
 
 
