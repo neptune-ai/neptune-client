@@ -3,6 +3,10 @@
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
 
+### Features
+- Added support for `mlflow` integration ([#1381](https://github.com/neptune-ai/neptune-client/pull/1381))
+
+
 ##  neptune 1.3.3rc0
 
 ### Changes
