@@ -6,20 +6,20 @@ on:
       - "*"
 
 jobs:
-  wait-for-green-master:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for tests to finish
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.ref }}
-          running-workflow-name: 'wait-for-green-master'
-          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-          wait-interval: 60
+        #  wait-for-green-master:
+        #    runs-on: ubuntu-latest
+        #    steps:
+        #      - name: Wait for tests to finish
+        #        uses: lewagon/wait-on-check-action@v1.3.1
+        #        with:
+        #          ref: ${{ github.ref }}
+        #          running-workflow-name: 'wait-for-green-master'
+        #          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        #          wait-interval: 60
 
   build-neptune:
     runs-on: ubuntu-latest
-    needs: [wait-for-green-master]
+    #    needs: [wait-for-green-master]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -44,7 +44,7 @@ jobs:
 
   build-neptune-client:
     runs-on: ubuntu-latest
-    needs: [wait-for-green-master]
+    #    needs: [wait-for-green-master]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -222,14 +222,14 @@ jobs:
           path: dist/
 
 #      - name: Uploading to test PyPI
-#        uses: pypa/gh-action-pypi-publish@v1.8.6
+#        uses: pypa/gh-action-pypi-publish@v1.8.8
 #        with:
 #         user: __token__
 #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 #         repository_url: https://test.pypi.org/legacy/
 
       - name: Uploading to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.6
+        uses: pypa/gh-action-pypi-publish@v1.8.8
         with:
           user: __token__
           password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
@@ -251,14 +251,14 @@ jobs:
           path: dist/
 
       - name: Uploading to test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.6
+        uses: pypa/gh-action-pypi-publish@v1.8.8
         with:
           user: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
 
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1.8.6
+        uses: pypa/gh-action-pypi-publish@v1.8.8
         with:
           user: __token__
           password: ${{ secrets.NEPTUNE_CLIENT_PYPI_API_TOKEN }}

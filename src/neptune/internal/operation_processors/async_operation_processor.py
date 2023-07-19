@@ -19,6 +19,7 @@ import logging
 import os
 import threading
 from datetime import datetime
+from pathlib import Path
 from time import (
     monotonic,
     time,
@@ -81,12 +82,12 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_cond = threading.Condition(lock=lock)
 
     @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType):
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
-        return data_path
+        return Path(data_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)

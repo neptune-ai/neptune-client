@@ -104,7 +104,6 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         "neptune.internal.utils.os.path.abspath",
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
-    @patch("neptune.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
         with init_run(mode="debug") as exp:
@@ -117,7 +116,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main_dir/main.py")
 
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
-            self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
+            self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main.py")
 
         with init_run(mode="debug", source_files=["../other_dir/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
@@ -213,7 +212,6 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
 
-    @unittest.skipIf(IS_WINDOWS, "Temporary skip on Windows")
     @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.metadata_containers.run.get_hostname", lambda *vals: "localhost")
     @patch("neptune.metadata_containers.run.os.getpid", lambda *vals: 1234)

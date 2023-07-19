@@ -1,10 +1,13 @@
-## [UNRELEASED] neptune 1.4.0
+## [UNRELEASED] neptune 1.3.3
 
-### Changes
-- Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
+### Fixes
+- Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
 
 ### Features
 - Added support for `tensorboard` integration ([#1368](https://github.com/neptune-ai/neptune-client/pull/1368))
+
+### Changes
+- Added support of writing to archived project exception ([#1355](https://github.com/neptune-ai/neptune-client/pull/1355))
 
 ## neptune 1.3.1
 
@@ -19,7 +22,6 @@
 
 ### Fixes
 - Added support of project visibility exception ([#1343](https://github.com/neptune-ai/neptune-client/pull/1343))
-- Fix SSL errors after forking process ([#1353](https://github.com/neptune-ai/neptune-client/pull/1353))
 
 ### Changes
 - Added support of active projects limit exception ([#1348](https://github.com/neptune-ai/neptune-client/pull/1348))

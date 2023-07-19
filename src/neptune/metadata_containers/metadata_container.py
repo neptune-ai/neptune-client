@@ -111,6 +111,8 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self._mode: Mode = mode
         self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()
+        self._forking_cond: threading.Condition = threading.Condition()
+        self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
@@ -166,30 +168,44 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
 
     def _handle_fork_in_parent(self):
         reset_internal_ssl_state()
-        self._op_processor.resume()
-        self._bg_job.resume()
+        if self._state == ContainerState.STARTED:
+            self._op_processor.resume()
+            self._bg_job.resume()
+
+        with self._forking_cond:
+            self._forking_state = False
+            self._forking_cond.notify_all()
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
-        self._op_processor.close()
-        self._op_processor = get_operation_processor(
-            mode=self._mode,
-            container_id=self._id,
-            container_type=self.container_type,
-            backend=self._backend,
-            lock=self._lock,
-            flush_period=self._flush_period,
-        )
-
-        # TODO: Every implementation of background job should handle fork by itself.
-        self._bg_job = BackgroundJobList([])
-
         if self._state == ContainerState.STARTED:
+            self._op_processor.close()
+            self._op_processor = get_operation_processor(
+                mode=self._mode,
+                container_id=self._id,
+                container_type=self.container_type,
+                backend=self._backend,
+                lock=self._lock,
+                flush_period=self._flush_period,
+            )
+
+            # TODO: Every implementation of background job should handle fork by itself.
+            self._bg_job = BackgroundJobList([])
+
             self._op_processor.start()
 
+        with self._forking_cond:
+            self._forking_state = False
+            self._forking_cond.notify_all()
+
     def _before_fork(self):
-        self._bg_job.pause()
-        self._op_processor.pause()
+        with self._forking_cond:
+            self._forking_cond.wait_for(lambda: self._state != ContainerState.STOPPING)
+            self._forking_state = True
+
+        if self._state == ContainerState.STARTED:
+            self._bg_job.pause()
+            self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
         if self._mode != Mode.READ_ONLY:
@@ -342,7 +358,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         if self._state != ContainerState.STARTED:
             return
 
-        self._state = ContainerState.STOPPING
+        with self._forking_cond:
+            self._forking_cond.wait_for(lambda: not self._forking_state)
+            self._state = ContainerState.STOPPING
+
         ts = time.time()
         logger.info("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
@@ -356,7 +375,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             logger.info("Explore the metadata in the Neptune app:")
             logger.info(self.get_url().rstrip("/") + "/metadata")
         self._backend.close()
-        self._state = ContainerState.STOPPED
+
+        with self._forking_cond:
+            self._state = ContainerState.STOPPED
+            self._forking_cond.notify_all()
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
