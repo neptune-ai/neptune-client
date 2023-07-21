@@ -636,4 +636,4 @@ jobs:
         uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.sacred.result }}
+          job-status: ${{ needs.mlflow.result }}
