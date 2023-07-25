@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.4.0
+##  neptune 1.4.0rc0
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
