@@ -1,4 +1,9 @@
-##  neptune 1.4.0rc0
+## [UNRELEASED] neptune 1.4.1
+
+### Fixes
+- Fixed bug with .neptune folder creation on AWS lambda ([#1409](https://github.com/neptune-ai/neptune-client/pull/1409))
+
+##  neptune 1.4.0
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
