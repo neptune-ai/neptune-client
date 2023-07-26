@@ -29,7 +29,7 @@ import os
 ANONYMOUS_API_TOKEN = "ANONYMOUS"
 
 # check if on AWS Lambda
-if os.environ.get("AWS_EXECUTION_ENV") is not None:
+if os.environ.get("AWS_LAMBDA_FUNCTION_NAME") is not None:
     NEPTUNE_DATA_DIRECTORY = "tmp/.neptune"
 else:
     NEPTUNE_DATA_DIRECTORY = ".neptune"
