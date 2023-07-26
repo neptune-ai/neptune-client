@@ -78,10 +78,12 @@ neptune-pytorch = { version = "*", optional = true }
 neptune-sacred = { version = "*", optional = true }
 neptune-sklearn = { version = "*", optional = true }
 neptune-tensorflow-keras = { version = "*", optional = true }
+neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
 neptune-aws = { version = "*", optional = true }
+mlflow = { version = ">1.30", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
@@ -96,9 +98,11 @@ pytorch-lightning = ["pytorch-lightning"]
 sacred = ["neptune-sacred"]
 sklearn = ["neptune-sklearn"]
 tensorflow-keras = ["neptune-tensorflow-keras"]
+tensorboard = ["neptune-tensorboard"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
+mlflow = ["mlflow"]
 dev = [
     "altair",
     "bokeh",
@@ -128,6 +132,7 @@ e2e = [
     "transformers",
     "accelerate",
     "zenml",
+    "mlflow",
 ]
 
 [tool.poetry]
