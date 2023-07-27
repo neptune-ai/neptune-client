@@ -1,11 +1,11 @@
-##  neptune 1.4.0rc1
+##  neptune 1.4.1
 
 ### Fixes
 - Retry request when ChunkedEncodingError occurred. ([#1402](https://github.com/neptune-ai/neptune-client/pull/1402))
 - Fixed performance issues on forking process  ([#1407](https://github.com/neptune-ai/neptune-client/pull/1407))
 
 
-##  neptune 1.4.0rc0
+##  neptune 1.4.0
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
