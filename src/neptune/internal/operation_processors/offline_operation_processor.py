@@ -25,7 +25,10 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class OfflineOperationProcessor(OperationProcessor):
@@ -39,8 +42,9 @@ class OfflineOperationProcessor(OperationProcessor):
             lock=lock,
         )
 
-    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType) -> Path:
-        container_dir = self._operation_storage.get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+    @staticmethod
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
+        container_dir = get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
         return Path(container_dir)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:

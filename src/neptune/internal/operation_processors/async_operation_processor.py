@@ -38,7 +38,10 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
@@ -78,9 +81,10 @@ class AsyncOperationProcessor(OperationProcessor):
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
 
-    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType) -> Path:
+    @staticmethod
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = self._operation_storage.get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+        container_dir = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return Path(data_path)

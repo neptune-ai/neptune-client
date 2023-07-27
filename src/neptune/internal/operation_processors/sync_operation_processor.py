@@ -25,7 +25,10 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class SyncOperationProcessor(OperationProcessor):
@@ -35,9 +38,10 @@ class SyncOperationProcessor(OperationProcessor):
         self._backend = backend
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
-    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType) -> Path:
+    @staticmethod
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = self._operation_storage.get_container_dir(SYNC_DIRECTORY, container_id, container_type)
+        container_dir = get_container_dir(SYNC_DIRECTORY, container_id, container_type)
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return Path(data_path)
 

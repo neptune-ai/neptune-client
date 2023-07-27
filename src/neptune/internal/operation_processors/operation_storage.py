@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "OperationStorage",
-]
+__all__ = ["OperationStorage", "get_container_dir"]
 
 import os
 import shutil
@@ -25,6 +23,14 @@ from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.logger import logger
+
+
+def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType) -> str:
+    neptune_data_dir_env = os.getenv("NEPTUNE_DATA_DIRECTORY")
+
+    neptune_data_dir = neptune_data_dir_env if neptune_data_dir_env else NEPTUNE_DATA_DIRECTORY
+
+    return f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}"
 
 
 class OperationStorage:
@@ -43,14 +49,6 @@ class OperationStorage:
     @property
     def upload_path(self) -> Path:
         return self.data_path / "upload_path"
-
-    @staticmethod
-    def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
-        neptune_data_dir_env = os.getenv("NEPTUNE_DATA_DIRECTORY")
-
-        neptune_data_dir = neptune_data_dir_env if neptune_data_dir_env else NEPTUNE_DATA_DIRECTORY
-
-        return f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}"
 
     def close(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
