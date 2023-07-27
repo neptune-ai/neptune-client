@@ -19,10 +19,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from neptune.constants import (
-    NEPTUNE_DATA_DIRECTORY,
-    SYNC_DIRECTORY,
-)
+from neptune.constants import SYNC_DIRECTORY
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -38,10 +35,9 @@ class SyncOperationProcessor(OperationProcessor):
         self._backend = backend
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
+        container_dir = self._operation_storage.get_container_dir(SYNC_DIRECTORY, container_id, container_type)
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return Path(data_path)
 

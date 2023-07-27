@@ -29,10 +29,7 @@ from typing import (
     Optional,
 )
 
-from neptune.constants import (
-    ASYNC_DIRECTORY,
-    NEPTUNE_DATA_DIRECTORY,
-)
+from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -81,10 +78,9 @@ class AsyncOperationProcessor(OperationProcessor):
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
 
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
+        container_dir = self._operation_storage.get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return Path(data_path)
