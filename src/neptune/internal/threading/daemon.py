@@ -18,7 +18,6 @@ __all__ = ["Daemon"]
 import abc
 import functools
 import threading
-import time
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
@@ -79,6 +78,9 @@ class Daemon(threading.Thread):
         with self._wait_condition:
             return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
 
+    def _is_working(self):
+        return self._state == Daemon.DaemonState.WORKING
+
     def run(self):
         with self._wait_condition:
             if not self._is_interrupted():
@@ -91,10 +93,10 @@ class Daemon(threading.Thread):
                         self._wait_condition.notify_all()
                         self._wait_condition.wait_for(lambda: self._state != Daemon.DaemonState.PAUSED)
 
-                if self._state == Daemon.DaemonState.WORKING:
+                if self._is_working():
                     self.work()
                     with self._wait_condition:
-                        if self._sleep_time > 0 and self._state == Daemon.DaemonState.WORKING:
+                        if self._sleep_time > 0 and self._is_working():
                             self._wait_condition.wait(timeout=self._sleep_time)
         finally:
             with self._wait_condition:
@@ -115,7 +117,7 @@ class Daemon(threading.Thread):
         def __call__(self, func):
             @functools.wraps(func)
             def wrapper(self_: Daemon, *args, **kwargs):
-                while not self_._is_interrupted():
+                while self_._is_working():
                     try:
                         result = func(self_, *args, **kwargs)
                         if self_.last_backoff_time > 0:
@@ -128,12 +130,12 @@ class Daemon(threading.Thread):
                                 "Experiencing connection interruptions."
                                 " Will try to reestablish communication with Neptune."
                                 " Internal exception was: %s",
-                                e.cause.__class__.__name__,
+                                e.cause,
                             )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
-                        time.sleep(self_.last_backoff_time)
+                        self_._wait_condition.wait(timeout=self_.last_backoff_time)
                     except Exception:
                         logger.error(
                             "Unexpected error occurred in Neptune background thread: %s",

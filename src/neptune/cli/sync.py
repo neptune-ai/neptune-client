@@ -118,7 +118,7 @@ class SyncRunner(AbstractBackendRunner):
                             "Experiencing connection interruptions."
                             " Will try to reestablish communication with Neptune."
                             " Internal exception was: %s",
-                            ex.cause.__class__.__name__,
+                            ex.cause,
                         )
 
     def sync_all_registered_containers(self, base_path: Path) -> None:
