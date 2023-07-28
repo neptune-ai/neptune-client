@@ -3,12 +3,17 @@
 ### Fixes
 - Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
 
+##  neptune 1.4.1
+
+### Fixes
+- Retry request when ChunkedEncodingError occurred. ([#1402](https://github.com/neptune-ai/neptune-client/pull/1402))
+- Fixed performance issues on forking process  ([#1407](https://github.com/neptune-ai/neptune-client/pull/1407))
+
 
 ##  neptune 1.4.0
 
 ### Fixes
 - Fixed operation processor bug if current working directory is different from the script directory ([#1391](https://github.com/neptune-ai/neptune-client/pull/1391))
-- Retry request when ChunkedEncodingError occurred. ([#1402](https://github.com/neptune-ai/neptune-client/pull/1402))
 
 ### Features
 - Added support for `tensorboard` integration ([#1368](https://github.com/neptune-ai/neptune-client/pull/1368))
