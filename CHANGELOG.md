@@ -3,6 +3,10 @@
 ### Features
 - Users can pass neptune data directory path by env variable ([#1409](https://github.com/neptune-ai/neptune-client/pull/1409))
 
+### Fixes
+- Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
+
+
 
 ##  neptune 1.4.1
 
