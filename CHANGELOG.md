@@ -3,6 +3,7 @@
 ### Fixes
 - Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
 - Fixed cleaning operation storage when using sync mode and forking ([#1413](https://github.com/neptune-ai/neptune-client/pull/1413))
+- Fix FileDependenciesStrategy when the dependency file is in a folder ([#1411](https://github.com/neptune-ai/neptune-client/pull/1411))
 
 
 ##  neptune 1.4.1
