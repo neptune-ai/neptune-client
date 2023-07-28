@@ -124,13 +124,12 @@ class Daemon(threading.Thread):
                             self_.last_backoff_time = 0
                             logger.info("Communication with Neptune restored!")
                         return result
-                    except NeptuneConnectionLostException as e:
+                    except NeptuneConnectionLostException:
                         if self_.last_backoff_time == 0:
                             logger.warning(
                                 "Experiencing connection interruptions."
-                                " Will try to reestablish communication with Neptune."
-                                " Internal exception was: %s",
-                                e.cause,
+                                " Will try to reestablish communication with Neptune.",
+                                exc_info=True,
                             )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:

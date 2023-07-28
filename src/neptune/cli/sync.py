@@ -116,9 +116,8 @@ class SyncRunner(AbstractBackendRunner):
                             raise ex
                         logger.warning(
                             "Experiencing connection interruptions."
-                            " Will try to reestablish communication with Neptune."
-                            " Internal exception was: %s",
-                            ex.cause,
+                            " Will try to reestablish communication with Neptune.",
+                            exc_info=True,
                         )
 
     def sync_all_registered_containers(self, base_path: Path) -> None:
