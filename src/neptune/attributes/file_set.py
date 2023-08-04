@@ -72,5 +72,5 @@ class FileSet(Attribute):
         self._backend.download_file_set(self._container_id, self._container_type, self._path, destination)
 
     def fetch_fileset_files(self) -> List[FileEntry]:
-        entries = self._backend.fetch_fileset_files(self._path[0], self._container_id)
-        return [FileEntry.from_dto(entry) for entry in entries]
+        path = "/".join(self._path)
+        return self._backend.fetch_fileset_files(path, self._container_id)

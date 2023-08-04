@@ -855,14 +855,14 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def fetch_fileset_files(self, attribute, container_id) -> List[FileEntry]:
         try:
-            result = (
+            entries = (
                 self.leaderboard_client.api.lsFileSetAttribute(
                     attribute=attribute, path=".", experimentId=container_id, holderType="run", **DEFAULT_REQUEST_KWARGS
                 )
                 .response()
                 .result
             )
-            return result
+            return [FileEntry.from_dto(entry) for entry in entries]
         except HTTPNotFound:
             raise FileSetNotFound
 
