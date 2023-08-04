@@ -73,6 +73,7 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
+from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     SysId,
@@ -766,3 +767,13 @@ class NeptuneBackendMock(NeptuneBackend):
                     op_name, self._path, expected, type(self._current_value)
                 )
             )
+
+    def fetch_fileset_files(self) -> List[FileEntry]:
+        return [
+            FileEntry(
+                name="mock_name",
+                size=100,
+                mtime=datetime.now(),
+                file_type="file",
+            )
+        ]

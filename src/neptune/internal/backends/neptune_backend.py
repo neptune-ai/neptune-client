@@ -50,6 +50,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
+from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
@@ -304,4 +305,8 @@ class NeptuneBackend:
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
+        pass
+
+    @abc.abstractmethod
+    def fetch_fileset_files(self) -> List[FileEntry]:
         pass

@@ -117,6 +117,7 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
+from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
@@ -849,6 +850,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [ArtifactFileData.from_dto(a) for a in result.files]
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
+
+    @with_api_exceptions_handler
+    def fetch_fileset_files(self) -> List[FileEntry]:
+        result = (
+            self.leaderboard_client.api.lsFileSetAttribute(
+                attribute="files", path=".", holderIdentifier="99cecbbb-db7e-401f-ba31-c5567b4d6363", holderType="run"
+            )
+            .response()
+            .result
+        )
+        return result
 
     @with_api_exceptions_handler
     def get_float_series_attribute(

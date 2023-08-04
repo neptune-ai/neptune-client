@@ -37,6 +37,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
+from neptune.internal.files import FileEntry
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
@@ -128,4 +129,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         index: int,
         destination: str,
     ):
+        raise NeptuneOfflineModeFetchException
+
+    def fetch_fileset_files(self) -> List[FileEntry]:
         raise NeptuneOfflineModeFetchException
