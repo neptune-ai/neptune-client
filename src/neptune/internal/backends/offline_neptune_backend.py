@@ -131,5 +131,5 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     ):
         raise NeptuneOfflineModeFetchException
 
-    def fetch_fileset_files(self) -> List[FileEntry]:
+    def fetch_fileset_files(self, container_id) -> List[FileEntry]:
         raise NeptuneOfflineModeFetchException

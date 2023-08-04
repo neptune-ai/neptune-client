@@ -768,7 +768,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 )
             )
 
-    def fetch_fileset_files(self) -> List[FileEntry]:
+    def fetch_fileset_files(self, attribute, container_id) -> List[FileEntry]:
         return [
             FileEntry(
                 name="mock_name",

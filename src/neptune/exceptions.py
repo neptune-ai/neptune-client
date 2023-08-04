@@ -1176,3 +1176,7 @@ For more, see https://docs.neptune.ai/api/field_types/#from_stream
 class NeptuneUserApiInputException(NeptuneException):
     def __init__(self, message):
         super().__init__(message)
+
+
+class FileSetNotFound(NeptuneException):
+    pass
