@@ -84,10 +84,7 @@ class TestFileSet(TestAttributeBase):
         get_operation_processor.return_value = processor
 
         with self._exp() as exp:
-            path, _ = (
-                self._random_path(),
-                self._random_wait(),
-            )
+            path = self._random_path()
             var = FileSet(exp, path)
             file_entries = var.fetch_fileset_files()
 
