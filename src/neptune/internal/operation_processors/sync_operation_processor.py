@@ -15,6 +15,7 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -42,7 +43,7 @@ class SyncOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return Path(data_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
