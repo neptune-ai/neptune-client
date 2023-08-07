@@ -485,6 +485,10 @@ class TestFileSet(BaseE2ETest):
             assert file_list[0].file_type == "file"
             assert file_list[0].size == file_size
 
+            container[key].delete_files(filename)
+            container.sync()
+            assert container[key].fetch_fileset_files() == []
+
 
 class TestPlotObjectsAssignment(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)

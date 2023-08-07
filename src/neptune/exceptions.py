@@ -25,6 +25,7 @@ __all__ = [
     "FileNotFound",
     "FileUploadError",
     "FileSetUploadError",
+    "FileSetNotFound",
     "ClientHttpError",
     "MetadataContainerNotFound",
     "ProjectNotFound",
