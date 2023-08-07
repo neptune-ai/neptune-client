@@ -864,7 +864,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [FileEntry.from_dto(entry) for entry in entries]
         except HTTPNotFound:
-            raise FileSetNotFound
+            raise FileSetNotFound(f"No such attribute: '{attribute}'")
 
     @with_api_exceptions_handler
     def get_float_series_attribute(

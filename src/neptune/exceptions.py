@@ -1180,4 +1180,5 @@ class NeptuneUserApiInputException(NeptuneException):
 
 
 class FileSetNotFound(NeptuneException):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
