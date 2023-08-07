@@ -45,7 +45,6 @@ class SyncOperationProcessor(OperationProcessor):
         process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
 
-
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(
             container_id=self._container_id,
