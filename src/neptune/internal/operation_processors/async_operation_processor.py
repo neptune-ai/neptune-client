@@ -84,10 +84,10 @@ class AsyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        data_path = data_path.replace(" ", "_").replace(":", ".")
-        return Path(data_path)
+        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}".replace(
+            " ", "_"
+        ).replace(":", ".")
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)
