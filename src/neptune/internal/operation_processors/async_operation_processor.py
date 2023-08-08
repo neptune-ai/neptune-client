@@ -194,7 +194,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 already_synced_proc,
             )
 
-    def stop(self, seconds: Optional[float] = None):
+    def stop(self, seconds: Optional[float] = None) -> None:
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
@@ -204,8 +204,13 @@ class AsyncOperationProcessor(OperationProcessor):
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
-        self._queue.close()
+
+        # Close resources
+        self.close()
+
+        # Remove local files
         self._queue.cleanup()
+        self._operation_storage.cleanup()
 
     def close(self):
         self._queue.close()

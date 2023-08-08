@@ -58,5 +58,10 @@ class OfflineOperationProcessor(OperationProcessor):
     def start(self):
         pass
 
-    def stop(self, seconds: Optional[float] = None):
+    def stop(self, seconds: Optional[float] = None) -> None:
+        self.close()
+        # Remove local files
+        self._queue.cleanup()
+
+    def close(self) -> None:
         self._queue.close()

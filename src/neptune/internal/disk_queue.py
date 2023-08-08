@@ -172,7 +172,7 @@ class DiskQueue(Generic[T]):
         self._last_ack_file.close()
         self._last_put_file.close()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """
         Remove underlying files if queue is empty
         """
