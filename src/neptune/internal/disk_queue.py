@@ -70,6 +70,7 @@ class DiskQueue(Generic[T]):
         )
 
         try:
+            print("Initializing disk queue in", self._dir_path)
             os.makedirs(self._dir_path)
         except FileExistsError:
             pass
@@ -180,6 +181,7 @@ class DiskQueue(Generic[T]):
 
     def _remove_data(self):
         path = self._dir_path
+        print(f"Removing queue data: {path}")
         shutil.rmtree(path, ignore_errors=True)
 
         parent = path.parent
