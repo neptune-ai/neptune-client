@@ -181,7 +181,6 @@ class DiskQueue(Generic[T]):
 
     def _remove_data(self):
         path = self._dir_path
-        print(f"Removing queue data: {path}")
         shutil.rmtree(path, ignore_errors=True)
 
         parent = path.parent
@@ -193,7 +192,6 @@ class DiskQueue(Generic[T]):
 
         if len(files) == 0:
             try:
-                print(f"Removing parent: {parent}")
                 os.rmdir(parent)
             except OSError:
                 _logger.info(f"Cannot remove directory: {parent}")
