@@ -66,6 +66,34 @@ class TestFileHasher(unittest.TestCase):
         self.assertEqual(expected_hash, FileHasher.get_artifact_hash(artifacts))
         self.assertEqual(expected_hash, FileHasher.get_artifact_hash(reversed(artifacts)))
 
+    def test_artifact_hash_without_metadata(self):
+        # do not change this test case without coordinating with Artifact API's ArtifactHashComputer
+        artifacts = [
+            ArtifactFileData(
+                file_path="to/file1",
+                file_hash="c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac",
+                type="S3",
+                size=5234,
+                metadata={
+                    "location": "s3://bucket/path/to/file1",
+                    "last_modification": "2021-08-09 10:22:53",
+                },
+            ),
+            ArtifactFileData(
+                file_path="from/file2",
+                file_hash="4347d0f8ba661234a8eadc005e2e1d1b646c9682",
+                type="S3",
+                metadata={
+                    "location": "s3://bucket/path/to/file2",
+                    "last_modification": "2021-08-09 10:32:12",
+                },
+            ),
+        ]
+
+        expected_hash = "e6d96bccc12db43acc6e24e2e79052ecaee52307470e44f93d74ecfebc119128"
+        self.assertEqual(expected_hash, FileHasher.get_artifact_hash_without_metadata(artifacts))
+        self.assertEqual(expected_hash, FileHasher.get_artifact_hash_without_metadata(reversed(artifacts)))
+
     @patch("pathlib.Path.home")
     def test_local_file_hash(self, home):
         home.return_value = Path(self.temp.name)
