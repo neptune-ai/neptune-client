@@ -176,8 +176,8 @@ class DiskQueue(Generic[T]):
         self._last_ack_file.close()
         self._last_put_file.close()
 
-        if self.is_empty():
-            self._remove_data()
+        # if self.is_empty():
+        #     self._remove_data()
 
     def _remove_data(self):
         path = self._dir_path
