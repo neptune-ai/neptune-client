@@ -259,3 +259,4 @@ class DiskQueue(Generic[T]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.flush()
         self.close()
+        self.cleanup()
