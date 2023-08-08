@@ -70,7 +70,6 @@ class DiskQueue(Generic[T]):
         )
 
         try:
-            print("Initializing disk queue in", self._dir_path)
             os.makedirs(self._dir_path)
         except FileExistsError:
             pass
@@ -168,16 +167,17 @@ class DiskQueue(Generic[T]):
         self._last_put_file.flush()
 
     def close(self):
-        """
-        Close and remove underlying files if queue is empty
-        """
         self._reader.close()
         self._writer.close()
         self._last_ack_file.close()
         self._last_put_file.close()
 
-        # if self.is_empty():
-        #     self._remove_data()
+    def cleanup(self):
+        """
+        Remove underlying files if queue is empty
+        """
+        if self.is_empty():
+            self._remove_data()
 
     def _remove_data(self):
         path = self._dir_path
@@ -254,10 +254,3 @@ class DiskQueue(Generic[T]):
 
     def _deserialize(self, data: dict) -> Tuple[T, int]:
         return self._from_dict(data["obj"]), data["version"]
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.flush()
-        self.close()
