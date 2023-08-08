@@ -44,7 +44,6 @@ class OperationStorage:
         self._data_path = data_path.resolve()
 
         # initialize directory
-        print("Initializing operation storage in", (data_path / OperationStorage.UPLOAD_PATH).resolve())
         os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
     @property

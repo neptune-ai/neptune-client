@@ -205,6 +205,7 @@ class AsyncOperationProcessor(OperationProcessor):
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
         self._queue.close()
+        self._queue.cleanup()
 
     def close(self):
         self._queue.close()
