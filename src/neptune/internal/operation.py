@@ -203,6 +203,7 @@ class UploadFile(Operation):
             )
         elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
             tmp_file_name = cls.get_tmp_file_name(attribute_path, value.extension)
+            print("Saving file to {}".format(operation_storage.upload_path / tmp_file_name))
             value._save(operation_storage.upload_path / tmp_file_name)
             operation = UploadFile(path=attribute_path, ext=value.extension, tmp_file_name=tmp_file_name)
         else:

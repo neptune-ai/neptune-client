@@ -44,6 +44,7 @@ class OperationStorage:
         self._data_path = data_path.resolve()
 
         # initialize directory
+        print("Initializing operation storage in", data_path / OperationStorage.UPLOAD_PATH)
         os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
     @property
@@ -55,13 +56,14 @@ class OperationStorage:
         return self.data_path / "upload_path"
 
     def close(self):
+        print(f"Cleaning up operation storage in {self.data_path}")
         shutil.rmtree(self.data_path, ignore_errors=True)
 
-        parent = self.data_path.parent
-        files = os.listdir(parent)
-
-        if len(files) == 0:
-            try:
-                os.rmdir(parent)
-            except OSError:
-                logger.debug(f"Cannot remove directory: {parent}")
+        # parent = self.data_path.parent
+        # files = os.listdir(parent)
+        #
+        # if len(files) == 0:
+        #     try:
+        #         os.rmdir(parent)
+        #     except OSError:
+        #         logger.debug(f"Cannot remove directory: {parent}")

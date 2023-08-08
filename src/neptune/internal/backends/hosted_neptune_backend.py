@@ -522,6 +522,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         for op in upload_operations:
             if isinstance(op, UploadFile):
+                print('Uploading a file "{}"'.format(op.get_absolute_path(operation_storage)))
                 upload_errors = upload_file_attribute(
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
