@@ -191,6 +191,7 @@ class DiskQueue(Generic[T]):
 
         if len(files) == 0:
             try:
+                print(f"Removing parent: {parent}")
                 os.rmdir(parent)
             except OSError:
                 _logger.info(f"Cannot remove directory: {parent}")
