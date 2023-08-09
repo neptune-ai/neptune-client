@@ -101,7 +101,7 @@ class ApiExperiment:
 class OptionalFeatures:
     VERSION_INFO = "version_info"
     ARTIFACTS = "artifacts"
-    ARTIFACT_HASH_EXCLUDE_METADATA = "artifact_has_exclude_metadata"
+    ARTIFACTS_HASH_EXCLUDE_METADATA = "artifacts_hash_exclude_metadata"
     ARTIFACTS_EXCLUDE_DIRECTORY_FILES = "artifact_exclude_directory_files"
     MULTIPART_UPLOAD = "multipart_upload"
 
@@ -170,7 +170,7 @@ class ClientConfig:
 
         artifacts_api_version = getattr(artifacts_config_obj, "apiVersion", 1)
         if artifacts_api_version == 1:
-            missing_features.append(OptionalFeatures.ARTIFACT_HASH_EXCLUDE_METADATA)
+            missing_features.append(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
             missing_features.append(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
 
         return ClientConfig(

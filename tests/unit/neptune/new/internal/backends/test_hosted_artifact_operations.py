@@ -33,16 +33,7 @@ from neptune.internal.backends.hosted_artifact_operations import (
 class TestHostedArtifactOperations(unittest.TestCase):
     def setUp(self) -> None:
         self.artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        self.emptyDirectoryFile = ArtifactFileData(
-                "to",
-                "c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac",
-                "S3",
-                {
-                    "location": "s3://bucket/path/to/",
-                    "last_modification": "2021-08-09 10:22:53",
-                },
-                0
-            )
+        self.emptyDirectoryFile = ArtifactFileData("to", "c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac", "S3", {}, 0)
         self.files = [
             ArtifactFileData(
                 "fname.txt",
@@ -50,7 +41,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 "test",
                 {},
             ),
-            self.emptyDirectoryFile
+            self.emptyDirectoryFile,
         ]
         self.project_id = str(uuid.uuid4())
         self.parent_identifier = str(uuid.uuid4())
@@ -75,7 +66,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             entries=[("/path/to/file", "/path/to")],
             default_request_params={},
             exclude_directory_files=False,
-            exclude_metadata_from_hash=False
+            exclude_metadata_from_hash=False,
         )
 
         # then
@@ -116,7 +107,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             entries=[("/path/to/file", "/path/to")],
             default_request_params={},
             exclude_directory_files=True,
-            exclude_metadata_from_hash=True
+            exclude_metadata_from_hash=True,
         )
 
         # then
@@ -144,7 +135,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 entries=[("/path/to/file", "/path/to")],
                 default_request_params={},
                 exclude_directory_files=True,
-                exclude_metadata_from_hash=False
+                exclude_metadata_from_hash=False,
             )
 
     @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
@@ -192,7 +183,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", "/path/to")],
                 default_request_params={},
-                exclude_directory_files=True
+                exclude_directory_files=True,
             )
 
     @staticmethod

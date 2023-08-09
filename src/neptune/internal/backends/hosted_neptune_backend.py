@@ -585,7 +585,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors = list()
         assign_operations = list()
 
-        has_hash_exclude_metadata = self._client_config.has_feature(OptionalFeatures.ARTIFACT_HASH_EXCLUDE_METADATA)
+        has_hash_exclude_metadata = self._client_config.has_feature(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
         has_exclude_directories = self._client_config.has_feature(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
 
         for op in artifact_operations:
@@ -604,7 +604,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         entries=op.entries,
                         default_request_params=DEFAULT_REQUEST_KWARGS,
                         exclude_directory_files=has_exclude_directories,
-                        exclude_metadata_from_hash=has_hash_exclude_metadata
+                        exclude_metadata_from_hash=has_hash_exclude_metadata,
                     )
                 else:
                     assign_operation = track_to_existing_artifact(
@@ -615,7 +615,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         parent_identifier=container_id,
                         entries=op.entries,
                         default_request_params=DEFAULT_REQUEST_KWARGS,
-                        exclude_directory_files=has_exclude_directories
+                        exclude_directory_files=has_exclude_directories,
                     )
 
                 if assign_operation:
