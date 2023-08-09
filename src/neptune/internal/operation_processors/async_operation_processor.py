@@ -209,7 +209,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
-        self._queue.cleanup()
+        self._queue.cleanup_if_empty()
 
     def close(self):
         self._queue.close()
