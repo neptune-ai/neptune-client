@@ -19,16 +19,16 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-from neptune.constants import (
-    NEPTUNE_DATA_DIRECTORY,
-    OFFLINE_DIRECTORY,
-)
+from neptune.constants import OFFLINE_DIRECTORY
 from neptune.internal.container_type import ContainerType
 from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class OfflineOperationProcessor(OperationProcessor):
@@ -44,7 +44,7 @@ class OfflineOperationProcessor(OperationProcessor):
 
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        return Path(f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{container_type.create_dir_name(container_id)}")
+        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)

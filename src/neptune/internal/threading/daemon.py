@@ -94,7 +94,7 @@ class Daemon(threading.Thread):
                 if self._state == Daemon.DaemonState.WORKING:
                     self.work()
                     with self._wait_condition:
-                        if self._sleep_time > 0 and not self._is_interrupted():
+                        if self._sleep_time > 0 and self._state == Daemon.DaemonState.WORKING:
                             self._wait_condition.wait(timeout=self._sleep_time)
         finally:
             with self._wait_condition:

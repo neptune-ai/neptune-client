@@ -15,20 +15,21 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from neptune.constants import (
-    NEPTUNE_DATA_DIRECTORY,
-    SYNC_DIRECTORY,
-)
+from neptune.constants import SYNC_DIRECTORY
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class SyncOperationProcessor(OperationProcessor):
@@ -41,9 +42,8 @@ class SyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
-        return Path(data_path)
+        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(
@@ -66,3 +66,6 @@ class SyncOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None):
         self._operation_storage.close()
+
+    def close(self):
+        pass

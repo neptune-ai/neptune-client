@@ -34,6 +34,7 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
+from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import NewConnectionError
 
 from neptune.api.exceptions_utils import handle_json_errors
@@ -100,6 +101,7 @@ def with_api_exceptions_handler(func):
                 HTTPTooManyRequests,
                 HTTPInternalServerError,
                 NewConnectionError,
+                ChunkedEncodingError,
             ) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e

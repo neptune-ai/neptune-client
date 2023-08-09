@@ -54,6 +54,6 @@ class FileDependenciesStrategy(DependencyTrackingStrategy):
 
     def log_dependencies(self, run: "Run") -> None:
         if os.path.isfile(self._path):
-            run["source_code/requirements"].upload(os.path.basename(self._path))
+            run["source_code/requirements"].upload(self._path)
         else:
             logger.error("[ERROR] File '%s' does not exist - skipping dependency file upload.", self._path)

@@ -29,10 +29,7 @@ from typing import (
     Optional,
 )
 
-from neptune.constants import (
-    ASYNC_DIRECTORY,
-    NEPTUNE_DATA_DIRECTORY,
-)
+from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -41,7 +38,10 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
@@ -84,10 +84,8 @@ class AsyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        data_path = data_path.replace(" ", "_").replace(":", ".")
-        return Path(data_path)
+        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)

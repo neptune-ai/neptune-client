@@ -62,11 +62,10 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     def pause(self):
-        self._thread.shutdown_ws_client()
-        self._thread.pause()
+        pass
 
     def resume(self):
-        self._thread.resume()
+        pass
 
     def join(self, seconds: Optional[float] = None):
         if not self._started or threading.get_ident() == self._thread.ident:
