@@ -308,5 +308,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def fetch_fileset_files(self, attribute: str, container_id: str) -> List[FileEntry]:
+    def list_fileset_files(self, attribute: List[str], container_id: str, sub_path: str) -> List[FileEntry]:
         pass

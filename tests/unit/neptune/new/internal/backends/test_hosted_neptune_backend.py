@@ -599,4 +599,4 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # then
         with pytest.raises(FileSetNotFound):
-            backend.fetch_fileset_files("mock", "mock")
+            backend.list_fileset_files("mock", "mock")
