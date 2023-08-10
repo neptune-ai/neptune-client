@@ -64,8 +64,9 @@ class SyncOperationProcessor(OperationProcessor):
     def start(self):
         pass
 
-    def stop(self, seconds: Optional[float] = None):
-        self._operation_storage.close()
+    def stop(self, seconds: Optional[float] = None) -> None:
+        # Remove local files
+        self._operation_storage.cleanup()
 
-    def close(self):
+    def close(self) -> None:
         pass

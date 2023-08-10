@@ -54,7 +54,7 @@ class OperationStorage:
     def upload_path(self) -> Path:
         return self.data_path / "upload_path"
 
-    def close(self):
+    def cleanup(self) -> None:
         shutil.rmtree(self.data_path, ignore_errors=True)
 
         parent = self.data_path.parent
