@@ -464,7 +464,7 @@ class TestFileSet(BaseE2ETest):
                     assert content == content2
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_fetch_fileset_files(self, container: MetadataContainer):
+    def test_list_fileset_files(self, container: MetadataContainer):
         key = self.gen_key()
         filename = fake.file_name()
         content = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
@@ -479,7 +479,7 @@ class TestFileSet(BaseE2ETest):
             container[key].upload_files([filename])
             container.sync()
 
-            file_list = container[key].fetch_fileset_files()
+            file_list = container[key].list_fileset_files()
             assert len(file_list) == 1
             assert file_list[0].name == filename
             assert file_list[0].file_type == "file"
@@ -487,7 +487,7 @@ class TestFileSet(BaseE2ETest):
 
             container[key].delete_files(filename)
             container.sync()
-            assert container[key].fetch_fileset_files() == []
+            assert container[key].list_fileset_files() == []
 
 
 class TestPlotObjectsAssignment(BaseE2ETest):

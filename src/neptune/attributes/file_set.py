@@ -72,5 +72,5 @@ class FileSet(Attribute):
         self._backend.download_file_set(self._container_id, self._container_type, self._path, destination)
 
     def list_fileset_files(self, sub_path: Optional[str] = None) -> List[FileEntry]:
-        sub_path = sub_path or "."
+        sub_path = sub_path or ""
         return self._backend.list_fileset_files(self._path, self._container_id, sub_path)

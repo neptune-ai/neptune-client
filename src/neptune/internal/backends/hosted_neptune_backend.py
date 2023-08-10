@@ -865,7 +865,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [FileEntry.from_dto(entry) for entry in entries]
         except HTTPNotFound:
-            raise FileSetNotFound()
+            raise FileSetNotFound(attribute, sub_path)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(
