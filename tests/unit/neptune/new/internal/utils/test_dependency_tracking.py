@@ -1,9 +1,10 @@
 import itertools
-import unittest
 from unittest.mock import (
     MagicMock,
     patch,
 )
+
+import pytest
 
 from neptune.internal.utils.dependency_tracking import (
     FileDependenciesStrategy,
@@ -11,7 +12,7 @@ from neptune.internal.utils.dependency_tracking import (
 )
 
 
-class TestDependencyTracking(unittest.TestCase):
+class TestDependencyTracking:
     @patch("neptune.internal.utils.dependency_tracking.distributions")
     @patch("neptune.types.File.from_content")
     def test_infer_calls_upload_correctly(self, mock_from_content, mock_distributions):
@@ -39,14 +40,15 @@ class TestDependencyTracking(unittest.TestCase):
         mock_upload.assert_not_called()
         mock_logger.error.assert_called_once()
 
+    @pytest.mark.parametrize("path", ["valid_file_path.txt", "dir/valid_file_path.txt"])
     @patch("os.path.isfile", return_value=True)
-    def test_file_strategy_uploads_correct_path(self, mock_is_file):
+    def test_file_strategy_uploads_correct_path(self, mock_is_file, path):
         run = MagicMock()
         handler = MagicMock()
         run.__getitem__ = MagicMock()
         run.__getitem__.return_value = handler
         handler.upload = MagicMock()
 
-        FileDependenciesStrategy(path="valid_file_path.txt").log_dependencies(run=run)
+        FileDependenciesStrategy(path=path).log_dependencies(run=run)
 
-        handler.upload.assert_called_once_with("valid_file_path.txt")
+        handler.upload.assert_called_once_with(path)

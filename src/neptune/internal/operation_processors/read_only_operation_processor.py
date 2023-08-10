@@ -45,5 +45,8 @@ class ReadOnlyOperationProcessor(OperationProcessor):
     def start(self):
         pass
 
-    def stop(self, seconds: Optional[float] = None):
+    def stop(self, seconds: Optional[float] = None) -> None:
+        pass
+
+    def close(self) -> None:
         pass
