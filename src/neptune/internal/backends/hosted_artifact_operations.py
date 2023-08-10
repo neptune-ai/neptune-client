@@ -55,6 +55,14 @@ def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
     return artifact_size
 
 
+def _filter_empty_directory_files(files: List[ArtifactFileData]) -> List[ArtifactFileData]:
+    return list(filter(lambda x: not _is_s3_empty_directory_file(x), files))
+
+
+def _is_s3_empty_directory_file(file: ArtifactFileData) -> bool:
+    return file.type == "S3" and file.size == 0
+
+
 def track_to_new_artifact(
     swagger_client: SwaggerClientWrapper,
     project_id: str,
@@ -62,13 +70,21 @@ def track_to_new_artifact(
     parent_identifier: str,
     entries: List[Tuple[str, Optional[str]]],
     default_request_params: Dict,
+    exclude_directory_files: bool,
+    exclude_metadata_from_hash: bool,
 ) -> Optional[Operation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
+
+    if exclude_directory_files:
+        files = _filter_empty_directory_files(files)
 
     if not files:
         raise ArtifactUploadingError("Uploading an empty Artifact")
 
-    artifact_hash = _compute_artifact_hash(files)
+    artifact_hash = (
+        _compute_artifact_hash_without_metadata(files) if exclude_metadata_from_hash else _compute_artifact_hash(files)
+    )
+
     artifact = create_new_artifact(
         swagger_client=swagger_client,
         project_id=project_id,
@@ -98,8 +114,12 @@ def track_to_existing_artifact(
     parent_identifier: str,
     entries: List[Tuple[str, Optional[str]]],
     default_request_params: Dict,
+    exclude_directory_files: bool,
 ) -> Optional[Operation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
+
+    if exclude_directory_files:
+        files = _filter_empty_directory_files(files)
 
     if not files:
         raise ArtifactUploadingError("Uploading an empty Artifact")
@@ -114,6 +134,10 @@ def track_to_existing_artifact(
     )
 
     return AssignArtifact(path=path, hash=artifact.hash)
+
+
+def _compute_artifact_hash_without_metadata(files: List[ArtifactFileData]) -> str:
+    return FileHasher.get_artifact_hash_without_metadata(files)
 
 
 def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:

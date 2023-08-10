@@ -350,6 +350,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             parent_identifier=str(container_id),
                             entries=[("/path/to/file", "/path/to")],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
+                            exclude_metadata_from_hash=True,
                         ),
                         call(
                             swagger_client=swagger_client_wrapper,
@@ -361,6 +363,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                                 ("/path/to/file2", None),
                             ],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
+                            exclude_metadata_from_hash=True,
                         ),
                         call(
                             swagger_client=swagger_client_wrapper,
@@ -372,6 +376,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                                 ("/path/to/file2", None),
                             ],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
+                            exclude_metadata_from_hash=True,
                         ),
                     ],
                     any_order=True,
@@ -443,6 +449,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             parent_identifier=str(container_id),
                             entries=[("/path/to/file", "/path/to")],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
                         ),
                         call(
                             swagger_client=swagger_client_wrapper,
@@ -455,6 +462,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                                 ("/path/to/file2", None),
                             ],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
                         ),
                         call(
                             swagger_client=swagger_client_wrapper,
@@ -467,6 +475,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                                 ("/path/to/file2", None),
                             ],
                             default_request_params=DEFAULT_REQUEST_KWARGS,
+                            exclude_directory_files=True,
                         ),
                     ],
                     any_order=True,

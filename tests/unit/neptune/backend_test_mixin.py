@@ -32,6 +32,7 @@ class BackendTestMixin:
 
         artifacts = type("artifacts", (object,), {})()
         setattr(artifacts, "enabled", True)
+        setattr(artifacts, "apiVersion", 2)
 
         multipart_upload = type("multiPartUpload", (object,), {})()
         setattr(multipart_upload, "enabled", True)

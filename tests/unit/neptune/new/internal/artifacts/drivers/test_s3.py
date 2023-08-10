@@ -42,6 +42,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         with freezegun.freeze_time(self.update_time):
             self.s3.put_object(Bucket=self.bucket_name, Key="path/to/file1", Body=b"\xde\xad\xbe\xef")
             self.s3.put_object(Bucket=self.bucket_name, Key="path/to/file2", Body=b"\x20")
+            self.s3.put_object(Bucket=self.bucket_name, Key="path/to/", Body=b"")
             self.s3.put_object(Bucket=self.bucket_name, Key="path/file3", Body=b"\x21")
 
     def test_match_by_path(self):
@@ -88,33 +89,43 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/")
         files = sorted(files, key=lambda file: file.file_path)
 
-        self.assertEqual(2, len(files))
+        self.assertEqual(3, len(files))
 
-        self.assertEqual("2f249230a8e7c2bf6005ccd2679259ec", files[0].file_hash)
-        self.assertEqual("file1", files[0].file_path)
-        self.assertEqual(f"s3://{self.bucket_name}/path/to/file1", files[0].metadata["location"])
+        self.assertEqual("d41d8cd98f00b204e9800998ecf8427e", files[0].file_hash)
+        self.assertEqual("to", files[0].file_path)
+        self.assertEqual(0, files[0].size)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/", files[0].metadata["location"])
 
-        self.assertEqual("7215ee9c7d9dc229d2921a40e899ec5f", files[1].file_hash)
-        self.assertEqual("file2", files[1].file_path)
-        self.assertEqual(f"s3://{self.bucket_name}/path/to/file2", files[1].metadata["location"])
+        self.assertEqual("2f249230a8e7c2bf6005ccd2679259ec", files[1].file_hash)
+        self.assertEqual("to/file1", files[1].file_path)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/file1", files[1].metadata["location"])
+
+        self.assertEqual("7215ee9c7d9dc229d2921a40e899ec5f", files[2].file_hash)
+        self.assertEqual("to/file2", files[2].file_path)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/file2", files[2].metadata["location"])
 
     def test_multiple_retrieval_prefix(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/", "my/custom_path")
         files = sorted(files, key=lambda file: file.file_path)
 
-        self.assertEqual(len(files), 3)
+        self.assertEqual(len(files), 4)
 
         self.assertEqual("9033e0e305f247c0c3c80d0c7848c8b3", files[0].file_hash)
         self.assertEqual("my/custom_path/file3", files[0].file_path)
         self.assertEqual(f"s3://{self.bucket_name}/path/file3", files[0].metadata["location"])
 
-        self.assertEqual("2f249230a8e7c2bf6005ccd2679259ec", files[1].file_hash)
-        self.assertEqual("my/custom_path/to/file1", files[1].file_path)
-        self.assertEqual(f"s3://{self.bucket_name}/path/to/file1", files[1].metadata["location"])
+        self.assertEqual("d41d8cd98f00b204e9800998ecf8427e", files[1].file_hash)
+        self.assertEqual("my/custom_path/to", files[1].file_path)
+        self.assertEqual(0, files[1].size)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/", files[1].metadata["location"])
 
-        self.assertEqual("7215ee9c7d9dc229d2921a40e899ec5f", files[2].file_hash)
-        self.assertEqual("my/custom_path/to/file2", files[2].file_path)
-        self.assertEqual(f"s3://{self.bucket_name}/path/to/file2", files[2].metadata["location"])
+        self.assertEqual("2f249230a8e7c2bf6005ccd2679259ec", files[2].file_hash)
+        self.assertEqual("my/custom_path/to/file1", files[2].file_path)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/file1", files[2].metadata["location"])
+
+        self.assertEqual("7215ee9c7d9dc229d2921a40e899ec5f", files[3].file_hash)
+        self.assertEqual("my/custom_path/to/file2", files[3].file_path)
+        self.assertEqual(f"s3://{self.bucket_name}/path/to/file2", files[3].metadata["location"])
 
     def test_wildcards_not_supported(self):
         with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
