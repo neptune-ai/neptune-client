@@ -38,6 +38,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -118,7 +119,6 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
-from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,

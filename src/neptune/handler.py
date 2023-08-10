@@ -29,6 +29,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.attributes import File
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
@@ -45,7 +46,6 @@ from neptune.exceptions import (
     NeptuneUserApiInputException,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
-from neptune.internal.files import FileEntry
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
@@ -664,13 +664,13 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_files_list")
 
-    def fetch_fileset_files(self) -> List[FileEntry]:
+    def list_fileset_files(self, sub_path: Optional[str] = None) -> List[FileEntry]:
         """Fetches the list of files in a file set and their metadata.
 
         You may also want to check `fetch_fileset_files docs page`_.
            https://docs.neptune.ai/api/field_types#fetch_fileset_files
         """
-        return self._pass_call_to_attr(function_name="fetch_fileset_files")
+        return self._pass_call_to_attr(function_name="list_fileset_files", sub_path=sub_path)
 
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)

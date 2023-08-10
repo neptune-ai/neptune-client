@@ -17,6 +17,7 @@ __all__ = ["OfflineNeptuneBackend"]
 
 from typing import List
 
+from neptune.api.dtos import FileEntry
 from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
@@ -37,7 +38,6 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
-from neptune.internal.files import FileEntry
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):

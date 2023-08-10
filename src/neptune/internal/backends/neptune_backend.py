@@ -25,6 +25,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.common.exceptions import NeptuneException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
@@ -50,7 +51,6 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
-from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,

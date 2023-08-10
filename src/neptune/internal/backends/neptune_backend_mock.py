@@ -33,6 +33,7 @@ from typing import (
 )
 from zipfile import ZipFile
 
+from neptune.api.dtos import FileEntry
 from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
@@ -73,7 +74,6 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
-from neptune.internal.files import FileEntry
 from neptune.internal.id_formats import (
     QualifiedName,
     SysId,
