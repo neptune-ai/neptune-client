@@ -299,8 +299,6 @@ module = [
     "neptune.handler",
     "neptune.integrations.python_logger",
     "neptune.integrations.utils",
-    "neptune.internal.types.stringify_value",
-    "neptune.internal.types.file_types",
     "neptune.internal.artifacts.drivers.local",
     "neptune.internal.artifacts.drivers.s3",
     "neptune.internal.artifacts.file_hasher",

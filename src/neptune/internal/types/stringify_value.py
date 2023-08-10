@@ -43,7 +43,7 @@ T = TypeVar("T")
 
 class StringifyValue(Generic[T]):
     def __init__(self, value: T) -> None:
-        self.__value = value
+        self.__value: T = value
 
     @property
     def value(self) -> T:

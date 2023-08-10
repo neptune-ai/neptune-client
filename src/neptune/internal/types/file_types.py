@@ -31,15 +31,12 @@ from typing import (
     Any,
     Callable,
     Optional,
-    TypeVar,
     Union,
 )
 
 from neptune.common.exceptions import NeptuneException
 from neptune.exceptions import StreamAlreadyUsedException
 from neptune.internal.utils import verify_type
-
-T = TypeVar("T")
 
 
 class FileType(enum.Enum):
@@ -53,14 +50,15 @@ class FileComposite(abc.ABC):
     Composite class defining behaviour of neptune.types.atoms.file.File
     """
 
-    file_type: Optional[FileType] = None
+    file_type: FileType
 
-    def __init__(self, extension: Optional[str]):
-        verify_type("extension", extension, (str, type(None)))
-        self._extension: Optional[str] = extension
+    def __init__(self, extension: str) -> None:
+        verify_type("extension", extension, str)
+
+        self._extension: str = extension
 
     @property
-    def extension(self) -> Optional[str]:
+    def extension(self) -> str:
         return self._extension
 
     @property
@@ -68,7 +66,7 @@ class FileComposite(abc.ABC):
         raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
 
     @property
-    def content(self) -> bytes:
+    def content(self) -> Union[str, bytes]:
         raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
     def save(self, path: str) -> None:
@@ -79,12 +77,16 @@ class LocalFileComposite(FileComposite):
     file_type = FileType.LOCAL_FILE
 
     def __init__(self, path: str, extension: Optional[str] = None) -> None:
-        try:
-            ext = os.path.splitext(path)[1]
-            ext = ext[1:] if ext else ""
-        except ValueError:
-            ext = ""
-        super().__init__(extension or ext)
+        if extension:
+            normalized_extension = extension
+        else:
+            try:
+                normalized_extension = os.path.splitext(path)[1]
+                normalized_extension = normalized_extension[1:] if normalized_extension else ""
+            except ValueError:
+                normalized_extension = ""
+
+        super().__init__(extension=normalized_extension)
 
         self._path: str = path
 
@@ -101,11 +103,12 @@ class InMemoryComposite(FileComposite):
 
     def __init__(self, content: Union[str, bytes], extension: Optional[str] = None) -> None:
         if isinstance(content, str):
-            ext = "txt"
+            normalized_extension: str = "txt"
             content = content.encode("utf-8")
         else:
-            ext = "bin"
-        super().__init__(extension or ext)
+            normalized_extension = "bin"
+
+        super().__init__(extension=extension or normalized_extension)
 
         self._content: bytes = content
 
@@ -143,9 +146,10 @@ class StreamComposite(FileComposite):
 
         if seek is not None and stream.seekable():
             stream.seek(seek)
-        if extension is None:
-            extension = "txt" if isinstance(stream, io.TextIOBase) else "bin"
-        super().__init__(extension)
+
+        normalized_extension = extension or "txt" if isinstance(stream, io.TextIOBase) else "bin"
+
+        super().__init__(extension=normalized_extension)
 
         self._stream: IOBase = stream
         self._stream_read: bool = False
@@ -153,10 +157,16 @@ class StreamComposite(FileComposite):
     @property
     @read_once
     def content(self) -> bytes:
-        val = self._stream.read()
         if isinstance(self._stream, io.TextIOBase):
-            val = val.encode()
-        return val
+            return self._stream.read().encode("utf-8")
+
+        if isinstance(self._stream, io.BufferedIOBase):
+            return self._stream.read()
+
+        if isinstance(self._stream, io.RawIOBase):
+            return self._stream.read() or b""
+
+        raise NeptuneException(f"Unsupported stream type: {type(self._stream)}")
 
     @read_once
     def save(self, path: str) -> None:
@@ -165,7 +175,7 @@ class StreamComposite(FileComposite):
             while stream_buffer:
                 # TODO: replace with Walrus Operator once python3.7 support is dropped
                 if isinstance(self._stream, io.TextIOBase):
-                    stream_buffer = stream_buffer.encode()
+                    stream_buffer = stream_buffer.encode("utf-8")
 
                 handler.write(stream_buffer)
                 stream_buffer = self._stream.read(io.DEFAULT_BUFFER_SIZE)
