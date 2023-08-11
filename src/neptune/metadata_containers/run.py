@@ -145,7 +145,7 @@ class Run(MetadataContainer):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
-        git_ref: Optional[Union[GitRef, GitRefDisabled]] = None,
+        git_ref: Optional[Union[GitRef, GitRefDisabled, bool]] = None,
         dependencies: Optional[Union[str, os.PathLike]] = None,
         **kwargs,
     ):
@@ -318,7 +318,7 @@ class Run(MetadataContainer):
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("capture_traceback", capture_traceback, bool)
-        verify_type("git_ref", git_ref, (GitRef, str, type(None)))
+        verify_type("git_ref", git_ref, (GitRef, str, bool, type(None)))
         verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
 
         if tags is not None:
@@ -343,6 +343,13 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
+
+        if type(git_ref) is bool:
+            if not git_ref:
+                git_ref = GitRefDisabled
+            else:
+                git_ref = GitRef()
+
         self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref or GitRef()
         self._dependencies: Optional[str, os.PathLike] = dependencies
 
