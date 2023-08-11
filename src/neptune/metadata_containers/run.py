@@ -225,7 +225,7 @@ class Run(MetadataContainer):
             git_ref: GitRef object containing information about the Git repository path.
                 If None, Neptune looks for a repository in the path of the script that is executed.
                 To specify a different location, set to GitRef(repository_path="path/to/repo").
-                To turn off Git tracking for the run, set to GitRef.DISABLED.
+                To turn off Git tracking for the run, set to False or GitRef.DISABLED.
             dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
                 You can also pass a path to your dependency file directly.
                 If left empty, no dependency file is uploaded.
@@ -251,7 +251,7 @@ class Run(MetadataContainer):
             ...     name="neural-net-mnist",
             ...     description="neural net trained on MNIST",
             ...     source_files=[],
-            ...     git_ref=GitRef.DISABLED,
+            ...     git_ref=False,
             ... )
 
             >>> # Log all .py files from all subdirectories, excluding hidden files
