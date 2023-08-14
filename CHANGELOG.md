@@ -11,7 +11,7 @@
 - Fixed cleaning operation storage when using `async` mode and forking ([#1418](https://github.com/neptune-ai/neptune-client/pull/1418))
 
 ### Changes
-- Allow disabling git_ref by passing False ([#1423](https://github.com/neptune-ai/neptune-client/pull/1423))
+- Allow disabling Git tracking by passing `git_ref=False` ([#1423](https://github.com/neptune-ai/neptune-client/pull/1423))
 
 
 ##  neptune 1.4.1
