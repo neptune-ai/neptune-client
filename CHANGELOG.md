@@ -10,6 +10,10 @@
 - Fix FileDependenciesStrategy when the dependency file is in a folder ([#1411](https://github.com/neptune-ai/neptune-client/pull/1411))
 - Fixed cleaning operation storage when using `async` mode and forking ([#1418](https://github.com/neptune-ai/neptune-client/pull/1418))
 
+### Changes
+- Allow disabling Git tracking by passing `git_ref=False` ([#1423](https://github.com/neptune-ai/neptune-client/pull/1423))
+
+
 ##  neptune 1.4.1
 
 ### Fixes
