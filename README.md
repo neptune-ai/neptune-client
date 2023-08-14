@@ -1,6 +1,5 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-banner.jpeg" width="1500" />
-    &nbsp;
+    <img src="https://github.com/neptune-ai/neptune-client/assets/97611089/490f7939-874e-4213-bbec-8fa910eb00fc" width="1500" />
  <h1>neptune.ai</h1>
 </div>
 
@@ -22,25 +21,18 @@
 
 ## What is neptune.ai?
 
-neptune.ai makes it easy to log, store, organize, compare, register, and share <b>all your ML model metadata in a single place</b>.
+Neptune is a lightweight experiment tracker for ML teams that struggle with debugging and reproducing experiments, sharing results, and messy model handover. <b>It offers a single place to track, compare, store, and collaborate on experiments and models.</b>
 
-* Automate and standardize as your modeling team grows.
-* Collaborate on models and results with your team and across the org.
-* Use hosted, deploy on-premises, or in a private cloud. Integrate with any MLOps stack.
+With Neptune, Data Scientists can develop production-ready models faster, and ML Engineers can access model artifacts instantly in order to deploy them to production.
 &nbsp;
 
-&nbsp;
-<div align="center">
-    <a href="https://www.youtube.com/watch?v=bQzgnqM5J6U">
-      <img border="0" alt="neptune.ai explainer video" src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-explainer-video.png" width="600">
-    </a>
-</div>
+<a href="https://www.youtube.com/watch?v=bQzgnqM5J6U"><b>Watch a 3min explainer video →</b></a>
 &nbsp;
 
-&nbsp;
-<a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Play with a live neptune.ai app →</b></a>
+<a href="https://neptune.ai/demo"><b>Watch a 20min product demo →</b></a>
 &nbsp;
 
+<a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Play with a live example project in the Neptune app  →</b></a>
 &nbsp;
 ## Getting started
 
@@ -93,11 +85,11 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
+* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
+* <a href="https://docs.neptune.ai/app/custom_dashboard/"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
+* <a href="https://docs.neptune.ai/app/custom_views/"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
 &nbsp;
 
 &nbsp;
@@ -113,15 +105,15 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 Visualize training live in the neptune.ai web app. See how different parameters and configs affect the results. Optimize models quicker.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Compare:</b></a> learning curves, parameters, images, datasets.
+* <a href="https://docs.neptune.ai/app/comparison/"><b>Compare:</b></a> learning curves, parameters, images, datasets.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
+* <a href="https://docs.neptune.ai/app/runs_table/#searching-and-filtering-runs"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
+* <a href="https://docs.neptune.ai/app/runs_table/"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
+* <a href="https://docs.neptune.ai/tutorials/monitoring_training_live/"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
 
-* <a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Group by:</b></a> dataset versions, parameters.
+* <a href="https://docs.neptune.ai/app/group_by/"><b>Group by:</b></a> dataset versions, parameters.
 &nbsp;
 
 &nbsp;
@@ -133,7 +125,7 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 &nbsp;
 
-**Register models**
+**Version models**
 
 Version, review, and access production-ready models and metadata associated with them in a single place.
 
@@ -212,8 +204,6 @@ trainer.fit(my_model, my_dataloader)
 
 &nbsp;
 ## neptune.ai is trusted by great companies
-&nbsp;
-
 <div align="center">
     <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-customers.png" width="1500" />
 </div>
@@ -237,4 +227,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Paulina, Chaz, Prince, Parth, Kshitij, Siddhant, Jakub, Patrycja, Dominika, Karolina, Stephen, Artur, Aleksiej, Martyna, Małgorzata, Magdalena, Karolina, Marcin, Michał, Tymoteusz, Rafał, Aleksandra, Sabine, Tomek, Piotr, Rafał, Adam, Hubert, Marcin, Jakub, Paweł, Franciszek, Bartosz, Aleksander, Dawid, Patryk, Krzysztof, Aurimas, Jakub, Bartosz, and [you?](https://neptune.ai/jobs)
+Piotr, Paulina, Jakub, Tomek, Magda, Aurimas, Chaz, Alexandra, Marcin, Tymoteusz, Parth, Aleksandra, Sabine, Tytus, Patrycja, Dawid, Dominika, Karolina, Aleksiej, Artur, Prince, Siddhant, Kshiteej, Piotr, Hubert, Adam, Rafał, Patryk, Bartosz, Jakub, Artsiom, Jakub, Marcin, Jakub, Paweł, Franciszek, Bartosz, Siamion, Aleksander, Małgorzata, Michał, Karolina, Martyna, and [you?](https://neptune.ai/jobs)
