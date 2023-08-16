@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.5.0
+## neptune 1.5.0
 
 ### Features
 - Users can pass neptune data directory path by env variable ([#1409](https://github.com/neptune-ai/neptune-client/pull/1409))
