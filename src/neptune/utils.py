@@ -19,6 +19,7 @@ __all__ = ["stringify_unsupported"]
 from typing import (
     Any,
     Mapping,
+    MutableMapping,
     Union,
 )
 
@@ -43,7 +44,7 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         For more information, see:
         https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
     """
-    if isinstance(value, dict):
-        return {k: stringify_unsupported(v) for k, v in value.items()}
+    if isinstance(value, MutableMapping):
+        return {str(k): stringify_unsupported(v) for k, v in value.items()}
 
     return StringifyValue(value=value)

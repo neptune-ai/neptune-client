@@ -15,6 +15,12 @@
 #
 from contextlib import contextmanager
 from datetime import datetime
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    MutableMapping,
+)
 
 from pytest import (
     fixture,
@@ -46,6 +52,26 @@ class Obj:
 
     def __repr__(self):
         return f"Object(name={self._name})"
+
+
+class CustomMutableMapping(MutableMapping):
+    def __init__(self, data: Dict):
+        self._data = data
+
+    def __setitem__(self, __key: Any, __value: Any) -> None:
+        self._data[__key] = __value
+
+    def __delitem__(self, __key: Any) -> None:
+        del self._data[__key]
+
+    def __getitem__(self, __key: Any) -> Any:
+        return self._data[__key]
+
+    def __len__(self) -> int:
+        return len(self._data)
+
+    def __iter__(self) -> Iterator[Any]:
+        return iter(self._data)
 
 
 @contextmanager
@@ -301,6 +327,13 @@ class TestStringifyUnsupported:
             run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
 
         assert run["regular"].fetch() == run["stringified"].fetch()
+
+    def test_assign__mutable_mapping(self, run):
+        with assert_no_warnings():
+
+            run["stringified_mutable_mapping"] = stringify_unsupported(
+                CustomMutableMapping({5: None, "b": None, "c": (None, Obj())})
+            )
 
     def test_assign__dict__reassign(self, run):
         with assert_unsupported_warning():

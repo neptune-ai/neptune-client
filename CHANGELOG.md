@@ -1,3 +1,10 @@
+## [UNRELEASED] neptune 1.5.1
+
+### Fixes
+- Fixed `stringify_unsupported` not catching a broader `MutableMapping` class ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
+- Cast keys in the resulting dictionary to string in `stringify_unsupported` ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
+
+
 ## neptune 1.5.0
 
 ### Features
