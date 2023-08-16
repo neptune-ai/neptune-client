@@ -332,7 +332,7 @@ class TestStringifyUnsupported:
         with assert_no_warnings():
 
             run["stringified_mutable_mapping"] = stringify_unsupported(
-                CustomMutableMapping({"a": None, "b": None, "c": (None, Obj())})
+                CustomMutableMapping({5: None, "b": None, "c": (None, Obj())})
             )
 
     def test_assign__dict__reassign(self, run):
