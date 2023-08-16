@@ -248,7 +248,15 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 run=run,
             )
 
+        mock_track_changes.reset_mock()
+
+        with init_run(mode="debug", git_ref=True):
+            mock_track_changes.assert_called_once()
+
     @patch("neptune.internal.utils.git.get_diff")
     def test_track_uncommitted_changes_not_called_given_git_ref_disabled(self, mock_get_diff):
         with init_run(mode="debug", git_ref=GitRef.DISABLED):
+            mock_get_diff.assert_not_called()
+
+        with init_run(mode="debug", git_ref=False):
             mock_get_diff.assert_not_called()

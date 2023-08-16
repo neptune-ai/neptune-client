@@ -91,3 +91,22 @@ class FileHasher:
                 artifact_hash.update(metadata_value.encode(cls.ENCODING))
 
         return str(artifact_hash.hexdigest())
+
+    @classmethod
+    def get_artifact_hash_without_metadata(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
+        artifact_hash = hashlib.sha256()
+
+        for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.file_path), cls.SERVER_INT_BYTES))
+            artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            if artifact_file.size is not None:
+                artifact_hash.update(cls._number_to_bytes(artifact_file.size, cls.SERVER_LONG_BYTES))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.type), cls.SERVER_INT_BYTES))
+            artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
+
+        return str(artifact_hash.hexdigest())

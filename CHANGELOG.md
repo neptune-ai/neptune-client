@@ -2,12 +2,16 @@
 
 ### Features
 - Users can pass neptune data directory path by env variable ([#1409](https://github.com/neptune-ai/neptune-client/pull/1409))
+- Filter S3 empty files and exclude metadata from computing of file's hash for new version of artifacts ([#1421](https://github.com/neptune-ai/neptune-client/pull/1421))
 
 ### Fixes
 - Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
 - Fixed cleaning operation storage when using `sync` mode and forking ([#1413](https://github.com/neptune-ai/neptune-client/pull/1413))
 - Fix FileDependenciesStrategy when the dependency file is in a folder ([#1411](https://github.com/neptune-ai/neptune-client/pull/1411))
 - Fixed cleaning operation storage when using `async` mode and forking ([#1418](https://github.com/neptune-ai/neptune-client/pull/1418))
+
+### Changes
+- Allow disabling Git tracking by passing `git_ref=False` ([#1423](https://github.com/neptune-ai/neptune-client/pull/1423))
 
 
 ##  neptune 1.4.1
