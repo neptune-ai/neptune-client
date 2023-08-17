@@ -5,7 +5,7 @@
 - Cast keys in the resulting dictionary to string in `stringify_unsupported` ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
 
 ### Changes
-- Attach `X-Neptune-Artifact-Api-Version` to Artifacts API requests
+- Attach `X-Neptune-Artifact-Api-Version` to Artifacts API requests ([#1430](https://github.com/neptune-ai/neptune-client/pull/1430))
 
 ## neptune 1.5.0
 
