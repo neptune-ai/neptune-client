@@ -3,7 +3,7 @@
 ### Fixes
 - Fixed `stringify_unsupported` not catching a broader `MutableMapping` class ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
 - Cast keys in the resulting dictionary to string in `stringify_unsupported` ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
-
+- Call execute operations with list ([#1429](https://github.com/neptune-ai/neptune-client/pull/1429))
 
 ## neptune 1.5.0
 
