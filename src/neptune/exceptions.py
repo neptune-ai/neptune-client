@@ -1200,6 +1200,6 @@ class FileSetNotFound(NeptuneException):
         You may also want to check the following docs page:
             - https://docs.neptune.ai/api/connection_modes
 
-        {correct}Need help?{end}-> https://docs.neptune.ai/getting_help.html
+        {correct}Need help?{end}-> https://docs.neptune.ai/getting_help/
         """
         super().__init__(message.format(path=path_to_str([attribute, sub_path]), **STYLES))
