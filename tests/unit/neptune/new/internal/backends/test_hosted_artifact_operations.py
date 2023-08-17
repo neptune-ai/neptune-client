@@ -45,6 +45,10 @@ class TestHostedArtifactOperations(unittest.TestCase):
         ]
         self.project_id = str(uuid.uuid4())
         self.parent_identifier = str(uuid.uuid4())
+        self.default_request_params = {"_request_options": {"headers": {"test": "true"}}}
+        self.expected_request_params = {
+            "_request_options": {"headers": {"test": "true", "X-Neptune-Artifact-Api-Version": "2"}}
+        }
 
     @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash")
     @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
@@ -64,7 +68,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             path=["sub", "one"],
             parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", "/path/to")],
-            default_request_params={},
+            default_request_params=self.default_request_params,
             exclude_directory_files=False,
             exclude_metadata_from_hash=False,
         )
@@ -76,7 +80,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
             size=None,
-            default_request_params={},
+            default_request_params=self.expected_request_params,
         )
 
     @patch("neptune.internal.backends.hosted_artifact_operations._compute_artifact_hash_without_metadata")
@@ -105,7 +109,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             path=["sub", "one"],
             parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", "/path/to")],
-            default_request_params={},
+            default_request_params=self.default_request_params,
             exclude_directory_files=True,
             exclude_metadata_from_hash=True,
         )
@@ -116,7 +120,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             project_id=self.project_id,
             artifact_hash=self.artifact_hash,
             files=[self.files[0]],
-            default_request_params={},
+            default_request_params=self.expected_request_params,
         )
 
     @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
@@ -133,7 +137,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 path=["sub", "one"],
                 parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", "/path/to")],
-                default_request_params={},
+                default_request_params=self.default_request_params,
                 exclude_directory_files=True,
                 exclude_metadata_from_hash=False,
             )
@@ -153,7 +157,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", "/path/to")],
-            default_request_params={},
+            default_request_params=self.default_request_params,
             exclude_directory_files=False,
         )
 
@@ -164,7 +168,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
             files=self.files,
-            default_request_params={},
+            default_request_params=self.expected_request_params,
         )
 
     @patch("neptune.internal.backends.hosted_artifact_operations._extract_file_list")
@@ -182,7 +186,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 artifact_hash="abcdef",
                 parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", "/path/to")],
-                default_request_params={},
+                default_request_params=self.default_request_params,
                 exclude_directory_files=True,
             )
 

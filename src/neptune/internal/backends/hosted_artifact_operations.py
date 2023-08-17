@@ -63,6 +63,18 @@ def _is_s3_empty_directory_file(file: ArtifactFileData) -> bool:
     return file.type == "S3" and file.size == 0
 
 
+def _add_artifact_version_to_request_params(default_request_params: Dict) -> Dict:
+    return {
+        "_request_options": {
+            **default_request_params["_request_options"],
+            "headers": {
+                **default_request_params["_request_options"]["headers"],
+                "X-Neptune-Artifact-Api-Version": "2",
+            },
+        }
+    }
+
+
 def track_to_new_artifact(
     swagger_client: SwaggerClientWrapper,
     project_id: str,
@@ -91,7 +103,7 @@ def track_to_new_artifact(
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         size=_compute_artifact_size(files),
-        default_request_params=default_request_params,
+        default_request_params=_add_artifact_version_to_request_params(default_request_params),
     )
 
     if not artifact.received_metadata:
@@ -100,7 +112,7 @@ def track_to_new_artifact(
             project_id=project_id,
             artifact_hash=artifact_hash,
             files=files,
-            default_request_params=default_request_params,
+            default_request_params=_add_artifact_version_to_request_params(default_request_params),
         )
 
     return AssignArtifact(path=path, hash=artifact_hash)
@@ -130,7 +142,7 @@ def track_to_existing_artifact(
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         files=files,
-        default_request_params=default_request_params,
+        default_request_params=_add_artifact_version_to_request_params(default_request_params),
     )
 
     return AssignArtifact(path=path, hash=artifact.hash)
@@ -168,6 +180,7 @@ def create_new_artifact(
     size: int,
     default_request_params: Dict,
 ) -> ArtifactModel:
+
     params = {
         "projectIdentifier": project_id,
         "hash": artifact_hash,
