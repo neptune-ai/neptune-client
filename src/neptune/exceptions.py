@@ -1181,7 +1181,7 @@ class NeptuneUserApiInputException(NeptuneException):
 
 
 class FileSetNotFound(NeptuneException):
-    def __init__(self, attribute: str, sub_path: str):
+    def __init__(self, attribute: str, path: str):
         message = """
         {h1}
         ----MetadataInconsistency----------------------------------------------------------------------
@@ -1202,4 +1202,4 @@ class FileSetNotFound(NeptuneException):
 
         {correct}Need help?{end}-> https://docs.neptune.ai/getting_help/
         """
-        super().__init__(message.format(path=path_to_str([attribute, sub_path]), **STYLES))
+        super().__init__(message.format(path=path_to_str([attribute, path]), **STYLES))

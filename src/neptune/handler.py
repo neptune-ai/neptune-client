@@ -664,13 +664,13 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_files_list")
 
-    def list_fileset_files(self, sub_path: Optional[str] = None) -> List[FileEntry]:
+    def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
         """Fetches the list of files in a file set and their metadata.
 
         You may also want to check `fetch_fileset_files docs page`_.
            https://docs.neptune.ai/api/field_types#fetch_fileset_files
         """
-        return self._pass_call_to_attr(function_name="list_fileset_files", sub_path=sub_path)
+        return self._pass_call_to_attr(function_name="list_fileset_files", path=path)
 
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)
