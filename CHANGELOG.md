@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 0.16.19
+
+### Fixes
+- Call execute operations with list ([#1429](https://github.com/neptune-ai/neptune-client/pull/1429))
+
 ## neptune-client 0.16.18
 
 ### Fixes
