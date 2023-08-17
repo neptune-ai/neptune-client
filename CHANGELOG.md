@@ -1,4 +1,7 @@
-## [UNRELEASED] neptune 1.5.1
+## [UNRELEASED] neptune 1.6.0
+
+### Features
+- Added `list_fileset_files()` method to list files and directories contained in `FileSet` field ([#1412](https://github.com/neptune-ai/neptune-client/pull/1412))
 
 ### Fixes
 - Fixed `stringify_unsupported` not catching a broader `MutableMapping` class ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
@@ -10,7 +13,6 @@
 ### Features
 - Users can pass neptune data directory path by env variable ([#1409](https://github.com/neptune-ai/neptune-client/pull/1409))
 - Filter S3 empty files and exclude metadata from computing of file's hash for new version of artifacts ([#1421](https://github.com/neptune-ai/neptune-client/pull/1421))
-- Added `list_fileset_files()` method to list files and directories contained in `FileSet` field ([#1412](https://github.com/neptune-ai/neptune-client/pull/1412))
 
 ### Fixes
 - Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))

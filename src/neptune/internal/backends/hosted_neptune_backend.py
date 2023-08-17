@@ -859,19 +859,19 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ArtifactNotFoundException(artifact_hash)
 
     @with_api_exceptions_handler
-    def list_fileset_files(self, attribute: List[str], container_id: str, sub_path: str) -> List[FileEntry]:
+    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         attribute = path_to_str(attribute)
         try:
             entries = (
                 self.leaderboard_client.api.lsFileSetAttribute(
-                    attribute=attribute, path=sub_path, experimentId=container_id, **DEFAULT_REQUEST_KWARGS
+                    attribute=attribute, path=path, experimentId=container_id, **DEFAULT_REQUEST_KWARGS
                 )
                 .response()
                 .result
             )
             return [FileEntry.from_dto(entry) for entry in entries]
         except HTTPNotFound:
-            raise FileSetNotFound(attribute, sub_path)
+            raise FileSetNotFound(attribute, path)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(
