@@ -484,7 +484,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._execute_operations(
                 container_id,
                 container_type,
-                operations=itertools.chain(assign_artifact_operations, preprocessed_operations.other_operations),
+                operations=assign_artifact_operations + preprocessed_operations.other_operations,
             )
         )
 
@@ -625,11 +625,12 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         return errors, assign_operations
 
+    @with_api_exceptions_handler
     def _execute_operations(
         self,
         container_id: UniqueId,
         container_type: ContainerType,
-        operations: Iterable[Operation],
+        operations: List[Operation],
     ) -> List[MetadataInconsistency]:
         kwargs = {
             "experimentId": container_id,
@@ -643,17 +644,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
 
-        @with_api_exceptions_handler
-        def _execute():
-            try:
-                result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
-                return [MetadataInconsistency(err.errorDescription) for err in result]
-            except HTTPNotFound as e:
-                raise ContainerUUIDNotFound(container_id, container_type) from e
-            except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
-                raise NeptuneLimitExceedException(reason=e.response.json().get("title", "Unknown reason")) from e
-
-        return _execute()
+        try:
+            result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
+            return [MetadataInconsistency(err.errorDescription) for err in result]
+        except HTTPNotFound as e:
+            raise ContainerUUIDNotFound(container_id, container_type) from e
+        except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
+            raise NeptuneLimitExceedException(reason=e.response.json().get("title", "Unknown reason")) from e
 
     @with_api_exceptions_handler
     def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
@@ -1013,9 +1010,9 @@ class HostedNeptuneBackend(NeptuneBackend):
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
-        types: Optional[List[ContainerType]] = None,
+        types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
-        columns: Optional[List[str]] = None,
+        columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
         if query:
             query_params = {"query": {"query": str(query)}}
