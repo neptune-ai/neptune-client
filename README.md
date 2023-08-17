@@ -85,7 +85,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
 
-* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
+* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
 
 * <a href="https://docs.neptune.ai/app/custom_dashboard/"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
 
