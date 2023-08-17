@@ -17,11 +17,15 @@ import socket
 import unittest
 import uuid
 from pathlib import Path
-from unittest.mock import call
+from unittest.mock import (
+    Mock,
+    call,
+)
 
 from bravado.exception import (
     HTTPNotFound,
     HTTPPaymentRequired,
+    HTTPTooManyRequests,
     HTTPUnprocessableEntity,
 )
 from mock import (
@@ -219,6 +223,55 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     ),
                     result,
                 )
+
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
+    def test_execute_operations_retry_request(self, swagger_client_factory):
+        # given
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        container_uuid = str(uuid.uuid4())
+
+        container_type = ContainerType.RUN
+
+        response = MagicMock()
+        response.response().return_value = []
+        swagger_client.api.executeOperations.side_effect = Mock(
+            side_effect=[HTTPTooManyRequests(MagicMock()), response_mock()]
+        )
+
+        # when
+        result = backend.execute_operations(
+            container_id=container_uuid,
+            container_type=container_type,
+            operations=[
+                LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
+            ],
+            operation_storage=self.dummy_operation_storage,
+        )
+
+        # then
+        self.assertEqual(result, (1, []))
+        execution_operation_call = call(
+            **{
+                "experimentId": str(container_uuid),
+                "operations": [
+                    {
+                        "path": "images/img1",
+                        "logFloats": {
+                            "entries": [
+                                {
+                                    "value": 1,
+                                    "step": 2,
+                                    "timestampMilliseconds": 3000,
+                                }
+                            ]
+                        },
+                    }
+                ],
+                **DEFAULT_REQUEST_KWARGS,
+            }
+        )
+        swagger_client.api.executeOperations.assert_has_calls([execution_operation_call, execution_operation_call])
 
     @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))

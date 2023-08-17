@@ -18,7 +18,6 @@ __all__ = ["NeptuneBackend"]
 import abc
 from typing import (
     Any,
-    Iterable,
     List,
     Optional,
     Tuple,
@@ -300,8 +299,8 @@ class NeptuneBackend:
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
-        types: Optional[Iterable[ContainerType]] = None,
+        types: Optional[List[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
-        columns: Optional[Iterable[str]] = None,
+        columns: Optional[List[str]] = None,
     ) -> List[LeaderboardEntry]:
         pass

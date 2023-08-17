@@ -484,7 +484,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._execute_operations(
                 container_id,
                 container_type,
-                operations=itertools.chain(assign_artifact_operations, preprocessed_operations.other_operations),
+                operations=assign_artifact_operations + preprocessed_operations.other_operations,
             )
         )
 
@@ -630,7 +630,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         container_id: UniqueId,
         container_type: ContainerType,
-        operations: Iterable[Operation],
+        operations: List[Operation],
     ) -> List[MetadataInconsistency]:
         kwargs = {
             "experimentId": container_id,
