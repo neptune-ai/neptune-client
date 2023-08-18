@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.6.0
+## neptune 1.6.0
 
 ### Features
 - Added `list_fileset_files()` method to list files and directories contained in `FileSet` field ([#1412](https://github.com/neptune-ai/neptune-client/pull/1412))
