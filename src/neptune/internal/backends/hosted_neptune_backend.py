@@ -38,6 +38,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -51,6 +52,7 @@ from neptune.exceptions import (
     ArtifactNotFoundException,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
+    FileSetNotFound,
     MetadataContainerNotFound,
     MetadataInconsistency,
     NeptuneFeatureNotAvailableException,
@@ -855,6 +857,21 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [ArtifactFileData.from_dto(a) for a in result.files]
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
+
+    @with_api_exceptions_handler
+    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
+        attribute = path_to_str(attribute)
+        try:
+            entries = (
+                self.leaderboard_client.api.lsFileSetAttribute(
+                    attribute=attribute, path=path, experimentId=container_id, **DEFAULT_REQUEST_KWARGS
+                )
+                .response()
+                .result
+            )
+            return [FileEntry.from_dto(entry) for entry in entries]
+        except HTTPNotFound:
+            raise FileSetNotFound(attribute, path)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(

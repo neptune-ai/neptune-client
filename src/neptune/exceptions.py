@@ -25,6 +25,7 @@ __all__ = [
     "FileNotFound",
     "FileUploadError",
     "FileSetUploadError",
+    "FileSetNotFound",
     "ClientHttpError",
     "MetadataContainerNotFound",
     "ProjectNotFound",
@@ -127,6 +128,7 @@ from neptune.internal.backends.api_model import (
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import replace_patch_version
+from neptune.internal.utils.paths import path_to_str
 
 
 class MetadataInconsistency(NeptuneException):
@@ -1176,3 +1178,28 @@ For more, see https://docs.neptune.ai/api/field_types/#from_stream
 class NeptuneUserApiInputException(NeptuneException):
     def __init__(self, message):
         super().__init__(message)
+
+
+class FileSetNotFound(NeptuneException):
+    def __init__(self, attribute: str, path: str):
+        message = """
+        {h1}
+        ----MetadataInconsistency----------------------------------------------------------------------
+        {end}
+        Attribute {python}{path}{end} was not found.
+
+        Remember that in the asynchronous (default) connection mode, data is synchronized
+        with the Neptune servers in the background. The data may have not reached
+        the servers before it was fetched. Before fetching the data, you can force
+        wait for all the requests sent by invoking:
+
+            {python}run.wait(){end}
+
+        Remember that each use of {python}wait{end} introduces a delay in code execution.
+
+        You may also want to check the following docs page:
+            - https://docs.neptune.ai/api/connection_modes
+
+        {correct}Need help?{end}-> https://docs.neptune.ai/getting_help/
+        """
+        super().__init__(message.format(path=path_to_str([attribute, path]), **STYLES))

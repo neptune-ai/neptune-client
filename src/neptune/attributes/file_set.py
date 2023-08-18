@@ -18,10 +18,12 @@ __all__ = ["FileSet"]
 import os
 from typing import (
     Iterable,
+    List,
     Optional,
     Union,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import (
     DeleteFiles,
@@ -68,3 +70,7 @@ class FileSet(Attribute):
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file_set(self._container_id, self._container_type, self._path, destination)
+
+    def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
+        path = path or ""
+        return self._backend.list_fileset_files(self._path, self._container_id, path)

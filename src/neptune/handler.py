@@ -29,6 +29,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.attributes import File
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
@@ -662,6 +663,43 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#fetch_files_list
         """
         return self._pass_call_to_attr(function_name="fetch_files_list")
+
+    def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
+        """Fetches metadata about the file set.
+
+        If the top-level artifact of the field is a directory, only metadata about this directory is returned.
+        You can use the `path` argument to list metadata about files contained inside the directory or subdirectories.
+
+        Args:
+            path: Path to a nested directory, to get metadata about files contained within the directory.
+
+        Returns:
+            List of FileEntry items with the following metadata: name, size (bytes), mtime (last modification time),
+            and file type (file or directory).
+
+        Examples:
+            In this example, a Neptune run (RUN-100) has a FileSet field "dataset" containing a directory called "data"
+            which has a subdirectory "samples" and a file "dataset.csv". The code for logging this would be:
+            `run["dataset"].upload_files("data")`
+
+            >>> import neptune
+            >>> run = neptune.init_run(with_id="RUN-100")
+            >>> run["dataset"].list_fileset_files()
+            [FileEntry(name='data', size=None, mtime=datetime.datetime(2023, 8, 17, 10, 31, 54, 278601, tzinfo=tzutc()),
+            file_type='directory')]
+            >>> run["dataset"].list_fileset_files(path="data")
+            [FileEntry(name='samples', size=None, mtime=datetime.datetime(2023, 8, 17, 10, 34, 6, 777017,
+            tzinfo=tzutc()), file_type='directory'), FileEntry(name='dataset.csv', size=215,
+            mtime=datetime.datetime(2023, 8, 17, 10, 31, 26, 402000, tzinfo=tzutc()), file_type='file')]
+            >>> run["dataset"].list_fileset_files(path="data/samples")
+            [FileEntry(name='sample_v2.csv', size=215, mtime=datetime.datetime(2023, 8, 17, 10, 31, 26, 491000,
+            tzinfo=tzutc()), file_type='file'), FileEntry(name='sample_v3.csv', size=215, mtime=datetime.datetime(2023,
+            8, 17, 10, 31, 26, 338000, tzinfo=tzutc()), file_type='file'), ...]
+
+        For more, see the API reference:
+           https://docs.neptune.ai/api/field_types#list_fileset_files
+        """
+        return self._pass_call_to_attr(function_name="list_fileset_files", path=path)
 
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)

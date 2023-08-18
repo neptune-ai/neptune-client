@@ -22,6 +22,7 @@ from unittest.mock import (
     call,
 )
 
+import pytest
 from bravado.exception import (
     HTTPNotFound,
     HTTPPaymentRequired,
@@ -36,6 +37,7 @@ from packaging.version import Version
 
 from neptune.exceptions import (
     CannotResolveHostname,
+    FileSetNotFound,
     FileUploadError,
     MetadataInconsistency,
     NeptuneClientUpgradeRequiredError,
@@ -646,3 +648,17 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ],
                         operation_storage=self.dummy_operation_storage,
                     )
+
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
+    def test_list_fileset_files_exception(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        mock_leaderboard_client = MagicMock()
+        mock_leaderboard_client.api.lsFileSetAttribute.side_effect = HTTPNotFound(response_mock())
+
+        backend.leaderboard_client = mock_leaderboard_client
+
+        # then
+        with pytest.raises(FileSetNotFound):
+            backend.list_fileset_files(["mock"], "mock", ".")

@@ -77,3 +77,16 @@ class TestFileSet(TestAttributeBase):
             var = FileSet(exp, path)
             var.delete_files(["path1", "dir/"], wait=wait)
             processor.enqueue_operation.assert_called_with(DeleteFiles(path, {"path1", "dir/"}), wait=wait)
+
+    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    def test_list_fileset_files(self, get_operation_processor):
+        processor = MagicMock()
+        get_operation_processor.return_value = processor
+
+        with self._exp() as exp:
+            path = self._random_path()
+            var = FileSet(exp, path)
+            file_entries = var.list_fileset_files()
+
+            assert isinstance(file_entries, list)
+            assert len(file_entries) == 1

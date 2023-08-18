@@ -24,6 +24,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.dtos import FileEntry
 from neptune.common.exceptions import NeptuneException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
@@ -303,4 +304,8 @@ class NeptuneBackend:
         query: Optional[NQLQuery] = None,
         columns: Optional[List[str]] = None,
     ) -> List[LeaderboardEntry]:
+        pass
+
+    @abc.abstractmethod
+    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         pass

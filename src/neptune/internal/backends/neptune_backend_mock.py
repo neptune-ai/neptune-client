@@ -33,6 +33,7 @@ from typing import (
 )
 from zipfile import ZipFile
 
+from neptune.api.dtos import FileEntry
 from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
@@ -766,3 +767,13 @@ class NeptuneBackendMock(NeptuneBackend):
                     op_name, self._path, expected, type(self._current_value)
                 )
             )
+
+    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
+        return [
+            FileEntry(
+                name="mock_name",
+                size=100,
+                mtime=datetime.now(),
+                file_type="file",
+            )
+        ]
