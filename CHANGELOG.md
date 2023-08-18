@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.6.0
+## neptune 1.6.0
 
 ### Features
 - Added `list_fileset_files()` method to list files and directories contained in `FileSet` field ([#1412](https://github.com/neptune-ai/neptune-client/pull/1412))
@@ -6,7 +6,7 @@
 ### Fixes
 - Fixed `stringify_unsupported` not catching a broader `MutableMapping` class ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
 - Cast keys in the resulting dictionary to string in `stringify_unsupported` ([#1427](https://github.com/neptune-ai/neptune-client/pull/1427))
-- Call execute operations with list ([#1429](https://github.com/neptune-ai/neptune-client/pull/1429))
+- Fixed an issue where data was sometimes not uploaded in case the initial request to the Neptune servers failed ([#1429](https://github.com/neptune-ai/neptune-client/pull/1429))
 
 ## neptune 1.5.0
 
