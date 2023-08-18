@@ -135,6 +135,7 @@ e2e = [
     "accelerate",
     "zenml",
     "mlflow",
+    "backoff",
 ]
 
 [tool.poetry]
