@@ -8,7 +8,6 @@
 ### Fixes
 - Fixed conda package due to improper non-required backoff requirement ([#1435](https://github.com/neptune-ai/neptune-client/pull/1435))
 
-
 ## neptune 1.6.0
 
 ### Features
