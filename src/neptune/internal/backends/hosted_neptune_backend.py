@@ -834,10 +834,11 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
+        requests_params = self._add_artifact_version_to_request_params(DEFAULT_REQUEST_KWARGS)
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
-            **DEFAULT_REQUEST_KWARGS,
+            **requests_params,
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
@@ -1103,3 +1104,15 @@ class HostedNeptuneBackend(NeptuneBackend):
             previous_items = get_portion(limit=step, offset=len(items))
             items += previous_items
         return items
+
+    @staticmethod
+    def _add_artifact_version_to_request_params(default_request_params: Dict) -> Dict:
+        return {
+            "_request_options": {
+                **default_request_params["_request_options"],
+                "headers": {
+                    **default_request_params["_request_options"]["headers"],
+                    "X-Neptune-Artifact-Api-Version": "2",
+                },
+            }
+        }

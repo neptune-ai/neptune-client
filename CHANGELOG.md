@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune 1.6.1
+### Changes
+- Add `X-Neptune-Artifact-Api-Version` to get artifact attribute request to identify client supported version ([]())
+
+
 ## neptune 1.6.0
 
 ### Features
