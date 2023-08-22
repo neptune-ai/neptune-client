@@ -20,9 +20,9 @@ env:
 jobs:
   e2e:
     timeout-minutes: 75
-    max-parallel: 2
     strategy:
       fail-fast: false
+      max-parallel: 2
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu, windows ]
