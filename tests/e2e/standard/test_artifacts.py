@@ -237,14 +237,14 @@ class TestArtifacts(BaseE2ETest):
             # track it
             start = time.time()
             container[key].track_files(".", wait=True)
-            initial_duration = time.time() - start
+            init_duration = time.time() - start
 
             # and track it again
             start = time.time()
             container[key].track_files(".", wait=True)
             cached_duration = time.time() - start
 
-            assert cached_duration / initial_duration < 0.3, "Tracking cached should be <30% faster than normal upload"
+            assert cached_duration / init_duration < 0.3, "Tracking cached should take <30% of time than normal upload"
 
             # append additional byte to file
             with open(filename, "ab") as handler:
@@ -255,5 +255,5 @@ class TestArtifacts(BaseE2ETest):
             container[key].track_files(".", wait=True)
             updated_duration = time.time() - start
 
-            diff_percentage = abs(updated_duration - initial_duration) / initial_duration
+            diff_percentage = abs(updated_duration - init_duration) / init_duration
             assert diff_percentage < 0.3, "Tracking updated file should take similar time as initial upload"
