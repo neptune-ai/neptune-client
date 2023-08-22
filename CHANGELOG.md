@@ -1,4 +1,5 @@
 ## [UNRELEASED] neptune 1.6.2
+
 ### Changes
 - Identify client's artifact supported version by adding `X-Neptune-Artifact-Api-Version` header to get artifact attribute request ([#1436](https://github.com/neptune-ai/neptune-client/pull/1436))
 
