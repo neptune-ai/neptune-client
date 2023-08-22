@@ -29,6 +29,7 @@ from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.exceptions import (
     ArtifactNotFoundException,
     ArtifactUploadingError,
+    FetchAttributeNotFoundException,
     NeptuneEmptyLocationException,
 )
 from neptune.internal.artifacts.file_hasher import FileHasher
@@ -37,12 +38,16 @@ from neptune.internal.artifacts.types import (
     ArtifactDriversMap,
     ArtifactFileData,
 )
-from neptune.internal.backends.api_model import ArtifactModel
+from neptune.internal.backends.api_model import (
+    ArtifactAttribute,
+    ArtifactModel,
+)
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.internal.operation import (
     AssignArtifact,
     Operation,
 )
+from neptune.internal.utils.paths import path_to_str
 
 
 def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
@@ -173,7 +178,7 @@ def create_new_artifact(
         "hash": artifact_hash,
         "size": size,
         "parentIdentifier": parent_identifier,
-        **default_request_params,
+        **add_artifact_version_to_request_params(default_request_params),
     }
     try:
         result = swagger_client.api.createNewArtifact(**params).response().result
@@ -198,7 +203,7 @@ def upload_artifact_files_metadata(
         "projectIdentifier": project_id,
         "hash": artifact_hash,
         "artifactFilesDTO": {"files": [ArtifactFileData.to_dto(a) for a in files]},
-        **default_request_params,
+        **add_artifact_version_to_request_params(default_request_params),
     }
     try:
         result = swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
@@ -225,7 +230,7 @@ def create_artifact_version(
         "hash": artifact_hash,
         "parentIdentifier": parent_identifier,
         "artifactFilesDTO": {"files": [ArtifactFileData.to_dto(a) for a in files]},
-        **default_request_params,
+        **add_artifact_version_to_request_params(default_request_params),
     }
     try:
         result = swagger_client.api.createArtifactVersion(**params).response().result
@@ -236,3 +241,57 @@ def create_artifact_version(
         )
     except HTTPNotFound:
         raise ArtifactNotFoundException(artifact_hash)
+
+
+@with_api_exceptions_handler
+def get_artifact_attribute(
+    swagger_client: SwaggerClientWrapper,
+    parent_identifier: str,
+    path: List[str],
+    default_request_params: Dict,
+) -> ArtifactAttribute:
+    requests_params = add_artifact_version_to_request_params(default_request_params)
+    params = {
+        "experimentId": parent_identifier,
+        "attribute": path_to_str(path),
+        **requests_params,
+    }
+    try:
+        result = swagger_client.api.getArtifactAttribute(**params).response().result
+        return ArtifactAttribute(hash=result.hash)
+    except HTTPNotFound:
+        raise FetchAttributeNotFoundException(path_to_str(path))
+
+
+@with_api_exceptions_handler
+def list_artifact_files(
+    swagger_client: SwaggerClientWrapper,
+    project_id: str,
+    artifact_hash: str,
+    default_request_params: Dict,
+) -> List[ArtifactFileData]:
+    requests_params = add_artifact_version_to_request_params(default_request_params)
+    params = {
+        "projectIdentifier": project_id,
+        "hash": artifact_hash,
+        **requests_params,
+    }
+    try:
+        result = swagger_client.api.listArtifactFiles(**params).response().result
+        return [ArtifactFileData.from_dto(a) for a in result.files]
+    except HTTPNotFound:
+        raise ArtifactNotFoundException(artifact_hash)
+
+
+def add_artifact_version_to_request_params(default_request_params: Dict) -> Dict:
+    current_artifact_version = "2"
+
+    return {
+        "_request_options": {
+            **default_request_params["_request_options"],
+            "headers": {
+                **default_request_params["_request_options"]["headers"],
+                "X-Neptune-Artifact-Api-Version": current_artifact_version,
+            },
+        }
+    }
