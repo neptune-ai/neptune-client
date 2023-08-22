@@ -59,6 +59,7 @@ torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
 Faker = { version = "*", optional = true }
 mypy = { version = "*", optional = true }
+responses = { version = "*", optional = true }
 
 # e2e
 optuna = { version = "*", optional = true }
@@ -124,6 +125,7 @@ dev = [
     "torch",
     "vega_datasets",
     "mypy",
+    "responses",
 ]
 e2e = [
     # Integrations

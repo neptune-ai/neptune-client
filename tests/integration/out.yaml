@@ -1,0 +1,84 @@
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/auth/realms/neptune/protocol/openid-connect/token"
+body = "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJFS1dvUkZhUGJVdGlwSHVmVVpmVzZYWm1VT2J1VmR2T28yQXNNTkpacHBzIn0.eyJleHAiOjE2OTIzOTgwODMsImlhdCI6MTY5MjM5Nzc4MywianRpIjoiNjkzZjhkNmMtMDc2Yy00MmNkLWEzMmYtNTNkYzYwMWIxNmYyIiwiaXNzIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haS9hdXRoL3JlYWxtcy9uZXB0dW5lIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJicm9rZXIiLCJhY2NvdW50Il0sInN1YiI6ImNiMjdiMGM5LTc2MjUtNDcwMS1iYzgyLTliOWYyYWU3Y2JkMCIsInR5cCI6IkJlYXJlciIsImF6cCI6Im5lcHR1bmUtY2xpIiwic2Vzc2lvbl9zdGF0ZSI6IjI5NDE0YThjLTI5NDUtNDA0Yi1iYzFlLWMwYzdhMjdmMGE2MSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0KiIsImh0dHA6Ly9sb2NhbGhvc3Q6KiIsImh0dHBzOi8vYWxwaGEubmVwdHVuZS5haSIsIi8qIiwiLyIsImh0dHBzOi8vYWxwaGEubmVwdHVuZS5haS8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJOZXB0dW5lIHN1cGVycmVhZGVyIiwibmVwdHVuZV93cml0ZSIsIm9mZmxpbmVfYWNjZXNzIiwibmVwdHVuZV9yZWFkIiwiTmVwdHVuZSBRUlQiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1yZWFsbSIsIm1hbmFnZS1ldmVudHMiLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctZXZlbnRzIiwibWFuYWdlLXVzZXJzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS1ncm91cHMiLCJxdWVyeS11c2VycyJdfSwiYnJva2VyIjp7InJvbGVzIjpbInJlYWQtdG9rZW4iXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiIyOTQxNGE4Yy0yOTQ1LTQwNGItYmMxZS1jMGM3YTI3ZjBhNjEiLCJuZXB0dW5lX3JvbGUiOiJyZWFkZXIiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJyYWZhbC5uZXB0dW5lIiwibmVwdHVuZUhvc3QiOiJodHRwczovL2FwcC5uZXB0dW5lLm1sIiwiZW1haWwiOiJyYWZhbC5qYW5rb3dza2lAbmVwdHVuZS5haSJ9.eZMq5x4WrJC6CgAUUQak7kSDwM_8qvumwLuiC7_yn8r-iqSeAKrmq2nEjce-83HnPBfG0u2Huc1jXsiPubaW8Xa4JglqqqaOZbCNEPRom37tNhSRIg0iGFs87ijJxpYPqYyrc_h7NnQ_jSDA_-ivf57KfCvopl8cxNbrqSs4xX_2RX5B_r6lQ58_Q-t8dMxg1HOsEIvC_-8lsTxKVbCT2v_dcJYm-bSopxxZUPiuviQsaSwx_d4R3pKbek8_Vqjnmm3MW66N9b53lHNAsC3UxJ8ce_cR99zHopaS0SLm3eBedOexoDh90_kP9c0ebmTm0b4R5_Dy83PganpnG6xw9Q\",\"expires_in\":300,\"refresh_expires_in\":0,\"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIyMGY3MjNjMS1hOTk3LTQxNTQtYjdkMi03ZDk3NTU2M2NkZjEifQ.eyJpYXQiOjE2OTIzOTc3ODMsImp0aSI6Ijk3YWYwOWYzLTI2OGEtNDBlOS1hZjYwLTNkMTE5YzMwYjI5NSIsImlzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkvYXV0aC9yZWFsbXMvbmVwdHVuZSIsImF1ZCI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkvYXV0aC9yZWFsbXMvbmVwdHVuZSIsInN1YiI6ImNiMjdiMGM5LTc2MjUtNDcwMS1iYzgyLTliOWYyYWU3Y2JkMCIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJuZXB0dW5lLWNsaSIsInNlc3Npb25fc3RhdGUiOiIyOTQxNGE4Yy0yOTQ1LTQwNGItYmMxZS1jMGM3YTI3ZjBhNjEiLCJzY29wZSI6Im9mZmxpbmVfYWNjZXNzIiwic2lkIjoiMjk0MTRhOGMtMjk0NS00MDRiLWJjMWUtYzBjN2EyN2YwYTYxIn0.aMyKC3fuqkJFVEe3FWzh1mOkPeXo3MljEZvrLVu7Sjc\",\"token_type\":\"Bearer\",\"not-before-policy\":1501576317,\"session_state\":\"29414a8c-2945-404b-bc1e-c0c7a27f0a61\",\"scope\":\"offline_access\"}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+
+[[responses]]
+
+[responses.response]
+method = "GET"
+url = "https://app.neptune.ai/api/backend/v1/projects/get?projectIdentifier=rafal.neptune%2Ftest"
+body = "{\"id\":\"a62adc09-537c-4f4b-8e60-775f8851283d\",\"organizationId\":\"0da6c178-6c86-45c2-94d4-7a5b2f0ed1b2\",\"organizationName\":\"rafal.neptune\",\"projectKey\":\"TES\",\"name\":\"test\",\"version\":2}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/api/leaderboard/v1/experiments"
+body = "{\"id\":\"99ec34df-8045-4833-8c86-74801bbbb4a5\",\"shortId\":\"TES-120\",\"parentId\":\"a62adc09-537c-4f4b-8e60-775f8851283d\",\"type\":\"run\",\"projectId\":\"a62adc09-537c-4f4b-8e60-775f8851283d\",\"projectName\":\"test\",\"organizationId\":\"0da6c178-6c86-45c2-94d4-7a5b2f0ed1b2\",\"organizationName\":\"rafal.neptune\",\"trashed\":false}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "GET"
+url = "https://app.neptune.ai/api/leaderboard/v1/attributes?experimentId=99ec34df-8045-4833-8c86-74801bbbb4a5"
+body = "{\"id\":\"99ec34df-8045-4833-8c86-74801bbbb4a5\",\"projectId\":\"a62adc09-537c-4f4b-8e60-775f8851283d\",\"organizationId\":\"0da6c178-6c86-45c2-94d4-7a5b2f0ed1b2\",\"projectName\":\"test\",\"organizationName\":\"rafal.neptune\",\"trashed\":false,\"systemAttributes\":{\"shortId\":{\"attributeName\":\"sys/id\",\"attributeType\":\"string\",\"value\":\"TES-120\"},\"owner\":{\"attributeName\":\"sys/owner\",\"attributeType\":\"string\",\"value\":\"rafal.neptune\"},\"creationTime\":{\"attributeName\":\"sys/creation_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"},\"modificationTime\":{\"attributeName\":\"sys/modification_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"},\"pingTime\":{\"attributeName\":\"sys/ping_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"},\"runningTime\":{\"attributeName\":\"sys/running_time\",\"attributeType\":\"float\",\"value\":0.0},\"monitoringTime\":{\"attributeName\":\"sys/monitoring_time\",\"attributeType\":\"int\",\"value\":0},\"state\":{\"attributeName\":\"sys/state\",\"attributeType\":\"experimentState\",\"value\":\"running\"},\"name\":{\"attributeName\":\"sys/name\",\"attributeType\":\"string\",\"value\":\"Untitled\"},\"description\":{\"attributeName\":\"sys/description\",\"attributeType\":\"string\",\"value\":\"\"},\"failed\":{\"attributeName\":\"sys/failed\",\"attributeType\":\"bool\",\"value\":false},\"size\":{\"attributeName\":\"sys/size\",\"attributeType\":\"float\",\"value\":0.0},\"tags\":{\"attributeName\":\"sys/tags\",\"attributeType\":\"stringSet\",\"values\":[]},\"trashed\":{\"attributeName\":\"sys/trashed\",\"attributeType\":\"bool\",\"value\":false}},\"attributes\":[{\"name\":\"sys/creation_time\",\"type\":\"datetime\",\"datetimeProperties\":{\"attributeName\":\"sys/creation_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"}},{\"name\":\"sys/failed\",\"type\":\"bool\",\"boolProperties\":{\"attributeName\":\"sys/failed\",\"attributeType\":\"bool\",\"value\":false}},{\"name\":\"sys/id\",\"type\":\"string\",\"stringProperties\":{\"attributeName\":\"sys/id\",\"attributeType\":\"string\",\"value\":\"TES-120\"}},{\"name\":\"sys/modification_time\",\"type\":\"datetime\",\"datetimeProperties\":{\"attributeName\":\"sys/modification_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"}},{\"name\":\"sys/monitoring_time\",\"type\":\"int\",\"intProperties\":{\"attributeName\":\"sys/monitoring_time\",\"attributeType\":\"int\",\"value\":0}},{\"name\":\"sys/name\",\"type\":\"string\",\"stringProperties\":{\"attributeName\":\"sys/name\",\"attributeType\":\"string\",\"value\":\"Untitled\"}},{\"name\":\"sys/owner\",\"type\":\"string\",\"stringProperties\":{\"attributeName\":\"sys/owner\",\"attributeType\":\"string\",\"value\":\"rafal.neptune\"}},{\"name\":\"sys/ping_time\",\"type\":\"datetime\",\"datetimeProperties\":{\"attributeName\":\"sys/ping_time\",\"attributeType\":\"datetime\",\"value\":\"2023-08-18T22:29:43.941Z\"}},{\"name\":\"sys/running_time\",\"type\":\"float\",\"floatProperties\":{\"attributeName\":\"sys/running_time\",\"attributeType\":\"float\",\"value\":0.0}},{\"name\":\"sys/size\",\"type\":\"float\",\"floatProperties\":{\"attributeName\":\"sys/size\",\"attributeType\":\"float\",\"value\":0.0}},{\"name\":\"sys/state\",\"type\":\"experimentState\",\"experimentStateProperties\":{\"attributeName\":\"sys/state\",\"attributeType\":\"experimentState\",\"value\":\"running\"}},{\"name\":\"sys/tags\",\"type\":\"stringSet\",\"stringSetProperties\":{\"attributeName\":\"sys/tags\",\"attributeType\":\"stringSet\",\"values\":[]}},{\"name\":\"sys/trashed\",\"type\":\"bool\",\"boolProperties\":{\"attributeName\":\"sys/trashed\",\"attributeType\":\"bool\",\"value\":false}}]}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/api/leaderboard/v1/attributes/ping?experimentId=99ec34df-8045-4833-8c86-74801bbbb4a5"
+body = ""
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/auth/realms/neptune/protocol/openid-connect/token"
+body = "{\"access_token\":\"eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJFS1dvUkZhUGJVdGlwSHVmVVpmVzZYWm1VT2J1VmR2T28yQXNNTkpacHBzIn0.eyJleHAiOjE2OTIzOTgwODQsImlhdCI6MTY5MjM5Nzc4NCwianRpIjoiOWE3OGYxNzUtYTk5ZC00NmFkLThlMmUtMzU0ZjkzNGM5YzMyIiwiaXNzIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haS9hdXRoL3JlYWxtcy9uZXB0dW5lIiwiYXVkIjpbInJlYWxtLW1hbmFnZW1lbnQiLCJicm9rZXIiLCJhY2NvdW50Il0sInN1YiI6ImNiMjdiMGM5LTc2MjUtNDcwMS1iYzgyLTliOWYyYWU3Y2JkMCIsInR5cCI6IkJlYXJlciIsImF6cCI6Im5lcHR1bmUtY2xpIiwic2Vzc2lvbl9zdGF0ZSI6IjI5NDE0YThjLTI5NDUtNDA0Yi1iYzFlLWMwYzdhMjdmMGE2MSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0KiIsImh0dHA6Ly9sb2NhbGhvc3Q6KiIsImh0dHBzOi8vYWxwaGEubmVwdHVuZS5haSIsIi8qIiwiLyIsImh0dHBzOi8vYWxwaGEubmVwdHVuZS5haS8qIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJOZXB0dW5lIHN1cGVycmVhZGVyIiwibmVwdHVuZV93cml0ZSIsIm9mZmxpbmVfYWNjZXNzIiwibmVwdHVuZV9yZWFkIiwiTmVwdHVuZSBRUlQiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7InJlYWxtLW1hbmFnZW1lbnQiOnsicm9sZXMiOlsidmlldy1yZWFsbSIsIm1hbmFnZS1ldmVudHMiLCJ2aWV3LWlkZW50aXR5LXByb3ZpZGVycyIsInZpZXctZXZlbnRzIiwibWFuYWdlLXVzZXJzIiwidmlldy11c2VycyIsInZpZXctY2xpZW50cyIsInZpZXctYXV0aG9yaXphdGlvbiIsInF1ZXJ5LWNsaWVudHMiLCJxdWVyeS1ncm91cHMiLCJxdWVyeS11c2VycyJdfSwiYnJva2VyIjp7InJvbGVzIjpbInJlYWQtdG9rZW4iXX0sImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoib2ZmbGluZV9hY2Nlc3MiLCJzaWQiOiIyOTQxNGE4Yy0yOTQ1LTQwNGItYmMxZS1jMGM3YTI3ZjBhNjEiLCJuZXB0dW5lX3JvbGUiOiJyZWFkZXIiLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJyYWZhbC5uZXB0dW5lIiwibmVwdHVuZUhvc3QiOiJodHRwczovL2FwcC5uZXB0dW5lLm1sIiwiZW1haWwiOiJyYWZhbC5qYW5rb3dza2lAbmVwdHVuZS5haSJ9.gln4SXXjrz6_bg3-y5J-o8tdSUzmu4kpmGhDu2dexoBN9G15ucApZZoozArDp47ICQWvpRQWxRpzcegwFaoemfwI6jUccHYB8oBa6V_oSs5TQrslZFifjWvy4-qyRCdt8R5ZnD6WHrrnZjlPLQhQFV2Duh7rNGQV92bcCS9Jm7h9CnXYB0IA3rB6J7OH-JbCn9ZHpTV260BWJWhu_h94FHgE0gtE4BKm7uyfaLZ4tvVdn4CkmOk86beC4iCwpAlglEVUnOv7uBlUINWvbtoyRT_oHbrQ7tnPhdurqZ8JPvfEgZxMv9oI0FNJII8rak-sI9CKjhH4MrBnOg9YE0Umfw\",\"expires_in\":300,\"refresh_expires_in\":0,\"refresh_token\":\"eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICIyMGY3MjNjMS1hOTk3LTQxNTQtYjdkMi03ZDk3NTU2M2NkZjEifQ.eyJpYXQiOjE2OTIzOTc3ODQsImp0aSI6IjkyYjljOTVjLTIwZDktNGMxZC05NmRkLTI1YjkzOTEyYWM3NSIsImlzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkvYXV0aC9yZWFsbXMvbmVwdHVuZSIsImF1ZCI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkvYXV0aC9yZWFsbXMvbmVwdHVuZSIsInN1YiI6ImNiMjdiMGM5LTc2MjUtNDcwMS1iYzgyLTliOWYyYWU3Y2JkMCIsInR5cCI6Ik9mZmxpbmUiLCJhenAiOiJuZXB0dW5lLWNsaSIsInNlc3Npb25fc3RhdGUiOiIyOTQxNGE4Yy0yOTQ1LTQwNGItYmMxZS1jMGM3YTI3ZjBhNjEiLCJzY29wZSI6Im9mZmxpbmVfYWNjZXNzIiwic2lkIjoiMjk0MTRhOGMtMjk0NS00MDRiLWJjMWUtYzBjN2EyN2YwYTYxIn0.srmG8HWUEx1ntEpSYSMnvWPDwbZCGCbWNKKPqxL5-eQ\",\"token_type\":\"Bearer\",\"not-before-policy\":1501576317,\"session_state\":\"29414a8c-2945-404b-bc1e-c0c7a27f0a61\",\"scope\":\"offline_access\"}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/api/leaderboard/v1/attributes/storage/fileset/upload?experimentIdentifier=99ec34df-8045-4833-8c86-74801bbbb4a5&attribute=source_code%2Ffiles&subPath=_jb_pytest_runner.py"
+body = "{\"errors\":[]}"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/api/leaderboard/v1/attributes/operations?experimentId=99ec34df-8045-4833-8c86-74801bbbb4a5"
+body = "[]"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
+[[responses]]
+
+[responses.response]
+method = "POST"
+url = "https://app.neptune.ai/api/leaderboard/v1/attributes/operations?experimentId=99ec34df-8045-4833-8c86-74801bbbb4a5"
+body = "[]"
+status = 200
+content_type = "text/plain"
+auto_calculate_content_length = false
