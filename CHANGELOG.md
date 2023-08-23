@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune 1.6.2
+
+### Changes
+- Added trufflehog to pre-commit ([#1441](https://github.com/neptune-ai/neptune-client/pull/1441))
+
 ## neptune 1.6.1
 
 ### Fixes
