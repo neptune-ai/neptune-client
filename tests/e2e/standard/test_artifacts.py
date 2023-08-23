@@ -224,7 +224,6 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
-    @pytest.mark.skip(reason="flaky test")
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_hash_cache(self, container: MetadataContainer):
         key = self.gen_key()
