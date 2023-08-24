@@ -17,6 +17,13 @@ jobs:
         #          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
         #          wait-interval: 60
 
+  validate-version:
+    runs-on: ubuntu-latest
+    steps:
+      uses: rubenesp87/semver-validation-action@0.1.0
+      with:
+        version: ${{ github.ref_name }}
+
   build-neptune:
     runs-on: ubuntu-latest
     #    needs: [wait-for-green-master]
@@ -214,6 +221,7 @@ jobs:
       - test-neptune-and-neptune-client
       - test-uninstall-0-16-install-neptune-client
       - test-uninstall-0-16-install-neptune
+      - validate-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
@@ -243,6 +251,7 @@ jobs:
       - test-neptune-and-neptune-client
       - test-uninstall-0-16-install-neptune-client
       - test-uninstall-0-16-install-neptune
+      - validate-version
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
