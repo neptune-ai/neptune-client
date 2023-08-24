@@ -49,7 +49,6 @@ from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
-    ArtifactNotFoundException,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
     FileSetNotFound,
@@ -89,6 +88,8 @@ from neptune.internal.backends.api_model import (
     Workspace,
 )
 from neptune.internal.backends.hosted_artifact_operations import (
+    get_artifact_attribute,
+    list_artifact_files,
     track_to_existing_artifact,
     track_to_new_artifact,
 )
@@ -830,33 +831,23 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
-    @with_api_exceptions_handler
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
-        params = {
-            "experimentId": container_id,
-            "attribute": path_to_str(path),
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
-            return ArtifactAttribute(hash=result.hash)
-        except HTTPNotFound:
-            raise FetchAttributeNotFoundException(path_to_str(path))
+        return get_artifact_attribute(
+            swagger_client=self.leaderboard_client,
+            parent_identifier=container_id,
+            path=path,
+            default_request_params=DEFAULT_REQUEST_KWARGS,
+        )
 
-    @with_api_exceptions_handler
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
-        params = {
-            "projectIdentifier": project_id,
-            "hash": artifact_hash,
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.artifacts_client.api.listArtifactFiles(**params).response().result
-            return [ArtifactFileData.from_dto(a) for a in result.files]
-        except HTTPNotFound:
-            raise ArtifactNotFoundException(artifact_hash)
+        return list_artifact_files(
+            swagger_client=self.artifacts_client,
+            project_id=project_id,
+            artifact_hash=artifact_hash,
+            default_request_params=DEFAULT_REQUEST_KWARGS,
+        )
 
     @with_api_exceptions_handler
     def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
