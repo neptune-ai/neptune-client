@@ -33,6 +33,10 @@ from neptune.common.warnings import (
     NeptuneUnsupportedType,
     warned_once,
 )
+from neptune.constants import (
+    MAX_32_BIT_INT,
+    MIN_32_BIT_INT,
+)
 from neptune.types import (
     Artifact,
     Boolean,
@@ -518,3 +522,12 @@ class TestStringifyUnsupported:
 
         assert run["regular/zz"].fetch_values().equals(run["stringified/zz"].fetch_values())
         assert run["regular/bb"].fetch_values().equals(run["stringified/bb"].fetch_values())
+
+    def test_integers_outside_32bits(self, run):
+        data = {
+            "big_int": MAX_32_BIT_INT + 1,
+            "small_int": MIN_32_BIT_INT - 1,
+        }
+
+        with assert_no_warnings():
+            run["data"] = data
