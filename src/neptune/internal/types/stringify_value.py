@@ -31,19 +31,20 @@
 #
 __all__ = ["StringifyValue", "extract_if_stringify_value"]
 
-
 from typing import Any
 
 from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
 )
+from neptune.internal.utils.logger import logger
 
 
 class StringifyValue:
     def __init__(self, value: Any):
         # check if it's an integer outside 32bit range and cast it to float
         if isinstance(value, int) and (value > MAX_32_BIT_INT or value < MIN_32_BIT_INT):
+            logger.info("Value '%d' of type int is outside of 32 bit range and will be casted to float", value)
             value = float(value)
 
         self.__value = value
