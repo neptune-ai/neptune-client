@@ -15,7 +15,6 @@
 #
 import os
 import tempfile
-import time
 from pathlib import (
     Path,
     PurePosixPath,
@@ -223,38 +222,3 @@ class TestArtifacts(BaseE2ETest):
 
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
-
-    @pytest.mark.skip(reason="flaky test")
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_hash_cache(self, container: MetadataContainer):
-        key = self.gen_key()
-        filename = fake.file_name()
-
-        with tmp_context():
-            # create 2GB file
-            with open(filename, "wb") as handler:
-                handler.write(b"\0" * 2 * 2**30)
-
-            # track it
-            start = time.time()
-            container[key].track_files(".", wait=True)
-            init_duration = time.time() - start
-
-            # and track it again
-            start = time.time()
-            container[key].track_files(".", wait=True)
-            cached_duration = time.time() - start
-
-            assert cached_duration / init_duration < 0.3, "Tracking cached should take <30% of time than normal upload"
-
-            # append additional byte to file
-            with open(filename, "ab") as handler:
-                handler.write(b"\0")
-
-            # and track updated file
-            start = time.time()
-            container[key].track_files(".", wait=True)
-            updated_duration = time.time() - start
-
-            diff_percentage = abs(updated_duration - init_duration) / init_duration
-            assert diff_percentage < 0.3, "Tracking updated file should take similar time as initial upload"
