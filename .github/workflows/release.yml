@@ -6,23 +6,23 @@ on:
       - "*"
 
 jobs:
-        #  wait-for-green-master:
-        #    runs-on: ubuntu-latest
-        #    steps:
-        #      - name: Wait for tests to finish
-        #        uses: lewagon/wait-on-check-action@v1.3.1
-        #        with:
-        #          ref: ${{ github.ref }}
-        #          running-workflow-name: 'wait-for-green-master'
-        #          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-        #          wait-interval: 60
+  #  wait-for-green-master:
+  #    runs-on: ubuntu-latest
+  #    steps:
+  #      - name: Wait for tests to finish
+  #        uses: lewagon/wait-on-check-action@v1.3.1
+  #        with:
+  #          ref: ${{ github.ref }}
+  #          running-workflow-name: 'wait-for-green-master'
+  #          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+  #          wait-interval: 60
 
   validate-version:
     runs-on: ubuntu-latest
     steps:
-      uses: rubenesp87/semver-validation-action@0.1.0
-      with:
-        version: ${{ github.ref_name }}
+      - uses: rubenesp87/semver-validation-action@0.1.0
+        with:
+          version: ${{ github.ref_name }}
 
   build-neptune:
     runs-on: ubuntu-latest
@@ -229,12 +229,12 @@ jobs:
           name: neptune-package
           path: dist/
 
-#      - name: Uploading to test PyPI
-#        uses: pypa/gh-action-pypi-publish@v1.8.10
-#        with:
-#         user: __token__
-#         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-#         repository_url: https://test.pypi.org/legacy/
+      #      - name: Uploading to test PyPI
+      #        uses: pypa/gh-action-pypi-publish@v1.8.10
+      #        with:
+      #         user: __token__
+      #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      #         repository_url: https://test.pypi.org/legacy/
 
       - name: Uploading to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.10
