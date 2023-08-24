@@ -38,10 +38,7 @@ repos:
     hooks:
       - id: trufflehog
         name: secret scan
-        entry: trufflehog filesystem ./
-        args:
-          - --only-verified
-          - --fail
+        entry: bash -c 'trufflehog git file://. --since-commit HEAD --only-verified --fail'
 exclude: |
   (?x)(
      ^tests/unit/data/|
