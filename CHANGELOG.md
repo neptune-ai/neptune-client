@@ -1,3 +1,8 @@
+## neptune-client 0.16.19
+
+### Fixes
+- Call execute operations with list
+
 ## neptune-client 0.16.18
 
 ### Fixes

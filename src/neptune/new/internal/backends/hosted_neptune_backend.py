@@ -484,7 +484,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._execute_operations(
                 container_id,
                 container_type,
-                operations=itertools.chain(assign_artifact_operations, preprocessed_operations.other_operations),
+                operations=assign_artifact_operations + preprocessed_operations.other_operations,
             )
         )
 
