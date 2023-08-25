@@ -33,6 +33,12 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
+  - repo: https://github.com/trufflesecurity/trufflehog.git
+    rev: v3.40.0
+    hooks:
+      - id: trufflehog
+        name: secret scan
+        entry: bash -c 'trufflehog git file://. --since-commit HEAD --only-verified --fail'
 exclude: |
   (?x)(
      ^tests/unit/data/|
