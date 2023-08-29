@@ -523,9 +523,12 @@ def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
         if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:
             warn_once(
-                "To avoid unintended consumption of logging hours during interactive sessions, the"
-                " following monitoring options are disabled unless set to 'True' when initializing"
-                " the run: 'capture_stdout', 'capture_stderr', and 'capture_hardware_metrics'.",
+                "The following monitoring options are disabled by default in interactive sessions:"
+                " 'capture_stdout', 'capture_stderr', 'capture_traceback', and 'capture_hardware_metrics'."
+                " To enable them, set each parameter to 'True' when initializing the run. The monitoring will"
+                " continue until you call run.stop() or the kernel stops."
+                " Also note: Your source files can only be tracked if you pass the path(s) to the 'source_code'"
+                " argument. For help, see the Neptune docs: https://docs.neptune.ai/logging/source_code/",
                 exception=NeptuneWarning,
             )
         return False
