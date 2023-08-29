@@ -20,6 +20,8 @@ __all__ = [
     "ASYNC_DIRECTORY",
     "SYNC_DIRECTORY",
     "OFFLINE_NAME_PREFIX",
+    "MAX_32_BIT_INT",
+    "MIN_32_BIT_INT",
 ]
 
 """Constants used by Neptune"""
@@ -34,3 +36,6 @@ ASYNC_DIRECTORY = "async"
 SYNC_DIRECTORY = "sync"
 
 OFFLINE_NAME_PREFIX = "offline/"
+
+MAX_32_BIT_INT = 2147483647
+MIN_32_BIT_INT = -2147483648
