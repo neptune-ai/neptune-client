@@ -2,6 +2,7 @@
 
 ### Changes
 - Identify client's artifact supported version by adding `X-Neptune-Artifact-Api-Version` header to get artifact attribute request ([#1436](https://github.com/neptune-ai/neptune-client/pull/1436))
+- Enhance the logic for importing exceptions from `request` [#1434](https://github.com/neptune-ai/neptune-client/pull/1434)
 
 ### Fixes
 - Cast integers outside of 32 bits to float in `stringify_unsupported()` ([#1443](https://github.com/neptune-ai/neptune-client/pull/1443))
