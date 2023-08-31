@@ -21,7 +21,10 @@ from typing import (
     Dict,
 )
 
-from requests.compat import JSONDecodeError
+try:
+    from requests.exceptions import JSONDecodeError
+except ImportError:
+    from simplejson.errors import JSONDecodeError
 
 if TYPE_CHECKING:
     from bravado_core.response import IncomingResponse
