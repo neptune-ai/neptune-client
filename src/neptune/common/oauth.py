@@ -41,12 +41,11 @@ _decoding_options = {
 
 
 class NeptuneAuth(AuthBase):
-    __LOCK = threading.RLock()
-
     def __init__(self, session_factory):
         self.session_factory = session_factory
         self.session = session_factory()
         self.token_expires_at = 0
+        self.__LOCK = threading.RLock()
 
     def __call__(self, r):
         try:
