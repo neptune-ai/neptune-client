@@ -26,6 +26,7 @@ from neptune.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
+from .partitioned_op_processor import PartitionedOperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
@@ -40,6 +41,14 @@ def get_operation_processor(
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         return AsyncOperationProcessor(
+            container_id,
+            container_type,
+            backend,
+            lock,
+            sleep_time=flush_period,
+        )
+    elif mode == Mode.ASYNC_PARTITIONED:
+        return PartitionedOperationProcessor(
             container_id,
             container_type,
             backend,

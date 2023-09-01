@@ -22,6 +22,7 @@ class Mode(str, Enum):
     OFFLINE = "offline"
     DEBUG = "debug"
     ASYNC = "async"
+    ASYNC_PARTITIONED = "async_partitioned"
     SYNC = "sync"
     READ_ONLY = "read-only"
 
