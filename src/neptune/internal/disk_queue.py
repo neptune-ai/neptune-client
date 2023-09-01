@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["QueueElement", "DiskQueue"]
+__all__ = ["QueueElement", "DiskQueue", "InMemoryQueue"]
 
 import json
 import logging
 import os
+import queue
 import shutil
 import threading
 from dataclasses import dataclass
@@ -46,6 +47,50 @@ class QueueElement(Generic[T]):
     obj: T
     ver: int
     size: int
+
+
+class InMemoryQueue(Generic[T]):
+    def __init__(self, lock: threading.RLock):
+        self.queue = queue.Queue()
+        self._last_write = 0
+        self._last_ack = 0
+        self._empty_cond = threading.Condition(lock)
+        self._lock = threading.RLock()
+
+    def size(self):
+        return self.queue.qsize()
+
+    def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
+        with self._empty_cond:
+            return self._empty_cond.wait_for(self.queue.empty, timeout=seconds)
+
+    def close(self):
+        pass
+
+    def flush(self):
+        pass
+
+    def cleanup_if_empty(self):
+        pass
+
+    def ack(self, version_to_ack):
+        with self._lock:
+            for i in range(version_to_ack + 1):
+                self.queue.get_nowait()
+
+    def put(self, obj: T):
+        with self._lock:
+            self.queue.put_nowait(obj)
+
+    def get_batch(self, batch_size: int):
+        with self._lock:
+            result = []
+            _queue = self.queue.queue
+            for i, elem in enumerate(_queue):
+                if i <= batch_size:
+                    element = _queue[i]
+                    result.append(QueueElement[T](element, i, 0))
+            return result
 
 
 class DiskQueue(Generic[T]):

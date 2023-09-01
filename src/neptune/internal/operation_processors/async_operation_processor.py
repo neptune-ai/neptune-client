@@ -35,7 +35,7 @@ from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
+from neptune.internal.disk_queue import InMemoryQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -64,10 +64,7 @@ class AsyncOperationProcessor(OperationProcessor):
     ):
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
-        self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
-            to_dict=lambda x: x.to_dict(),
-            from_dict=Operation.from_dict,
+        self._queue = InMemoryQueue(
             lock=lock,
         )
 
