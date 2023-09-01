@@ -31,6 +31,7 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests.adapters import HTTPAdapter
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
@@ -88,6 +89,9 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
     )
     http_client.session.headers.update({"User-Agent": user_agent})
 
+    adapter = HTTPAdapter(pool_connections=100, pool_maxsize=250)
+    http_client.session.mount("http://", adapter)
+    http_client.session.mount("https://", adapter)
     return http_client
 
 
