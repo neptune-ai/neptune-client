@@ -50,7 +50,7 @@ class QueueElement(Generic[T]):
 
 class DiskQueue(Generic[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
-    DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
+    DEFAULT_MAX_BATCH_SIZE_BYTES = 1 * 1024**3
 
     def __init__(
         self,
@@ -58,7 +58,7 @@ class DiskQueue(Generic[T]):
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
-        max_file_size: int = 64 * 1024**2,
+        max_file_size: int = 64 * 1024**3,
         max_batch_size_bytes: int = None,
     ):
         self._dir_path = dir_path.resolve()
