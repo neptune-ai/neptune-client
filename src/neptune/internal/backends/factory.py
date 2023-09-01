@@ -27,7 +27,7 @@ from .offline_neptune_backend import OfflineNeptuneBackend
 
 
 def get_backend(mode: Mode, api_token: Optional[str] = None, proxies: Optional[dict] = None) -> NeptuneBackend:
-    if mode == Mode.ASYNC:
+    if mode in (Mode.ASYNC, Mode.ASYNC_PARTITIONED):
         return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
     elif mode == Mode.SYNC:
         return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
