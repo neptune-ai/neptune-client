@@ -50,7 +50,7 @@ class PartitionedOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None) -> None:
         for processor in self.processors:
-            processor.stop()
+            processor.stop(seconds=seconds)
 
     def close(self) -> None:
         for processor in self.processors:
