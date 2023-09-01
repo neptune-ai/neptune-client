@@ -60,7 +60,7 @@ class AsyncOperationProcessor(OperationProcessor):
         backend: NeptuneBackend,
         lock: threading.RLock,
         sleep_time: float = 5,
-        batch_size: int = 1000,
+        batch_size: int = 10000,
     ):
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
