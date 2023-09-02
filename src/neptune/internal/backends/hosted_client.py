@@ -89,7 +89,7 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
     )
     http_client.session.headers.update({"User-Agent": user_agent})
 
-    adapter = HTTPAdapter(pool_connections=100, pool_maxsize=250)
+    adapter = HTTPAdapter(pool_connections=500, pool_maxsize=10000)
     http_client.session.mount("http://", adapter)
     http_client.session.mount("https://", adapter)
     return http_client
