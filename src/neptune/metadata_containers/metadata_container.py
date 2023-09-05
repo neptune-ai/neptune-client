@@ -255,6 +255,10 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     def __delitem__(self, path) -> None:
         self.pop(path)
 
+    @property
+    def state(self) -> ContainerState:
+        return self._state
+
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns values to multiple fields from a dictionary.
