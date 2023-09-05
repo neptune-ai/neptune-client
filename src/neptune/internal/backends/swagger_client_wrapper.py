@@ -80,6 +80,9 @@ class ApiMethodWrapper:
             "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
                 reason=response_body.get("title", "Unknown reason")
             ),
+            "PROJECT_LIMITS_EXCEEDED": lambda response_body: NeptuneLimitExceedException(
+                reason=response_body.get("title", "Unknown reason")
+            ),
             "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
                 currentQuota=response_body.get("currentQuota", "<unknown quota>")
             ),
