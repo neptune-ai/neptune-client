@@ -256,8 +256,8 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self.pop(path)
 
     @property
-    def state(self) -> ContainerState:
-        return self._state
+    def state(self) -> str:
+        return self._state.value
 
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
