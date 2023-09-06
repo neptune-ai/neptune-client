@@ -73,7 +73,7 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        if self._run.state == ContainerState.STARTED.value and not self._thread_local.inside_write:
+        if self._run.get_state() == ContainerState.STARTED.value and not self._thread_local.inside_write:
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)

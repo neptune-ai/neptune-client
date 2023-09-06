@@ -255,10 +255,6 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     def __delitem__(self, path) -> None:
         self.pop(path)
 
-    @property
-    def state(self) -> str:
-        return self._state.value
-
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns values to multiple fields from a dictionary.
@@ -383,6 +379,9 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         with self._forking_cond:
             self._state = ContainerState.STOPPED
             self._forking_cond.notify_all()
+
+    def get_state(self) -> str:
+        return self._state.value
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
