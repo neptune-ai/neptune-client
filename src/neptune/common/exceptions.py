@@ -191,8 +191,8 @@ You don't have permission to access the given resource.
 
 
 class Unauthorized(NeptuneApiException):
-    def __init__(self):
-        message = """
+    def __init__(self, msg=None):
+        default_message = """
 {h1}
 ----Unauthorized-----------------------------------------------------------------------
 {end}
@@ -211,6 +211,7 @@ You don't have permission to access the given resource.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
+        message = msg if msg is not None else default_message
         super().__init__(message.format(**STYLES))
 
 
