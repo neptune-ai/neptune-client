@@ -823,15 +823,23 @@ class NeptuneLimitExceedException(NeptuneException):
 {end}
 {reason}
 
-It's not possible to upload new data, but you can still fetch and delete data.
-If you are using asynchronous (default) connection mode, Neptune automatically switched to offline mode
-and your data is being stored safely on the disk. You can upload it later using the Neptune Command Line Interface tool:
-    {bash}neptune sync -p project_name{end}
-What should I do?
-    - In case of storage limitations, go to your projects and remove runs or model metadata you don't need
-    - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
-You may also want to check the following docs page:
+Data synchronization was interrupted because you're out of storage space. If you're using Neptune in asynchronous mode
+(default), the data that couldn't be uploaded is safely stored on the disk. You can still fetch and delete data from
+your project(s).
+How can I free up space in Neptune?
+    - Contact your workspace admin about possible project or workspace storage limits.
+    - Upgrade your subscription with more storage: https://app.neptune.ai/-/subscription
+    - Delete run or model metadata that you don't need.
+How do I upload my offline metadata to Neptune?
+    You can upload the data stored on-disk with the following command (replace the workspace and project with your own):
+        {bash}neptune sync -p workspace-name/project-name{end}
+Learn more in the docs:
+    - https://docs.neptune.ai/help/error_limit_exceeded/
+    - https://docs.neptune.ai/help/workspace_read_only/
     - https://docs.neptune.ai/api/connection_modes/
+    - https://docs.neptune.ai/usage/deleting_data/
+    - https://docs.neptune.ai/api/neptune_sync/
+    - https://docs.neptune.ai/help/storage_tips/
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES, reason=reason))
