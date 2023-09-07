@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune 1.6.3
 
 ### Changes
-- Add handling of projects limits [#1456](https://github.com/neptune-ai/neptune-client/pull/1456)
+- Add handling of project limits [#1456](https://github.com/neptune-ai/neptune-client/pull/1456)
 
 
 ## neptune 1.6.2
