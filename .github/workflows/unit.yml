@@ -31,7 +31,7 @@ jobs:
     runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -50,7 +50,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}

@@ -30,7 +30,7 @@ jobs:
     name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -52,7 +52,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -76,7 +76,7 @@ jobs:
     name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -98,7 +98,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -127,7 +127,7 @@ jobs:
     name: 'prophet (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -149,7 +149,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -178,7 +178,7 @@ jobs:
     name: 'keras (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
         ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -200,7 +200,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -233,7 +233,7 @@ jobs:
     name: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -252,7 +252,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -285,7 +285,7 @@ jobs:
     name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -304,7 +304,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -333,7 +333,7 @@ jobs:
     name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -352,7 +352,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -376,7 +376,7 @@ jobs:
     name: 'detectron2 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -398,7 +398,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -421,7 +421,7 @@ jobs:
     name: 'R (${{ matrix.os }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -443,7 +443,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -467,7 +467,7 @@ jobs:
     name: 'sklearn (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -489,7 +489,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -513,7 +513,7 @@ jobs:
     name: 'xgboost (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -535,7 +535,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -559,7 +559,7 @@ jobs:
     name: 'sacred (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -581,7 +581,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -605,7 +605,7 @@ jobs:
     name: 'mlflow (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
@@ -627,7 +627,7 @@ jobs:
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}

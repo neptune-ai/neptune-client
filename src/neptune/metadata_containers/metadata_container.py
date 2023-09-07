@@ -380,6 +380,20 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             self._state = ContainerState.STOPPED
             self._forking_cond.notify_all()
 
+    def get_state(self) -> str:
+        """Returns the current state of the container as a string.
+
+        Examples:
+            >>> from neptune import init_run
+            >>> run = init_run()
+            >>> run.get_state()
+            'started'
+            >>> run.stop()
+            >>> run.get_state()
+            'stopped'
+        """
+        return self._state.value
+
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
 

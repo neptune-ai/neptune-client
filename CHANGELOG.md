@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune 1.6.3
 
 ### Changes
+- Expose metadata container state via a getter method ([#1463](https://github.com/neptune-ai/neptune-client/pull/1463))
 - Add handling of project limits [#1456](https://github.com/neptune-ai/neptune-client/pull/1456)
 
 
