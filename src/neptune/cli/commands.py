@@ -50,7 +50,7 @@ from neptune.internal.operation import Operation  # noqa: F401
 def status(path: Path) -> None:
     """List synchronized and unsynchronized objects in the given directory. Trashed objects are not listed.
 
-    Neptune stores object data on disk in the '.neptune' directories. If an object executes offline
+    Neptune stores object data on disk in the '.neptune' directory. If an object executes offline
     or if the network is unavailable as the object executes, the object data can be synchronized
     with the server with this command line utility.
 
