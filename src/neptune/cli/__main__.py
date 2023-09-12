@@ -44,5 +44,5 @@ for name, entry_point in plugins.items():
     try:
         loaded_plugin = entry_point.load()
     except Exception as e:
-        warnings.warn(f"Failed loading neptune plug-in `{name}` with exception: {e}")
+        warnings.warn(f"Failed to load neptune plug-in `{name}` with exception: {e}")
     main.add_command(loaded_plugin, name)

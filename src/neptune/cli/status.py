@@ -36,9 +36,9 @@ from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.utils.logger import logger
 
 offline_run_explainer = """
-Runs which execute offline are not created on the server and they are not assigned to projects;
+Runs that execute offline are not created on the server and are not assigned to projects;
 instead, they are identified by UUIDs like the ones above.
-When synchronizing offline runs, please specify the workspace and project using the "--project"
+When synchronizing offline runs, specify the workspace and project using the "--project"
 flag. Alternatively, you can set the environment variable
 {} to the target workspace/project. See the examples below.
 """.format(

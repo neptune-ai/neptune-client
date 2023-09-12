@@ -78,7 +78,7 @@ def get_metadata_container(
 
 _project_name_missing_message = (
     "Project name not provided. Could not synchronize offline runs."
-    " To synchronize offline run, specify the project name with the --project flag"
+    " To synchronize an offline run, specify the project name with the --project flag"
     f" or by setting the {PROJECT_ENV_NAME} environment variable."
 )
 

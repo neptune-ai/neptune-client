@@ -51,7 +51,7 @@ class ClearRunner(AbstractBackendRunner):
     @staticmethod
     def remove_sync_containers(path: Path):
         """
-        Function can remove SYNC_DIRECTORY safely, Neptune client stores only files to upload in this location.
+        Function can remove SYNC_DIRECTORY safely, Neptune client only stores files to upload in this location.
         """
         shutil.rmtree(path / SYNC_DIRECTORY, ignore_errors=True)
 

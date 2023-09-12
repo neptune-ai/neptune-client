@@ -15,8 +15,8 @@
 #
 """Log and organize all your ML model metadata with neptune.ai.
 
-There are four kinds of Neptune object: run, model, model version, and project.
-These help you track, store, and visualize metadata related to your model-training experiments.
+There are four kinds of Neptune objects: run, model, model version, and project.
+They help you track, store, and visualize metadata related to your model-training experiments.
 The package contains the functions and constructors needed to initialize the objects.
 You can either create new objects or connect to existing ones (to, for example, fetch or add more metadata).
 
