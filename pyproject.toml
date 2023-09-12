@@ -85,6 +85,7 @@ transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true, python = "<3.9" }
 neptune-aws = { version = "*", optional = true }
 mlflow = { version = ">1.30", optional = true }
+neptune-airflow = { version = "*", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
@@ -104,6 +105,7 @@ transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
 mlflow = ["mlflow"]
+airflow = ["neptune-airflow"]
 dev = [
     "altair",
     "bokeh",
