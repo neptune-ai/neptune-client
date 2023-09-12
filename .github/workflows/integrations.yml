@@ -667,6 +667,7 @@ jobs:
         uses: neptune-ai/neptune-airflow/.github/actions/airflow-install@main
         with:
           python-version: ${{ matrix.python-version }}
+          working_directory: neptune-airflow
 
       - name: Test integration
         uses: neptune-ai/neptune-airflow/.github/actions/e2e@main
