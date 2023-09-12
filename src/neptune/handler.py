@@ -186,7 +186,7 @@ class Handler(SupportsNamespaces):
             >>> import neptune
             >>> run = neptune.init_run()
 
-            >>> # You can both use the Python assign operator (=)
+            >>> # You can use both the Python assign operator (=)
             ... run['parameters/max_epochs'] = 5
             >>> # as well as directly use the .assign method
             ... run['parameters/max_epochs'].assign(5)
@@ -236,7 +236,7 @@ class Handler(SupportsNamespaces):
             ... # When downloaded the filename is a combination of path and the extension
             ... run["dataset/data_sample"].download() # data_sample.csv
 
-            Explicitely create File value object
+            Explicitly create File value object
 
             >>> from neptune.types import File
             >>> run["dataset/data_sample"].upload(File("sample_data.csv"))
@@ -526,7 +526,7 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="clear", wait=wait)
 
     def fetch(self):
-        """Fetches fields value or in case of a namespace fetches values of all non-File Atom fields as a dictionary.
+        """Fetches fields value or, in case of a namespace, fetches values of all non-File Atom fields as a dictionary.
 
         Available for following field types (`Field types docs page`_):
             * `Integer`
@@ -546,14 +546,14 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="fetch")
 
     def fetch_last(self):
-        """Fetches last value stored in the series from Neptune servers.
+        """Fetches the last value stored in the series from Neptune servers.
 
         Available for following field types (`Field types docs page`_):
             * `FloatSeries`
             * `StringSeries`
 
         Returns:
-            Fetches last value stored in the series from Neptune servers.
+            Fetches the last value stored in the series from Neptune servers.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
