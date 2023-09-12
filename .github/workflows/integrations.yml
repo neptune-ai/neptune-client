@@ -663,10 +663,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
 
-#      - name: Install airflow
-#        uses: neptune-ai/neptune-airflow/.github/actions/airflow-install@main
-#        with:
-#          python-version: ${{ matrix.python-version }}
+      - name: Install airflow
+        uses: neptune-ai/neptune-airflow/.github/actions/airflow-install@main
+        with:
+          python-version: ${{ matrix.python-version }}
 #
 #      - name: Test integration
 #        uses: neptune-ai/neptune-airflow/.github/actions/e2e@main
