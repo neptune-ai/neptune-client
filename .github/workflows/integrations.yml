@@ -664,7 +664,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-airflow/.github/actions/e2e@master
+        uses: neptune-ai/neptune-airflow/.github/actions/e2e@main
         with:
           working_directory: neptune-airflow
 
