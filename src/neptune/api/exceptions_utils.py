@@ -35,8 +35,10 @@ def handle_json_errors(
     if error_processor:
         raise error_processor(content) from source_exception
 
-    if default_exception and source_exception is not None:
-        raise default_exception from source_exception
+    if default_exception:
+        if source_exception is not None:
+            raise default_exception from source_exception
+        raise default_exception
 
     if source_exception is not None:
         raise source_exception
