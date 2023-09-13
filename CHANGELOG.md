@@ -1,4 +1,7 @@
-## [UNRELEASED] neptune 1.6.4
+## [UNRELEASED] neptune 1.7.0
+
+### Features
+- Added support for `airflow` integration ([#1466](https://github.com/neptune-ai/neptune-client/pull/1466))
 
 ### Changes
 - Add handling of project limits [#1456](https://github.com/neptune-ai/neptune-client/pull/1456)
