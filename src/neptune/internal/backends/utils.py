@@ -26,7 +26,6 @@ __all__ = [
     "ssl_verify",
     "parse_validation_errors",
     "ExecuteOperationsBatchingManager",
-    "get_exception_from_response",
 ]
 
 import dataclasses
@@ -52,7 +51,6 @@ from urllib.parse import (
     urlparse,
 )
 
-import requests
 import urllib3
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
@@ -278,38 +276,3 @@ class ExecuteOperationsBatchingManager:
                 result.operations.append(op)
 
         return result
-
-
-def _decode_byte_reason(reason: bytes) -> str:
-    # for reference: https://github.com/psf/requests/blob/main/src/requests/models.py
-    # raise_for_status method of Response class
-    try:
-        reason = reason.decode("utf-8")
-    except UnicodeDecodeError:
-        reason = reason.decode("iso-8859-1")
-
-    return reason
-
-
-def get_exception_from_response(response: Response) -> Optional[requests.HTTPError]:
-    # for reference: https://github.com/psf/requests/blob/main/src/requests/models.py
-    # raise_for_status method of Response class
-
-    if response.status_code < 300:
-        return
-
-    http_error_msg = ""
-    if isinstance(response.reason, bytes):
-        reason = _decode_byte_reason(response.reason)
-    else:
-        reason = response.reason
-
-    if 300 <= response.status_code < 400:
-        http_error_msg = f"{response.status_code} Unexpected Redirect Error: {reason} for url: {response.url}"
-    elif 400 <= response.status_code < 500:
-        http_error_msg = f"{response.status_code} Client Error: {reason} for url: {response.url}"
-
-    elif 500 <= response.status_code < 600:
-        http_error_msg = f"{response.status_code} Server Error: {reason} for url: {response.url}"
-
-    return requests.HTTPError(http_error_msg, response=response)

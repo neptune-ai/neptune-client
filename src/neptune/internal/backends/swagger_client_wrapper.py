@@ -51,7 +51,7 @@ class ApiMethodWrapper:
             ProjectsLimitReached,
         )
 
-        error_processors: Dict[str, Callable[[dict], Exception]] = {
+        error_processors: Dict[str, Callable[[Dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
                 limit=response_body.get("limit", "<unknown limit>"),
                 container_type=response_body.get("experimentType", "object"),
@@ -96,6 +96,17 @@ class ApiMethodWrapper:
             error_processors=error_processors,
             source_exception=exception,
         )
+
+        try:
+            response.raise_for_status()
+        except AttributeError:
+            pass
+
+        if exception is None:
+            # raise generic HTTPError with response info
+            raise HTTPError(
+                message=f"{response.status_code} Error: {response.reason} for {response.url}", response=response
+            )
 
     def __call__(self, *args, **kwargs):
         try:

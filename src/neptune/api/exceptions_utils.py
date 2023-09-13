@@ -34,6 +34,9 @@ def handle_json_errors(
 
     if error_processor:
         raise error_processor(content) from source_exception
-    elif default_exception:
+
+    if default_exception and isinstance(source_exception, BaseException):
         raise default_exception from source_exception
-    raise source_exception
+
+    if isinstance(source_exception, BaseException):
+        raise source_exception

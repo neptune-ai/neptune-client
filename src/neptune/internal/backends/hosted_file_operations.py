@@ -78,7 +78,6 @@ from neptune.internal.backends.swagger_client_wrapper import (
 )
 from neptune.internal.backends.utils import (
     build_operation_url,
-    get_exception_from_response,
     handle_server_raw_response_messages,
 )
 from neptune.internal.utils import (
@@ -375,13 +374,13 @@ def upload_raw_data(
     response = handle_server_raw_response_messages(session.send(session.prepare_request(request)))
 
     if response.status_code >= 300:
-        ApiMethodWrapper.handle_neptune_http_errors(response, get_exception_from_response(response))
+        ApiMethodWrapper.handle_neptune_http_errors(response)
     if response.status_code in (
         HTTPUnprocessableEntity.status_code,
         HTTPPaymentRequired.status_code,
     ):
         raise NeptuneLimitExceedException(reason=response.json().get("title", "Unknown reason"))
-    response.raise_for_status()
+
     return response.content
 
 
