@@ -16,7 +16,10 @@
 __all__ = ["ApiMethodWrapper", "SwaggerClientWrapper"]
 
 from collections.abc import Callable
-from typing import Optional
+from typing import (
+    Dict,
+    Optional,
+)
 
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
@@ -48,7 +51,7 @@ class ApiMethodWrapper:
             ProjectsLimitReached,
         )
 
-        error_processors: dict[str, Callable[[dict], Exception]] = {
+        error_processors: Dict[str, Callable[[dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
                 limit=response_body.get("limit", "<unknown limit>"),
                 container_type=response_body.get("experimentType", "object"),
