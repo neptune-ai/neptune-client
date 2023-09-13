@@ -25,7 +25,7 @@ from typing import (
 
 def handle_json_errors(
     content: Dict[str, Any],
-    source_exception: Exception,
+    source_exception: Optional[Exception],
     error_processors: Dict[str, Callable[[Dict[str, Any]], Exception]],
     default_exception: Optional[Exception] = None,
 ) -> None:
@@ -35,8 +35,8 @@ def handle_json_errors(
     if error_processor:
         raise error_processor(content) from source_exception
 
-    if default_exception and isinstance(source_exception, BaseException):
+    if default_exception and source_exception is not None:
         raise default_exception from source_exception
 
-    if isinstance(source_exception, BaseException):
+    if source_exception is not None:
         raise source_exception

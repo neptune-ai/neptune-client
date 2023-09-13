@@ -26,7 +26,10 @@ from bravado.exception import HTTPError
 
 from neptune.api.exceptions_utils import handle_json_errors
 from neptune.api.requests_utils import ensure_json_response
-from neptune.common.exceptions import NeptuneAuthTokenExpired
+from neptune.common.exceptions import (
+    NeptuneApiException,
+    NeptuneAuthTokenExpired,
+)
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
@@ -102,11 +105,8 @@ class ApiMethodWrapper:
         except AttributeError:
             pass
 
-        if exception is None:
-            # raise generic HTTPError with response info
-            raise HTTPError(
-                message=f"{response.status_code} Error: {response.reason} for {response.url}", response=response
-            )
+        # raise generic NeptuneApiException with response info
+        raise NeptuneApiException(f"{response.status_code} Error: {response.reason} for {response.url}")
 
     def __call__(self, *args, **kwargs):
         try:
