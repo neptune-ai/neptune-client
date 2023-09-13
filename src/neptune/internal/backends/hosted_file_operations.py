@@ -381,6 +381,7 @@ def upload_raw_data(
     ):
         raise NeptuneLimitExceedException(reason=response.json().get("title", "Unknown reason"))
     response.raise_for_status()
+
     return response.content
 
 

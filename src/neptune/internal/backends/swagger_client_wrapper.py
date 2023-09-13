@@ -16,14 +16,19 @@
 __all__ = ["ApiMethodWrapper", "SwaggerClientWrapper"]
 
 from collections.abc import Callable
-from typing import Optional
+from typing import (
+    Dict,
+    Optional,
+)
 
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
-from neptune.api.exceptions_utils import handle_json_errors
 from neptune.api.requests_utils import ensure_json_response
-from neptune.common.exceptions import NeptuneAuthTokenExpired
+from neptune.common.exceptions import (
+    NeptuneAuthTokenExpired,
+    WritingToArchivedProjectException,
+)
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
@@ -48,7 +53,7 @@ class ApiMethodWrapper:
             ProjectsLimitReached,
         )
 
-        error_processors: dict[str, Callable[[dict], Exception]] = {
+        error_processors: Dict[str, Callable[[Dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
                 limit=response_body.get("limit", "<unknown limit>"),
                 container_type=response_body.get("experimentType", "object"),
@@ -86,13 +91,19 @@ class ApiMethodWrapper:
             "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
                 currentQuota=response_body.get("currentQuota", "<unknown quota>")
             ),
+            "WRITE_ACCESS_DENIED_TO_ARCHIVED_PROJECT": lambda _: WritingToArchivedProjectException(),
         }
 
-        handle_json_errors(
-            content=ensure_json_response(response),
-            error_processors=error_processors,
-            source_exception=exception,
-        )
+        body = ensure_json_response(response)
+        error_type: Optional[str] = body.get("errorType")
+        error_processor = error_processors.get(error_type)
+        if error_processor:
+            if exception:
+                raise error_processor(body) from exception
+            raise error_processor(body)
+
+        if exception:
+            raise exception
 
     def __call__(self, *args, **kwargs):
         try:
