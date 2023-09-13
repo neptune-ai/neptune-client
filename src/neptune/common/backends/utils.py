@@ -47,7 +47,6 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.common.utils import reset_internal_ssl_state
 
 _logger = logging.getLogger(__name__)
 
@@ -57,7 +56,6 @@ retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        ssl_error_occurred = False
         last_exception = None
         start_time = time.monotonic()
         for retry in itertools.count(0):
@@ -65,27 +63,21 @@ def with_api_exceptions_handler(func):
                 break
 
             try:
-                return func(*args, **kwargs)
+                before = time.monotonic()
+                ret = func(*args, **kwargs)
+                after = time.monotonic()
+                if after - before > 50:
+                    _logger.warning(f"WARNING: Request succeeded after {int(after - before)} seconds.")
+                return ret
             except requests.exceptions.InvalidHeader as e:
                 if "X-Neptune-Api-Token" in e.args[0]:
                     raise NeptuneInvalidApiTokenException()
                 raise
             except requests.exceptions.SSLError as e:
-                """
-                OpenSSL's internal random number generator does not properly handle forked processes.
-                Applications must change the PRNG state of the parent process
-                if they use any SSL feature with os.fork().
-                Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
-                https://docs.python.org/3/library/ssl.html#multi-processing
-
-                On Linux it looks like it does not help much but does not break anything either.
-                But single retry seems to solve the issue.
-                """
-                if not ssl_error_occurred:
-                    ssl_error_occurred = True
-                    reset_internal_ssl_state()
-                    continue
-                raise NeptuneSSLVerificationError() from e
+                _logger.error("CONNECTION ERROR: SSLError")
+                time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                last_exception = e
+                continue
             except (
                 BravadoConnectionError,
                 BravadoTimeoutError,
@@ -100,10 +92,15 @@ def with_api_exceptions_handler(func):
                 NewConnectionError,
                 ChunkedEncodingError,
             ) as e:
+                try:
+                    _logger.error(f"CONNECTION ERROR: {e.status_code}")
+                except AttributeError:
+                    _logger.error(f"CONNECTION ERROR: {type(e).__name__}")
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except NeptuneAuthTokenExpired:
+                _logger.exception("TOKEN EXPIRED")
                 continue
             except HTTPUnauthorized:
                 raise Unauthorized()
@@ -123,6 +120,7 @@ def with_api_exceptions_handler(func):
                     HTTPTooManyRequests.status_code,
                     HTTPInternalServerError.status_code,
                 ):
+                    _logger.error(f"CONNECTION ERROR: {status_code}")
                     time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
@@ -134,6 +132,11 @@ def with_api_exceptions_handler(func):
                     raise ClientHttpError(status_code, e.response.text) from e
                 else:
                     raise
-        raise NeptuneConnectionLostException(last_exception) from last_exception
+        try:
+            raise last_exception
+        except requests.exceptions.SSLError as e:
+            raise NeptuneSSLVerificationError() from e
+        except Exception:
+            raise NeptuneConnectionLostException(last_exception) from last_exception
 
     return wrapper

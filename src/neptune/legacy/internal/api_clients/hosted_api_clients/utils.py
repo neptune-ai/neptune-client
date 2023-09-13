@@ -53,8 +53,7 @@ def legacy_with_api_exceptions_handler(func):
             except requests.exceptions.SSLError:
                 raise NeptuneSSLVerificationError()
             except HTTPServiceUnavailable:
-                if retry >= 6:
-                    _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
+                _logger.exception("Experiencing connection interruptions.")
                 time.sleep(2**retry)
                 retry += 1
                 continue
@@ -70,8 +69,7 @@ def legacy_with_api_exceptions_handler(func):
                 HTTPInternalServerError,
                 NewConnectionError,
             ):
-                if retry >= 6:
-                    _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
+                _logger.exception("Experiencing connection interruptions.")
                 time.sleep(2**retry)
                 retry += 1
                 continue
@@ -91,10 +89,7 @@ def legacy_with_api_exceptions_handler(func):
                     HTTPTooManyRequests.status_code,
                     HTTPInternalServerError.status_code,
                 ):
-                    if retry >= 6:
-                        _logger.warning(
-                            "Experiencing connection interruptions. Reestablishing communication with Neptune."
-                        )
+                    _logger.exception("Experiencing connection interruptions.")
                     time.sleep(2**retry)
                     retry += 1
                     continue
