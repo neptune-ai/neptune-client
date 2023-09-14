@@ -127,7 +127,7 @@ class Handler(SupportsNamespaces):
                                  For example: You're trying run[{self._path}].{item}()
                                  but you probably want run.{item}().
 
-                                 To obtain the root object of the namespace handler, you can do:
+                                 To obtain the root object of the namespace handler, you can do the following:
                                  root_run = run[{self._path}].get_root_object()
                                  root_run.{item}()
                                 """,
@@ -136,7 +136,7 @@ class Handler(SupportsNamespaces):
         return object.__getattribute__(self, item)
 
     def _get_attribute(self):
-        """Returns Attribute defined in `self._path` or throws MissingFieldException"""
+        """Returns an attribute defined in `self._path` or throws MissingFieldException."""
         attr = self._container.get_attribute(self._path)
         if attr is None:
             raise MissingFieldException(self._path)
@@ -144,7 +144,7 @@ class Handler(SupportsNamespaces):
 
     @property
     def container(self) -> "MetadataContainer":
-        """Returns the container that the attribute is attached to"""
+        """Returns the container that the attribute is attached to."""
         return self._container
 
     def get_root_object(self) -> "NeptuneObject":
@@ -159,7 +159,7 @@ class Handler(SupportsNamespaces):
             >>> pretraining_run = pretraining.get_root_object()
             >>> pretraining_run.stop()  # The root run is stopped
 
-        For more, see the docs:
+        For more information, see the docs:
         https://docs.neptune.ai/api/field_types/#get_root_object
         """
         return self._container
@@ -168,7 +168,7 @@ class Handler(SupportsNamespaces):
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns the provided value to the field.
 
-        Available for following field types (`Field types docs page`_):
+        Available for the following field types:
             * `Integer`
             * `Float`
             * `Boolean`
@@ -203,7 +203,7 @@ class Handler(SupportsNamespaces):
             >>> params = {'max_epochs': 5, 'lr': 0.4}
             >>> run['parameters'] = params
 
-        .. _Field types docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
         with self._container.lock():
@@ -217,7 +217,7 @@ class Handler(SupportsNamespaces):
 
     @check_protected_paths
     def upload(self, value, *, wait: bool = False) -> None:
-        """Uploads provided file under specified field path.
+        """Uploads the provided file under the specified field path.
 
         Args:
             value (str or File): Path to the file to be uploaded or `File` value object.
@@ -241,9 +241,7 @@ class Handler(SupportsNamespaces):
             >>> from neptune.types import File
             >>> run["dataset/data_sample"].upload(File("sample_data.csv"))
 
-        You may also want to check `upload docs page`_.
-
-        .. _upload docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api/field_types#upload
 
         """
@@ -282,7 +280,8 @@ class Handler(SupportsNamespaces):
     ) -> None:
         """Logs the provided value or a collection of values.
 
-        Available for following field types (`Field types docs page`_):
+        Available for following field types:
+
             * `FloatSeries`
             * `StringSeries`
             * `FileSeries`
@@ -300,7 +299,7 @@ class Handler(SupportsNamespaces):
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        .. _Field types docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
 
         """
@@ -362,7 +361,7 @@ class Handler(SupportsNamespaces):
             * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
-        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+        For more information, see the field types document: https://docs.neptune.ai/api/field_types
 
         Args:
             value: Value to be added to the series field.
@@ -370,7 +369,7 @@ class Handler(SupportsNamespaces):
             timestamp: Optional time index of the log entry being appended, in Unix time format.
                 If None, the current time (obtained with `time.time()`) is used.
             wait: If True, the client sends all tracked metadata to the server before executing the call.
-                For details, see https://docs.neptune.ai/api/universal/#wait
+                For more information, see: https://docs.neptune.ai/api/universal/#wait
 
         Examples:
             >>> import neptune
@@ -404,14 +403,14 @@ class Handler(SupportsNamespaces):
     ) -> None:
         """Logs a series of values by appending the provided collection of values to the end of the series.
 
-        Available for following series field types:
+        Available for the following series field types:
 
             * `FloatSeries` - series of float values
             * `StringSeries` - series of strings
             * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
-        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+        For more information, see the field types documentation: https://docs.neptune.ai/api/field_types
 
         Args:
             values: Values to be added to the series field, as a dictionary or collection.
@@ -423,7 +422,7 @@ class Handler(SupportsNamespaces):
 
         Example:
             The following example reads a CSV file into a pandas DataFrame and extracts the values
-            to create a Neptune series.
+            to create a Neptune series:
             >>> import neptune
             >>> run = neptune.init_run()
             >>> for epoch in range(n_epochs):
@@ -449,19 +448,17 @@ class Handler(SupportsNamespaces):
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
-        """Adds the provided tag or tags to the run's tags.
+        """Adds the provided tags to the run.
 
         Args:
             values (str or collection of str): Tag or tags to be added.
                 .. note::
-                    If you want you can use emojis in your tags eg. "Exploration 🧪"
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+                    You can use emojis in your tags eg. "Exploration 🧪"
+            wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        You may also want to check `add docs page`_.
-
-        .. _add types docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api/field_types#add
         """
         verify_type("values", values, (str, Iterable))
@@ -494,17 +491,15 @@ class Handler(SupportsNamespaces):
 
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
-        """Removes the provided tag or tags from the set.
+        """Removes the provided tags from the set.
 
         Args:
-            values (str or collection of str): Tag or tags to be removed.
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+            values (str or collection of str): Tags to be removed.
+            wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        You may also want to check `remove docs page`_.
-
-        .. _remove docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api/field_types#remove
         """
         return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
@@ -514,13 +509,11 @@ class Handler(SupportsNamespaces):
         """Removes all tags from the `StringSet`.
 
         Args:
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+            wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        You may also want to check `clear docs page`_.
-
-        .. _clear docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api/field_types#clear
         """
         return self._pass_call_to_attr(function_name="clear", wait=wait)
@@ -528,7 +521,8 @@ class Handler(SupportsNamespaces):
     def fetch(self):
         """Fetches fields value or, in case of a namespace, fetches values of all non-File Atom fields as a dictionary.
 
-        Available for following field types (`Field types docs page`_):
+        Available for the following field types:
+
             * `Integer`
             * `Float`
             * `Boolean`
@@ -538,32 +532,34 @@ class Handler(SupportsNamespaces):
             * `Namespace handler`
 
         Returns:
-            Value stored in the field or in case of a namespace a dictionary containing all non-Atom fields values.
+            Value stored in the field or, in case of a namespace, a dictionary containing all non-Atom fields values.
 
-        .. _Field types docs page:
+        For more information on field types, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="fetch")
 
     def fetch_last(self):
-        """Fetches the last value stored in the series from Neptune servers.
+        """Fetches the last value stored in the series from Neptune.
 
-        Available for following field types (`Field types docs page`_):
+        Available for the following field types:
+
             * `FloatSeries`
             * `StringSeries`
 
         Returns:
-            Fetches the last value stored in the series from Neptune servers.
+            Fetches the last value stored in the series from Neptune.
 
-        .. _Field types docs page:
+        For more information on field types, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="fetch_last")
 
     def fetch_values(self, *, include_timestamp: Optional[bool] = True):
-        """Fetches all values stored in the series from Neptune servers.
+        """Fetches all values stored in the series from Neptune.
 
-        Available for following field types (`Field types docs page`_):
+        Available for the following field types (`Field types docs page`_):
+
             * `FloatSeries`
             * `StringSeries`
 
@@ -574,36 +570,35 @@ class Handler(SupportsNamespaces):
         Returns:
             ``Pandas.DataFrame``: containing all the values and their indexes stored in the series field.
 
-        .. _Field types docs page:
+        For more information on field types, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="fetch_values", include_timestamp=include_timestamp)
 
     @check_protected_paths
     def delete_files(self, paths: Union[str, Iterable[str]], *, wait: bool = False) -> None:
-        """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
+        """Deletes the files specified by the paths from the `FileSet` stored on the Neptune servers.
 
         Args:
             paths (str or collection of str): `Path` or paths to files or folders to be deleted.
-                Note that these are paths relative to the FileSet itself e.g. if the `FileSet` contains
-                file `example.txt`, `varia/notes.txt`, `varia/data.csv` to delete whole subfolder you would pass
+                Note that the paths are relative to the FileSet itself e.g. if the `FileSet` contains
+                file `example.txt`, `varia/notes.txt`, `varia/data.csv`, to delete the entire subfolder, you would pass
                 varia as the argument.
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
+            wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
                 Defaults to `None`.
 
-        You may also want to check `delete_files docs page`_.
-
-        .. _delete_files docs page:
+        For more information, see the docs:
             https://docs.neptune.ai/api/field_types#delete_files
         """
         return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
     @check_protected_paths
     def download(self, destination: str = None) -> None:
-        """Downloads the stored file or files to the working directory or specified destination.
+        """Downloads the stored files to the working directory or to the specified destination.
 
-        Available for following field types (`Field types docs page`_):
+        Available for the following field types (`Field types docs page`_):
+
             * `File`
             * `FileSeries`
             * `FileSet`
@@ -617,13 +612,13 @@ class Handler(SupportsNamespaces):
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
 
-        .. _Field types docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="download", destination=destination)
 
     def download_last(self, destination: str = None) -> None:
-        """Downloads the stored file or files to the working directory or specified destination.
+        """Downloads the stored files to the working directory or to the specified destination.
 
         Args:
             destination (str, optional): Path to where the file(s) should be downloaded.
@@ -633,9 +628,7 @@ class Handler(SupportsNamespaces):
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
 
-        You may also want to check `download_last docs page`_.
-
-        .. _download_last docs page:
+        For more information, see the docs:
            https://docs.neptune.ai/api/field_types#download_last
         """
         return self._pass_call_to_attr(function_name="download_last", destination=destination)
@@ -665,20 +658,20 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="fetch_files_list")
 
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
-        """Fetches metadata about the file set.
+        """Fetches metadata of the file set.
 
-        If the top-level artifact of the field is a directory, only metadata about this directory is returned.
-        You can use the `path` argument to list metadata about files contained inside the directory or subdirectories.
+        If the top-level artifact of the field is a directory, only the metadata from this directory is returned.
+        You can use the `path` argument to list metadata of the files contained inside the directory or subdirectories.
 
         Args:
-            path: Path to a nested directory, to get metadata about files contained within the directory.
+            path: Path to a nested directory, to get metadata of the files contained within the directory.
 
         Returns:
             List of FileEntry items with the following metadata: name, size (bytes), mtime (last modification time),
             and file type (file or directory).
 
         Examples:
-            In this example, a Neptune run (RUN-100) has a FileSet field "dataset" containing a directory called "data"
+            In this example, a Neptune run (RUN-100) has a FileSet field "dataset" containing a directory called "data",
             which has a subdirectory "samples" and a file "dataset.csv". The code for logging this would be:
             `run["dataset"].upload_files("data")`
 
@@ -696,7 +689,7 @@ class Handler(SupportsNamespaces):
             tzinfo=tzutc()), file_type='file'), FileEntry(name='sample_v3.csv', size=215, mtime=datetime.datetime(2023,
             8, 17, 10, 31, 26, 338000, tzinfo=tzutc()), file_type='file'), ...]
 
-        For more, see the API reference:
+        For more information, see the API reference:
            https://docs.neptune.ai/api/field_types#list_fileset_files
         """
         return self._pass_call_to_attr(function_name="list_fileset_files", path=path)
@@ -726,9 +719,9 @@ class Handler(SupportsNamespaces):
 class ExtendUtils:
     @staticmethod
     def transform_to_extend_format(value):
-        """Preserve nested structure created by `Namespaces` and `dict_like` objects,
-        but replace all other values with single-element lists,
-        so work can be delegated to `extend` method."""
+        """Preserves the nested structure created by `namespaces` and `dict_like` objects,
+        but replaces all other values with single-element lists,
+        so the work can be delegated to `extend` method."""
         if isinstance(value, Namespace) or is_dict_like(value):
             return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
 
@@ -739,21 +732,21 @@ class ExtendUtils:
 
     @staticmethod
     def validate_values_for_extend(values, steps, timestamps):
-        """Validates if input data is a collection or Namespace with collections leafs.
+        """Validates if the input data is a collection or a namespace with collections leafs.
         If steps or timestamps are passed, check if its length is equal to all given values."""
         collections_lengths = set(ExtendUtils.generate_leaf_collection_lengths(values))
 
         if len(collections_lengths) > 1:
             if steps is not None:
-                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+                raise NeptuneUserApiInputException("Number of steps must be equal to the number of values")
             if timestamps is not None:
-                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to the number of values")
         else:
             common_collections_length = next(iter(collections_lengths))
             if steps is not None and common_collections_length != len(steps):
-                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+                raise NeptuneUserApiInputException("Number of steps must be equal to the number of values")
             if timestamps is not None and common_collections_length != len(timestamps):
-                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to the number of values")
 
     @staticmethod
     def generate_leaf_collection_lengths(values) -> Iterator[int]:
@@ -766,4 +759,4 @@ class ExtendUtils:
         elif is_collection(values):
             yield len(values)
         else:
-            raise NeptuneUserApiInputException("Values must be a collection or Namespace leafs must be collections")
+            raise NeptuneUserApiInputException("Values must be a collection or namespace leafs must be collections")
