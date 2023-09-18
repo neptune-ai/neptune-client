@@ -532,7 +532,8 @@ class Handler(SupportsNamespaces):
             * `Namespace handler`
 
         Returns:
-            Value stored in the field or, in case of a namespace, a dictionary containing all non-Atom fields values.
+            If called on a field, returns the stored value.
+            If called on a namespace, returns a dictionary containing the values of all non-Atom fields.
 
         For more information on field types, see the docs:
            https://docs.neptune.ai/api-reference/field-types
