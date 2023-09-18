@@ -9,7 +9,7 @@
 
 ### Fixes
 - Fix exception handling in `ApiMethodWrapper.handle_neptune_http_errors` ([#1469](https://github.com/neptune-ai/neptune-client/pull/1469))
-
+- Fix race condition between close and flush in disk queue ([#1470](https://github.com/neptune-ai/neptune-client/pull/1470))
 
 ## neptune 1.6.3
 
