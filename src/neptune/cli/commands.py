@@ -102,9 +102,9 @@ def sync(
 ):
     """Synchronizes objects with unsent data to the server.
 
-    Neptune stores object data on disk in '.neptune' directories. If an object executes offline
-    or if network is unavailable as the run executes, object data can be synchronized
-    to the server with this command line utility.
+     Neptune stores object data on disk in the '.neptune' directory. If an object executes offline
+    or if the network is unavailable as the run executes,  the object data can be synchronized
+    with the server with this command line utility.
 
     You can list unsynchronized runs with `neptune status`
 

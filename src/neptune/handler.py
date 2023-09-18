@@ -280,7 +280,7 @@ class Handler(SupportsNamespaces):
     ) -> None:
         """Logs the provided value or a collection of values.
 
-        Available for following field types:
+        Available for the following field types:
 
             * `FloatSeries`
             * `StringSeries`
@@ -661,7 +661,7 @@ class Handler(SupportsNamespaces):
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
         """Fetches metadata of the file set.
 
-        If the top-level artifact of the field is a directory, only the metadata from this directory is returned.
+        If the top-level artifact of the field is a directory, only the metadata of this directory is returned.
         You can use the `path` argument to list metadata of the files contained inside the directory or subdirectories.
 
         Args:
@@ -720,7 +720,7 @@ class Handler(SupportsNamespaces):
 class ExtendUtils:
     @staticmethod
     def transform_to_extend_format(value):
-        """Preserves the nested structure created by `namespaces` and `dict_like` objects,
+        """Preserves the nested structure created by `Namespaces` and `dict_like` objects,
         but replaces all other values with single-element lists,
         so the work can be delegated to `extend` method."""
         if isinstance(value, Namespace) or is_dict_like(value):
