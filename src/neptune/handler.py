@@ -361,7 +361,7 @@ class Handler(SupportsNamespaces):
             * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
-        For more information, see the field types document: https://docs.neptune.ai/api/field_types
+        To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
 
         Args:
             value: Value to be added to the series field.
@@ -410,7 +410,7 @@ class Handler(SupportsNamespaces):
             * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
-        For more information, see the field types documentation: https://docs.neptune.ai/api/field_types
+        To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
 
         Args:
             values: Values to be added to the series field, as a dictionary or collection.
@@ -453,7 +453,7 @@ class Handler(SupportsNamespaces):
         Args:
             values (str or collection of str): Tag or tags to be added.
                 .. note::
-                    You can use emojis in your tags eg. "Exploration 🧪"
+                    You can use emojis in your tags. For example, "Exploration 🧪"
             wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
@@ -558,7 +558,7 @@ class Handler(SupportsNamespaces):
     def fetch_values(self, *, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune.
 
-        Available for the following field types (`Field types docs page`_):
+        Available for the following field types:
 
             * `FloatSeries`
             * `StringSeries`
@@ -581,9 +581,9 @@ class Handler(SupportsNamespaces):
 
         Args:
             paths (str or collection of str): `Path` or paths to files or folders to be deleted.
-                Note that the paths are relative to the FileSet itself e.g. if the `FileSet` contains
-                file `example.txt`, `varia/notes.txt`, `varia/data.csv`, to delete the entire subfolder, you would pass
-                varia as the argument.
+                Note that the paths are relative to the FileSet itself. For example, if the `FileSet` contains
+                the files `example.txt`, `varia/notes.txt`, `varia/data.csv`, to delete the entire varia subfolder,
+                you would pass varia as the argument.
             wait (bool, optional): If `True`, the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
                 Defaults to `None`.
@@ -597,7 +597,7 @@ class Handler(SupportsNamespaces):
     def download(self, destination: str = None) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
 
-        Available for the following field types (`Field types docs page`_):
+        Available for the following field types:
 
             * `File`
             * `FileSeries`
@@ -636,7 +636,7 @@ class Handler(SupportsNamespaces):
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
 
-        You may also want to check `fetch_hash docs page`_.
+        You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_hash
         """
         return self._pass_call_to_attr(function_name="fetch_hash")
@@ -644,7 +644,7 @@ class Handler(SupportsNamespaces):
     def fetch_extension(self) -> str:
         """Fetches the extension of a file.
 
-        You may also want to check `fetch_extension docs page`_.
+        You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_extension
         """
         return self._pass_call_to_attr(function_name="fetch_extension")
@@ -652,7 +652,7 @@ class Handler(SupportsNamespaces):
     def fetch_files_list(self) -> List[ArtifactFileData]:
         """Fetches the list of files in an artifact and their metadata.
 
-        You may also want to check `fetch_files_list docs page`_.
+        You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_files_list
         """
         return self._pass_call_to_attr(function_name="fetch_files_list")
@@ -701,7 +701,7 @@ class Handler(SupportsNamespaces):
     def track_files(self, path: str, *, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
 
-        You may also want to check `track_files docs page`_.
+        You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#track_files
         """
         with self._container.lock():
