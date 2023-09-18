@@ -4,8 +4,8 @@
 - Added support for `airflow` integration ([#1466](https://github.com/neptune-ai/neptune-client/pull/1466))
 
 ### Changes
-- Add handling of project limits [#1456](https://github.com/neptune-ai/neptune-client/pull/1456)
-- Language and style improvements [#1465](https://github.com/neptune-ai/neptune-client/pull/1465)
+- Add handling of project limits ([#1456](https://github.com/neptune-ai/neptune-client/pull/1456))
+- Language and style improvements ([#1465](https://github.com/neptune-ai/neptune-client/pull/1465))
 
 ### Fixes
 - Fix exception handling in `ApiMethodWrapper.handle_neptune_http_errors` ([#1469](https://github.com/neptune-ai/neptune-client/pull/1469))
