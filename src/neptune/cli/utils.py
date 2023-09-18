@@ -78,7 +78,7 @@ def get_metadata_container(
 
 _project_name_missing_message = (
     "Project name not provided. Could not synchronize offline runs."
-    " To synchronize offline run, specify the project name with the --project flag"
+    " To synchronize an offline run, specify the project name with the --project flag"
     f" or by setting the {PROJECT_ENV_NAME} environment variable."
 )
 
@@ -113,7 +113,7 @@ def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
 
 def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
     """
-    The DiskQueue.close() method remove junk metadata from disk when queue is empty.
+    The DiskQueue.close() method removes junk metadata from the disk when the queue is empty.
     """
     with DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()) as disk_queue:
         return disk_queue.is_empty()

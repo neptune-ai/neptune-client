@@ -93,7 +93,7 @@ You can get it or check if it is correct here:
 
 There are two options to add it:
     - specify it in your code
-    - set as an environment variable in your operating system.
+    - set it as an environment variable in your operating system.
 
 {h2}CODE{end}
 Pass the token to the {bold}init_run(){end} function via the {bold}api_token{end} argument:
@@ -183,7 +183,7 @@ You don't have permission to access the given resource.
           - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
           - {correct}PROJECT_NAME{end}: the name specified for the project
 
-   - Ask your organization administrator to grant you necessary privileges to the project.
+   - Ask your organization administrator to grant you the necessary privileges to the project.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
@@ -207,7 +207,7 @@ You don't have permission to access the given resource.
           - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
           - {correct}PROJECT_NAME{end}: the name specified for the project
 
-   - Ask your organization administrator to grant you necessary privileges to the project.
+   - Ask your organization administrator to grant you the necessary privileges to the project.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """

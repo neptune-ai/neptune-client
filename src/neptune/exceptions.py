@@ -146,7 +146,7 @@ class MissingFieldException(NeptuneException, AttributeError, KeyError):
 The field "{field_path}" was not found.
 
 There are two possible reasons:
-    - There is a typo in a path. Double-check your code for typos.
+    - There is a typo in the path. Double-check your code for typos.
     - You are fetching a field that another process created, but the local representation is not synchronized.
     If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
         {python}run.sync(){end}
@@ -365,7 +365,7 @@ class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing)
 {end}
 The Neptune client couldn't find your project name.
 {available_projects_message}{available_workspaces_message}
-There are two options two add it:
+There are two options to add it:
     - specify it in your code
     - set an environment variable in your operating system.
 

@@ -81,7 +81,7 @@ def validate_notebook_path(path):
 
 
 def assure_directory_exists(destination_dir):
-    """Check if `destination_dir` DIRECTORY exists, or creates one"""
+    """Checks if `destination_dir` DIRECTORY exists, or creates one"""
     if not destination_dir:
         destination_dir = os.getcwd()
 
@@ -159,7 +159,7 @@ def update_session_proxies(session, proxies):
 def get_git_info(repo_path=None):
     """Retrieve information about git repository.
 
-    If attempt fails, ``None`` will be returned.
+    If the attempt fails, ``None`` will be returned.
 
     Args:
         repo_path (:obj:`str`, optional, default is ``None``):

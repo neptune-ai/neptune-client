@@ -45,7 +45,7 @@ def detect_version() -> str:
     if neptune_version is not None and neptune_client_version is not None:
         raise RuntimeError(
             "We've detected that the 'neptune' and 'neptune-client' packages are both installed. "
-            "Uninstall each of them and then install only the new 'neptune' package. For more, "
+            "Uninstall each of them and then install only the new 'neptune' package. For more information, "
             "see https://docs.neptune.ai/setup/upgrading/"
         )
     elif neptune_version is not None:
