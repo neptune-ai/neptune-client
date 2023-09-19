@@ -17,8 +17,8 @@ __all__ = ["OperationStorage", "get_container_dir"]
 
 import os
 import shutil
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
@@ -26,15 +26,11 @@ from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.logger import logger
 
 
-def get_container_dir(
-    type_dir: str, container_id: UniqueId, container_type: ContainerType
-) -> Path:
+def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType) -> Path:
     now = datetime.now()
     process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
     neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
-    container_dir = Path(
-        f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}/{process_path}"
-    )
+    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}/{process_path}")
 
     return container_dir
 

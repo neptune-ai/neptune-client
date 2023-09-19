@@ -60,11 +60,7 @@ class AsyncOperationProcessor(OperationProcessor):
         batch_size: int = 1000,
     ):
         self._operation_storage = OperationStorage(
-            get_container_dir(
-                container_id=container_id,
-                container_type=container_type,
-                type_dir=ASYNC_DIRECTORY
-            )
+            get_container_dir(container_id=container_id, container_type=container_type, type_dir=ASYNC_DIRECTORY)
         )
 
         self._queue = DiskQueue(

@@ -33,11 +33,7 @@ from neptune.internal.operation_processors.operation_storage import (
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: UniqueId, container_type: ContainerType, lock: threading.RLock):
         self._operation_storage = OperationStorage(
-            get_container_dir(
-                container_id=container_id,
-                container_type=container_type,
-                type_dir=OFFLINE_DIRECTORY
-            )
+            get_container_dir(container_id=container_id, container_type=container_type, type_dir=OFFLINE_DIRECTORY)
         )
 
         self._queue = DiskQueue(

@@ -35,11 +35,7 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_type = container_type
         self._backend = backend
         self._operation_storage = OperationStorage(
-            get_container_dir(
-                container_id=container_id,
-                container_type=container_type,
-                type_dir=SYNC_DIRECTORY
-            )
+            get_container_dir(container_id=container_id, container_type=container_type, type_dir=SYNC_DIRECTORY)
         )
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
