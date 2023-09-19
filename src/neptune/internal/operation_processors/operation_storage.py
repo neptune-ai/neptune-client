@@ -19,6 +19,7 @@ import os
 import shutil
 from pathlib import Path
 from typing import Optional
+from datetime import datetime
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
@@ -40,11 +41,17 @@ def get_container_dir(
 class OperationStorage:
     UPLOAD_PATH: str = "upload_path"
 
-    def __init__(self, data_path: Path):
-        self._data_path = data_path.resolve()
+    def __init__(self, container_id: UniqueId, container_type: ContainerType, directory_name: str):
+        now = datetime.now()
+        self._data_path = get_container_dir(
+            type_dir=directory_name,
+            container_id=container_id,
+            container_type=container_type,
+            process_path=f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        ).resolve()
 
         # initialize directory
-        os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
+        os.makedirs(self.data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
     @property
     def data_path(self) -> Path:

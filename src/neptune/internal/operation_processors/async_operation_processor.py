@@ -18,8 +18,6 @@ __all__ = ("AsyncOperationProcessor",)
 import logging
 import os
 import threading
-from datetime import datetime
-from pathlib import Path
 from time import (
     monotonic,
     time,
@@ -38,10 +36,7 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
-)
+from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
@@ -61,7 +56,11 @@ class AsyncOperationProcessor(OperationProcessor):
         sleep_time: float = 5,
         batch_size: int = 1000,
     ):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+        self._operation_storage = OperationStorage(
+            container_id=container_id,
+            container_type=container_type,
+            directory_name=ASYNC_DIRECTORY
+        )
 
         self._queue = DiskQueue(
             dir_path=self._operation_storage.data_path,
@@ -80,12 +79,6 @@ class AsyncOperationProcessor(OperationProcessor):
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)

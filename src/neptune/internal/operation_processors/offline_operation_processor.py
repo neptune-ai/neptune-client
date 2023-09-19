@@ -16,7 +16,6 @@
 __all__ = ("OfflineOperationProcessor",)
 
 import threading
-from pathlib import Path
 from typing import Optional
 
 from neptune.constants import OFFLINE_DIRECTORY
@@ -25,15 +24,16 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
-)
+from neptune.internal.operation_processors.operation_storage import OperationStorage
 
 
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: UniqueId, container_type: ContainerType, lock: threading.RLock):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+        self._operation_storage = OperationStorage(
+            container_id=container_id,
+            container_type=container_type,
+            directory_name=OFFLINE_DIRECTORY
+        )
 
         self._queue = DiskQueue(
             dir_path=self._operation_storage.data_path,
@@ -41,10 +41,6 @@ class OfflineOperationProcessor(OperationProcessor):
             from_dict=Operation.from_dict,
             lock=lock,
         )
-
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
@@ -60,8 +56,6 @@ class OfflineOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None) -> None:
         self.close()
-        # Remove local files
-        self._queue.cleanup_if_empty()
 
     def close(self) -> None:
         self._queue.close()
