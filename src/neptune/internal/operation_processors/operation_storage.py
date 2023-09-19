@@ -18,7 +18,6 @@ __all__ = ["OperationStorage", "get_container_dir"]
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
 from datetime import datetime
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
@@ -28,12 +27,14 @@ from neptune.internal.utils.logger import logger
 
 
 def get_container_dir(
-    type_dir: str, container_id: UniqueId, container_type: ContainerType, process_path: Optional[str] = None
+    type_dir: str, container_id: UniqueId, container_type: ContainerType
 ) -> Path:
+    now = datetime.now()
+    process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
     neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
-    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
-    if process_path:
-        container_dir /= Path(process_path)
+    container_dir = Path(
+        f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}/{process_path}"
+    )
 
     return container_dir
 
@@ -41,17 +42,11 @@ def get_container_dir(
 class OperationStorage:
     UPLOAD_PATH: str = "upload_path"
 
-    def __init__(self, container_id: UniqueId, container_type: ContainerType, directory_name: str):
-        now = datetime.now()
-        self._data_path = get_container_dir(
-            type_dir=directory_name,
-            container_id=container_id,
-            container_type=container_type,
-            process_path=f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        ).resolve()
+    def __init__(self, data_path: Path):
+        self._data_path = data_path.resolve()
 
         # initialize directory
-        os.makedirs(self.data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
+        os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
 
     @property
     def data_path(self) -> Path:

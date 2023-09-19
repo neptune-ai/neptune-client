@@ -23,7 +23,10 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class SyncOperationProcessor(OperationProcessor):
@@ -32,9 +35,11 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_type = container_type
         self._backend = backend
         self._operation_storage = OperationStorage(
-            container_id=container_id,
-            container_type=container_type,
-            directory_name=SYNC_DIRECTORY
+            get_container_dir(
+                container_id=container_id,
+                container_type=container_type,
+                type_dir=SYNC_DIRECTORY
+            )
         )
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:

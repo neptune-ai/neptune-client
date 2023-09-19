@@ -24,15 +24,20 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 
 
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: UniqueId, container_type: ContainerType, lock: threading.RLock):
         self._operation_storage = OperationStorage(
-            container_id=container_id,
-            container_type=container_type,
-            directory_name=OFFLINE_DIRECTORY
+            get_container_dir(
+                container_id=container_id,
+                container_type=container_type,
+                type_dir=OFFLINE_DIRECTORY
+            )
         )
 
         self._queue = DiskQueue(

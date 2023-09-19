@@ -54,8 +54,12 @@ class AbstractExperimentTestMixin:
                 exp["some/variable"].fetch()
 
             exp_dir = f"{exp.container_type.value}__{exp._id}"
+            execution_dir = os.listdir(f".neptune/offline/{exp_dir}")[0]
             self.assertIn(exp_dir, os.listdir(".neptune/offline"))
-            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
+            self.assertIn(
+                "data-1.log",
+                os.listdir(f".neptune/offline/{exp_dir}/{execution_dir}"),
+            )
 
     def test_sync_mode(self):
         with self.call_init(mode="sync") as exp:

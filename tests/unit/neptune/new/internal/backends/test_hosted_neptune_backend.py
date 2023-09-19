@@ -94,11 +94,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         create_artifacts_client.cache_clear()
 
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
-        self.dummy_operation_storage = OperationStorage(
-            container_id="dummy_container_id",
-            container_type=ContainerType.RUN,
-            directory_name="dummy"
-        )
+        self.dummy_operation_storage = OperationStorage(Path("./tests/dummy_storage"))
 
     @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
