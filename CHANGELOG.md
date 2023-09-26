@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.7.0
+## neptune 1.7.0
 
 ### Features
 - Added support for `airflow` integration ([#1466](https://github.com/neptune-ai/neptune-client/pull/1466))
