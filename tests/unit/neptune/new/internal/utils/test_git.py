@@ -205,9 +205,9 @@ def test_get_uncommitted_changes(mock_get_sha, mock_repo):
     # then
     assert mock_repo.git.diff.call_count == 2
     assert mock_get_sha.call_count == 1
-    assert uncommitted_changes.diff_head == "some_diff"
+    assert uncommitted_changes.diff_head == "some_diff\n"
     assert uncommitted_changes.upstream_sha == "test_sha"
-    assert uncommitted_changes.diff_upstream == "some_diff"
+    assert uncommitted_changes.diff_upstream == "some_diff\n"
 
 
 @patch("git.Repo")

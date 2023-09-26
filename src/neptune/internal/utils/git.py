@@ -135,6 +135,8 @@ def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
 
         try:
             diff = repo.git.diff(commit_ref, index=False)
+
+            # add a newline at the end (required to be a valid `patch` file)
             if diff[-1] != "\n":
                 diff += "\n"
             return diff
