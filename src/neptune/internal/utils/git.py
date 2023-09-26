@@ -134,7 +134,10 @@ def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
         from git.exc import GitCommandError
 
         try:
-            return repo.git.diff(commit_ref, index=False)
+            diff = repo.git.diff(commit_ref, index=False)
+            if diff[-1] != "\n":
+                diff += "\n"
+            return diff
         except GitCommandError:
             return
     except ImportError:
