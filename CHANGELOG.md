@@ -1,4 +1,7 @@
-## [UNRELEASED] neptune 1.7.1
+## [UNRELEASED] neptune 1.8.0
+
+### Features
+- Add support for `jax` `ArrayImpl` objects ([#1474](https://github.com/neptune-ai/neptune-client/pull/1474))
 
 ### Fixes
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))
