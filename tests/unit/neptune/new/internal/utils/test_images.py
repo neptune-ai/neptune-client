@@ -148,6 +148,18 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
+    def test_get_image_content_from_jax_array(self):
+        from jax import random
+
+        # given
+        key = random.PRNGKey(0)
+        image_array = random.uniform(key, shape=(200, 300, 3))
+        expected_array = numpy.asarray(image_array) * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
+
     def test_get_html_from_matplotlib_figure(self):
         # given
         fig = pyplot.figure()

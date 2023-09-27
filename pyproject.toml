@@ -59,6 +59,8 @@ torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
 Faker = { version = "*", optional = true }
 mypy = { version = "*", optional = true }
+jax = { version = "*", optional = true }
+jaxlib = { version = ">=0.4.11", optional = true}
 
 # e2e
 optuna = { version = "*", optional = true }
@@ -111,6 +113,7 @@ dev = [
     "bokeh",
     "Faker",
     "freezegun",
+    "jax",
     "matplotlib",
     "mock",
     "moto",
