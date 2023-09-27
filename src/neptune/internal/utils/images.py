@@ -37,6 +37,7 @@ from io import (
 )
 from typing import Optional
 
+import numpy as np
 from packaging import version
 from pandas import DataFrame
 
@@ -100,6 +101,9 @@ def _image_to_bytes(image) -> bytes:
 
     elif _is_tensorflow_tensor(image):
         return _get_numpy_as_image(image.numpy())
+
+    elif _is_jax_array(image):
+        return _get_numpy_as_image(np.asarray(image))
 
     raise TypeError("image is {}".format(type(image)))
 
@@ -216,7 +220,7 @@ def _get_numpy_as_image(array):
         if shape[2] in (3, 4):
             return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
     raise ValueError(
-        "Incorrect size of numpy.ndarray. Should be 2-dimensional or"
+        "Incorrect size of numpy.ndarray. Should be 2-dimensional or "
         "3-dimensional with 3rd dimension of size 1, 3 or 4."
     )
 
@@ -239,6 +243,10 @@ def _is_torch_tensor(image):
         and image.__class__.__name__ == "Tensor"
         and hasattr(image, "numpy")
     )
+
+
+def _is_jax_array(image):
+    return image.__class__.__module__.startswith("jaxlib") and image.__class__.__name__ == "ArrayImpl"
 
 
 def _is_tensorflow_tensor(image):
