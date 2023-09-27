@@ -1,4 +1,7 @@
-## [UNRELEASED] neptune 1.7.1
+## [UNRELEASED] neptune 1.8.0
+
+### Features
+- Programmatically delete trashed neptune objects ([#1475](https://github.com/neptune-ai/neptune-client/pull/1475))
 
 ### Fixes
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))
