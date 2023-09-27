@@ -148,6 +148,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
+    @unittest.skipIf(IS_WINDOWS, "Installing jaxlib on Windows is not supported")
     def test_get_image_content_from_jax_array(self):
         from jax import random
 
