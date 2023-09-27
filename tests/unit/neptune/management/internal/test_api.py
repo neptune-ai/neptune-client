@@ -25,7 +25,7 @@ from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.management import (
-    delete_trashed_objects,
+    delete_objects_from_trash,
     trash_objects,
 )
 
@@ -72,7 +72,7 @@ class TestTrashObjects(unittest.TestCase):
         delete_experiments_from_trash_mock = _get_leaderboard_client_mock().api.deleteExperiments
 
         # when
-        delete_trashed_objects(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
+        delete_objects_from_trash(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
 
         # then
         assert delete_experiments_from_trash_mock.call_count == 1

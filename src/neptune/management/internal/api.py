@@ -18,7 +18,7 @@ __all__ = [
     "get_project_list",
     "create_project",
     "delete_project",
-    "delete_trashed_objects",
+    "delete_objects_from_trash",
     "get_project_member_list",
     "add_project_member",
     "remove_project_member",
@@ -917,7 +917,7 @@ def trash_objects(
         logger.warning(error)
 
 
-def delete_trashed_objects(
+def delete_objects_from_trash(
     project: str,
     ids: Union[str, Iterable[str]],
     *,
@@ -944,10 +944,10 @@ def delete_trashed_objects(
 
         Deleting a run with the ID "CLS-1" from trash:
         >>> from neptune import management
-        >>> management.delete_trashed_objects(project="ml-team/classification", ids="CLS-1")
+        >>> management.delete_objects_from_trash(project="ml-team/classification", ids="CLS-1")
 
         Deleting two runs and a model with the key "PRETRAINED" from trash:
-        >>> management.delete_trashed_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+        >>> management.delete_objects_from_trash("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
