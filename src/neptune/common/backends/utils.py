@@ -95,12 +95,20 @@ def with_api_exceptions_handler(func):
                 HTTPServiceUnavailable,
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
-                HTTPTooManyRequests,
                 HTTPInternalServerError,
                 NewConnectionError,
                 ChunkedEncodingError,
             ) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                last_exception = e
+                continue
+            except HTTPTooManyRequests as e:
+                response_headers = e.response.json()["headers"]
+                if "retry-after" in response_headers:
+                    retry_after = int(response_headers["retry-after"][0])
+                    time.sleep(min(retry_after, MAX_RETRY_TIME))
+                else:
+                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except NeptuneAuthTokenExpired:
@@ -120,10 +128,18 @@ def with_api_exceptions_handler(func):
                     HTTPBadGateway.status_code,
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
-                    HTTPTooManyRequests.status_code,
                     HTTPInternalServerError.status_code,
                 ):
                     time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                    last_exception = e
+                    continue
+                elif status_code == HTTPTooManyRequests.status_code:
+                    response_headers = e.response.json()["headers"]
+                    if "retry-after" in response_headers:
+                        retry_after = int(response_headers["retry-after"][0])
+                        time.sleep(min(retry_after, MAX_RETRY_TIME))
+                    else:
+                        time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
                 elif status_code == HTTPUnauthorized.status_code:

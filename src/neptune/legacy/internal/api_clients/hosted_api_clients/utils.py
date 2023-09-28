@@ -66,13 +66,21 @@ def legacy_with_api_exceptions_handler(func):
                 HTTPRequestTimeout,
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
-                HTTPTooManyRequests,
                 HTTPInternalServerError,
                 NewConnectionError,
             ):
                 if retry >= 6:
                     _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
                 time.sleep(2**retry)
+                retry += 1
+                continue
+            except HTTPTooManyRequests as e:
+                response_headers = e.response.json()["headers"]
+                if "retry-after" in response_headers:
+                    retry_after = int(response_headers["retry-after"][0])
+                    time.sleep(retry_after)
+                else:
+                    time.sleep(2 ** min(10, retry))
                 retry += 1
                 continue
             except HTTPUnauthorized:
@@ -88,7 +96,6 @@ def legacy_with_api_exceptions_handler(func):
                     HTTPBadGateway.status_code,
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
-                    HTTPTooManyRequests.status_code,
                     HTTPInternalServerError.status_code,
                 ):
                     if retry >= 6:
@@ -96,6 +103,15 @@ def legacy_with_api_exceptions_handler(func):
                             "Experiencing connection interruptions. Reestablishing communication with Neptune."
                         )
                     time.sleep(2**retry)
+                    retry += 1
+                    continue
+                elif status_code == HTTPTooManyRequests.status_code:
+                    response_headers = e.response.json()["headers"]
+                    if "retry-after" in response_headers:
+                        retry_after = int(response_headers["retry-after"][0])
+                        time.sleep(retry_after)
+                    else:
+                        time.sleep(2 ** min(10, retry))
                     retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
