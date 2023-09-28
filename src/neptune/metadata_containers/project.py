@@ -327,10 +327,11 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
-    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = None) -> Table:
         """Retrieve models stored in the project.
 
         Args:
+            trashed:
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
                 Examples:
@@ -375,7 +376,9 @@ class Project(MetadataContainer):
                 name="sys/trashed",
                 type=NQLAttributeType.BOOLEAN,
                 operator=NQLAttributeOperator.EQUALS,
-                value=False,
-            ),
+                value=trashed,
+            )
+            if trashed is not None
+            else None,
             columns=columns,
         )

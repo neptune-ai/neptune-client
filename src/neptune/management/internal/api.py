@@ -994,6 +994,17 @@ def clear_trash(
 
     project_obj = init_project(project=project, api_token=api_token)
 
-    run_ids = project_obj.fetch_runs_table(trashed=True).to_pandas()["sys/id"].to_list()
+    ids = []
 
-    delete_objects_from_trash(project, run_ids, workspace=workspace, api_token=api_token)
+    trashed_runs = project_obj.fetch_runs_table(trashed=True).to_rows()
+    if trashed_runs:
+        ids.extend([run.get_attribute_value("sys/id") for run in trashed_runs])
+
+    trashed_models = project_obj.fetch_models_table(trashed=True).to_rows()
+    if trashed_models:
+        ids.extend([model.get_attribute_value("sys/id") for model in trashed_models])
+
+    if not ids:  # nothing to delete
+        return
+
+    delete_objects_from_trash(project, ids, workspace=workspace, api_token=api_token)
