@@ -21,6 +21,7 @@ __all__ = [
     "create_artifacts_client",
 ]
 
+import gzip
 import os
 import platform
 from typing import (
@@ -31,6 +32,7 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests.adapters import HTTPAdapter
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
@@ -64,6 +66,17 @@ DEFAULT_REQUEST_KWARGS = {
         "headers": {"X-Neptune-LegacyClient": "false"},
     }
 }
+
+
+class GzipAdapter(HTTPAdapter):
+    def send(self, request, stream=False, **kw):
+        if request.body is not None and stream is False:
+            request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
+            compressed = gzip.compress(request_body)
+            request.prepare_body(compressed, None)
+            request.headers["Content-Encoding"] = "gzip"
+
+        return super(GzipAdapter, self).send(request, stream, **kw)
 
 
 def _close_connections_on_fork(session: requests.Session):
@@ -175,6 +188,10 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
 
 @cache
 def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
+    if client_config.gzip_upload:
+        http_client.session.mount("http://", GzipAdapter())
+        http_client.session.mount("https://", GzipAdapter())
+
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
