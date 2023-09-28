@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import time
 from typing import (
     Callable,
     Dict,
@@ -28,7 +29,9 @@ from neptune.management import (
     ProjectVisibility,
     add_project_member,
     add_project_service_account,
+    clear_trash,
     create_project,
+    delete_objects_from_trash,
     delete_project,
     get_project_list,
     get_project_member_list,
@@ -458,3 +461,42 @@ class TestTrashObjects(BaseE2ETest):
         fetched_entries = container_provider().to_pandas()
         actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []
         assert sorted(actual_ids) == sorted(ids)
+
+
+@pytest.mark.management
+class TestDeleteFromTrash:
+    def test_delete_from_trash(self, environment):
+        # given
+        run1 = initialize_container(ContainerType.RUN, project=environment.project)
+        run2 = initialize_container(ContainerType.RUN, project=environment.project)
+        model = initialize_container(ContainerType.MODEL, project=environment.project)
+        run_id_1 = run1["sys/id"].fetch()
+        run_id_2 = run2["sys/id"].fetch()
+        model_id = model["sys/id"].fetch()
+        time.sleep(5)
+
+        trash_objects(environment.project, [run_id_1, run_id_2, model_id])
+        time.sleep(5)  # after that we should have 3 trashed objects
+
+        with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
+            # when
+            delete_objects_from_trash(environment.project, [run_id_1])
+            time.sleep(5)
+
+            # then
+            trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
+            assert len(trashed_runs) == 1
+
+            trashed_models = project.fetch_models_table(trashed=True).to_rows()
+            assert len(trashed_models) == 1
+
+            # when
+            clear_trash(environment.project)
+            time.sleep(5)
+
+            # then
+            trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
+            assert len(trashed_runs) == 0
+
+            trashed_models = project.fetch_models_table(trashed=True).to_rows()
+            assert len(trashed_models) == 0

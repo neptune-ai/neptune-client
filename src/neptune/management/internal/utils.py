@@ -69,16 +69,16 @@ class WorkspaceMemberRole(Enum):
 def get_trashed_object_ids(project: Optional[str], api_token: Optional[str]) -> List[str]:
     from neptune import init_project  # to avoid circular imports
 
-    project_obj = init_project(project=project, api_token=api_token)
+    with init_project(project=project, api_token=api_token) as project_obj:
 
-    ids = []
+        ids = []
 
-    trashed_runs = project_obj.fetch_runs_table(trashed=True).to_rows()
-    if trashed_runs:
-        ids.extend([run.get_attribute_value("sys/id") for run in trashed_runs])
+        trashed_runs = project_obj.fetch_runs_table(trashed=True).to_rows()
+        if trashed_runs:
+            ids.extend([run.get_attribute_value("sys/id") for run in trashed_runs])
 
-    trashed_models = project_obj.fetch_models_table(trashed=True).to_rows()
-    if trashed_models:
-        ids.extend([model.get_attribute_value("sys/id") for model in trashed_models])
+        trashed_models = project_obj.fetch_models_table(trashed=True).to_rows()
+        if trashed_models:
+            ids.extend([model.get_attribute_value("sys/id") for model in trashed_models])
 
     return ids
