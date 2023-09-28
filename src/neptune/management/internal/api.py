@@ -987,6 +987,26 @@ def clear_trash(
     workspace: str = None,
     api_token: str = None,
 ) -> None:
+    """Deletes all Neptune objects from the project trash.
+
+    Args:
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
+            If you pass the workspace argument, the name argument should only contain 'project-name'
+            instead of 'workspace-name/project-name'.
+        workspace: Name of your Neptune workspace. If you specify it,
+            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the name argument.
+        api_token: Account's API token.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+
+    Examples:
+
+        Clearing trash:
+        >>> from neptune import management
+        >>> management.clear_trash(project="ml-team/classification")
+    """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
