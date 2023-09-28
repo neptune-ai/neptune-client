@@ -70,7 +70,7 @@ DEFAULT_REQUEST_KWARGS = {
 
 class GzipAdapter(HTTPAdapter):
     def send(self, request, stream=False, **kw):
-        if request.body is not None and stream is False:
+        if request.body is not None and not stream:
             request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
             compressed = gzip.compress(request_body)
             request.prepare_body(compressed, None)
