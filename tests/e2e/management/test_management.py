@@ -479,7 +479,7 @@ class TestDeleteFromTrash:
 
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
             trash_objects(environment.project, [run_id_1, run_id_2, model_id])
-            self.wait_for_containers_in_trash(2, 1, project)
+            time.sleep(10)
 
             # when
             clear_trash(environment.project)
