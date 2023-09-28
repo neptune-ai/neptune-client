@@ -97,6 +97,7 @@ from neptune.management.internal.types import ProjectVisibility
 from neptune.management.internal.utils import (
     WorkspaceMemberRole,
     extract_project_and_workspace,
+    get_trashed_object_ids,
     normalize_project_name,
 )
 
@@ -990,19 +991,7 @@ def clear_trash(
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
-    from neptune import init_project
-
-    project_obj = init_project(project=project, api_token=api_token)
-
-    ids = []
-
-    trashed_runs = project_obj.fetch_runs_table(trashed=True).to_rows()
-    if trashed_runs:
-        ids.extend([run.get_attribute_value("sys/id") for run in trashed_runs])
-
-    trashed_models = project_obj.fetch_models_table(trashed=True).to_rows()
-    if trashed_models:
-        ids.extend([model.get_attribute_value("sys/id") for model in trashed_models])
+    ids = get_trashed_object_ids(project, api_token)
 
     if not ids:  # nothing to delete
         return
