@@ -23,7 +23,10 @@ from typing import (
 import backoff
 import pytest
 
-from neptune import init_model_version
+from neptune import (
+    Project,
+    init_model_version,
+)
 from neptune.internal.container_type import ContainerType
 from neptune.management import (
     ProjectVisibility,
@@ -475,28 +478,25 @@ class TestDeleteFromTrash:
         model_id = model["sys/id"].fetch()
         time.sleep(5)
 
-        trash_objects(environment.project, [run_id_1, run_id_2, model_id])
-        time.sleep(5)  # after that we should have 3 trashed objects
-
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
+            trash_objects(environment.project, [run_id_1, run_id_2, model_id])
+            self.wait_for_containers_in_trash(2, 1, project)
+
             # when
             delete_objects_from_trash(environment.project, [run_id_1])
-            time.sleep(10)
 
             # then
-            trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
-            assert len(trashed_runs) == 1
-
-            trashed_models = project.fetch_models_table(trashed=True).to_rows()
-            assert len(trashed_models) == 1
+            self.wait_for_containers_in_trash(1, 1, project)
 
             # when
             clear_trash(environment.project)
-            time.sleep(10)
 
             # then
-            trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
-            assert len(trashed_runs) == 0
+            self.wait_for_containers_in_trash(0, 0, project)
 
-            trashed_models = project.fetch_models_table(trashed=True).to_rows()
-            assert len(trashed_models) == 0
+    @backoff.on_exception(backoff.expo, Exception, max_time=5)
+    def wait_for_containers_in_trash(self, expected_run_count: int, expected_model_count: int, project: Project):
+        trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
+        trashed_models = project.fetch_models_table(trashed=True).to_rows()
+        assert len(trashed_models) == expected_model_count
+        assert len(trashed_runs) == expected_run_count
