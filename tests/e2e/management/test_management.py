@@ -481,7 +481,7 @@ class TestDeleteFromTrash:
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
             # when
             delete_objects_from_trash(environment.project, [run_id_1])
-            time.sleep(5)
+            time.sleep(10)
 
             # then
             trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
@@ -492,7 +492,7 @@ class TestDeleteFromTrash:
 
             # when
             clear_trash(environment.project)
-            time.sleep(5)
+            time.sleep(10)
 
             # then
             trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
