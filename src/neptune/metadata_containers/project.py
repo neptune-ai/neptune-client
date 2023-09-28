@@ -152,15 +152,18 @@ class Project(MetadataContainer):
         )
 
     @staticmethod
-    def _prepare_nql_query(ids, states, owners, tags):
-        query_items = [
-            NQLQueryAttribute(
-                name="sys/trashed",
-                type=NQLAttributeType.BOOLEAN,
-                operator=NQLAttributeOperator.EQUALS,
-                value=False,
+    def _prepare_nql_query(ids, states, owners, tags, trashed):
+        query_items = []
+
+        if trashed is not None:
+            query_items.append(
+                NQLQueryAttribute(
+                    name="sys/trashed",
+                    type=NQLAttributeType.BOOLEAN,
+                    operator=NQLAttributeOperator.EQUALS,
+                    value=trashed,
+                )
             )
-        ]
 
         if ids:
             query_items.append(
@@ -237,6 +240,7 @@ class Project(MetadataContainer):
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
+        trashed: Optional[bool] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -244,6 +248,7 @@ class Project(MetadataContainer):
         Only runs matching all of the criteria will be returned.
 
         Args:
+            trashed:
             id: Neptune ID of a run, or list of several IDs.
                 Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
@@ -311,7 +316,9 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        nql_query = self._prepare_nql_query(ids, states, owners, tags)
+        verify_type("trashed", trashed, (bool, type(None)))
+
+        nql_query = self._prepare_nql_query(ids, states, owners, tags, trashed)
 
         return MetadataContainer._fetch_entries(
             self,

@@ -15,6 +15,7 @@
 #
 
 __all__ = [
+    "clear_trash",
     "get_project_list",
     "create_project",
     "delete_project",
@@ -977,3 +978,22 @@ def delete_objects_from_trash(
 
         for error in response.result.errors:
             logger.warning(error)
+
+
+def clear_trash(
+    project: str,
+    *,
+    workspace: str = None,
+    api_token: str = None,
+) -> None:
+    verify_type("project", project, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    from neptune import init_project
+
+    project_obj = init_project(project=project, api_token=api_token)
+
+    run_ids = project_obj.fetch_runs_table(trashed=True).to_pandas()["sys/id"].to_list()
+
+    delete_objects_from_trash(project, run_ids, workspace=workspace, api_token=api_token)

@@ -103,6 +103,7 @@ from .internal.api import (
     WorkspaceMemberRole,
     add_project_member,
     add_project_service_account,
+    clear_trash,
     create_project,
     delete_objects_from_trash,
     delete_project,
@@ -122,6 +123,7 @@ from .internal.types import (
 )
 
 __all__ = [
+    "clear_trash",
     "get_project_list",
     "create_project",
     "delete_project",
