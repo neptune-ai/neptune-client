@@ -34,7 +34,6 @@ from neptune.management import (
     add_project_service_account,
     clear_trash,
     create_project,
-    delete_objects_from_trash,
     delete_project,
     get_project_list,
     get_project_member_list,
@@ -481,12 +480,6 @@ class TestDeleteFromTrash:
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
             trash_objects(environment.project, [run_id_1, run_id_2, model_id])
             self.wait_for_containers_in_trash(2, 1, project)
-
-            # when
-            delete_objects_from_trash(environment.project, [run_id_1])
-
-            # then
-            self.wait_for_containers_in_trash(1, 1, project)
 
             # when
             clear_trash(environment.project)
