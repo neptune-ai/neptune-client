@@ -69,12 +69,10 @@ DEFAULT_REQUEST_KWARGS = {
 
 
 class GzipAdapter(HTTPAdapter):
-    _COMPRESSION_LEVEL = int((zlib.Z_BEST_SPEED + zlib.Z_BEST_COMPRESSION) / 2)
-
     def send(self, request, stream=False, **kw):
         if request.body is not None and not stream:
             request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
-            gzip_compress = zlib.compressobj(GzipAdapter._COMPRESSION_LEVEL, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+            gzip_compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, zlib.MAX_WBITS | 16)
             compressed = gzip_compress.compress(request_body) + gzip_compress.flush()
             request.prepare_body(compressed, None)
             request.headers["Content-Encoding"] = "gzip"
