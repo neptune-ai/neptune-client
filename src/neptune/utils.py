@@ -70,5 +70,7 @@ def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
     For more information, see:
         https://docs.neptune.ai/api/utils/stop_synchronization_callback/
     """
-    logger.error("Stopping synchronization using the stop synchronization callback.")
+    logger.error(
+        "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."
+    )
     neptune_object.stop(seconds=DEFAULT_STOP_TIMEOUT)
