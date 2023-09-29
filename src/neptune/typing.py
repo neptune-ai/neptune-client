@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces", "NeptuneObject"]
+__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
 
+from neptune.metadata_containers import NeptuneObjectCallback
 from neptune.metadata_containers.abstract import (
     NeptuneObject,
     SupportsNamespaces,

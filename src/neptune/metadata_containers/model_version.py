@@ -35,6 +35,8 @@ from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
@@ -43,7 +45,10 @@ from neptune.internal.operation_processors.offline_operation_processor import Of
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers import (
+    MetadataContainer,
+    NeptuneObjectCallback,
+)
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
@@ -64,6 +69,10 @@ class ModelVersion(MetadataContainer):
         mode: Optional[str] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
+        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ) -> None:
         """Initializes a ModelVersion object from an existing or new model version.
 
@@ -99,6 +108,10 @@ class ModelVersion(MetadataContainer):
                 (in seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
                 For more information about proxies, see the Requests documentation.
+            async_lag_callback: ? # TODO
+            async_lag_threshold: ? # TODO
+            async_no_progress_callback: ? # TODO
+            async_no_progress_threshold: ? # TODO
 
         Returns:
             ModelVersion object that is used to manage the model version and log metadata to it.
@@ -162,7 +175,17 @@ class ModelVersion(MetadataContainer):
         if mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
-        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+        super().__init__(
+            project=project,
+            api_token=api_token,
+            mode=mode,
+            flush_period=flush_period,
+            proxies=proxies,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
+        )
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace

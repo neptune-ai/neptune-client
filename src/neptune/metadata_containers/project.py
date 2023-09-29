@@ -34,14 +34,21 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
-from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
+from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
+    DEFAULT_FLUSH_PERIOD,
+)
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
     verify_type,
 )
 from neptune.internal.utils.run_state import RunState
-from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers import (
+    MetadataContainer,
+    NeptuneObjectCallback,
+)
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 
@@ -59,6 +66,10 @@ class Project(MetadataContainer):
         mode: Optional[str] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
+        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
         """Starts a connection to an existing Neptune project.
 
@@ -88,6 +99,10 @@ class Project(MetadataContainer):
                 Defaults to 5 (every 5 seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
                 For more information about proxies, see the Requests documentation.
+            async_lag_callback: ? # TODO
+            async_lag_threshold: ? # TODO
+            async_no_progress_callback: ? # TODO
+            async_no_progress_threshold: ? # TODO
 
         Returns:
             Project object that can be used to interact with the project as a whole,
@@ -128,7 +143,17 @@ class Project(MetadataContainer):
         if mode == Mode.OFFLINE:
             raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
-        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+        super().__init__(
+            project=project,
+            api_token=api_token,
+            mode=mode,
+            flush_period=flush_period,
+            proxies=proxies,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
+        )
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         return ApiExperiment(

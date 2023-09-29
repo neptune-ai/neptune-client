@@ -56,6 +56,8 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
@@ -88,7 +90,10 @@ from neptune.internal.utils.runningmode import (
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
-from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers import (
+    MetadataContainer,
+    NeptuneObjectCallback,
+)
 from neptune.types import (
     GitRef,
     StringSeries,
@@ -147,6 +152,10 @@ class Run(MetadataContainer):
         capture_traceback: bool = True,
         git_ref: Optional[Union[GitRef, GitRefDisabled, bool]] = None,
         dependencies: Optional[Union[str, os.PathLike]] = None,
+        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -229,6 +238,10 @@ class Run(MetadataContainer):
             dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
                 You can also pass a path to your dependency file directly.
                 If left empty, no dependency file is uploaded.
+            async_lag_callback: ? # TODO
+            async_lag_threshold: ? # TODO
+            async_no_progress_callback: ? # TODO
+            async_no_progress_threshold: ? # TODO
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -382,7 +395,17 @@ class Run(MetadataContainer):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
-        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+        super().__init__(
+            project=project,
+            api_token=api_token,
+            mode=mode,
+            flush_period=flush_period,
+            proxies=proxies,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
+        )
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace
