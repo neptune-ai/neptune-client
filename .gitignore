@@ -130,3 +130,6 @@ stream.bin
 
 # zenml e2e
 .zen
+
+# mocks
+MagicMock/

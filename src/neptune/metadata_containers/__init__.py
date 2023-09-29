@@ -15,17 +15,13 @@
 #
 __all__ = [
     "MetadataContainer",
-    "NeptuneObjectCallback",
     "Model",
     "ModelVersion",
     "Project",
     "Run",
 ]
 
-from neptune.metadata_containers.metadata_container import (
-    MetadataContainer,
-    NeptuneObjectCallback,
-)
+from neptune.metadata_containers.metadata_container import MetadataContainer
 from neptune.metadata_containers.model import Model
 from neptune.metadata_containers.model_version import ModelVersion
 from neptune.metadata_containers.project import Project

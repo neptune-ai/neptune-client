@@ -45,10 +45,8 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.run_state import RunState
-from neptune.metadata_containers import (
-    MetadataContainer,
-    NeptuneObjectCallback,
-)
+from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 

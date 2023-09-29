@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces", "NeptuneObject"]
+__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
 
 from abc import (
     ABC,
@@ -21,6 +21,7 @@ from abc import (
 )
 from typing import (
     TYPE_CHECKING,
+    Callable,
     Optional,
     Union,
 )
@@ -74,3 +75,6 @@ class NeptuneObject(SupportsNamespaces, ABC):
     @abstractmethod
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         ...
+
+
+NeptuneObjectCallback = Callable[[NeptuneObject], None]

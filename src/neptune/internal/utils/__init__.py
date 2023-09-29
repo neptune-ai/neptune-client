@@ -26,6 +26,7 @@ __all__ = [
     "is_string_like",
     "is_stringify_value",
     "verify_collection_type",
+    "verify_optional_callable",
     "is_collection",
     "base64_encode",
     "base64_decode",
@@ -131,6 +132,11 @@ def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]
     verify_type(var_name, var, (list, set, tuple))
     for value in var:
         verify_type("elements of collection '{}'".format(var_name), value, expected_type)
+
+
+def verify_optional_callable(var_name: str, var):
+    if var and not callable(var):
+        raise TypeError("{} must be a callable (was {})".format(var_name, type(var)))
 
 
 def is_collection(var) -> bool:

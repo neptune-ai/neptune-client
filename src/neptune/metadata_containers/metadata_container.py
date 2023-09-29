@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["MetadataContainer", "NeptuneObjectCallback"]
+__all__ = ["MetadataContainer"]
 
 import abc
 import atexit
@@ -25,9 +25,7 @@ import traceback
 from contextlib import AbstractContextManager
 from functools import wraps
 from typing import (
-    TYPE_CHECKING,
     Any,
-    Callable,
     Dict,
     Iterable,
     List,
@@ -74,18 +72,21 @@ from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
-from neptune.internal.utils import verify_type
+from neptune.internal.utils import (
+    verify_optional_callable,
+    verify_type,
+)
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.metadata_containers.abstract import NeptuneObject
+from neptune.metadata_containers.abstract import (
+    NeptuneObject,
+    NeptuneObjectCallback,
+)
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
-
-if TYPE_CHECKING:
-    NeptuneObjectCallback = Callable[["MetadataContainer"], None]
 
 
 def ensure_not_stopped(fun):
@@ -121,9 +122,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         verify_type("flush_period", flush_period, (int, float))
         verify_type("proxies", proxies, (dict, type(None)))
         verify_type("async_lag_threshold", async_lag_threshold, (int, float))
-        verify_type("async_lag_callback", async_lag_callback, (NeptuneObjectCallback, type(None)))
+        verify_optional_callable("async_lag_callback", async_lag_callback)
         verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
-        verify_type("async_no_progress_callback", async_no_progress_callback, (NeptuneObjectCallback, type(None)))
+        verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
 
         # TODO: Save/pass further all async lag parameters
 

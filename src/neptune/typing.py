@@ -15,8 +15,8 @@
 #
 __all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
 
-from neptune.metadata_containers import NeptuneObjectCallback
 from neptune.metadata_containers.abstract import (
     NeptuneObject,
+    NeptuneObjectCallback,
     SupportsNamespaces,
 )

@@ -90,10 +90,8 @@ from neptune.internal.utils.runningmode import (
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
-from neptune.metadata_containers import (
-    MetadataContainer,
-    NeptuneObjectCallback,
-)
+from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.types import (
     GitRef,
     StringSeries,
