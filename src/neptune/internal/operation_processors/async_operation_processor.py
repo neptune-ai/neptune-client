@@ -84,9 +84,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_type = container_type
         self._backend = backend
         self._batch_size = batch_size
-        self._async_lag_callback = async_lag_callback
+        self._async_lag_callback = async_lag_callback or (lambda: None)
         self._async_lag_threshold = async_lag_threshold
-        self._async_no_progress_callback = async_no_progress_callback
+        self._async_no_progress_callback = async_no_progress_callback or (lambda: None)
         self._async_no_progress_threshold = async_no_progress_threshold
         self._last_version = 0
         self._consumed_version = 0
@@ -94,7 +94,6 @@ class AsyncOperationProcessor(OperationProcessor):
         self._lock = lock
         self._last_ack = None
         self._lag_exceeded = False
-        self._should_call_lag_callback = False
         self._should_call_no_progress_callback = False
 
         # Caller is responsible for taking this lock
@@ -112,13 +111,12 @@ class AsyncOperationProcessor(OperationProcessor):
         if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
             with self._lock:
                 self._lag_exceeded = True
-                if self._async_no_progress_callback:
-                    self._async_no_progress_callback()
+                self._async_no_progress_callback()
 
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
 
-        self._check_for_callbacks()
+        self._check_no_progress_callback()
 
         if wait:
             self.wait()
@@ -136,12 +134,11 @@ class AsyncOperationProcessor(OperationProcessor):
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
 
-    def _check_for_callbacks(self):
-        if self._should_call_no_progress_callback:
-            with self._lock:
+    def _check_no_progress_callback(self):
+        with self._lock:
+            if self._should_call_no_progress_callback:
+                self._async_no_progress_callback()
                 self._should_call_no_progress_callback = False
-                if self._async_no_progress_callback:
-                    self._async_no_progress_callback()
 
     def flush(self):
         self._queue.flush()
