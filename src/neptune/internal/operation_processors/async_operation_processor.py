@@ -281,11 +281,11 @@ class AsyncOperationProcessor(OperationProcessor):
                     return
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
 
-        def _check_for_network_interruptions_callbacks(self):
-            if not self._no_progress_exceeded and self._processor._async_no_progress_callback:
-                if monotonic() - self._last_ack > self._processor._async_no_progress_threshold:
-                    self._no_progress_exceeded = True
+        def _check_no_progress(self):
+            if not self._no_progress_exceeded:
+                if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
                     with self._processor._lock:
+                        self._no_progress_exceeded = True
                         self._processor._should_call_no_progress_callback = True
 
         @Daemon.ConnectionRetryWrapper(
@@ -307,17 +307,19 @@ class AsyncOperationProcessor(OperationProcessor):
                         operation_storage=self._processor._operation_storage,
                     )
                 except Exception as e:
-                    self._check_for_network_interruptions_callbacks()
+                    self._check_no_progress()
                     raise e from e
 
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 
                 if processed_count > 0:
-                    self._last_ack = monotonic()
-                    self._no_progress_exceeded = False
+                    with self._processor._lock:
+                        self._processor._last_ack = monotonic()
+                        self._processor._lag_exceeded = False
+                        self._no_progress_exceeded = False
                 else:
-                    self._check_for_network_interruptions_callbacks()
+                    self._check_no_progress()
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
@@ -329,8 +331,6 @@ class AsyncOperationProcessor(OperationProcessor):
                         )
 
                     self._processor._consumed_version = version_to_ack
-                    self._processor._last_ack = monotonic()
-                    self._processor._lag_exceeded = False
 
                     if version_to_ack == version:
                         self._processor._waiting_cond.notify_all()
