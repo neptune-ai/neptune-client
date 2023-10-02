@@ -55,11 +55,10 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
 
 
 def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
-    """
-    Callback function that stops the synchronization of the experiment with Neptune.
+    """Default callback function that stops a Neptune object's synchronization with the server.
 
     Args:
-        neptune_object (NeptuneObject): A Neptune object (run, model, model version, and project).
+        neptune_object: A Neptune object (Run, Model, ModelVersion, or Project) to be stopped.
 
     Example:
         >>> import neptune
@@ -69,7 +68,9 @@ def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
         ... )
 
     For more information, see:
-        https://docs.neptune.ai/?
+        https://docs.neptune.ai/api/utils/stop_synchronization_callback/
     """
-    logger.error("Stopping synchronization using the stop synchronization callback.")
+    logger.error(
+        "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."
+    )
     neptune_object.stop(seconds=DEFAULT_STOP_TIMEOUT)

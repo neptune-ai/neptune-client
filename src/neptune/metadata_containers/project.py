@@ -97,10 +97,23 @@ class Project(MetadataContainer):
                 Defaults to 5 (every 5 seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
                 For more information about proxies, see the Requests documentation.
-            async_lag_callback: ? # TODO
-            async_lag_threshold: ? # TODO
-            async_no_progress_callback: ? # TODO
-            async_no_progress_threshold: ? # TODO
+            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+                should take a Project object as the argument and may use the `stop()` method to stop the object.
+                Note: Instead of using this argument, you can use Neptune's default callback by setting the
+                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+            async_lag_threshold: Duration between the queueing and synchronization of an operation. If a lag callback
+                (default callback enabled via environment variable or custom callback passed to the `async_lag_callback`
+                argument) is enabled, the callback is called when this duration is exceeded.
+            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+                whatsoever for the duration defined by `async_no_progress_threshold`. The callback
+                should take a Project object as the argument and may use the `stop()` method to stop the object.
+                Note: Instead of using this argument, you can use Neptune's default callback by setting the
+                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+            async_no_progress_threshold: For how long there has been no synchronization progress since the object was
+                initialized. If a no-progress callback (default callback enabled via environment variable or custom
+                callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called when
+                this duration is exceeded.
 
         Returns:
             Project object that can be used to interact with the project as a whole,
