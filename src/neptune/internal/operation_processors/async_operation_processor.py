@@ -40,6 +40,7 @@ from neptune.internal.id_formats import UniqueId
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
+    DEFAULT_STOP_TIMEOUT,
 )
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -55,7 +56,7 @@ _logger = logging.getLogger(__name__)
 
 class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
-    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, "300"))
+    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
 
     def __init__(
         self,

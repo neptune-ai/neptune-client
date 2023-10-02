@@ -23,11 +23,10 @@ from typing import (
     Union,
 )
 
+from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils.logger import logger
 from neptune.typing import NeptuneObject
-
-DEFAULT_STOP_TIMEOUT = 60.0
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
