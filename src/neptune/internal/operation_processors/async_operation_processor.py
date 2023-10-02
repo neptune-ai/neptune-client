@@ -311,15 +311,15 @@ class AsyncOperationProcessor(OperationProcessor):
                     # Let default retry logic handle this
                     raise e from e
 
+                self._no_progress_exceeded = False
+
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 
                 with self._processor._waiting_cond:
+                    self._processor._queue.ack(version_to_ack)
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
-                    self._no_progress_exceeded = False
-
-                    self._processor._queue.ack(version_to_ack)
 
                     for error in errors:
                         _logger.error(
