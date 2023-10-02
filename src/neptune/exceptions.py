@@ -833,7 +833,7 @@ How can I free up space in Neptune?
 How do I upload my offline metadata to Neptune?
     You can upload the data stored on-disk with the following command (replace the workspace and project with your own):
         {bash}neptune sync -p workspace-name/project-name{end}
-If your subscription is based on logging hours, you're getting this error because you've run out of monitoring time.
+If your subscription is based on logging hours, you may also get this error if you've run out of monitoring time.
     To continue logging, you need to top up your logging hours or wait for your new monthly package.
 Learn more in the docs:
     - https://docs.neptune.ai/help/error_limit_exceeded/
