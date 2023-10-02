@@ -106,18 +106,12 @@ class AsyncOperationProcessor(OperationProcessor):
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
+        self._check_lag()
+        self._check_no_progress()
+
         self._last_version = self._queue.put(op)
-
-        if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
-            with self._lock:
-                self._lag_exceeded = True
-                self._async_no_progress_callback()
-
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
-
-        self._check_no_progress_callback()
-
         if wait:
             self.wait()
 
@@ -134,7 +128,13 @@ class AsyncOperationProcessor(OperationProcessor):
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
 
-    def _check_no_progress_callback(self):
+    def _check_lag(self):
+        with self._lock:
+            if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
+                self._lag_exceeded = True
+                self._async_no_progress_callback()
+
+    def _check_no_progress(self):
         with self._lock:
             if self._should_call_no_progress_callback:
                 self._async_no_progress_callback()
