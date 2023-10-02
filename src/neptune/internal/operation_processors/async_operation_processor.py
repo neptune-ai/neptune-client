@@ -285,9 +285,8 @@ class AsyncOperationProcessor(OperationProcessor):
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
                 if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
-                    with self._processor._lock:
-                        self._no_progress_exceeded = True
-                        self._processor._should_call_no_progress_callback = True
+                    self._no_progress_exceeded = True
+                    self._processor._should_call_no_progress_callback = True
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
@@ -309,20 +308,17 @@ class AsyncOperationProcessor(OperationProcessor):
                     )
                 except Exception as e:
                     self._check_no_progress()
+                    # Let default retry logic handle this
                     raise e from e
 
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 
-                if processed_count > 0:
-                    with self._processor._lock:
-                        self._processor._last_ack = monotonic()
-                        self._processor._lag_exceeded = False
-                        self._no_progress_exceeded = False
-                else:
-                    self._check_no_progress()
-
                 with self._processor._waiting_cond:
+                    self._processor._last_ack = monotonic()
+                    self._processor._lag_exceeded = False
+                    self._no_progress_exceeded = False
+
                     self._processor._queue.ack(version_to_ack)
 
                     for error in errors:
