@@ -23,7 +23,10 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import wraps
+from functools import (
+    partial,
+    wraps,
+)
 from typing import (
     Any,
     Dict,
@@ -170,9 +173,11 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
-            async_lag_callback=self._async_lag_callback_method,
+            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
             async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_callback=self._async_no_progress_callback_method,
+            async_no_progress_callback=partial(self._async_no_progress_callback, self)
+            if self._async_no_progress_callback
+            else None,
             async_no_progress_threshold=self._async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
@@ -204,19 +209,11 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
-    def _async_lag_callback_method(self) -> None:
-        if self._async_lag_callback is not None:
-            self._async_lag_callback(self)
-
-    def _async_no_progress_callback_method(self) -> None:
-        if self._async_no_progress_callback is not None:
-            self._async_no_progress_callback(self)
-
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
         if provided is not None:
             return provided
-        if env_name in os.environ and os.getenv(env_name) == "TRUE":
+        if os.getenv(env_name, "") == "TRUE":
             return stop_synchronization_callback
         return None
 
@@ -241,10 +238,12 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
-                async_lag_callback=self._async_lag_callback_method,
-                async_lag_threshold=self.async_lag_threshold,
-                async_no_progress_callback=self._async_no_progress_callback_method,
-                async_no_progress_threshold=self.async_no_progress_threshold,
+                async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
+                async_lag_threshold=self._async_lag_threshold,
+                async_no_progress_callback=partial(self._async_no_progress_callback, self)
+                if self._async_no_progress_callback
+                else None,
+                async_no_progress_threshold=self._async_no_progress_threshold,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
