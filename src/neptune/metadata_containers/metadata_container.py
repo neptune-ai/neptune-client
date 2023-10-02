@@ -171,9 +171,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             lock=self._lock,
             flush_period=flush_period,
             async_lag_callback=self._async_lag_callback_method,
-            async_lag_threshold=self.async_lag_threshold,
+            async_lag_threshold=self._async_lag_threshold,
             async_no_progress_callback=self._async_no_progress_callback_method,
-            async_no_progress_threshold=self.async_no_progress_threshold,
+            async_no_progress_threshold=self._async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
