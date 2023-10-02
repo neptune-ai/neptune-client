@@ -152,12 +152,14 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._workspace: str = self._api_object.workspace
         self._project_name: str = self._api_object.project_name
 
+        self._async_lag_threshold = async_lag_threshold
         self._async_lag_callback = self._get_callback(
-            provided_by_user=async_lag_callback,
+            provided=async_lag_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
         )
+        self._async_no_progress_threshold = async_no_progress_threshold
         self._async_no_progress_callback = self._get_callback(
-            provided_by_user=async_no_progress_callback,
+            provided=async_no_progress_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
         )
 
@@ -169,9 +171,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             lock=self._lock,
             flush_period=flush_period,
             async_lag_callback=self._async_lag_callback_method,
-            async_lag_threshold=async_lag_threshold,
+            async_lag_threshold=self.async_lag_threshold,
             async_no_progress_callback=self._async_no_progress_callback_method,
-            async_no_progress_threshold=async_no_progress_threshold,
+            async_no_progress_threshold=self.async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -202,18 +204,18 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
-    def _async_lag_callback_method(self):
+    def _async_lag_callback_method(self) -> None:
         if self._async_lag_callback is not None:
             self._async_lag_callback(self)
 
-    def _async_no_progress_callback_method(self):
+    def _async_no_progress_callback_method(self) -> None:
         if self._async_no_progress_callback is not None:
             self._async_no_progress_callback(self)
 
     @staticmethod
-    def _get_callback(provided_by_user, env_name):
-        if provided_by_user is not None:
-            return provided_by_user
+    def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
+        if provided is not None:
+            return provided
         if env_name in os.environ and os.getenv(env_name) == "TRUE":
             return stop_synchronization_callback
         return None
@@ -239,6 +241,10 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
+                async_lag_callback=self._async_lag_callback_method,
+                async_lag_threshold=self.async_lag_threshold,
+                async_no_progress_callback=self._async_no_progress_callback_method,
+                async_no_progress_threshold=self.async_no_progress_threshold,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
