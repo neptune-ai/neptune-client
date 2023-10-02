@@ -107,7 +107,7 @@ class Daemon(threading.Thread):
 
     class ConnectionRetryWrapper:
         INITIAL_RETRY_BACKOFF = 2
-        MAX_RETRY_BACKOFF = 120
+        MAX_RETRY_BACKOFF = 10
 
         def __init__(self, kill_message):
             self.kill_message = kill_message

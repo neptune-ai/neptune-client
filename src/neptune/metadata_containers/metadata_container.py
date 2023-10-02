@@ -40,6 +40,10 @@ from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
+from neptune.envs import (
+    NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
+    NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
+)
 from neptune.exceptions import (
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
@@ -87,6 +91,7 @@ from neptune.metadata_containers.abstract import (
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
+from neptune.utils import stop_synchronization_callback
 
 
 def ensure_not_stopped(fun):
@@ -126,8 +131,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
         verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
 
-        # TODO: Save/pass further all async lag parameters
-
         self._mode: Mode = mode
         self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()
@@ -149,6 +152,15 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._workspace: str = self._api_object.workspace
         self._project_name: str = self._api_object.project_name
 
+        self._async_lag_callback = self._get_callback(
+            provided_by_user=async_lag_callback,
+            env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
+        )
+        self._async_no_progress_callback = self._get_callback(
+            provided_by_user=async_no_progress_callback,
+            env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
+        )
+
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
             container_id=self._id,
@@ -156,6 +168,10 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
+            async_lag_callback=self._async_lag_callback_method,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=self._async_no_progress_callback_method,
+            async_no_progress_threshold=async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -185,6 +201,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     On Linux it looks like it does not help much but does not break anything either.
     """
+
+    def _async_lag_callback_method(self):
+        if self._async_lag_callback is not None:
+            self._async_lag_callback(self)
+
+    def _async_no_progress_callback_method(self):
+        if self._async_no_progress_callback is not None:
+            self._async_no_progress_callback(self)
+
+    @staticmethod
+    def _get_callback(provided_by_user, env_name):
+        if provided_by_user is not None:
+            return provided_by_user
+        if env_name in os.environ and os.getenv(env_name) == "TRUE":
+            return stop_synchronization_callback
+        return None
 
     def _handle_fork_in_parent(self):
         reset_internal_ssl_state()
