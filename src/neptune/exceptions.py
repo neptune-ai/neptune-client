@@ -823,9 +823,9 @@ class NeptuneLimitExceedException(NeptuneException):
 {end}
 {reason}
 
-Data synchronization was interrupted because you're out of storage space. If you're using Neptune in asynchronous mode
-(default), the data that couldn't be uploaded is safely stored on the disk. You can still fetch and delete data from
-your project(s).
+Data synchronization was interrupted because you're out of storage space (or logging hours). If you're using Neptune in
+asynchronous mode (default), the data that couldn't be uploaded is safely stored on the disk.
+You can still fetch and delete data from your project(s).
 How can I free up space in Neptune?
     - Contact your workspace admin about possible project or workspace storage limits.
     - Upgrade your subscription with more storage: https://app.neptune.ai/-/subscription
@@ -833,6 +833,8 @@ How can I free up space in Neptune?
 How do I upload my offline metadata to Neptune?
     You can upload the data stored on-disk with the following command (replace the workspace and project with your own):
         {bash}neptune sync -p workspace-name/project-name{end}
+If your subscription is based on logging hours, you may also get this error if you've run out of monitoring time.
+    To continue logging, you need to top up your logging hours or wait for your new monthly package.
 Learn more in the docs:
     - https://docs.neptune.ai/help/error_limit_exceeded/
     - https://docs.neptune.ai/help/workspace_read_only/
