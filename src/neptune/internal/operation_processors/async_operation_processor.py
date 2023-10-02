@@ -129,16 +129,18 @@ class AsyncOperationProcessor(OperationProcessor):
             raise NeptuneSynchronizationAlreadyStoppedException()
 
     def _check_lag(self):
-        with self._lock:
-            if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
-                self._lag_exceeded = True
-                self._async_no_progress_callback()
+        if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
+            with self._lock:
+                if not self._lag_exceeded:
+                    self._async_no_progress_callback()
+                    self._lag_exceeded = True
 
     def _check_no_progress(self):
-        with self._lock:
-            if self._should_call_no_progress_callback:
-                self._async_no_progress_callback()
-                self._should_call_no_progress_callback = False
+        if self._should_call_no_progress_callback:
+            with self._lock:
+                if self._should_call_no_progress_callback:
+                    self._async_no_progress_callback()
+                    self._should_call_no_progress_callback = False
 
     def flush(self):
         self._queue.flush()
@@ -258,7 +260,6 @@ class AsyncOperationProcessor(OperationProcessor):
             self._processor = processor
             self._batch_size = batch_size
             self._last_flush = 0
-            self._last_ack = 0
             self._no_progress_exceeded = False
 
         def run(self):
