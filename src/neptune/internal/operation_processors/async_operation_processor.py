@@ -106,10 +106,11 @@ class AsyncOperationProcessor(OperationProcessor):
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
+        self._last_version = self._queue.put(op)
+
         self._check_lag()
         self._check_no_progress()
 
-        self._last_version = self._queue.put(op)
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
         if wait:
