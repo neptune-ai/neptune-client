@@ -91,6 +91,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumed_version = 0
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock = lock
+        self._last_ack = None
+        self._lag_exceeded = False
+        self._should_call_lag_callback = False
         self._should_call_no_progress_callback = False
 
         # Caller is responsible for taking this lock
@@ -104,6 +107,13 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)
+
+        if not self._lag_exceeded and self._last_ack and monotonic() - self._last_ack > self._async_lag_threshold:
+            with self._lock:
+                self._lag_exceeded = True
+                if self._async_no_progress_callback:
+                    self._async_no_progress_callback()
+
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
 
@@ -129,8 +139,8 @@ class AsyncOperationProcessor(OperationProcessor):
         if self._should_call_no_progress_callback:
             with self._lock:
                 self._should_call_no_progress_callback = False
-            if self._async_no_progress_callback:
-                self._async_no_progress_callback()
+                if self._async_no_progress_callback:
+                    self._async_no_progress_callback()
 
     def flush(self):
         self._queue.flush()
@@ -321,6 +331,8 @@ class AsyncOperationProcessor(OperationProcessor):
                         )
 
                     self._processor._consumed_version = version_to_ack
+                    self._processor._last_ack = monotonic()
+                    self._processor._lag_exceeded = False
 
                     if version_to_ack == version:
                         self._processor._waiting_cond.notify_all()
