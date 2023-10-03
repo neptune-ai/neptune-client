@@ -23,7 +23,10 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import wraps
+from functools import (
+    partial,
+    wraps,
+)
 from typing import (
     Any,
     Dict,
@@ -40,6 +43,10 @@ from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
+from neptune.envs import (
+    NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
+    NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
+)
 from neptune.exceptions import (
     MetadataInconsistency,
     NeptunePossibleLegacyUsageException,
@@ -63,20 +70,31 @@ from neptune.internal.id_formats import (
     UniqueId,
     conform_optional,
 )
-from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
+from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
+    DEFAULT_FLUSH_PERIOD,
+)
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.state import ContainerState
-from neptune.internal.utils import verify_type
+from neptune.internal.utils import (
+    verify_optional_callable,
+    verify_type,
+)
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.metadata_containers.abstract import SupportsNamespaces
+from neptune.metadata_containers.abstract import (
+    NeptuneObject,
+    NeptuneObjectCallback,
+)
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
+from neptune.utils import stop_synchronization_callback
 
 
 def ensure_not_stopped(fun):
@@ -88,7 +106,7 @@ def ensure_not_stopped(fun):
     return inner_fun
 
 
-class MetadataContainer(AbstractContextManager, SupportsNamespaces):
+class MetadataContainer(AbstractContextManager, NeptuneObject):
     container_type: ContainerType
 
     LEGACY_METHODS = set()
@@ -101,12 +119,20 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         mode: Mode = Mode.ASYNC,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
+        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
         verify_type("project", project, (str, type(None)))
         verify_type("api_token", api_token, (str, type(None)))
         verify_type("mode", mode, Mode)
         verify_type("flush_period", flush_period, (int, float))
         verify_type("proxies", proxies, (dict, type(None)))
+        verify_type("async_lag_threshold", async_lag_threshold, (int, float))
+        verify_optional_callable("async_lag_callback", async_lag_callback)
+        verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
+        verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
 
         self._mode: Mode = mode
         self._flush_period = flush_period
@@ -129,6 +155,17 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
         self._workspace: str = self._api_object.workspace
         self._project_name: str = self._api_object.project_name
 
+        self._async_lag_threshold = async_lag_threshold
+        self._async_lag_callback = self._get_callback(
+            provided=async_lag_callback,
+            env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
+        )
+        self._async_no_progress_threshold = async_no_progress_threshold
+        self._async_no_progress_callback = self._get_callback(
+            provided=async_no_progress_callback,
+            env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
+        )
+
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
             container_id=self._id,
@@ -136,6 +173,12 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
+            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
+            async_lag_threshold=self._async_lag_threshold,
+            async_no_progress_callback=partial(self._async_no_progress_callback, self)
+            if self._async_no_progress_callback
+            else None,
+            async_no_progress_threshold=self._async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -166,6 +209,14 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
+    @staticmethod
+    def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
+        if provided is not None:
+            return provided
+        if os.getenv(env_name, "") == "TRUE":
+            return stop_synchronization_callback
+        return None
+
     def _handle_fork_in_parent(self):
         reset_internal_ssl_state()
         if self._state == ContainerState.STARTED:
@@ -187,6 +238,12 @@ class MetadataContainer(AbstractContextManager, SupportsNamespaces):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
+                async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
+                async_lag_threshold=self._async_lag_threshold,
+                async_no_progress_callback=partial(self._async_no_progress_callback, self)
+                if self._async_no_progress_callback
+                else None,
+                async_no_progress_threshold=self._async_no_progress_threshold,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.

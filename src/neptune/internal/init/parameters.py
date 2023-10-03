@@ -13,8 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["DEFAULT_FLUSH_PERIOD", "DEFAULT_NAME", "OFFLINE_PROJECT_QUALIFIED_NAME"]
+__all__ = [
+    "DEFAULT_FLUSH_PERIOD",
+    "DEFAULT_NAME",
+    "OFFLINE_PROJECT_QUALIFIED_NAME",
+    "ASYNC_LAG_THRESHOLD",
+    "ASYNC_NO_PROGRESS_THRESHOLD",
+    "DEFAULT_STOP_TIMEOUT",
+]
 
 DEFAULT_FLUSH_PERIOD = 5
 DEFAULT_NAME = "Untitled"
 OFFLINE_PROJECT_QUALIFIED_NAME = "offline/project-placeholder"
+ASYNC_LAG_THRESHOLD = 1800.0
+ASYNC_NO_PROGRESS_THRESHOLD = 300.0
+DEFAULT_STOP_TIMEOUT = 60.0

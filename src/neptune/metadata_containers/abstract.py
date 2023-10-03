@@ -13,13 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces"]
+__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
 
 from abc import (
     ABC,
     abstractmethod,
 )
-from typing import TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Optional,
+    Union,
+)
 
 if TYPE_CHECKING:
     from neptune.handler import Handler
@@ -64,3 +69,12 @@ class SupportsNamespaces(ABC):
     @abstractmethod
     def get_root_object(self) -> "SupportsNamespaces":
         ...
+
+
+class NeptuneObject(SupportsNamespaces, ABC):
+    @abstractmethod
+    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
+        ...
+
+
+NeptuneObjectCallback = Callable[[NeptuneObject], None]
