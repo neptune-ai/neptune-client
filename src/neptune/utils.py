@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 """Utility functions to support ML metadata logging with neptune.ai."""
-__all__ = ["stringify_unsupported"]
+__all__ = ["stringify_unsupported", "stop_synchronization_callback"]
 
 from typing import (
     Any,
@@ -23,7 +23,10 @@ from typing import (
     Union,
 )
 
+from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
+from neptune.internal.utils.logger import logger
+from neptune.typing import NeptuneObject
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
@@ -48,3 +51,25 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         return {str(k): stringify_unsupported(v) for k, v in value.items()}
 
     return StringifyValue(value=value)
+
+
+def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
+    """Default callback function that stops a Neptune object's synchronization with the server.
+
+    Args:
+        neptune_object: A Neptune object (Run, Model, ModelVersion, or Project) to be stopped.
+
+    Example:
+        >>> import neptune
+        >>> from neptune.utils import stop_synchronization_callback
+        >>> run = neptune.init_run(
+        ...     async_no_progress_callback = stop_synchronization_callback
+        ... )
+
+    For more information, see:
+        https://docs.neptune.ai/api/utils/stop_synchronization_callback/
+    """
+    logger.error(
+        "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."
+    )
+    neptune_object.stop(seconds=DEFAULT_STOP_TIMEOUT)

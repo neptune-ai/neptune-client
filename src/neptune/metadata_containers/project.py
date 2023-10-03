@@ -34,7 +34,11 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
-from neptune.internal.init.parameters import DEFAULT_FLUSH_PERIOD
+from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
+    DEFAULT_FLUSH_PERIOD,
+)
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
@@ -42,6 +46,7 @@ from neptune.internal.utils import (
 )
 from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
+from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 
@@ -59,6 +64,10 @@ class Project(MetadataContainer):
         mode: Optional[str] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
+        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
         """Starts a connection to an existing Neptune project.
 
@@ -88,6 +97,25 @@ class Project(MetadataContainer):
                 Defaults to 5 (every 5 seconds).
             proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
                 For more information about proxies, see the Requests documentation.
+            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+                should take a Project object as the argument and can contain any custom code, such as calling `stop()`
+                on the object.
+                Note: Instead of using this argument, you can use Neptune's default callback by setting the
+                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+            async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
+                If a lag callback (default callback enabled via environment variable or custom callback passed to the
+                `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
+            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+                whatsoever for the duration defined by `async_no_progress_threshold`. The callback
+                should take a Project object as the argument and can contain any custom code, such as calling `stop()`
+                on the object.
+                Note: Instead of using this argument, you can use Neptune's default callback by setting the
+                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+            async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
+                object was initialized. If a no-progress callback (default callback enabled via environment variable or
+                custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
+                when this duration is exceeded.
 
         Returns:
             Project object that can be used to interact with the project as a whole,
@@ -128,7 +156,17 @@ class Project(MetadataContainer):
         if mode == Mode.OFFLINE:
             raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
-        super().__init__(project=project, api_token=api_token, mode=mode, flush_period=flush_period, proxies=proxies)
+        super().__init__(
+            project=project,
+            api_token=api_token,
+            mode=mode,
+            flush_period=flush_period,
+            proxies=proxies,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
+        )
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         return ApiExperiment(

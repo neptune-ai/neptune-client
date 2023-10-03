@@ -17,10 +17,18 @@
 __all__ = ["get_operation_processor"]
 
 import threading
+from typing import (
+    Callable,
+    Optional,
+)
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
+from neptune.internal.init.parameters import (
+    ASYNC_LAG_THRESHOLD,
+    ASYNC_NO_PROGRESS_THRESHOLD,
+)
 from neptune.types.mode import Mode
 
 from .async_operation_processor import AsyncOperationProcessor
@@ -37,14 +45,22 @@ def get_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
+    async_lag_callback: Optional[Callable[[], None]] = None,
+    async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
+    async_no_progress_callback: Optional[Callable[[], None]] = None,
+    async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         return AsyncOperationProcessor(
-            container_id,
-            container_type,
-            backend,
-            lock,
+            container_id=container_id,
+            container_type=container_type,
+            backend=backend,
+            lock=lock,
             sleep_time=flush_period,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
         )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(container_id, container_type, backend)

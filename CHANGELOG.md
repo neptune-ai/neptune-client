@@ -2,9 +2,11 @@
 
 ### Features
 - Programmatically delete trashed neptune objects ([#1475](https://github.com/neptune-ai/neptune-client/pull/1475))
+- Added support for callbacks that stop the synchronization if the lag or lack of progress exceeds a certain threshold ([#1478](https://github.com/neptune-ai/neptune-client/pull/1478))
 
 ### Fixes
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))
+- Clarify `NeptuneLimitExceedException` error message ([#1480](https://github.com/neptune-ai/neptune-client/pull/1480))
 
 ## neptune 1.7.0
 
