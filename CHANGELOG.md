@@ -11,6 +11,7 @@
 
 ### Features
 - Added support for `airflow` integration ([#1466](https://github.com/neptune-ai/neptune-client/pull/1466))
+- Add support for `retry-after` header in HTTPTooManyRequests ([#1477](https://github.com/neptune-ai/neptune-client/pull/1477))
 
 ### Changes
 - Add handling of project limits ([#1456](https://github.com/neptune-ai/neptune-client/pull/1456))
