@@ -7,6 +7,9 @@
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))
 - Clarify `NeptuneLimitExceedException` error message ([#1480](https://github.com/neptune-ai/neptune-client/pull/1480))
 
+### Changes
+- Bump boto3 required version to speed up installation via poetry ([#1481](https://github.com/neptune-ai/neptune-client/pull/1481))
+
 ## neptune 1.7.0
 
 ### Features
