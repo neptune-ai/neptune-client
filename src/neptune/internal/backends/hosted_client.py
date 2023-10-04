@@ -32,6 +32,10 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests import (
+    PreparedRequest,
+    Response,
+)
 from requests.adapters import HTTPAdapter
 
 from neptune.common.backends.utils import with_api_exceptions_handler
@@ -69,7 +73,7 @@ DEFAULT_REQUEST_KWARGS = {
 
 
 class GzipAdapter(HTTPAdapter):
-    def send(self, request, stream=False, **kw):
+    def send(self, request: PreparedRequest, stream=False, **kw) -> Response:
         if request.body is not None and not stream and request.headers.get("Content-Type", None) == "application/json":
             request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
             gzip_compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, zlib.MAX_WBITS | 16)
@@ -188,7 +192,7 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
 
 
 @cache
-def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
+def create_leaderboard_client(client_config: ClientConfig, http_client: RequestsClient) -> SwaggerClientWrapper:
     if client_config.gzip_upload:
         http_client.session.mount("http://", GzipAdapter())
         http_client.session.mount("https://", GzipAdapter())

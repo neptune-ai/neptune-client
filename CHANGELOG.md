@@ -3,6 +3,9 @@
 ### Features
 - Added support for callbacks that stop the synchronization if the lag or lack of progress exceeds a certain threshold ([#1478](https://github.com/neptune-ai/neptune-client/pull/1478))
 
+### Changes
+- Compress (gzip) request to server, when server support it ([#1476](https://github.com/neptune-ai/neptune-client/pull/1476))
+
 ### Fixes
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))
 - Clarify `NeptuneLimitExceedException` error message ([#1480](https://github.com/neptune-ai/neptune-client/pull/1480))
@@ -63,6 +66,9 @@
 ### Fixes
 - Load CLI plug-ins in try..except block to avoid a failure in loading a plug-in to crash entire CLI ([#1392](https://github.com/neptune-ai/neptune-client/pull/1392))
 - Fixed cleaning operation storage when using `sync` mode and forking ([#1413](https://github.com/neptune-ai/neptune-client/pull/1413))
+-
+-
+-
 - Fix FileDependenciesStrategy when the dependency file is in a folder ([#1411](https://github.com/neptune-ai/neptune-client/pull/1411))
 - Fixed cleaning operation storage when using `async` mode and forking ([#1418](https://github.com/neptune-ai/neptune-client/pull/1418))
 
