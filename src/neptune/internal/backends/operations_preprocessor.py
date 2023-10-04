@@ -21,6 +21,7 @@ from enum import Enum
 from typing import (
     Callable,
     List,
+    Type,
     TypeVar,
 )
 
@@ -375,7 +376,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
         return modifier
 
-    def _log_modifier(self, log_op_class: type[LogOperation], clear_op_class: type, log_combine: Callable[[T, T], T]):
+    def _log_modifier(self, log_op_class: Type[LogOperation], clear_op_class: type, log_combine: Callable[[T, T], T]):
         def modifier(ops: list[Operation], new_op: Operation):
             if len(ops) == 0:
                 res = [new_op]
