@@ -374,7 +374,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         return lambda ops, new_op: [new_op]
 
     def _clear_modifier(self):
-        def modifier(ops: list[Operation], new_op: Operation):
+        def modifier(ops: List[Operation], new_op: Operation):
             for op in ops:
                 if isinstance(op, LogOperation):
                     self._append_count -= op.value_count()
@@ -383,7 +383,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         return modifier
 
     def _log_modifier(self, log_op_class: Type[LogOperation], clear_op_class: type, log_combine: Callable[[T, T], T]):
-        def modifier(ops: list[Operation], new_op: Operation):
+        def modifier(ops: List[Operation], new_op: Operation):
             if len(ops) == 0:
                 res = [new_op]
             elif len(ops) == 1 and isinstance(ops[0], log_op_class):
