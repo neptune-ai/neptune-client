@@ -80,15 +80,21 @@ class OperationsPreprocessor:
         self.final_ops_count = 0
         self.final_append_count = 0
 
-    def process(self, operation: Operation) -> None:
-        self._process_op(operation)
-        self.processed_ops_count += 1
+    def process(self, operation: Operation) -> bool:
+        """Adds a single operation to its processed list.
+        Returns `False` iff the new operation can't be in queue until one of already enqueued operations gets submitted
+        to Leaderboard first.
+        """
+        try:
+            self._process_op(operation)
+            self.processed_ops_count += 1
+            return True
+        except RequiresPreviousCompleted:
+            return False
 
     def process_batch(self, operations: List[Operation]) -> None:
         for op in operations:
-            try:
-                self.process(op)
-            except RequiresPreviousCompleted:
+            if not self.process(op):
                 return
 
     def _process_op(self, op: Operation) -> "_OperationsAccumulator":
