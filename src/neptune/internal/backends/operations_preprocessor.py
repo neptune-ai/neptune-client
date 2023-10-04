@@ -44,6 +44,7 @@ from neptune.internal.operation import (
     DeleteFiles,
     LogFloats,
     LogImages,
+    LogOperation,
     LogStrings,
     Operation,
     RemoveStrings,
@@ -75,19 +76,27 @@ class OperationsPreprocessor:
     def __init__(self):
         self._accumulators: typing.Dict[str, "_OperationsAccumulator"] = dict()
         self.processed_ops_count = 0
+        self.final_ops_count = 0
+        self.final_append_count = 0
 
-    def process(self, operations: List[Operation]):
+    def process(self, operation: Operation) -> None:
+        self._process_op(operation)
+        self.processed_ops_count += 1
+
+    def process_batch(self, operations: List[Operation]) -> None:
         for op in operations:
             try:
-                self._process_op(op)
-                self.processed_ops_count += 1
+                self.process(op)
             except RequiresPreviousCompleted:
                 return
 
     def _process_op(self, op: Operation) -> "_OperationsAccumulator":
         path_str = path_to_str(op.path)
         target_acc = self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path))
+        old_ops_count, old_append_count = target_acc.get_op_count(), target_acc.get_append_count()
         target_acc.visit(op)
+        self.final_ops_count += target_acc.get_op_count() - old_ops_count
+        self.final_append_count += target_acc.get_append_count() - old_append_count
         return target_acc
 
     @staticmethod
@@ -143,12 +152,20 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._modify_ops = []
         self._config_ops = []
         self._errors = []
+        self._ops_count = 0
+        self._append_count = 0
 
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
+
+    def get_op_count(self) -> int:
+        return self._ops_count
+
+    def get_append_count(self) -> int:
+        return self._append_count
 
     def _check_prerequisites(self, op: Operation):
         if (OperationsPreprocessor.is_file_op(op) or OperationsPreprocessor.is_artifact_op(op)) and len(
@@ -179,7 +196,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
         else:
             self._check_prerequisites(op)
             self._type = expected_type
+            old_op_count = len(self._modify_ops)
             self._modify_ops = modifier(self._modify_ops, op)
+            self._ops_count += len(self._modify_ops) - old_op_count
 
     def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
 
@@ -199,7 +218,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
         else:
             self._check_prerequisites(op)
             self._type = expected_type
+            old_op_count = len(self._config_ops)
             self._config_ops = [op]
+            self._ops_count += len(self._config_ops) - old_op_count
 
     def visit_assign_float(self, op: AssignFloat) -> None:
         self._process_modify_op(_DataType.FLOAT, op, self._assign_modifier())
@@ -295,6 +316,8 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
+                self._ops_count = len(self._delete_ops)
+                self._append_count = 0
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
@@ -303,6 +326,8 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
+                self._ops_count = len(self._delete_ops)
+                self._append_count = 0
         else:
             if self._delete_ops:
                 # Do nothing if there already is a delete operation
@@ -312,6 +337,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # If value has not been set locally yet and no delete operation was performed,
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
+                self._ops_count = len(self._delete_ops)
 
     @staticmethod
     def _artifact_log_modifier(
@@ -340,23 +366,30 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def _assign_modifier():
         return lambda ops, new_op: [new_op]
 
-    @staticmethod
-    def _clear_modifier():
-        return lambda ops, new_op: [new_op]
+    def _clear_modifier(self):
+        def modifier(ops: list[Operation], new_op: Operation):
+            for op in ops:
+                if isinstance(op, LogOperation):
+                    self._append_count -= op.value_count()
+            return [new_op]
 
-    @staticmethod
-    def _log_modifier(log_op_class: type, clear_op_class: type, log_combine: Callable[[T, T], T]):
-        def modifier(ops, new_op):
+        return modifier
+
+    def _log_modifier(self, log_op_class: type[LogOperation], clear_op_class: type, log_combine: Callable[[T, T], T]):
+        def modifier(ops: list[Operation], new_op: Operation):
             if len(ops) == 0:
-                return [new_op]
+                res = [new_op]
             elif len(ops) == 1 and isinstance(ops[0], log_op_class):
-                return [log_combine(ops[0], new_op)]
+                res = [log_combine(ops[0], new_op)]
             elif len(ops) == 1 and isinstance(ops[0], clear_op_class):
-                return [ops[0], new_op]
+                res = [ops[0], new_op]
             elif len(ops) == 2:
-                return [ops[0], log_combine(ops[1], new_op)]
+                res = [ops[0], log_combine(ops[1], new_op)]
             else:
                 raise InternalClientError("Preprocessing operations failed: len(ops) == {}".format(len(ops)))
+            if isinstance(new_op, log_op_class):  # Check just so that static typing doesn't complain
+                self._append_count += new_op.value_count()
+            return res
 
         return modifier
 
