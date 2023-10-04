@@ -135,7 +135,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
         with self._lock:
             if not self._lag_exceeded:
-                self._async_no_progress_callback()
+                self._async_lag_callback()
                 self._lag_exceeded = True
 
     def _check_no_progress(self):
