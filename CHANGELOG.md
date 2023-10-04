@@ -1,4 +1,10 @@
-## [UNRELEASED] neptune 1.8.0
+## [UNRELEASED] neptune 1.9.0
+
+### Changes
+- Upgraded performance of sending series data to Neptune ([#?](https://github.com/neptune-ai/neptune-client/pull/?))
+
+
+## neptune 1.8.0
 
 ### Features
 - Added support for callbacks that stop the synchronization if the lag or lack of progress exceeds a certain threshold ([#1478](https://github.com/neptune-ai/neptune-client/pull/1478))
@@ -9,6 +15,7 @@
 
 ### Changes
 - Bump boto3 required version to speed up installation via poetry ([#1481](https://github.com/neptune-ai/neptune-client/pull/1481))
+
 
 ## neptune 1.7.0
 
@@ -22,6 +29,7 @@
 ### Fixes
 - Fix exception handling in `ApiMethodWrapper.handle_neptune_http_errors` ([#1469](https://github.com/neptune-ai/neptune-client/pull/1469))
 - Fix race condition between close and flush in disk queue ([#1470](https://github.com/neptune-ai/neptune-client/pull/1470))
+
 
 ## neptune 1.6.3
 
