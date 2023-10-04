@@ -52,6 +52,7 @@ from neptune.common.utils import reset_internal_ssl_state
 _logger = logging.getLogger(__name__)
 
 MAX_RETRY_TIME = 30
+MAX_RETRY_MULTIPLIER = 10
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 
@@ -99,16 +100,19 @@ def with_api_exceptions_handler(func):
                 NewConnectionError,
                 ChunkedEncodingError,
             ) as e:
-                time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except HTTPTooManyRequests as e:
-                response_headers = e.response.json()["headers"]
-                if "retry-after" in response_headers:
-                    retry_after = int(response_headers["retry-after"][0])
-                    time.sleep(min(retry_after, MAX_RETRY_TIME))
-                else:
-                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                try:
+                    wait_time = (
+                        int(e.response.headers["retry-after"][0])
+                        if "retry-after" in e.response.headers
+                        else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
+                    )
+                    time.sleep(min(wait_time, MAX_RETRY_TIME))
+                except Exception:
+                    time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except NeptuneAuthTokenExpired:
@@ -130,16 +134,19 @@ def with_api_exceptions_handler(func):
                     HTTPGatewayTimeout.status_code,
                     HTTPInternalServerError.status_code,
                 ):
-                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                    time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
                 elif status_code == HTTPTooManyRequests.status_code:
-                    response_headers = e.response.json()["headers"]
-                    if "retry-after" in response_headers:
-                        retry_after = int(response_headers["retry-after"][0])
-                        time.sleep(min(retry_after, MAX_RETRY_TIME))
-                    else:
-                        time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
+                    try:
+                        wait_time = (
+                            int(e.response.headers["retry-after"][0])
+                            if "retry-after" in e.response.headers
+                            else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
+                        )
+                        time.sleep(min(wait_time, MAX_RETRY_TIME))
+                    except Exception:
+                        time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
                 elif status_code == HTTPUnauthorized.status_code:

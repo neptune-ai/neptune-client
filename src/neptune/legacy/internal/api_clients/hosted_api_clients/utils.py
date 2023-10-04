@@ -42,6 +42,8 @@ from neptune.legacy.api_exceptions import (
 
 _logger = logging.getLogger(__name__)
 
+MAX_RETRY_MULTIPLIER = 10
+
 
 def legacy_with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
@@ -75,12 +77,15 @@ def legacy_with_api_exceptions_handler(func):
                 retry += 1
                 continue
             except HTTPTooManyRequests as e:
-                response_headers = e.response.json()["headers"]
-                if "retry-after" in response_headers:
-                    retry_after = int(response_headers["retry-after"][0])
-                    time.sleep(retry_after)
-                else:
-                    time.sleep(2 ** min(10, retry))
+                try:
+                    wait_time = (
+                        int(e.response.headers["retry-after"][0])
+                        if "retry-after" in e.response.headers
+                        else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
+                    )
+                    time.sleep(wait_time)
+                except Exception:
+                    time.sleep(2 ** min(MAX_RETRY_MULTIPLIER, retry))
                 retry += 1
                 continue
             except HTTPUnauthorized:
@@ -106,12 +111,15 @@ def legacy_with_api_exceptions_handler(func):
                     retry += 1
                     continue
                 elif status_code == HTTPTooManyRequests.status_code:
-                    response_headers = e.response.json()["headers"]
-                    if "retry-after" in response_headers:
-                        retry_after = int(response_headers["retry-after"][0])
-                        time.sleep(retry_after)
-                    else:
-                        time.sleep(2 ** min(10, retry))
+                    try:
+                        wait_time = (
+                            int(e.response.headers["retry-after"][0])
+                            if "retry-after" in e.response.headers
+                            else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
+                        )
+                        time.sleep(wait_time)
+                    except Exception:
+                        time.sleep(2 ** min(MAX_RETRY_MULTIPLIER, retry))
                     retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
