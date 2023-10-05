@@ -318,7 +318,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 else:
                     self._last_disk_record = record
                     break
-            return (preprocessor.get_operations(), version) if version is not None else None
+            return (preprocessor.get_operations().all_operations(), version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:

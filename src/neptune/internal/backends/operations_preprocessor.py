@@ -72,6 +72,9 @@ class AccumulatedOperations:
 
     errors: List[MetadataInconsistency] = dataclasses.field(default_factory=list)
 
+    def all_operations(self) -> List[Operation]:
+        return self.upload_operations + self.artifact_operations + self.other_operations
+
 
 class OperationsPreprocessor:
     def __init__(self):
