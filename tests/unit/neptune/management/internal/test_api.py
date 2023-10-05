@@ -91,37 +91,19 @@ class TestTrashObjects(unittest.TestCase):
         )
 
     @patch("neptune.management.internal.api._get_leaderboard_client")
-    @patch("neptune.management.internal.api.get_trashed_object_ids", return_value=["RUN-1", "MOD", "MOD-1"])
-    def test_project_clear_trash(self, _mock_get_trashed_ids, _get_leaderboard_client_mock):
+    def test_project_clear_trash(self, _get_leaderboard_client_mock):
         # given
-        delete_experiments_from_trash_mock = _get_leaderboard_client_mock().api.deleteExperiments
+        clear_trash_mock = _get_leaderboard_client_mock().api.deleteAllExperiments
 
         # when
         clear_trash(self.PROJECT_NAME)
 
         # then
-        assert delete_experiments_from_trash_mock.call_count == 1
+        assert clear_trash_mock.call_count == 1
         self.assertEqual(
             call(
                 projectIdentifier="organization/project",
-                experimentIdentifiers=[
-                    "organization/project/RUN-1",
-                    "organization/project/MOD",
-                    "organization/project/MOD-1",
-                ],
                 **DEFAULT_REQUEST_KWARGS,
             ),
-            delete_experiments_from_trash_mock.call_args,
+            clear_trash_mock.call_args,
         )
-
-    @patch("neptune.management.internal.api._get_leaderboard_client")
-    @patch("neptune.management.internal.api.get_trashed_object_ids", return_value=[])
-    def test_project_clear_trash_empty_id_list(self, _mock_get_trashed_ids, _get_leaderboard_client_mock):
-        # given
-        delete_experiments_from_trash_mock = _get_leaderboard_client_mock().api.deleteExperiments
-
-        # when
-        clear_trash(self.PROJECT_NAME)
-
-        # then
-        assert delete_experiments_from_trash_mock.call_count == 0
