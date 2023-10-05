@@ -96,9 +96,6 @@ class Daemon(threading.Thread):
                     with self._wait_condition:
                         if self._sleep_time > 0 and self._state == Daemon.DaemonState.WORKING:
                             self._wait_condition.wait(timeout=self._sleep_time)
-        except Exception as ex:
-            print("ERROR IN DAEMON:", ex)
-            raise ex
         finally:
             with self._wait_condition:
                 self._state = Daemon.DaemonState.STOPPED
