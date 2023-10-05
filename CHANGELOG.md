@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.0
+## neptune 1.8.0
 
 ### Features
 - Programmatically delete trashed neptune objects ([#1475](https://github.com/neptune-ai/neptune-client/pull/1475))
@@ -14,6 +14,7 @@
 ### Changes
 - Bump boto3 required version to speed up installation via poetry ([#1481](https://github.com/neptune-ai/neptune-client/pull/1481))
 
+
 ## neptune 1.7.0
 
 ### Features
@@ -26,6 +27,7 @@
 ### Fixes
 - Fix exception handling in `ApiMethodWrapper.handle_neptune_http_errors` ([#1469](https://github.com/neptune-ai/neptune-client/pull/1469))
 - Fix race condition between close and flush in disk queue ([#1470](https://github.com/neptune-ai/neptune-client/pull/1470))
+
 
 ## neptune 1.6.3
 
