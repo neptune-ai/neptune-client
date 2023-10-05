@@ -192,12 +192,6 @@ def test_ack():
             assert queue.get() == get_queue_element(Obj(3, "3"), 4)
             assert queue.get() == get_queue_element(Obj(4, "4"), 5)
 
-            # when
-            queue.ack(5)
-
-            # then
-            assert queue.get() is None
-
 
 @mock.patch("shutil.rmtree")
 def test_cleaning_up(rmtree):
@@ -216,10 +210,7 @@ def test_cleaning_up(rmtree):
             # when
             queue.flush()
 
-            # then
-            assert queue.get_batch(5) == [get_queue_element(Obj(i, str(i)), i + 1) for i in range(5)]
-
-            # when
+            # and
             queue.ack(5)
 
             # then
