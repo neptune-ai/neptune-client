@@ -21,6 +21,8 @@ from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import mock
+
 from neptune.internal.queue.disk_queue import (
     DiskQueue,
     QueueElement,
@@ -197,7 +199,8 @@ def test_ack():
             assert queue.get() is None
 
 
-def test_cleaning_up():
+@mock.patch("shutil.rmtree")
+def test_cleaning_up(rmtree):
     with TemporaryDirectory() as dir_path:
         with DiskQueue[Obj](
             dir_path=Path(dir_path),
@@ -227,7 +230,7 @@ def test_cleaning_up():
             queue.cleanup_if_empty()
 
             # then
-            assert glob(dir_path + "/data-*.log") == []
+            assert rmtree.assert_called_once_with(Path(dir_path).resolve(), ignore_errors=True) is None
 
 
 @dataclass
