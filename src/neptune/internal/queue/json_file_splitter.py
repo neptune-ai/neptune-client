@@ -21,12 +21,14 @@ from json import (
     JSONDecodeError,
     JSONDecoder,
 )
+from types import TracebackType
 from typing import (
     IO,
     Any,
     Deque,
     Optional,
     Tuple,
+    Type,
 )
 
 
@@ -99,3 +101,11 @@ class JsonFileSplitter:
         self._part_buffer.close()
         self._part_buffer = StringIO()
         return data
+
+    def __enter__(self) -> "JsonFileSplitter":
+        return self
+
+    def __exit__(
+        self, exc_type: Type[BaseException], exc_value: BaseException, exc_traceback: Optional[TracebackType]
+    ) -> None:
+        self.close()

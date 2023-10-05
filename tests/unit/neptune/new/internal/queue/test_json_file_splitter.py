@@ -17,109 +17,112 @@ from neptune.internal.queue.json_file_splitter import JsonFileSplitter
 from tests.unit.neptune.new.utils.file_helpers import create_file
 
 
-class TestJsonFileSplitter:
-    def test_simple_file(self):
-        content = """
-{
-    "a": 5,
-    "b": "text"
-}
-{
-    "a": 13
-}
-{}
-""".lstrip()
+def test_simple_file():
+    content = """
+        {
+            "a": 5,
+            "b": "text"
+        }
+        {
+            "a": 13
+        }
+        {}
+        """.lstrip()
 
-        with create_file(content) as filename:
-            splitter = JsonFileSplitter(filename)
+    with create_file(content) as filename:
+        with JsonFileSplitter(filename) as splitter:
             assert splitter.get() == {"a": 5, "b": "text"}
             assert splitter.get() == {"a": 13}
             assert splitter.get() == {}
             assert splitter.get() is None
-            splitter.close()
 
-    def test_append(self):
-        content1 = """
-            {
-                "a": 5,
-                "b": "text"
-            }
-            {
-                "a": 13
-            }"""
 
-        content2 = """
-            {
-                "q": 555,
-                "r": "something"
-            }
-            {
-                "a": {
-                    "b": [1, 2, 3]
-                }
-            }
-            {}"""
+def test_append():
+    content1 = """
+        {
+            "a": 5,
+            "b": "text"
+        }
+        {
+            "a": 13
+        }"""
 
-        with create_file(content1) as filename, open(filename, "a") as fp:
-            splitter = JsonFileSplitter(filename)
+    content2 = """
+        {
+            "q": 555,
+            "r": "something"
+        }
+        {
+            "a": {
+                "b": [1, 2, 3]
+            }
+        }
+        {}"""
+
+    with create_file(content1) as filename, open(filename, "a") as fp:
+        with JsonFileSplitter(filename) as splitter:
             assert splitter.get() == {"a": 5, "b": "text"}
             assert splitter.get() == {"a": 13}
             assert splitter.get() is None
+
             fp.write(content2)
             fp.flush()
+
             assert splitter.get() == {"q": 555, "r": "something"}
             assert splitter.get() == {"a": {"b": [1, 2, 3]}}
             assert splitter.get() == {}
             assert splitter.get() is None
-            splitter.close()
 
-    def test_append_cut_json(self):
-        content1 = """
-            {
-                "a": 5,
-                "b": "text"
+
+def test_append_cut_json():
+    content1 = """
+        {
+            "a": 5,
+            "b": "text"
+        }
+        {
+            "a": 1"""
+
+    content2 = """55,
+            "r": "something"
+        }
+        {
+            "a": {
+                "b": [1, 2, 3]
             }
-            {
-                "a": 1"""
+        }"""
 
-        content2 = """55,
-                "r": "something"
-            }
-            {
-                "a": {
-                    "b": [1, 2, 3]
-                }
-            }"""
-
-        with create_file(content1) as filename, open(filename, "a") as fp:
-            splitter = JsonFileSplitter(filename)
+    with create_file(content1) as filename, open(filename, "a") as fp:
+        with JsonFileSplitter(filename) as splitter:
             assert splitter.get() == {"a": 5, "b": "text"}
             assert splitter.get() is None
+
             fp.write(content2)
             fp.flush()
+
             assert splitter.get() == {"a": 155, "r": "something"}
             assert splitter.get() == {"a": {"b": [1, 2, 3]}}
             assert splitter.get() is None
-            splitter.close()
 
-    def test_big_json(self):
-        content = """
-{
-    "a": 5,
-    "b": "text"
-}
-{
-    "a": "%s",
-    "b": "%s"
-}
-{}
-""".lstrip() % (
-            "x" * JsonFileSplitter.BUFFER_SIZE * 2,
-            "y" * JsonFileSplitter.BUFFER_SIZE * 2,
-        )
 
-        with create_file(content) as filename:
-            splitter = JsonFileSplitter(filename)
+def test_big_json():
+    content = """
+        {
+        "a": 5,
+        "b": "text"
+        }
+        {
+        "a": "%s",
+        "b": "%s"
+        }
+        {}
+        """.lstrip() % (
+        "x" * JsonFileSplitter.BUFFER_SIZE * 2,
+        "y" * JsonFileSplitter.BUFFER_SIZE * 2,
+    )
+
+    with create_file(content) as filename:
+        with JsonFileSplitter(filename) as splitter:
             assert splitter.get() == {"a": 5, "b": "text"}
             assert splitter.get() == {
                 "a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
@@ -127,46 +130,47 @@ class TestJsonFileSplitter:
             }
             assert splitter.get() == {}
             assert splitter.get() is None
-            splitter.close()
 
-    def test_data_size(self):
-        object1 = """{
-                "a": 5,
-                "b": "text"
-            }"""
-        object2 = """{
-                "a": 155,
-                "r": "something"
-            }"""
-        object3 = """{
-                "a": {
-                    "b": [1, 2, 3]
-                }
-            }"""
-        content1 = """
-            {
-                "a": 5,
-                "b": "text"
+
+def test_data_size():
+    object1 = """{
+            "a": 5,
+            "b": "text"
+        }"""
+    object2 = """{
+            "a": 155,
+            "r": "something"
+        }"""
+    object3 = """{
+            "a": {
+                "b": [1, 2, 3]
             }
-            {
-                "a": 1"""
+        }"""
+    content1 = """
+        {
+            "a": 5,
+            "b": "text"
+        }
+        {
+            "a": 1"""
 
-        content2 = """55,
-                "r": "something"
+    content2 = """55,
+            "r": "something"
+        }
+        {
+            "a": {
+                "b": [1, 2, 3]
             }
-            {
-                "a": {
-                    "b": [1, 2, 3]
-                }
-            }"""
+        }"""
 
-        with create_file(content1) as filename, open(filename, "a") as fp:
-            splitter = JsonFileSplitter(filename)
+    with create_file(content1) as filename, open(filename, "a") as fp:
+        with JsonFileSplitter(filename) as splitter:
             assert splitter.get_with_size() == ({"a": 5, "b": "text"}, len(object1))
             assert splitter.get_with_size()[0] is None
+
             fp.write(content2)
             fp.flush()
+
             assert splitter.get_with_size() == ({"a": 155, "r": "something"}, len(object2))
             assert splitter.get_with_size() == ({"a": {"b": [1, 2, 3]}}, len(object3))
             assert splitter.get_with_size()[0] is None
-            splitter.close()
