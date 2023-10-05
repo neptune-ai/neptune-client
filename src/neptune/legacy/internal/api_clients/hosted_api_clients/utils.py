@@ -32,6 +32,7 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
+from neptune.common.backends.utils import get_retry_from_headers_or_default
 from neptune.legacy.api_exceptions import (
     ConnectionLost,
     Forbidden,
@@ -66,13 +67,17 @@ def legacy_with_api_exceptions_handler(func):
                 HTTPRequestTimeout,
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
-                HTTPTooManyRequests,
                 HTTPInternalServerError,
                 NewConnectionError,
             ):
                 if retry >= 6:
                     _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
                 time.sleep(2**retry)
+                retry += 1
+                continue
+            except HTTPTooManyRequests as e:
+                wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                time.sleep(wait_time)
                 retry += 1
                 continue
             except HTTPUnauthorized:
@@ -88,7 +93,6 @@ def legacy_with_api_exceptions_handler(func):
                     HTTPBadGateway.status_code,
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
-                    HTTPTooManyRequests.status_code,
                     HTTPInternalServerError.status_code,
                 ):
                     if retry >= 6:
@@ -96,6 +100,11 @@ def legacy_with_api_exceptions_handler(func):
                             "Experiencing connection interruptions. Reestablishing communication with Neptune."
                         )
                     time.sleep(2**retry)
+                    retry += 1
+                    continue
+                elif status_code == HTTPTooManyRequests.status_code:
+                    wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                    time.sleep(wait_time)
                     retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
