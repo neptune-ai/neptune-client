@@ -48,7 +48,10 @@ from neptune.internal.init.parameters import (
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_STOP_TIMEOUT,
 )
-from neptune.internal.operation import Operation
+from neptune.internal.operation import (
+    CopyAttribute,
+    Operation,
+)
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -303,6 +306,7 @@ class AsyncOperationProcessor(OperationProcessor):
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
             total_bytes = 0
+            copy_ops: List[CopyAttribute] = []
             while (
                 preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
                 and preprocessor.final_append_count < self.MAX_APPENDS_IN_BATCH
@@ -312,13 +316,22 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._last_disk_record = None
                 if not record:
                     break
-                if preprocessor.process(record.obj):
+                if isinstance(record.obj, CopyAttribute):
+                    # CopyAttribute can be only at the start of a batch.
+                    if copy_ops or preprocessor.final_ops_count:
+                        self._last_disk_record = record
+                        break
+                    else:
+                        version = record.ver
+                        copy_ops.append(record.obj)
+                        total_bytes += record.size
+                elif preprocessor.process(record.obj):
                     version = record.ver
                     total_bytes += record.size
                 else:
                     self._last_disk_record = record
                     break
-            return (preprocessor.get_operations().all_operations(), version) if version is not None else None
+            return (copy_ops + preprocessor.get_operations().all_operations(), version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
