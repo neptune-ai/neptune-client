@@ -21,7 +21,7 @@ from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from neptune.internal.disk_queue import (
+from neptune.internal.queue.disk_queue import (
     DiskQueue,
     QueueElement,
 )

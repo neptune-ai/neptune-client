@@ -21,7 +21,6 @@ from typing import Optional
 
 from neptune.constants import OFFLINE_DIRECTORY
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -29,6 +28,7 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.queue.disk_queue import DiskQueue
 
 
 class OfflineOperationProcessor(OperationProcessor):

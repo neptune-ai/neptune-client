@@ -35,7 +35,6 @@ from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -48,6 +47,7 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
