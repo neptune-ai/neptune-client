@@ -26,7 +26,7 @@ from time import (
 )
 from typing import (
     Callable,
-    Final,
+    ClassVar,
     List,
     Optional,
     Tuple,
@@ -261,9 +261,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._queue.close()
 
     class ConsumerThread(Daemon):
-        MAX_OPERATIONS_IN_BATCH: Final[int] = 1000
-        MAX_APPENDS_IN_BATCH: Final[int] = 100000
-        MAX_BATCH_SIZE_BYTES: Final[int] = 100 * 1024 * 1024
+        MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 1000
+        MAX_APPENDS_IN_BATCH: ClassVar[int] = 100000
+        MAX_BATCH_SIZE_BYTES: ClassVar[int] = 100 * 1024 * 1024
 
         def __init__(
             self,
