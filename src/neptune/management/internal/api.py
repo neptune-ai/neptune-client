@@ -97,7 +97,6 @@ from neptune.management.internal.types import ProjectVisibility
 from neptune.management.internal.utils import (
     WorkspaceMemberRole,
     extract_project_and_workspace,
-    get_trashed_object_ids,
     normalize_project_name,
 )
 
@@ -1008,9 +1007,17 @@ def clear_trash(
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
-    ids = get_trashed_object_ids(project, api_token)
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
 
-    if not ids:  # nothing to delete
-        return
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
 
-    delete_objects_from_trash(project, ids, workspace=workspace, api_token=api_token)
+    params = {
+        "projectIdentifier": project_qualified_name,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    response = leaderboard_client.api.deleteAllExperiments(**params).response()
+
+    for error in response.result.errors:
+        logger.warning(error)
