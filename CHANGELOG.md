@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune 1.8.0
 
 ### Features
+- Programmatically delete trashed neptune objects ([#1475](https://github.com/neptune-ai/neptune-client/pull/1475))
 - Added support for callbacks that stop the synchronization if the lag or lack of progress exceeds a certain threshold ([#1478](https://github.com/neptune-ai/neptune-client/pull/1478))
 
 ### Fixes
