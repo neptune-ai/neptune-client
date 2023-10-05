@@ -2,7 +2,9 @@
 
 ### Features
 - Added support for callbacks that stop the synchronization if the lag or lack of progress exceeds a certain threshold ([#1478](https://github.com/neptune-ai/neptune-client/pull/1478))
-- Add support for `retry-after` header in HTTPTooManyRequests ([#1477](https://github.com/neptune-ai/neptune-client/pull/1477))
+
+### Changes
+- - Add support for `retry-after` header in HTTPTooManyRequests ([#1477](https://github.com/neptune-ai/neptune-client/pull/1477))
 
 ### Fixes
 - Add newline at the end of generated `.patch` while tracking uncommitted changes ([#1473](https://github.com/neptune-ai/neptune-client/pull/1473))

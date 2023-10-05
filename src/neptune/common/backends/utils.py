@@ -47,7 +47,10 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.common.utils import reset_internal_ssl_state
+from neptune.common.utils import (
+    get_retry_from_headers_or_default,
+    reset_internal_ssl_state,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -104,15 +107,8 @@ def with_api_exceptions_handler(func):
                 last_exception = e
                 continue
             except HTTPTooManyRequests as e:
-                try:
-                    wait_time = (
-                        int(e.response.headers["retry-after"][0])
-                        if "retry-after" in e.response.headers
-                        else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
-                    )
-                    time.sleep(min(wait_time, MAX_RETRY_TIME))
-                except Exception:
-                    time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
+                wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                time.sleep(wait_time)
                 last_exception = e
                 continue
             except NeptuneAuthTokenExpired:
@@ -138,15 +134,8 @@ def with_api_exceptions_handler(func):
                     last_exception = e
                     continue
                 elif status_code == HTTPTooManyRequests.status_code:
-                    try:
-                        wait_time = (
-                            int(e.response.headers["retry-after"][0])
-                            if "retry-after" in e.response.headers
-                            else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
-                        )
-                        time.sleep(min(wait_time, MAX_RETRY_TIME))
-                    except Exception:
-                        time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
+                    wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                    time.sleep(wait_time)
                     last_exception = e
                     continue
                 elif status_code == HTTPUnauthorized.status_code:

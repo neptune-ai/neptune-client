@@ -32,6 +32,7 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
+from neptune.common.utils import get_retry_from_headers_or_default
 from neptune.legacy.api_exceptions import (
     ConnectionLost,
     Forbidden,
@@ -41,8 +42,6 @@ from neptune.legacy.api_exceptions import (
 )
 
 _logger = logging.getLogger(__name__)
-
-MAX_RETRY_MULTIPLIER = 10
 
 
 def legacy_with_api_exceptions_handler(func):
@@ -77,15 +76,8 @@ def legacy_with_api_exceptions_handler(func):
                 retry += 1
                 continue
             except HTTPTooManyRequests as e:
-                try:
-                    wait_time = (
-                        int(e.response.headers["retry-after"][0])
-                        if "retry-after" in e.response.headers
-                        else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
-                    )
-                    time.sleep(wait_time)
-                except Exception:
-                    time.sleep(2 ** min(MAX_RETRY_MULTIPLIER, retry))
+                wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                time.sleep(wait_time)
                 retry += 1
                 continue
             except HTTPUnauthorized:
@@ -111,15 +103,8 @@ def legacy_with_api_exceptions_handler(func):
                     retry += 1
                     continue
                 elif status_code == HTTPTooManyRequests.status_code:
-                    try:
-                        wait_time = (
-                            int(e.response.headers["retry-after"][0])
-                            if "retry-after" in e.response.headers
-                            else 2 ** min(MAX_RETRY_MULTIPLIER, retry)
-                        )
-                        time.sleep(wait_time)
-                    except Exception:
-                        time.sleep(2 ** min(MAX_RETRY_MULTIPLIER, retry))
+                    wait_time = get_retry_from_headers_or_default(e.response.headers, retry)
+                    time.sleep(wait_time)
                     retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
