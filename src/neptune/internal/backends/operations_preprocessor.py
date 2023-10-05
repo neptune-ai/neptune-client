@@ -82,8 +82,8 @@ class OperationsPreprocessor:
 
     def process(self, operation: Operation) -> bool:
         """Adds a single operation to its processed list.
-        Returns `False` iff the new operation can't be in queue until one of already enqueued operations gets submitted
-        to Leaderboard first.
+        Returns `False` iff the new operation can't be in queue until one of already enqueued operations gets
+        synchronized with server first.
         """
         try:
             self._process_op(operation)
