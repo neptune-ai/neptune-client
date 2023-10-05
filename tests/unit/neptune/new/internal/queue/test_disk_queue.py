@@ -16,7 +16,6 @@
 import json
 import random
 import threading
-import unittest
 from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -27,7 +26,7 @@ from neptune.internal.queue.disk_queue import (
 )
 
 
-class TestDiskQueue(unittest.TestCase):
+class TestDiskQueue:
     class Obj:
         def __init__(self, num: int, txt: str):
             self.num = num
@@ -56,7 +55,7 @@ class TestDiskQueue(unittest.TestCase):
             obj = TestDiskQueue.Obj(5, "test")
             queue.put(obj)
             queue.flush()
-            self.assertEqual(queue.get(), self.get_queue_element(obj, 1))
+            assert queue.get() == self.get_queue_element(obj, 1)
             queue.close()
 
     def test_multiple_files(self):
@@ -74,11 +73,11 @@ class TestDiskQueue(unittest.TestCase):
             queue.flush()
             for i in range(1, 101):
                 obj = TestDiskQueue.Obj(i, str(i))
-                self.assertEqual(queue.get(), self.get_queue_element(obj, i))
+                assert queue.get() == self.get_queue_element(obj, i)
             queue.close()
-            self.assertTrue(queue._read_file_version > 90)
-            self.assertTrue(queue._write_file_version > 90)
-            self.assertTrue(len(glob(dirpath + "/data-*.log")) > 10)
+            assert queue._read_file_version > 90
+            assert queue._write_file_version > 90
+            assert len(glob(dirpath + "/data-*.log")) > 10
 
     def test_get_batch(self):
         with TemporaryDirectory() as dirpath:
@@ -93,22 +92,18 @@ class TestDiskQueue(unittest.TestCase):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
             queue.flush()
-            self.assertEqual(
-                queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(1, 26)],
-            )
-            self.assertEqual(
-                queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(26, 51)],
-            )
-            self.assertEqual(
-                queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(51, 76)],
-            )
-            self.assertEqual(
-                queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(76, 91)],
-            )
+            assert queue.get_batch(25) == [
+                self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(1, 26)
+            ]
+            assert queue.get_batch(25) == [
+                self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(26, 51)
+            ]
+            assert queue.get_batch(25) == [
+                self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(51, 76)
+            ]
+            assert queue.get_batch(25) == [
+                self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(76, 91)
+            ]
             queue.close()
 
     def test_batch_limit(self):
@@ -127,14 +122,10 @@ class TestDiskQueue(unittest.TestCase):
                 queue.put(obj)
             queue.flush()
 
-            self.assertEqual(
-                queue.get_batch(5),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3)],
-            )
-            self.assertEqual(
-                queue.get_batch(2),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3, 5)],
-            )
+            assert queue.get_batch(5) == [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3)]
+            assert queue.get_batch(2) == [
+                self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3, 5)
+            ]
 
             queue.close()
 
@@ -155,12 +146,12 @@ class TestDiskQueue(unittest.TestCase):
             version_to_ack = version - random.randrange(100, 200)
             queue.ack(version_to_ack)
 
-            self.assertTrue(queue._read_file_version > 100)
-            self.assertTrue(queue._write_file_version > 450)
+            assert queue._read_file_version > 100
+            assert queue._write_file_version > 450
             data_files = glob(dirpath + "/data-*.log")
-            self.assertTrue(len(data_files) > 10)
+            assert len(data_files) > 10
             data_files_versions = [int(file[len(dirpath + "/data-") : -len(".log")]) for file in data_files]
-            self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
+            assert len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1
             queue.close()
 
             queue = DiskQueue[TestDiskQueue.Obj](
@@ -172,7 +163,7 @@ class TestDiskQueue(unittest.TestCase):
             )
             for i in range(version_to_ack + 1, 501):
                 obj = TestDiskQueue.Obj(i, str(i))
-                self.assertEqual(queue.get(), self.get_queue_element(obj, i))
+                assert queue.get() == self.get_queue_element(obj, i)
 
             queue.close()
 

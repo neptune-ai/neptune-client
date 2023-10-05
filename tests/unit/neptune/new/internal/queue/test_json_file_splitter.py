@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest
-
 from neptune.internal.queue.json_file_splitter import JsonFileSplitter
 from tests.unit.neptune.new.utils.file_helpers import create_file
 
 
-class TestJsonFileSplitter(unittest.TestCase):
+class TestJsonFileSplitter:
     def test_simple_file(self):
         content = """
 {
@@ -34,10 +32,10 @@ class TestJsonFileSplitter(unittest.TestCase):
 
         with create_file(content) as filename:
             splitter = JsonFileSplitter(filename)
-            self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
-            self.assertEqual(splitter.get(), {"a": 13})
-            self.assertEqual(splitter.get(), {})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"a": 5, "b": "text"}
+            assert splitter.get() == {"a": 13}
+            assert splitter.get() == {}
+            assert splitter.get() is None
             splitter.close()
 
     def test_append(self):
@@ -64,15 +62,15 @@ class TestJsonFileSplitter(unittest.TestCase):
 
         with create_file(content1) as filename, open(filename, "a") as fp:
             splitter = JsonFileSplitter(filename)
-            self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
-            self.assertEqual(splitter.get(), {"a": 13})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"a": 5, "b": "text"}
+            assert splitter.get() == {"a": 13}
+            assert splitter.get() is None
             fp.write(content2)
             fp.flush()
-            self.assertEqual(splitter.get(), {"q": 555, "r": "something"})
-            self.assertEqual(splitter.get(), {"a": {"b": [1, 2, 3]}})
-            self.assertEqual(splitter.get(), {})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"q": 555, "r": "something"}
+            assert splitter.get() == {"a": {"b": [1, 2, 3]}}
+            assert splitter.get() == {}
+            assert splitter.get() is None
             splitter.close()
 
     def test_append_cut_json(self):
@@ -95,13 +93,13 @@ class TestJsonFileSplitter(unittest.TestCase):
 
         with create_file(content1) as filename, open(filename, "a") as fp:
             splitter = JsonFileSplitter(filename)
-            self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"a": 5, "b": "text"}
+            assert splitter.get() is None
             fp.write(content2)
             fp.flush()
-            self.assertEqual(splitter.get(), {"a": 155, "r": "something"})
-            self.assertEqual(splitter.get(), {"a": {"b": [1, 2, 3]}})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"a": 155, "r": "something"}
+            assert splitter.get() == {"a": {"b": [1, 2, 3]}}
+            assert splitter.get() is None
             splitter.close()
 
     def test_big_json(self):
@@ -122,16 +120,13 @@ class TestJsonFileSplitter(unittest.TestCase):
 
         with create_file(content) as filename:
             splitter = JsonFileSplitter(filename)
-            self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
-            self.assertEqual(
-                splitter.get(),
-                {
-                    "a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
-                    "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2,
-                },
-            )
-            self.assertEqual(splitter.get(), {})
-            self.assertEqual(splitter.get(), None)
+            assert splitter.get() == {"a": 5, "b": "text"}
+            assert splitter.get() == {
+                "a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
+                "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2,
+            }
+            assert splitter.get() == {}
+            assert splitter.get() is None
             splitter.close()
 
     def test_data_size(self):
@@ -167,11 +162,11 @@ class TestJsonFileSplitter(unittest.TestCase):
 
         with create_file(content1) as filename, open(filename, "a") as fp:
             splitter = JsonFileSplitter(filename)
-            self.assertEqual(splitter.get_with_size(), ({"a": 5, "b": "text"}, len(object1)))
-            self.assertIsNone(splitter.get_with_size()[0])
+            assert splitter.get_with_size() == ({"a": 5, "b": "text"}, len(object1))
+            assert splitter.get_with_size()[0] is None
             fp.write(content2)
             fp.flush()
-            self.assertEqual(splitter.get_with_size(), ({"a": 155, "r": "something"}, len(object2)))
-            self.assertEqual(splitter.get_with_size(), ({"a": {"b": [1, 2, 3]}}, len(object3)))
-            self.assertIsNone(splitter.get_with_size()[0])
+            assert splitter.get_with_size() == ({"a": 155, "r": "something"}, len(object2))
+            assert splitter.get_with_size() == ({"a": {"b": [1, 2, 3]}}, len(object3))
+            assert splitter.get_with_size()[0] is None
             splitter.close()
