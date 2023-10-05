@@ -32,7 +32,7 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
-from neptune.common.utils import get_retry_from_headers_or_default
+from neptune.common.backends.utils import get_retry_from_headers_or_default
 from neptune.legacy.api_exceptions import (
     ConnectionLost,
     Forbidden,

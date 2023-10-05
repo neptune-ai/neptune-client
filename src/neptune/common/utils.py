@@ -268,16 +268,3 @@ class NoopObject(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-
-MAX_RETRY_TIME = 30
-MAX_RETRY_MULTIPLIER = 10
-
-
-def get_retry_from_headers_or_default(headers, retry_count):
-    try:
-        return (
-            int(headers["retry-after"][0]) if "retry-after" in headers else 2 ** min(MAX_RETRY_MULTIPLIER, retry_count)
-        )
-    except Exception:
-        return min(2 ** min(MAX_RETRY_MULTIPLIER, retry_count), MAX_RETRY_TIME)

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_api_exceptions_handler"]
+__all__ = ["with_api_exceptions_handler", "get_retry_from_headers_or_default"]
 
 import itertools
 import logging
@@ -47,16 +47,22 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.common.utils import (
-    get_retry_from_headers_or_default,
-    reset_internal_ssl_state,
-)
+from neptune.common.utils import reset_internal_ssl_state
 
 _logger = logging.getLogger(__name__)
 
 MAX_RETRY_TIME = 30
 MAX_RETRY_MULTIPLIER = 10
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
+
+
+def get_retry_from_headers_or_default(headers, retry_count):
+    try:
+        return (
+            int(headers["retry-after"][0]) if "retry-after" in headers else 2 ** min(MAX_RETRY_MULTIPLIER, retry_count)
+        )
+    except Exception:
+        return min(2 ** min(MAX_RETRY_MULTIPLIER, retry_count), MAX_RETRY_TIME)
 
 
 def with_api_exceptions_handler(func):
