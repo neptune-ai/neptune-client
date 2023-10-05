@@ -30,6 +30,7 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
@@ -372,16 +373,16 @@ class Project(MetadataContainer):
         """Retrieve models stored in the project.
 
         Args:
+            trashed: Whether to retrieve trashed models.
+                If `True`, only trashed models are retrieved.
+                If `False` (default), only not-trashed models are retrieved.
+                If `None`, both trashed and not-trashed models are retrieved.
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
                 Examples:
                     Fields: `["datasets/test", "info/size"]` - these fields are included as columns.
                     Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the models table are included.
-            trashed: Whether to retrieve trashed models.
-                If `True`, only trashed models are retrieved.
-                If `False` (default), only not-trashed models are retrieved.
-                If `None`, both trashed and not-trashed models are retrieved.
 
         Returns:
             `Table` object containing `Model` objects.
@@ -423,6 +424,6 @@ class Project(MetadataContainer):
                 value=trashed,
             )
             if trashed is not None
-            else None,
+            else NQLEmptyQuery,
             columns=columns,
         )

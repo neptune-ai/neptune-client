@@ -923,8 +923,8 @@ def delete_objects_from_trash(
     project: str,
     ids: Union[str, Iterable[str]],
     *,
-    workspace: str = None,
-    api_token: str = None,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
 ) -> None:
     """Deletes one or more Neptune objects from the project trash.
 
@@ -965,16 +965,13 @@ def delete_objects_from_trash(
 
     leaderboard_client = _get_leaderboard_client(api_token=api_token)
 
-    params = {
-        "projectIdentifier": project_qualified_name,
-        "experimentIdentifiers": None,
-        **DEFAULT_REQUEST_KWARGS,
-    }
-
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
     for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
-        params["experimentIdentifiers"] = batch_ids
-
+        params = {
+            "projectIdentifier": project_qualified_name,
+            "experimentIdentifiers": batch_ids,
+            **DEFAULT_REQUEST_KWARGS,
+        }
         response = leaderboard_client.api.deleteExperiments(**params).response()
 
         for error in response.result.errors:
@@ -984,8 +981,8 @@ def delete_objects_from_trash(
 def clear_trash(
     project: str,
     *,
-    workspace: str = None,
-    api_token: str = None,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
 ) -> None:
     """Deletes all Neptune objects from the project trash.
 
