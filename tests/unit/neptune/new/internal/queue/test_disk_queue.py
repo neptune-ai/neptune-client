@@ -45,7 +45,7 @@ def test_put():
             queue.flush()
 
             # then
-            assert queue.get() == get_queue_element(obj, 1)
+            assert get_queue_element(obj, 1) == queue.get()
 
 
 def test_multiple_files():
@@ -68,7 +68,7 @@ def test_multiple_files():
             # then
             for i in range(1, 101):
                 obj = Obj(i, str(i))
-                assert queue.get() == get_queue_element(obj, i)
+                assert get_queue_element(obj, i) == queue.get()
 
             # and
             assert queue._read_file_version > 90
@@ -94,10 +94,10 @@ def test_get_batch():
             queue.flush()
 
             # then
-            assert queue.get_batch(25) == [get_queue_element(Obj(i, str(i)), i) for i in range(1, 26)]
-            assert queue.get_batch(25) == [get_queue_element(Obj(i, str(i)), i) for i in range(26, 51)]
-            assert queue.get_batch(25) == [get_queue_element(Obj(i, str(i)), i) for i in range(51, 76)]
-            assert queue.get_batch(25) == [get_queue_element(Obj(i, str(i)), i) for i in range(76, 91)]
+            assert [get_queue_element(Obj(i, str(i)), i) for i in range(1, 26)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i) for i in range(26, 51)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i) for i in range(51, 76)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i) for i in range(76, 91)] == queue.get_batch(25)
 
 
 def test_batch_limit():
@@ -119,8 +119,8 @@ def test_batch_limit():
             queue.flush()
 
             # then
-            assert queue.get_batch(5) == [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3)]
-            assert queue.get_batch(2) == [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3, 5)]
+            assert [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3)] == queue.get_batch(5)
+            assert [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3, 5)] == queue.get_batch(2)
 
 
 def test_resuming_queue():
@@ -154,7 +154,7 @@ def test_resuming_queue():
             data_files_versions = [int(file[len(dir_path + "/data-") : -len(".log")]) for file in data_files]
 
             assert len(data_files) > 10
-            assert len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1
+            assert 1 == len([ver for ver in data_files_versions if ver <= version_to_ack])
 
         # Resume queue
         with DiskQueue[Obj](
@@ -166,7 +166,7 @@ def test_resuming_queue():
         ) as queue:
             # then
             for i in range(version_to_ack + 1, 501):
-                assert queue.get() == get_queue_element(Obj(i, str(i)), i)
+                assert get_queue_element(Obj(i, str(i)), i) == queue.get()
 
 
 def test_ack():
@@ -189,8 +189,8 @@ def test_ack():
             queue.ack(3)
 
             # then
-            assert queue.get() == get_queue_element(Obj(3, "3"), 4)
-            assert queue.get() == get_queue_element(Obj(4, "4"), 5)
+            assert get_queue_element(Obj(3, "3"), 4) == queue.get()
+            assert get_queue_element(Obj(4, "4"), 5) == queue.get()
 
 
 @mock.patch("shutil.rmtree")
@@ -214,7 +214,7 @@ def test_cleaning_up(rmtree):
             queue.ack(5)
 
             # then
-            assert queue.size() == 0
+            assert 0 == queue.size()
             assert queue.is_empty()
 
             # when
