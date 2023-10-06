@@ -373,7 +373,6 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._no_progress_exceeded = False
 
                 version_to_ack += processed_count
-                batch = batch[processed_count:]
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
