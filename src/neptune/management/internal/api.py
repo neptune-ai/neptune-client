@@ -180,11 +180,11 @@ def create_project(
             For example, 'CLS2'. If you leave it out, Neptune generates a project key for you.
         workspace: Name of your Neptune workspace.
             If None, it will be parsed from the name argument.
-        visibility: Level of visibility you want your project to have.
-            Can be set to:
-             - 'pub': Public project
-             - 'priv': Private project
-             - 'workspace' (team workspaces only): Accessible to all workspace members
+        visibility: Level of privacy for the project. Options:
+            - 'pub': Public. Anyone on the internet can see it.
+            - 'priv': Private. Only users specifically assigned to the project can access it. Requires a plan with
+                project-level access control.
+            - 'workspace' (team workspaces only): Accessible to all workspace members.
             If None, it will be set to 'priv'.
         description: Project description.
             If None, it will be left empty.
