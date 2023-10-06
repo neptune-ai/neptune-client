@@ -145,6 +145,7 @@ if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
 
     from neptune.internal.backends.api_model import ClientConfig
+    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
 
 
 _logger = logging.getLogger(__name__)
@@ -501,6 +502,20 @@ class HostedNeptuneBackend(NeptuneBackend):
         return (
             operations_preprocessor.processed_ops_count + dropped_count,
             errors,
+        )
+
+    def execute_operations_from_accumulator(
+        self,
+        container_id: UniqueId,
+        container_type: ContainerType,
+        accumulated_operations: "AccumulatedOperations",
+        operation_storage: OperationStorage,
+    ) -> Tuple[int, List[NeptuneException]]:
+        return self.execute_operations(
+            container_id=container_id,
+            container_type=container_type,
+            operations=accumulated_operations.all_operations(),
+            operation_storage=operation_storage,
         )
 
     def _execute_upload_operations(

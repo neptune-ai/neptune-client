@@ -25,6 +25,7 @@ from time import (
     time,
 )
 from typing import (
+    TYPE_CHECKING,
     Callable,
     ClassVar,
     List,
@@ -59,6 +60,9 @@ from neptune.internal.queue.disk_queue import (
 )
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
+
+if TYPE_CHECKING:
+    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
 
 _logger = logging.getLogger(__name__)
 
@@ -313,7 +317,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
             return batch is not None
 
-        def collect_batch(self) -> Optional[Tuple[List[Operation], int]]:
+        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int]]:
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
             copy_ops: List[CopyAttribute] = []
@@ -345,7 +349,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 else:
                     self._last_disk_record = record
                     break
-            return (preprocessor.get_operations().all_operations(), version) if version is not None else None
+            return (preprocessor.get_operations(), version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
@@ -353,16 +357,16 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
-        def process_batch(self, batch: List[Operation], version: int) -> None:
-            expected_count = len(batch)
+        def process_batch(self, batch: "AccumulatedOperations", version: int) -> None:
+            expected_count = len(batch.all_operations())
             version_to_ack = version - expected_count
             while True:
                 # TODO: Handle Metadata errors
                 try:
-                    processed_count, errors = self._processor._backend.execute_operations(
+                    processed_count, errors = self._processor._backend.execute_operations_from_accumulator(
                         container_id=self._processor._container_id,
                         container_type=self._processor._container_type,
-                        operations=batch,
+                        accumulated_operations=batch,
                         operation_storage=self._processor._operation_storage,
                     )
                 except Exception as e:
