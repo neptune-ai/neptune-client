@@ -111,7 +111,6 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.internal.backends.operation_api_object_converter import OperationApiObjectConverter
-from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     MissingApiClient,
@@ -133,6 +132,7 @@ from neptune.internal.operation import (
     UploadFileSet,
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo

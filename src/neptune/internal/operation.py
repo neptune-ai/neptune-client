@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
+    Any,
     Generic,
     List,
     Optional,
@@ -294,7 +295,13 @@ class UploadFileSet(Operation):
 class LogOperation(Operation, abc.ABC):
     @abc.abstractmethod
     def value_count(self) -> int:
-        pass
+        ...
+
+    # Workaround for mypy and not being able to combine dataclasses and abstract properties with subclass
+    #  initialization in series
+    @abc.abstractmethod
+    def get_values(self) -> List[Any]:
+        ...
 
 
 @dataclass
@@ -337,6 +344,9 @@ class LogFloats(LogOperation):
     def value_count(self) -> int:
         return len(self.values)
 
+    def get_values(self) -> list[LogSeriesValue[float]]:
+        return self.values
+
 
 @dataclass
 class LogStrings(LogOperation):
@@ -362,6 +372,9 @@ class LogStrings(LogOperation):
 
     def value_count(self) -> int:
         return len(self.values)
+
+    def get_values(self) -> list[LogSeriesValue[str]]:
+        return self.values
 
 
 @dataclass
@@ -410,6 +423,9 @@ class LogImages(LogOperation):
 
     def value_count(self) -> int:
         return len(self.values)
+
+    def get_values(self) -> list[LogSeriesValue[ImageValue]]:
+        return self.values
 
 
 @dataclass
