@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["QueueElement", "DiskQueue"]
+__all__ = ["DiskQueue"]
 
 import json
 import logging
@@ -23,18 +23,21 @@ import threading
 from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
+from types import TracebackType
 from typing import (
     Callable,
     Generic,
     List,
     Optional,
     Tuple,
+    Type,
     TypeVar,
+    Union,
 )
 
 from neptune.exceptions import MalformedOperation
-from neptune.internal.utils.json_file_splitter import JsonFileSplitter
-from neptune.internal.utils.sync_offset_file import SyncOffsetFile
+from neptune.internal.queue.json_file_splitter import JsonFileSplitter
+from neptune.internal.queue.sync_offset_file import SyncOffsetFile
 
 T = TypeVar("T")
 
@@ -59,13 +62,13 @@ class DiskQueue(Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
-        max_batch_size_bytes: int = None,
+        max_batch_size_bytes: Optional[int] = None,
     ):
-        self._dir_path = dir_path.resolve()
-        self._to_dict = to_dict
-        self._from_dict = from_dict
-        self._max_file_size = max_file_size
-        self._max_batch_size_bytes = max_batch_size_bytes or int(
+        self._dir_path: Path = dir_path.resolve()
+        self._to_dict: Callable[[T], dict] = to_dict
+        self._from_dict: Callable[[dict], T] = from_dict
+        self._max_file_size: int = max_file_size
+        self._max_batch_size_bytes: int = max_batch_size_bytes or int(
             os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
         )
 
@@ -74,8 +77,8 @@ class DiskQueue(Generic[T]):
         except FileExistsError:
             pass
 
-        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version", default=0)
-        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version", default=0)
+        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version")
+        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version")
 
         (
             self._read_file_version,
@@ -162,12 +165,12 @@ class DiskQueue(Generic[T]):
             ret.append(next_obj)
         return ret
 
-    def flush(self):
+    def flush(self) -> None:
         self._writer.flush()
         self._last_ack_file.flush()
         self._last_put_file.flush()
 
-    def close(self):
+    def close(self) -> None:
         self._reader.close()
         self._writer.close()
         self._last_ack_file.close()
@@ -180,7 +183,7 @@ class DiskQueue(Generic[T]):
         if self.is_empty():
             self._remove_data()
 
-    def _remove_data(self):
+    def _remove_data(self) -> None:
         path = self._dir_path
         shutil.rmtree(path, ignore_errors=True)
 
@@ -231,13 +234,13 @@ class DiskQueue(Generic[T]):
     def _get_log_file(self, index: int) -> str:
         return "{}/data-{}.log".format(self._dir_path, index)
 
-    def _get_all_log_file_versions(self):
+    def _get_all_log_file_versions(self) -> Union[Tuple[int, int], List[int]]:
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
         return sorted([int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files])
 
-    def _get_first_and_last_log_file_version(self) -> (int, int):
+    def _get_first_and_last_log_file_version(self) -> Tuple[int, int]:
         log_versions = self._get_all_log_file_versions()
         return min(log_versions), max(log_versions)
 
@@ -254,10 +257,12 @@ class DiskQueue(Generic[T]):
     def _deserialize(self, data: dict) -> Tuple[T, int]:
         return self._from_dict(data["obj"]), data["version"]
 
-    def __enter__(self):
+    def __enter__(self) -> "DiskQueue":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self, exc_type: Type[BaseException], exc_value: BaseException, exc_traceback: Optional[TracebackType]
+    ) -> None:
         self.flush()
         self.close()
         self.cleanup_if_empty()

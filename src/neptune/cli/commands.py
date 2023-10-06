@@ -41,8 +41,8 @@ from neptune.internal.backends.api_model import (  # noqa: F401
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
 from neptune.internal.credentials import Credentials
-from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.operation import Operation  # noqa: F401
+from neptune.internal.queue.disk_queue import DiskQueue  # noqa: F401
 
 
 @click.command()
