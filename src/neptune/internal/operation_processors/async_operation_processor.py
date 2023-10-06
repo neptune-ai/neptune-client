@@ -324,22 +324,28 @@ class AsyncOperationProcessor(OperationProcessor):
             ):
                 record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
                 self._last_disk_record = None
+
                 if not record:
                     break
-                if isinstance(record.obj, CopyAttribute):
+
+                operation, operation_version = record.obj, record.ver
+
+                if isinstance(operation, CopyAttribute):
                     # CopyAttribute can be only at the start of a batch.
                     if copy_ops or preprocessor.final_ops_count:
                         self._last_disk_record = record
                         break
                     else:
-                        version = record.ver
-                        copy_ops.append(record.obj)
-                elif preprocessor.process(record.obj):
-                    version = record.ver
+                        version = operation_version
+                        # TODO: Try catch
+                        operation = operation.resolve(self._processor._backend)
+
+                if preprocessor.process(operation):
+                    version = operation_version
                 else:
                     self._last_disk_record = record
                     break
-            return (copy_ops + preprocessor.get_operations().all_operations(), version) if version is not None else None
+            return (preprocessor.get_operations().all_operations(), version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
