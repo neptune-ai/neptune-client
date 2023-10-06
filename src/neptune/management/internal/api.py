@@ -272,11 +272,11 @@ def delete_project(project: str, *, workspace: Optional[str] = None, api_token: 
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the 'project' argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: User's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -321,7 +321,7 @@ def add_project_member(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to add to the project.
         role: level of permissions the user should have in a project.
@@ -331,8 +331,8 @@ def add_project_member(
              - 'owner': can view and edit project content and members
             For more information, see https://docs.neptune.ai/management/roles/
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -386,11 +386,11 @@ def get_project_member_list(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -437,12 +437,12 @@ def remove_project_member(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         username: Name of the user to remove from the project.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -659,11 +659,11 @@ def get_project_service_account_list(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -713,7 +713,7 @@ def add_project_service_account(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to add to the project.
         role: level of permissions the user or service account should have in a project.
@@ -723,8 +723,8 @@ def add_project_service_account(
              - 'owner': can view and edit project content and members
             For more information, see https://docs.neptune.ai/management/roles/
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -797,12 +797,12 @@ def remove_project_service_account(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         service_account_name: Name of the service account to remove from the project.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -866,13 +866,13 @@ def trash_objects(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
             You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -929,13 +929,13 @@ def delete_objects_from_trash(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to delete from trash (or list of multiple IDs).
             You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
@@ -987,11 +987,11 @@ def clear_trash(
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
+            If you pass the workspace argument, the project argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
-            If None, it will be parsed from the name argument.
+            change the format of the project argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the project argument.
         api_token: Account's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
