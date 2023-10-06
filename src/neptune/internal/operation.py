@@ -292,7 +292,9 @@ class UploadFileSet(Operation):
 
 
 class LogOperation(Operation, abc.ABC):
-    pass
+    @abc.abstractmethod
+    def value_count(self) -> int:
+        pass
 
 
 @dataclass
@@ -332,6 +334,9 @@ class LogFloats(LogOperation):
             [LogFloats.ValueType.from_dict(value) for value in data["values"]],
         )
 
+    def value_count(self) -> int:
+        return len(self.values)
+
 
 @dataclass
 class LogStrings(LogOperation):
@@ -354,6 +359,9 @@ class LogStrings(LogOperation):
             data["path"],
             [LogStrings.ValueType.from_dict(value) for value in data["values"]],
         )
+
+    def value_count(self) -> int:
+        return len(self.values)
 
 
 @dataclass
@@ -399,6 +407,9 @@ class LogImages(LogOperation):
             data["path"],
             [LogImages.ValueType.from_dict(value, ImageValue.deserializer) for value in data["values"]],
         )
+
+    def value_count(self) -> int:
+        return len(self.values)
 
 
 @dataclass
