@@ -577,22 +577,21 @@ def invite_to_workspace(
     role: Union[WorkspaceMemberRole, str] = WorkspaceMemberRole.MEMBER,
     add_to_all_projects: bool = False,
 ) -> None:
-    """Creates invitation to Neptune workspace.
+    """Creates an invitation to a Neptune workspace.
+
+    Provide either the username or email of the person to invite.
 
     Args:
-        username: username of the user to invite.
-        email: email of the user to invite.
-            Note: at least one of the above parameters are needed.
-            If neither the username nor the email is passed, will raise ValueError.
-            If both are filled, will raise ValueError.
+        username: username of the user to invite. Note: If you provide this, leave out the email argument.
+        email: email of the user to invite. Note: If you provide this, leave out the username argument.
         workspace: Name of your Neptune workspace.
-        api_token: Account's API token.
+        api_token: User's API token.
             If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
         role: The workspace role that is to be granted to the invited user.
             You can choose between the following values: "admin" and "member".
-        add_to_all_projects: Whether to add the user to all projects in the workspace.
+        add_to_all_projects: Whether to add the invited user to all projects in the workspace.
 
     Example:
         >>> from neptune import management
@@ -602,8 +601,9 @@ def invite_to_workspace(
         ...     role="admin",
         ... )
 
-    You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    Learn more in the docs:
+    - https://docs.neptune.ai/api/management/#invite_to_workspace
+    - https://docs.neptune.ai/management/inviting_people/
     """
     verify_type("workspace", workspace, str)
     verify_type("role", role, (WorkspaceMemberRole, str))
