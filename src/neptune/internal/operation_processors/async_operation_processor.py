@@ -35,7 +35,10 @@ from typing import (
 
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
-from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
+from neptune.exceptions import (
+    MetadataInconsistency,
+    NeptuneSynchronizationAlreadyStoppedException,
+)
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -321,6 +324,8 @@ class AsyncOperationProcessor(OperationProcessor):
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
             copy_ops: List[CopyAttribute] = []
+            errors = []
+            dropped_operations_count = 0
 
             while (
                 preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
@@ -340,15 +345,21 @@ class AsyncOperationProcessor(OperationProcessor):
                         self._last_disk_record = record
                         break
                     else:
+                        try:
+                            operation = operation.resolve(self._processor._backend)
+                        except MetadataInconsistency as e:
+                            errors.append(e)
+                            dropped_operations_count += 1
+
                         version = operation_version
-                        # TODO: Try catch
-                        operation = operation.resolve(self._processor._backend)
 
                 if preprocessor.process(operation):
                     version = operation_version
                 else:
                     self._last_disk_record = record
                     break
+
+            # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
             return (preprocessor.get_operations(), version) if version is not None else None
 
         def _check_no_progress(self):
