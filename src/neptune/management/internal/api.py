@@ -862,7 +862,7 @@ def trash_objects(
     workspace: str = None,
     api_token: str = None,
 ) -> None:
-    """Moves one or more Neptune objects to the project trash.
+    """Moves the specified Neptune objects to the project trash.
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -885,7 +885,10 @@ def trash_objects(
         >>> management.trash_objects(project="ml-team/classification", ids="CLS-1")
 
         Trashing two runs and a model with the key "PRETRAINED":
-        >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+        >>> management.trash_objects(
+        ...     project="ml-team/classification",
+        ...     ids=["CLS-2", "CLS-3", "CLS-PRETRAINED"]
+        ... )
         Note: Trashing a model object also trashes all of its versions.
 
     For more, see the docs: https://docs.neptune.ai/api/management/#trash_objects
@@ -925,7 +928,7 @@ def delete_objects_from_trash(
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ) -> None:
-    """Deletes one or more Neptune objects from the project trash.
+    """Permanently deletes the specified objects from the project trash.
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -948,7 +951,10 @@ def delete_objects_from_trash(
         >>> management.delete_objects_from_trash(project="ml-team/classification", ids="CLS-1")
 
         Deleting two runs and a model with the key "PRETRAINED" from trash:
-        >>> management.delete_objects_from_trash("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+        >>> management.delete_objects_from_trash(
+        ...     project="ml-team/classification",
+        ...     ids=["CLS-2", "CLS-3", "CLS-PRETRAINED"],
+        ... )
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
@@ -983,7 +989,7 @@ def clear_trash(
     workspace: Optional[str] = None,
     api_token: Optional[str] = None,
 ) -> None:
-    """Deletes all Neptune objects from the project trash.
+    """Permanently deletes all Neptune objects from the project trash.
 
     Args:
         project: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -997,9 +1003,7 @@ def clear_trash(
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
-    Examples:
-
-        Clearing trash:
+    Example:
         >>> from neptune import management
         >>> management.clear_trash(project="ml-team/classification")
     """
