@@ -1,3 +1,9 @@
+## [UNRELEASED] neptune 1.9.0
+
+### Changes
+- Upgraded performance of sending series data to Neptune ([#1483](https://github.com/neptune-ai/neptune-client/pull/1483))
+
+
 ## neptune 1.8.1
 
 ### Fixes
