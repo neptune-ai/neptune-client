@@ -295,22 +295,32 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._last_flush = ts
                 self._processor._queue.flush()
 
-            while True:
-                batch = self.collect_batch()
-                if not batch:
-                    return
+            while self.collect_and_process_batch():
+                pass
+
+        @Daemon.ConnectionRetryWrapper(
+            kill_message=(
+                "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
+                " synced manually using `neptune sync` command."
+            )
+        )
+        def collect_and_process_batch(self) -> bool:
+            batch = self.collect_batch()
+
+            if batch:
                 operations, version = batch
                 self.process_batch(operations, version)
+
+            return batch is not None
 
         def collect_batch(self) -> Optional[Tuple[List[Operation], int]]:
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
-            total_bytes = 0
             copy_ops: List[CopyAttribute] = []
+
             while (
                 preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
                 and preprocessor.final_append_count < self.MAX_APPENDS_IN_BATCH
-                and total_bytes < self.MAX_BATCH_SIZE_BYTES
             ):
                 record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
                 self._last_disk_record = None
@@ -324,10 +334,8 @@ class AsyncOperationProcessor(OperationProcessor):
                     else:
                         version = record.ver
                         copy_ops.append(record.obj)
-                        total_bytes += record.size
                 elif preprocessor.process(record.obj):
                     version = record.ver
-                    total_bytes += record.size
                 else:
                     self._last_disk_record = record
                     break
@@ -339,12 +347,6 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
-        @Daemon.ConnectionRetryWrapper(
-            kill_message=(
-                "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
-                " synced manually using `neptune sync` command."
-            )
-        )
         def process_batch(self, batch: List[Operation], version: int) -> None:
             expected_count = len(batch)
             version_to_ack = version - expected_count
