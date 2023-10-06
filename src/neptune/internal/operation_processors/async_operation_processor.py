@@ -52,11 +52,11 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.queue.disk_queue import (
     DiskQueue,
     QueueElement,
 )
-from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
