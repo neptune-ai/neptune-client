@@ -15,11 +15,13 @@
 #
 __all__ = ["OperationsAccumulator"]
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import (
     Callable,
     List,
     Optional,
+    Tuple,
     Type,
     TypeVar,
 )
@@ -76,6 +78,11 @@ class DataType(Enum):
     ARTIFACT = "Artifact"
 
 
+@dataclass
+class AccumulatorStats:
+    append_count: int = 0
+
+
 class OperationsAccumulator(OperationVisitor[None]):
     def __init__(self, path: List[str]):
         self._path: List[str] = path
@@ -84,7 +91,7 @@ class OperationsAccumulator(OperationVisitor[None]):
         self._modify_ops: List[Operation] = []
         self._config_ops: List[Operation] = []
         self._errors: List[MetadataInconsistency] = []
-        self._ops_count: int = 0
+        self._stats: AccumulatorStats = AccumulatorStats()
 
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
@@ -93,7 +100,10 @@ class OperationsAccumulator(OperationVisitor[None]):
         return self._errors
 
     def get_op_count(self) -> int:
-        return self._ops_count
+        return len(self.get_operations())
+
+    def get_append_count(self) -> int:
+        return self._stats.append_count
 
     def _check_prerequisites(self, op: Operation) -> None:
         if (is_file_op(op) or is_artifact_op(op)) and len(self._delete_ops) > 0:
@@ -103,7 +113,7 @@ class OperationsAccumulator(OperationVisitor[None]):
         self,
         expected_type: DataType,
         op: Operation,
-        modifier: Callable[[List[Operation], Operation], List[Operation]],
+        modifier: Callable[[List[Operation], Operation, AccumulatorStats], Tuple[List[Operation], AccumulatorStats]],
     ) -> None:
 
         if self._type and self._type != expected_type:
@@ -122,9 +132,7 @@ class OperationsAccumulator(OperationVisitor[None]):
         else:
             self._check_prerequisites(op)
             self._type = expected_type
-            old_op_count = len(self._modify_ops)
-            self._modify_ops = modifier(self._modify_ops, op)
-            self._ops_count += len(self._modify_ops) - old_op_count
+            self._modify_ops, self._stats = modifier(self._modify_ops, op, self._stats)
 
     def _process_config_op(self, expected_type: DataType, op: Operation) -> None:
 
@@ -144,9 +152,7 @@ class OperationsAccumulator(OperationVisitor[None]):
         else:
             self._check_prerequisites(op)
             self._type = expected_type
-            old_op_count = len(self._config_ops)
             self._config_ops = [op]
-            self._ops_count += len(self._config_ops) - old_op_count
 
     def visit_assign_float(self, op: AssignFloat) -> None:
         self._process_modify_op(DataType.FLOAT, op, assign_modifier)
@@ -242,7 +248,6 @@ class OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
-                self._ops_count = len(self._delete_ops)
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
@@ -251,7 +256,6 @@ class OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
-                self._ops_count = len(self._delete_ops)
         else:
             if self._delete_ops:
                 # Do nothing if there already is a delete operation
@@ -261,7 +265,8 @@ class OperationsAccumulator(OperationVisitor[None]):
                 # If value has not been set locally yet and no delete operation was performed,
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
-                self._ops_count = len(self._delete_ops)
+
+        self._stats = AccumulatorStats(append_count=0)
 
     def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> None:
         self._process_modify_op(DataType.ARTIFACT, op, artifact_log_modifier)
@@ -273,11 +278,13 @@ class OperationsAccumulator(OperationVisitor[None]):
         raise MetadataInconsistency("No CopyAttribute should reach accumulator")
 
 
-def artifact_log_modifier(ops: List[Operation], new_op: Operation) -> List[Operation]:
+def artifact_log_modifier(
+    ops: List[Operation], new_op: Operation, stats: AccumulatorStats
+) -> Tuple[List[Operation], AccumulatorStats]:
     assert isinstance(new_op, TrackFilesToArtifact)
 
     if len(ops) == 0:
-        return [new_op]
+        return [new_op], stats
 
     # There should be exactly 1 operation, merge it with new_op
     assert len(ops) == 1
@@ -285,39 +292,40 @@ def artifact_log_modifier(ops: List[Operation], new_op: Operation) -> List[Opera
     assert isinstance(op_old, TrackFilesToArtifact)
     assert op_old.path == new_op.path
     assert op_old.project_id == new_op.project_id
-    return [TrackFilesToArtifact(op_old.path, op_old.project_id, op_old.entries + new_op.entries)]
+
+    return [TrackFilesToArtifact(op_old.path, op_old.project_id, op_old.entries + new_op.entries)], stats
 
 
 def log_modifier(
     log_op_class: Type[LogOperation],
     clear_op_class: Type[Operation],
     log_combine: Callable[[LogOperation, LogOperation], LogOperation],
-) -> Callable[[List[Operation], Operation], List[Operation]]:
-    def modifier(ops: List[Operation], new_op: Operation) -> List[Operation]:
+) -> Callable[[List[Operation], Operation, AccumulatorStats], Tuple[List[Operation], AccumulatorStats]]:
+    def modifier(
+        ops: List[Operation], new_op: Operation, stats: AccumulatorStats
+    ) -> Tuple[List[Operation], AccumulatorStats]:
         assert isinstance(new_op, log_op_class)
+        stats = AccumulatorStats(append_count=stats.append_count + new_op.value_count())
 
         if len(ops) == 0:
-            return [new_op]
+            return [new_op], stats
 
         if len(ops) == 1:
             first_operation = ops[0]
 
             if isinstance(first_operation, log_op_class):
-                return [log_combine(first_operation, new_op)]
+                return [log_combine(first_operation, new_op)], stats
             elif isinstance(first_operation, clear_op_class):
-                return [first_operation, new_op]
+                return [first_operation, new_op], stats
 
         if len(ops) == 2:
             first_operation = ops[0]
             second_operation = ops[1]
 
             if isinstance(second_operation, log_op_class):
-                return [first_operation, log_combine(second_operation, new_op)]
+                return [first_operation, log_combine(second_operation, new_op)], stats
 
         raise InternalClientError(f"Preprocessing operations failed: len(ops) == {len(ops)}")
-        # TODO: Restore
-        # if isinstance(new_op, log_op_class):  # Check just so that static typing doesn't complain
-        #     self._append_count += new_op.value_count()
 
     return modifier
 
@@ -330,19 +338,28 @@ def is_artifact_op(op: Operation) -> bool:
     return isinstance(op, TrackFilesToArtifact)
 
 
-# TODO
-# for op in ops:
-#     if isinstance(op, LogOperation):
-#         self._append_count -= op.value_count()
-clear_modifier: Callable[[List[Operation], Operation], List[Operation]] = lambda ops, new_op: [new_op]
+def clear_modifier(
+    ops: List[Operation], new_op: Operation, stats: AccumulatorStats
+) -> Tuple[List[Operation], AccumulatorStats]:
+    for op in ops:
+        if isinstance(op, LogOperation):
+            stats = AccumulatorStats(append_count=stats.append_count - op.value_count())
+
+    return [new_op], stats
 
 
-assign_modifier: Callable[[List[Operation], Operation], List[Operation]] = lambda ops, new_op: [new_op]
+assign_modifier: Callable[
+    [List[Operation], Operation, AccumulatorStats], Tuple[List[Operation], AccumulatorStats]
+] = lambda ops, new_op, stats: ([new_op], stats)
 
 
 # We do not optimize it on client side for now. It should not be often operation.
-add_modifier: Callable[[List[Operation], Operation], List[Operation]] = lambda ops, op: ops + [op]
+add_modifier: Callable[
+    [List[Operation], Operation, AccumulatorStats], Tuple[List[Operation], AccumulatorStats]
+] = lambda ops, op, stats: (ops + [op], stats)
 
 
 # We do not optimize it on client side for now. It should not be often operation.
-remove_modifier: Callable[[List[Operation], Operation], List[Operation]] = lambda ops, op: ops + [op]
+remove_modifier: Callable[
+    [List[Operation], Operation, AccumulatorStats], Tuple[List[Operation], AccumulatorStats]
+] = lambda ops, op, stats: (ops + [op], stats)

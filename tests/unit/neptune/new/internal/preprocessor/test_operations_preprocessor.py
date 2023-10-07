@@ -76,7 +76,7 @@ def test_delete_attribute():
     processor.process_batch(operations)
 
     # then
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert [] == result.upload_operations
     assert [] == result.artifact_operations
     assert [
@@ -123,7 +123,7 @@ def test_assign():
     processor.process_batch(operations)
 
     # then
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert [
         UploadFile(["h"], "123"),
         UploadFileContent(["i"], "123", "123"),
@@ -188,7 +188,7 @@ def test_series():
     processor.process_batch(operations)
 
     # then
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert [] == result.upload_operations
     assert [] == result.artifact_operations
     assert [
@@ -259,7 +259,7 @@ def test_sets():
     processor.process_batch(operations)
 
     # then
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert [] == result.upload_operations
     assert [] == result.artifact_operations
     assert [
@@ -308,7 +308,7 @@ def test_file_set():
     processor.process_batch(operations)
 
     # then
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert result.upload_operations == [
         UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
         UploadFileSet(["a"], ["hhh", "gij"], reset=False),
@@ -349,7 +349,7 @@ def test_file_ops_delete():
     processor.process_batch(operations)
 
     # then: there's a cutoff after DeleteAttribute(["a"])
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert result.upload_operations == [
         UploadFileSet(["b"], ["abc", "defgh"], reset=True),
         UploadFileSet(["c"], ["abc", "defgh"], reset=True),
@@ -394,7 +394,7 @@ def test_artifacts():
     processor.process_batch(operations)
 
     # then: there's a cutoff before second TrackFilesToArtifact(["a"]) due to DeleteAttribute(["a"])
-    result = processor.get_operations()
+    result = processor.accumulate_operations()
     assert [] == result.upload_operations
     assert [
         TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),

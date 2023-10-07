@@ -52,12 +52,16 @@ class OperationsPreprocessor:
         return len(self._accumulators.keys())
 
     @property
-    def max_operations_per_accumulator(self) -> int:
-        return max(map(lambda acc: acc.get_op_count(), self._accumulators.values()), default=0)
+    def max_points_per_accumulator(self) -> int:
+        return max(map(lambda acc: acc.get_append_count(), self._accumulators.values()), default=0)
 
     @property
     def operations_count(self) -> int:
         return sum(map(lambda acc: acc.get_op_count(), self._accumulators.values()))
+
+    @property
+    def points_count(self) -> int:
+        return sum(map(lambda acc: acc.get_append_count(), self._accumulators.values()))
 
     def process(self, operation: Operation) -> bool:
         """Adds a single operation to its processed list.

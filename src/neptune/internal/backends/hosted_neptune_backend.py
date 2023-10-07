@@ -558,7 +558,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         upload_operations: List[Operation],
         operation_storage: OperationStorage,
     ) -> List[NeptuneException]:
-        errors = list()
+        errors: List[NeptuneException] = list()
 
         if self._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD):
             multipart_config = self._client_config.multipart_config
