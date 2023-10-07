@@ -343,7 +343,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 if isinstance(operation, CopyAttribute):
                     # CopyAttribute can be only at the start of a batch.
                     # TODO: This doesn't work as expected
-                    if copy_ops or preprocessor.final_ops_count:
+                    if copy_ops or preprocessor.operations_count:
                         self._last_disk_record = record
                         break
                     else:
@@ -364,7 +364,7 @@ class AsyncOperationProcessor(OperationProcessor):
             return (
                 (
                     preprocessor.accumulate_operations(
-                        initial_errors=errors, source_operations_count=preprocessor.final_ops_count
+                        initial_errors=errors, source_operations_count=preprocessor.operations_count
                     ),
                     dropped_operations_count,
                     version,

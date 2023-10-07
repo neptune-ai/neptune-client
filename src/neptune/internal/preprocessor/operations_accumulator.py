@@ -85,7 +85,6 @@ class OperationsAccumulator(OperationVisitor[None]):
         self._config_ops: List[Operation] = []
         self._errors: List[MetadataInconsistency] = []
         self._ops_count: int = 0
-        self._append_count: int = 0
 
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
@@ -95,9 +94,6 @@ class OperationsAccumulator(OperationVisitor[None]):
 
     def get_op_count(self) -> int:
         return self._ops_count
-
-    def get_append_count(self) -> int:
-        return self._append_count
 
     def _check_prerequisites(self, op: Operation) -> None:
         if (is_file_op(op) or is_artifact_op(op)) and len(self._delete_ops) > 0:
@@ -247,7 +243,6 @@ class OperationsAccumulator(OperationVisitor[None]):
                 self._config_ops = []
                 self._type = None
                 self._ops_count = len(self._delete_ops)
-                self._append_count = 0
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
@@ -257,7 +252,6 @@ class OperationsAccumulator(OperationVisitor[None]):
                 self._config_ops = []
                 self._type = None
                 self._ops_count = len(self._delete_ops)
-                self._append_count = 0
         else:
             if self._delete_ops:
                 # Do nothing if there already is a delete operation

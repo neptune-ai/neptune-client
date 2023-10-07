@@ -46,7 +46,6 @@ class OperationsPreprocessor:
     def __init__(self) -> None:
         self._accumulators: Dict[str, "OperationsAccumulator"] = dict()
         self.processed_ops_count: int = 0
-        self.final_ops_count: int = 0
 
     @property
     def accumulators_count(self) -> int:
@@ -80,9 +79,7 @@ class OperationsPreprocessor:
     def _process_op(self, op: Operation) -> "OperationsAccumulator":
         path_str = path_to_str(op.path)
         target_acc = self._accumulators.setdefault(path_str, OperationsAccumulator(op.path))
-        old_ops_count = target_acc.get_op_count()
         target_acc.visit(op)
-        self.final_ops_count += target_acc.get_op_count() - old_ops_count
         return target_acc
 
     def accumulate_operations(
