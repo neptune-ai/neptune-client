@@ -315,17 +315,18 @@ class AsyncOperationProcessor(OperationProcessor):
             batch = self.collect_batch()
 
             if batch:
-                operations, version = batch
-                self.process_batch(operations, version)
+                operations, old_operations, version = batch
+                self.process_batch(operations, old_operations, version)
 
             return batch is not None
 
-        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int]]:
+        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", List[Operation], int]]:
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
             copy_ops: List[CopyAttribute] = []
             errors = []
             dropped_operations_count = 0
+            old_operations = []
 
             while (
                 preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
@@ -338,6 +339,8 @@ class AsyncOperationProcessor(OperationProcessor):
                     break
 
                 operation, operation_version = record.obj, record.ver
+
+                old_operations.append(operation)
 
                 if isinstance(operation, CopyAttribute):
                     # CopyAttribute can be only at the start of a batch.
@@ -360,7 +363,9 @@ class AsyncOperationProcessor(OperationProcessor):
                     break
 
             # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
-            return (preprocessor.get_operations(), version) if version is not None else None
+            result = preprocessor.get_operations()
+            result.errors.extend(errors)
+            return (result, old_operations, version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
@@ -368,7 +373,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
-        def process_batch(self, batch: "AccumulatedOperations", version: int) -> None:
+        def process_batch(self, batch: "AccumulatedOperations", old_operations: List[Operation], version: int) -> None:
             expected_count = len(batch.all_operations())
             version_to_ack = version - expected_count
             while True:
@@ -378,6 +383,7 @@ class AsyncOperationProcessor(OperationProcessor):
                         container_id=self._processor._container_id,
                         container_type=self._processor._container_type,
                         accumulated_operations=batch,
+                        old_operations=old_operations,
                         operation_storage=self._processor._operation_storage,
                     )
                 except Exception as e:

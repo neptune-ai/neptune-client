@@ -509,12 +509,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: UniqueId,
         container_type: ContainerType,
         accumulated_operations: "AccumulatedOperations",
+        old_operations: List[Operation],
         operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
         errors = []
 
         batching_mgr = ExecuteOperationsBatchingManager(self)
-        operations_batch = batching_mgr.get_batch(accumulated_operations.all_operations())
+        operations_batch = batching_mgr.get_batch(old_operations)
         errors.extend(operations_batch.errors)
         dropped_count = operations_batch.dropped_operations_count
 
@@ -560,7 +561,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in itertools.chain(preprocessed_operations.upload_operations, preprocessed_operations.other_operations):
             op.clean(operation_storage=operation_storage)
 
-        return operations_preprocessor.processed_ops_count + dropped_count, errors
+        return operations_preprocessor.final_ops_count + dropped_count, errors
 
     def _execute_upload_operations(
         self,

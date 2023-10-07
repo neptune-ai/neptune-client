@@ -153,6 +153,7 @@ class NeptuneBackend:
         container_id: UniqueId,
         container_type: ContainerType,
         accumulated_operations: "AccumulatedOperations",
+        old_operations: List[Operation],
         operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
         pass
