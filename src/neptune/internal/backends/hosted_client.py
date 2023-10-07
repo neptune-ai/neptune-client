@@ -75,11 +75,14 @@ DEFAULT_REQUEST_KWARGS = {
 class GzipAdapter(HTTPAdapter):
     def send(self, request: PreparedRequest, stream: bool = False, **kw) -> Response:
         if request.body is not None and not stream and request.headers.get("Content-Type", None) == "application/json":
-            request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
-            gzip_compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, zlib.MAX_WBITS | 16)
-            compressed = gzip_compress.compress(request_body) + gzip_compress.flush()
-            request.prepare_body(compressed, None)
-            request.headers["Content-Encoding"] = "gzip"
+            try:
+                request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
+                gzip_compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+                compressed = gzip_compress.compress(request_body) + gzip_compress.flush()
+                request.prepare_body(compressed, None)
+                request.headers["Content-Encoding"] = "gzip"
+            except zlib.error:
+                pass
 
         return super(GzipAdapter, self).send(request, stream, **kw)
 
