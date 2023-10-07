@@ -528,31 +528,34 @@ class HostedNeptuneBackend(NeptuneBackend):
             self.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
         # Upload operations should be done first since they are idempotent
-        errors.extend(
-            self._execute_upload_operations_with_400_retry(
+        if preprocessed_operations.upload_operations:
+            errors.extend(
+                self._execute_upload_operations_with_400_retry(
+                    container_id=container_id,
+                    container_type=container_type,
+                    upload_operations=preprocessed_operations.upload_operations,
+                    operation_storage=operation_storage,
+                )
+            )
+
+        if preprocessed_operations.artifact_operations:
+            artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
                 container_id=container_id,
                 container_type=container_type,
-                upload_operations=preprocessed_operations.upload_operations,
-                operation_storage=operation_storage,
+                artifact_operations=preprocessed_operations.artifact_operations,
             )
-        )
 
-        artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
-            container_id=container_id,
-            container_type=container_type,
-            artifact_operations=preprocessed_operations.artifact_operations,
-        )
+            errors.extend(artifact_operations_errors)
+            preprocessed_operations.other_operations.extend(assign_artifact_operations)
 
-        errors.extend(artifact_operations_errors)
-        preprocessed_operations.other_operations.extend(assign_artifact_operations)
-
-        errors.extend(
-            self._execute_operations(
-                container_id,
-                container_type,
-                operations=preprocessed_operations.other_operations,
+        if preprocessed_operations.other_operations:
+            errors.extend(
+                self._execute_operations(
+                    container_id,
+                    container_type,
+                    operations=preprocessed_operations.other_operations,
+                )
             )
-        )
 
         for op in itertools.chain(preprocessed_operations.upload_operations, preprocessed_operations.other_operations):
             op.clean(operation_storage=operation_storage)
