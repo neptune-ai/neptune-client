@@ -360,7 +360,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     break
 
             # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
-            result = preprocessor.get_operations()
+            result = preprocessor.accumulate_operations()
             result.errors.extend(errors)
             result.dropped_operations_count = dropped_operations_count
             result.final_ops_count = preprocessor.final_ops_count
@@ -373,8 +373,9 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._should_call_no_progress_callback = True
 
         def process_batch(self, batch: "AccumulatedOperations", version: int) -> None:
-            expected_count = len(batch.all_operations())
+            expected_count = batch.operations_count
             version_to_ack = version - expected_count
+
             while True:
                 # TODO: Handle Metadata errors
                 try:
@@ -391,7 +392,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
                 self._no_progress_exceeded = False
 
-                version_to_ack += processed_count
+                version_to_ack += processed_count + batch.dropped_operations_count
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)

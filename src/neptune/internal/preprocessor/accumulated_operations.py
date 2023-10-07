@@ -39,3 +39,7 @@ class AccumulatedOperations:
 
     def all_operations(self) -> List[Operation]:
         return self.upload_operations + self.artifact_operations + self.other_operations
+
+    @property
+    def operations_count(self) -> int:
+        return len(self.all_operations())

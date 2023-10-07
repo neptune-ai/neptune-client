@@ -460,7 +460,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         operations_preprocessor = OperationsPreprocessor()
         operations_preprocessor.process_batch(operations_batch.operations)
 
-        preprocessed_operations = operations_preprocessor.get_operations()
+        preprocessed_operations = operations_preprocessor.accumulate_operations()
         errors.extend(preprocessed_operations.errors)
 
         if preprocessed_operations.artifact_operations:
@@ -549,7 +549,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in itertools.chain(accumulated_operations.upload_operations, accumulated_operations.other_operations):
             op.clean(operation_storage=operation_storage)
 
-        return accumulated_operations.final_ops_count + accumulated_operations.dropped_operations_count, errors
+        return accumulated_operations.final_ops_count, errors
 
     def _execute_upload_operations(
         self,

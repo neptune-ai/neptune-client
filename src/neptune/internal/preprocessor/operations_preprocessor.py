@@ -69,7 +69,7 @@ class OperationsPreprocessor:
         self.final_append_count += target_acc.get_append_count() - old_append_count
         return target_acc
 
-    def get_operations(self) -> AccumulatedOperations:
+    def accumulate_operations(self) -> AccumulatedOperations:
         result = AccumulatedOperations()
         for _, acc in sorted(self._accumulators.items()):
             for op in acc.get_operations():
