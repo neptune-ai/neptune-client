@@ -16,8 +16,10 @@
 __all__ = ["OperationsPreprocessor"]
 
 from typing import (
+    TYPE_CHECKING,
     Dict,
     List,
+    Optional,
     TypeVar,
 )
 
@@ -32,6 +34,10 @@ from neptune.internal.preprocessor.accumulated_operations import AccumulatedOper
 from neptune.internal.preprocessor.exceptions import RequiresPreviousCompleted
 from neptune.internal.preprocessor.operations_accumulator import OperationsAccumulator
 from neptune.internal.utils.paths import path_to_str
+
+if TYPE_CHECKING:
+    from neptune.exceptions import NeptuneException
+
 
 T = TypeVar("T")
 
@@ -69,8 +75,10 @@ class OperationsPreprocessor:
         self.final_append_count += target_acc.get_append_count() - old_append_count
         return target_acc
 
-    def accumulate_operations(self) -> AccumulatedOperations:
+    def accumulate_operations(self, initial_errors: Optional[List["NeptuneException"]] = None) -> AccumulatedOperations:
         result = AccumulatedOperations()
+        result.errors.extend(initial_errors or [])
+
         for _, acc in sorted(self._accumulators.items()):
             for op in acc.get_operations():
                 if isinstance(op, TrackFilesToArtifact):

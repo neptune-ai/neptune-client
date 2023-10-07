@@ -21,7 +21,7 @@ from dataclasses import (
 )
 from typing import List
 
-from neptune.exceptions import MetadataInconsistency
+from neptune.exceptions import NeptuneException
 from neptune.internal.operation import (
     Operation,
     TrackFilesToArtifact,
@@ -33,7 +33,7 @@ class AccumulatedOperations:
     upload_operations: List[Operation] = field(default_factory=list)
     artifact_operations: List[TrackFilesToArtifact] = field(default_factory=list)
     other_operations: List[Operation] = field(default_factory=list)
-    errors: List[MetadataInconsistency] = field(default_factory=list)
+    errors: List[NeptuneException] = field(default_factory=list)
     final_ops_count: int = 0
 
     def all_operations(self) -> List[Operation]:

@@ -273,7 +273,6 @@ class AsyncOperationProcessor(OperationProcessor):
     class ConsumerThread(Daemon):
         MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 1000
         MAX_APPENDS_IN_BATCH: ClassVar[int] = 100000
-        MAX_BATCH_SIZE_BYTES: ClassVar[int] = 100 * 1024 * 1024
 
         def __init__(
             self,
@@ -361,8 +360,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     break
 
             # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
-            result = preprocessor.accumulate_operations()
-            result.errors.extend(errors)
+            result = preprocessor.accumulate_operations(initial_errors=errors)
             result.final_ops_count = preprocessor.final_ops_count
             return (result, dropped_operations_count, version) if version is not None else None
 
