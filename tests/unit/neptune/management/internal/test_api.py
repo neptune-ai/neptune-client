@@ -24,7 +24,11 @@ from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.management import trash_objects
+from neptune.management import (
+    clear_trash,
+    delete_objects_from_trash,
+    trash_objects,
+)
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
@@ -61,4 +65,45 @@ class TestTrashObjects(unittest.TestCase):
                 **DEFAULT_REQUEST_KWARGS,
             ),
             trash_experiments_mock.call_args,
+        )
+
+    @patch("neptune.management.internal.api._get_leaderboard_client")
+    def test_project_delete_objects_from_trash(self, _get_leaderboard_client_mock):
+        # given
+        delete_experiments_from_trash_mock = _get_leaderboard_client_mock().api.deleteExperiments
+
+        # when
+        delete_objects_from_trash(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
+
+        # then
+        assert delete_experiments_from_trash_mock.call_count == 1
+        self.assertEqual(
+            call(
+                projectIdentifier="organization/project",
+                experimentIdentifiers=[
+                    "organization/project/RUN-1",
+                    "organization/project/MOD",
+                    "organization/project/MOD-1",
+                ],
+                **DEFAULT_REQUEST_KWARGS,
+            ),
+            delete_experiments_from_trash_mock.call_args,
+        )
+
+    @patch("neptune.management.internal.api._get_leaderboard_client")
+    def test_project_clear_trash(self, _get_leaderboard_client_mock):
+        # given
+        clear_trash_mock = _get_leaderboard_client_mock().api.deleteAllExperiments
+
+        # when
+        clear_trash(self.PROJECT_NAME)
+
+        # then
+        assert clear_trash_mock.call_count == 1
+        self.assertEqual(
+            call(
+                projectIdentifier="organization/project",
+                **DEFAULT_REQUEST_KWARGS,
+            ),
+            clear_trash_mock.call_args,
         )

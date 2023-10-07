@@ -30,6 +30,7 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
@@ -190,15 +191,18 @@ class Project(MetadataContainer):
         )
 
     @staticmethod
-    def _prepare_nql_query(ids, states, owners, tags):
-        query_items = [
-            NQLQueryAttribute(
-                name="sys/trashed",
-                type=NQLAttributeType.BOOLEAN,
-                operator=NQLAttributeOperator.EQUALS,
-                value=False,
+    def _prepare_nql_query(ids, states, owners, tags, trashed):
+        query_items = []
+
+        if trashed is not None:
+            query_items.append(
+                NQLQueryAttribute(
+                    name="sys/trashed",
+                    type=NQLAttributeType.BOOLEAN,
+                    operator=NQLAttributeOperator.EQUALS,
+                    value=trashed,
+                )
             )
-        ]
 
         if ids:
             query_items.append(
@@ -275,6 +279,7 @@ class Project(MetadataContainer):
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
+        trashed: Optional[bool] = False,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -302,6 +307,10 @@ class Project(MetadataContainer):
                     Fields: `["params/lr", "params/batch", "train/acc"]` - these fields are included as columns.
                     Namespaces: `["params", "train"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the runs table are included.
+            trashed: Whether to retrieve trashed runs.
+                If `True`, only trashed runs are retrieved.
+                If `False` (default), only not-trashed runs are retrieved.
+                If `None`, both trashed and not-trashed runs are retrieved.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -349,7 +358,9 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        nql_query = self._prepare_nql_query(ids, states, owners, tags)
+        verify_type("trashed", trashed, (bool, type(None)))
+
+        nql_query = self._prepare_nql_query(ids, states, owners, tags, trashed)
 
         return MetadataContainer._fetch_entries(
             self,
@@ -358,10 +369,14 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
-    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = False) -> Table:
         """Retrieve models stored in the project.
 
         Args:
+            trashed: Whether to retrieve trashed models.
+                If `True`, only trashed models are retrieved.
+                If `False` (default), only not-trashed models are retrieved.
+                If `None`, both trashed and not-trashed models are retrieved.
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
                 Examples:
@@ -406,7 +421,9 @@ class Project(MetadataContainer):
                 name="sys/trashed",
                 type=NQLAttributeType.BOOLEAN,
                 operator=NQLAttributeOperator.EQUALS,
-                value=False,
-            ),
+                value=trashed,
+            )
+            if trashed is not None
+            else NQLEmptyQuery,
             columns=columns,
         )

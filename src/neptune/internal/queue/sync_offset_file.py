@@ -16,15 +16,15 @@
 __all__ = ["SyncOffsetFile"]
 
 from pathlib import Path
-from typing import Optional
+from typing import IO
 
 
 class SyncOffsetFile:
-    def __init__(self, path: Path, default: int = None):
+    def __init__(self, path: Path, default: int = 0):
         mode = "r+" if path.exists() else "w+"
-        self._file = open(path, mode)
-        self._default = default
-        self._last = self.read()
+        self._file: IO = open(path, mode)
+        self._default: int = default
+        self._last: int = self.read()
 
     def write(self, offset: int) -> None:
         self._file.seek(0)
@@ -33,18 +33,18 @@ class SyncOffsetFile:
         self._file.flush()
         self._last = offset
 
-    def read(self) -> Optional[int]:
+    def read(self) -> int:
         self._file.seek(0)
         content = self._file.read()
         if not content:
             return self._default
         return int(content)
 
-    def read_local(self) -> Optional[int]:
+    def read_local(self) -> int:
         return self._last
 
-    def flush(self):
+    def flush(self) -> None:
         self._file.flush()
 
-    def close(self):
+    def close(self) -> None:
         self._file.close()

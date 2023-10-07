@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import socket
+import time
 import unittest
 import uuid
 from pathlib import Path
@@ -225,6 +226,43 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     ),
                     result,
                 )
+
+    @pytest.mark.asyncio
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
+    async def test_too_many_requests(self, swagger_client_factory):
+        # given
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        container_uuid = str(uuid.uuid4())
+
+        container_type = ContainerType.RUN
+
+        response = MagicMock()
+        response.response().return_value = []
+
+        retry_after_seconds = 5  # Przykładowy czas oczekiwania
+        too_many_requests_response = HTTPTooManyRequests(MagicMock())
+        too_many_requests_response.headers = {"retry-after": str(retry_after_seconds)}
+
+        swagger_client.api.executeOperations.side_effect = Mock(
+            side_effect=[too_many_requests_response, response_mock()]
+        )
+
+        # when
+        result_start_time = time.time()
+        result = await backend.execute_async(  # Użyj await, aby poczekać na wykonanie coroutine
+            container_id=container_uuid,
+            container_type=container_type,
+            operations=[
+                LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
+            ],
+            operation_storage=self.dummy_operation_storage,
+        )
+        result_end_time = time.time()
+
+        # then
+        self.assertEqual(result, (1, []))
+        assert retry_after_seconds <= (result_end_time - result_start_time) <= (retry_after_seconds * 2)
 
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_execute_operations_retry_request(self, swagger_client_factory):

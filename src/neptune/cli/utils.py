@@ -50,12 +50,12 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
 from neptune.internal.operation import Operation
+from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.utils.logger import logger
 
 

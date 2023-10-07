@@ -15,9 +15,11 @@
 #
 
 __all__ = [
+    "clear_trash",
     "get_project_list",
     "create_project",
     "delete_project",
+    "delete_objects_from_trash",
     "get_project_member_list",
     "add_project_member",
     "remove_project_member",
@@ -913,4 +915,109 @@ def trash_objects(
         errors += response.result.errors
 
     for error in errors:
+        logger.warning(error)
+
+
+def delete_objects_from_trash(
+    project: str,
+    ids: Union[str, Iterable[str]],
+    *,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+) -> None:
+    """Deletes one or more Neptune objects from the project trash.
+
+    Args:
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
+            If you pass the workspace argument, the name argument should only contain 'project-name'
+            instead of 'workspace-name/project-name'.
+        ids: Neptune ID of object to delete from trash (or list of multiple IDs).
+            You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
+        workspace: Name of your Neptune workspace. If you specify it,
+            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the name argument.
+        api_token: Account's API token.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+
+    Examples:
+
+        Deleting a run with the ID "CLS-1" from trash:
+        >>> from neptune import management
+        >>> management.delete_objects_from_trash(project="ml-team/classification", ids="CLS-1")
+
+        Deleting two runs and a model with the key "PRETRAINED" from trash:
+        >>> management.delete_objects_from_trash("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+    """
+    verify_type("project", project, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
+    if isinstance(ids, str):
+        ids = [ids]
+
+    verify_collection_type("ids", ids, str)
+
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
+
+    qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
+    for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
+        params = {
+            "projectIdentifier": project_qualified_name,
+            "experimentIdentifiers": batch_ids,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        response = leaderboard_client.api.deleteExperiments(**params).response()
+
+        for error in response.result.errors:
+            logger.warning(error)
+
+
+def clear_trash(
+    project: str,
+    *,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+) -> None:
+    """Deletes all Neptune objects from the project trash.
+
+    Args:
+        project: The name of the project in Neptune in the form 'workspace-name/project-name'.
+            If you pass the workspace argument, the name argument should only contain 'project-name'
+            instead of 'workspace-name/project-name'.
+        workspace: Name of your Neptune workspace. If you specify it,
+            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the name argument.
+        api_token: Account's API token.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+
+    Examples:
+
+        Clearing trash:
+        >>> from neptune import management
+        >>> management.clear_trash(project="ml-team/classification")
+    """
+    verify_type("project", project, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
+
+    workspace, project_name = extract_project_and_workspace(name=project, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
+    params = {
+        "projectIdentifier": project_qualified_name,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    response = leaderboard_client.api.deleteAllExperiments(**params).response()
+
+    for error in response.result.errors:
         logger.warning(error)
