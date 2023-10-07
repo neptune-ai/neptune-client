@@ -54,6 +54,7 @@ from neptune.internal.backends.utils import (
     verify_host_resolution,
 )
 from neptune.internal.credentials import Credentials
+from neptune.internal.utils.logger import logger
 from neptune.version import version as neptune_client_version
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
@@ -82,6 +83,7 @@ class GzipAdapter(HTTPAdapter):
                 request.prepare_body(compressed, None)
                 request.headers["Content-Encoding"] = "gzip"
             except zlib.error:
+                logger.warning("Error on compressing request")
                 pass
 
         return super(GzipAdapter, self).send(request, stream, **kw)
