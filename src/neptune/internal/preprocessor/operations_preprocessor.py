@@ -47,7 +47,18 @@ class OperationsPreprocessor:
         self._accumulators: Dict[str, "OperationsAccumulator"] = dict()
         self.processed_ops_count: int = 0
         self.final_ops_count: int = 0
-        self.final_append_count: int = 0
+
+    @property
+    def accumulators_count(self) -> int:
+        return len(self._accumulators.keys())
+
+    @property
+    def max_operations_per_accumulator(self) -> int:
+        return max(map(lambda acc: acc.get_op_count(), self._accumulators.values()), default=0)
+
+    @property
+    def operations_count(self) -> int:
+        return sum(map(lambda acc: acc.get_op_count(), self._accumulators.values()))
 
     def process(self, operation: Operation) -> bool:
         """Adds a single operation to its processed list.
@@ -69,10 +80,9 @@ class OperationsPreprocessor:
     def _process_op(self, op: Operation) -> "OperationsAccumulator":
         path_str = path_to_str(op.path)
         target_acc = self._accumulators.setdefault(path_str, OperationsAccumulator(op.path))
-        old_ops_count, old_append_count = target_acc.get_op_count(), target_acc.get_append_count()
+        old_ops_count = target_acc.get_op_count()
         target_acc.visit(op)
         self.final_ops_count += target_acc.get_op_count() - old_ops_count
-        self.final_append_count += target_acc.get_append_count() - old_append_count
         return target_acc
 
     def accumulate_operations(

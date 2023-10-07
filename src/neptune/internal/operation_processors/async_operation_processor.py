@@ -271,8 +271,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._queue.close()
 
     class ConsumerThread(Daemon):
-        MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 1000
-        MAX_APPENDS_IN_BATCH: ClassVar[int] = 100000
+        MAX_OPERATIONS_PER_ATTRIBUTE: ClassVar[int] = 100000
+        MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 100000
+        MAX_ATTRIBUTES_IN_BATCH: ClassVar[int] = 1000
 
         def __init__(
             self,
@@ -327,8 +328,9 @@ class AsyncOperationProcessor(OperationProcessor):
             dropped_operations_count = 0
 
             while (
-                preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
-                and preprocessor.final_append_count < self.MAX_APPENDS_IN_BATCH
+                preprocessor.operations_count < self.MAX_OPERATIONS_IN_BATCH
+                and preprocessor.accumulators_count < self.MAX_ATTRIBUTES_IN_BATCH
+                and preprocessor.max_operations_per_accumulator < self.MAX_OPERATIONS_PER_ATTRIBUTE
             ):
                 record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
                 self._last_disk_record = None
