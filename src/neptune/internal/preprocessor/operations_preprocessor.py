@@ -75,8 +75,10 @@ class OperationsPreprocessor:
         self.final_append_count += target_acc.get_append_count() - old_append_count
         return target_acc
 
-    def accumulate_operations(self, initial_errors: Optional[List["NeptuneException"]] = None) -> AccumulatedOperations:
-        result = AccumulatedOperations()
+    def accumulate_operations(
+        self, initial_errors: Optional[List["NeptuneException"]] = None, source_operations_count: int = 0
+    ) -> AccumulatedOperations:
+        result = AccumulatedOperations(source_operations_count=source_operations_count)
         result.errors.extend(initial_errors or [])
 
         for _, acc in sorted(self._accumulators.items()):

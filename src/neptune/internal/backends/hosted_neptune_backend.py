@@ -549,7 +549,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in itertools.chain(accumulated_operations.upload_operations, accumulated_operations.other_operations):
             op.clean(operation_storage=operation_storage)
 
-        return accumulated_operations.final_ops_count, errors
+        return accumulated_operations.source_operations_count, errors
 
     def _execute_upload_operations(
         self,

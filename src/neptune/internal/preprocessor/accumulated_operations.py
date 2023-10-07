@@ -34,7 +34,7 @@ class AccumulatedOperations:
     artifact_operations: List[TrackFilesToArtifact] = field(default_factory=list)
     other_operations: List[Operation] = field(default_factory=list)
     errors: List[NeptuneException] = field(default_factory=list)
-    final_ops_count: int = 0
+    source_operations_count: int = 0
 
     def all_operations(self) -> List[Operation]:
         return self.upload_operations + self.artifact_operations + self.other_operations

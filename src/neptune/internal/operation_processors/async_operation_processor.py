@@ -359,10 +359,17 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._last_disk_record = record
                     break
 
-            # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
-            result = preprocessor.accumulate_operations(initial_errors=errors)
-            result.final_ops_count = preprocessor.final_ops_count
-            return (result, dropped_operations_count, version) if version is not None else None
+            return (
+                (
+                    preprocessor.accumulate_operations(
+                        initial_errors=errors, source_operations_count=preprocessor.final_ops_count
+                    ),
+                    dropped_operations_count,
+                    version,
+                )
+                if version is not None
+                else None
+            )
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
