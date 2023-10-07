@@ -344,7 +344,7 @@ class LogFloats(LogOperation):
     def value_count(self) -> int:
         return len(self.values)
 
-    def get_values(self) -> list[LogSeriesValue[float]]:
+    def get_values(self) -> List[LogSeriesValue[float]]:
         return self.values
 
 
@@ -373,7 +373,7 @@ class LogStrings(LogOperation):
     def value_count(self) -> int:
         return len(self.values)
 
-    def get_values(self) -> list[LogSeriesValue[str]]:
+    def get_values(self) -> List[LogSeriesValue[str]]:
         return self.values
 
 
@@ -424,7 +424,7 @@ class LogImages(LogOperation):
     def value_count(self) -> int:
         return len(self.values)
 
-    def get_values(self) -> list[LogSeriesValue[ImageValue]]:
+    def get_values(self) -> List[LogSeriesValue[ImageValue]]:
         return self.values
 
 
