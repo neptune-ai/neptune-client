@@ -34,6 +34,8 @@ class AccumulatedOperations:
     artifact_operations: List[TrackFilesToArtifact] = field(default_factory=list)
     other_operations: List[Operation] = field(default_factory=list)
     errors: List[MetadataInconsistency] = field(default_factory=list)
+    dropped_operations_count: int = 0
+    final_ops_count: int = 0
 
     def all_operations(self) -> List[Operation]:
         return self.upload_operations + self.artifact_operations + self.other_operations

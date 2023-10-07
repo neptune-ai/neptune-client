@@ -509,59 +509,47 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: UniqueId,
         container_type: ContainerType,
         accumulated_operations: "AccumulatedOperations",
-        old_operations: List[Operation],
         operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
-        errors = []
+        errors: List[NeptuneException] = accumulated_operations.errors
 
-        batching_mgr = ExecuteOperationsBatchingManager(self)
-        operations_batch = batching_mgr.get_batch(old_operations)
-        errors.extend(operations_batch.errors)
-        dropped_count = operations_batch.dropped_operations_count
-
-        operations_preprocessor = OperationsPreprocessor()
-        operations_preprocessor.process_batch(operations_batch.operations)
-
-        preprocessed_operations = operations_preprocessor.get_operations()
-        errors.extend(preprocessed_operations.errors)
-
-        if preprocessed_operations.artifact_operations:
+        if accumulated_operations.artifact_operations:
             self.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
         # Upload operations should be done first since they are idempotent
-        if preprocessed_operations.upload_operations:
+        if accumulated_operations.upload_operations:
             errors.extend(
                 self._execute_upload_operations_with_400_retry(
                     container_id=container_id,
                     container_type=container_type,
-                    upload_operations=preprocessed_operations.upload_operations,
+                    upload_operations=accumulated_operations.upload_operations,
                     operation_storage=operation_storage,
                 )
             )
 
-        if preprocessed_operations.artifact_operations:
+        if accumulated_operations.artifact_operations:
             artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
                 container_id=container_id,
                 container_type=container_type,
-                artifact_operations=preprocessed_operations.artifact_operations,
+                artifact_operations=accumulated_operations.artifact_operations,
             )
 
             errors.extend(artifact_operations_errors)
-            preprocessed_operations.other_operations.extend(assign_artifact_operations)
+            accumulated_operations.other_operations.extend(assign_artifact_operations)
 
-        if preprocessed_operations.other_operations:
+        if accumulated_operations.other_operations:
             errors.extend(
                 self._execute_operations(
                     container_id,
                     container_type,
-                    operations=preprocessed_operations.other_operations,
+                    operations=accumulated_operations.other_operations,
                 )
             )
 
-        for op in itertools.chain(preprocessed_operations.upload_operations, preprocessed_operations.other_operations):
+        for op in itertools.chain(accumulated_operations.upload_operations, accumulated_operations.other_operations):
             op.clean(operation_storage=operation_storage)
 
-        return operations_preprocessor.final_ops_count + dropped_count, errors
+        return accumulated_operations.final_ops_count + accumulated_operations.dropped_operations_count, errors
 
     def _execute_upload_operations(
         self,
