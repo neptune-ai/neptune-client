@@ -28,17 +28,12 @@ from typing import (
     TYPE_CHECKING,
     Callable,
     ClassVar,
-    List,
     Optional,
-    Tuple,
 )
 
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
-from neptune.exceptions import (
-    MetadataInconsistency,
-    NeptuneSynchronizationAlreadyStoppedException,
-)
+from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -47,20 +42,14 @@ from neptune.internal.init.parameters import (
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_STOP_TIMEOUT,
 )
-from neptune.internal.operation import (
-    CopyAttribute,
-    Operation,
-)
+from neptune.internal.operation import Operation
+from neptune.internal.operation_processors.batcher import Batcher
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
-from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
-from neptune.internal.queue.disk_queue import (
-    DiskQueue,
-    QueueElement,
-)
+from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
 
@@ -286,7 +275,13 @@ class AsyncOperationProcessor(OperationProcessor):
             self._batch_size = batch_size
             self._last_flush = 0
             self._no_progress_exceeded = False
-            self._last_disk_record: Optional[QueueElement[Operation]] = None
+            self._batcher = Batcher(
+                queue=self._processor._queue,
+                backend=self._processor._backend,
+                max_points_per_batch=self.MAX_POINTS_PER_BATCH,
+                max_attributes_in_batch=self.MAX_ATTRIBUTES_IN_BATCH,
+                max_points_per_attribute=self.MAX_POINTS_PER_ATTRIBUTE,
+            )
 
         def run(self):
             try:
@@ -312,66 +307,13 @@ class AsyncOperationProcessor(OperationProcessor):
             )
         )
         def collect_and_process_batch(self) -> bool:
-            batch = self.collect_batch()
+            batch = self._batcher.collect_batch()
 
             if batch:
                 operations, dropped_operations_count, version = batch
                 self.process_batch(operations, dropped_operations_count, version)
 
             return batch is not None
-
-        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int, int]]:
-            preprocessor = OperationsPreprocessor()
-            version: Optional[int] = None
-            copy_ops: List[CopyAttribute] = []
-            errors = []
-            dropped_operations_count = 0
-
-            while (
-                preprocessor.points_count < self.MAX_POINTS_PER_BATCH
-                and preprocessor.accumulators_count < self.MAX_ATTRIBUTES_IN_BATCH
-                and preprocessor.max_points_per_accumulator < self.MAX_POINTS_PER_ATTRIBUTE
-            ):
-                record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
-                self._last_disk_record = None
-
-                if not record:
-                    break
-
-                operation, operation_version = record.obj, record.ver
-
-                if isinstance(operation, CopyAttribute):
-                    # CopyAttribute can be only at the start of a batch.
-                    # TODO: This doesn't work as expected
-                    if copy_ops or preprocessor.operations_count:
-                        self._last_disk_record = record
-                        break
-                    else:
-                        try:
-                            operation = operation.resolve(self._processor._backend)
-                        except MetadataInconsistency as e:
-                            errors.append(e)
-                            dropped_operations_count += 1
-
-                        version = operation_version
-
-                if preprocessor.process(operation):
-                    version = operation_version
-                else:
-                    self._last_disk_record = record
-                    break
-
-            return (
-                (
-                    preprocessor.accumulate_operations(
-                        initial_errors=errors, source_operations_count=preprocessor.operations_count
-                    ),
-                    dropped_operations_count,
-                    version,
-                )
-                if version is not None
-                else None
-            )
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["DiskQueue"]
+__all__ = ["DiskQueue", "QueueElement"]
 
 import json
 import logging
