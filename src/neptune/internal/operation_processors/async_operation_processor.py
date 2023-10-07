@@ -315,12 +315,12 @@ class AsyncOperationProcessor(OperationProcessor):
             batch = self.collect_batch()
 
             if batch:
-                operations, version = batch
-                self.process_batch(operations, version)
+                operations, dropped_operations_count, version = batch
+                self.process_batch(operations, dropped_operations_count, version)
 
             return batch is not None
 
-        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int]]:
+        def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int, int]]:
             preprocessor = OperationsPreprocessor()
             version: Optional[int] = None
             copy_ops: List[CopyAttribute] = []
@@ -341,6 +341,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
                 if isinstance(operation, CopyAttribute):
                     # CopyAttribute can be only at the start of a batch.
+                    # TODO: This doesn't work as expected
                     if copy_ops or preprocessor.final_ops_count:
                         self._last_disk_record = record
                         break
@@ -362,9 +363,8 @@ class AsyncOperationProcessor(OperationProcessor):
             # TODO: Pass errors and dropped_operations_count to AccumulatedOperations
             result = preprocessor.accumulate_operations()
             result.errors.extend(errors)
-            result.dropped_operations_count = dropped_operations_count
             result.final_ops_count = preprocessor.final_ops_count
-            return (result, version) if version is not None else None
+            return (result, dropped_operations_count, version) if version is not None else None
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
@@ -372,7 +372,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
-        def process_batch(self, batch: "AccumulatedOperations", version: int) -> None:
+        def process_batch(self, batch: "AccumulatedOperations", dropped_operations_count: int, version: int) -> None:
             expected_count = batch.operations_count
             version_to_ack = version - expected_count
 
@@ -392,7 +392,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
                 self._no_progress_exceeded = False
 
-                version_to_ack += processed_count + batch.dropped_operations_count
+                version_to_ack += processed_count + dropped_operations_count
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
