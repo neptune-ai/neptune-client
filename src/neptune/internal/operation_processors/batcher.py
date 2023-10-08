@@ -53,7 +53,6 @@ class Batcher:
     def collect_batch(self) -> Optional[Tuple["AccumulatedOperations", int, int]]:
         preprocessor = OperationsPreprocessor()
         version: Optional[int] = None
-        copy_ops: List["CopyAttribute"] = []
         errors: List["NeptuneException"] = []
         dropped_operations_count = 0
 
@@ -71,9 +70,8 @@ class Batcher:
             operation, operation_version = record.obj, record.ver
 
             if isinstance(operation, CopyAttribute):
-                # CopyAttribute can be only at the start of a batch.
-                # TODO: This doesn't work as expected
-                if copy_ops or preprocessor.operations_count:
+                # CopyAttribute can be only at the start of a batch
+                if preprocessor.operations_count:
                     self._last_disk_record = record
                     break
                 else:
