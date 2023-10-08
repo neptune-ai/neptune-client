@@ -83,7 +83,7 @@ class Batcher:
                     version = operation_version
 
             # TODO: Refactor as this should be more generic
-            if preprocessor.has_accumulator(operation.path):
+            if not preprocessor.has_accumulator(operation.path):
                 if preprocessor.accumulators_count + 1 > self._max_attributes_in_batch:
                     self._last_disk_record = record
                     break
