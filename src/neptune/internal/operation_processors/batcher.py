@@ -38,9 +38,9 @@ class Batcher:
         self,
         queue: "DiskQueue",
         backend: "NeptuneBackend",
-        max_points_per_batch: int,
-        max_attributes_in_batch: int,
-        max_points_per_attribute: int,
+        max_points_per_batch: int = 100000,
+        max_attributes_in_batch: int = 1000,
+        max_points_per_attribute: int = 100000,
     ):
         self._backend: "NeptuneBackend" = backend
         self._queue: "DiskQueue" = queue
