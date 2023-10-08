@@ -262,7 +262,7 @@ class AsyncOperationProcessor(OperationProcessor):
     class ConsumerThread(Daemon):
         MAX_POINTS_PER_BATCH: ClassVar[int] = 100000
         MAX_ATTRIBUTES_IN_BATCH: ClassVar[int] = 1000
-        MAX_POINTS_PER_ATTRIBUTE: ClassVar[int] = 100000
+        MAX_POINTS_PER_ATTRIBUTE: ClassVar[int] = 10000
 
         def __init__(
             self,
