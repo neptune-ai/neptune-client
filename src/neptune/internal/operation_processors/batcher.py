@@ -56,11 +56,7 @@ class Batcher:
         errors: List["NeptuneException"] = []
         dropped_operations_count = 0
 
-        while (
-            preprocessor.points_count < self._max_points_per_batch
-            and preprocessor.accumulators_count < self._max_attributes_in_batch
-            and preprocessor.max_points_per_accumulator < self._max_points_per_attribute
-        ):
+        while True:
             record: Optional[QueueElement[Operation]] = self._last_disk_record or self._queue.get()
             self._last_disk_record = None
 
@@ -82,6 +78,21 @@ class Batcher:
                         dropped_operations_count += 1
 
                     version = operation_version
+
+            temp_preprocessor = OperationsPreprocessor()
+            temp_preprocessor.process_batch(operations=preprocessor.accumulate_operations().all_operations())
+
+            if not temp_preprocessor.process(operation):
+                self._last_disk_record = record
+                break
+
+            if (
+                temp_preprocessor.points_count > self._max_points_per_batch
+                or temp_preprocessor.accumulators_count > self._max_attributes_in_batch
+                or temp_preprocessor.max_points_per_accumulator > self._max_points_per_attribute
+            ):
+                self._last_disk_record = record
+                break
 
             if preprocessor.process(operation):
                 version = operation_version
