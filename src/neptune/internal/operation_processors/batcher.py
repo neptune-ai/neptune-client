@@ -21,7 +21,10 @@ from typing import (
 )
 
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.operation import CopyAttribute
+from neptune.internal.operation import (
+    CopyAttribute,
+    LogOperation,
+)
 from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.queue.disk_queue import QueueElement
 
@@ -79,20 +82,23 @@ class Batcher:
 
                     version = operation_version
 
-            temp_preprocessor = OperationsPreprocessor()
-            temp_preprocessor.process_batch(operations=preprocessor.accumulate_operations().all_operations())
+            # TODO: Refactor as this should be more generic
+            if preprocessor.has_accumulator(operation.path):
+                if preprocessor.accumulators_count + 1 > self._max_attributes_in_batch:
+                    self._last_disk_record = record
+                    break
+            else:
+                if isinstance(operation, LogOperation):
+                    old_accumulator_points = preprocessor.get_accumulator_append_count(operation.path)
+                    new_points = operation.value_count()
 
-            if not temp_preprocessor.process(operation):
-                self._last_disk_record = record
-                break
+                    if preprocessor.points_count + new_points > self._max_points_per_batch:
+                        self._last_disk_record = record
+                        break
 
-            if (
-                temp_preprocessor.points_count > self._max_points_per_batch
-                or temp_preprocessor.accumulators_count > self._max_attributes_in_batch
-                or temp_preprocessor.max_points_per_accumulator > self._max_points_per_attribute
-            ):
-                self._last_disk_record = record
-                break
+                    if old_accumulator_points + new_points > self._max_points_per_attribute:
+                        self._last_disk_record = record
+                        break
 
             if preprocessor.process(operation):
                 version = operation_version

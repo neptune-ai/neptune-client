@@ -75,6 +75,17 @@ class OperationsPreprocessor:
         except RequiresPreviousCompleted:
             return False
 
+    # TODO: This shouldn't be public method
+    def get_accumulator_append_count(self, path: List[str]) -> int:
+        path_str = path_to_str(path)
+        if path_str not in self._accumulators:
+            return 0
+        return self._accumulators[path_str].get_append_count()
+
+    def has_accumulator(self, path: List[str]) -> bool:
+        path_str = path_to_str(path)
+        return path_str in self._accumulators
+
     def process_batch(self, operations: List[Operation]) -> None:
         for op in operations:
             if not self.process(op):
