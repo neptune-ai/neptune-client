@@ -111,7 +111,6 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.internal.backends.operation_api_object_converter import OperationApiObjectConverter
-from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     MissingApiClient,
@@ -133,6 +132,7 @@ from neptune.internal.operation import (
     UploadFileSet,
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.preprocessor.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
@@ -145,6 +145,7 @@ if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
 
     from neptune.internal.backends.api_model import ClientConfig
+    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
 
 
 _logger = logging.getLogger(__name__)
@@ -457,9 +458,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         dropped_count = operations_batch.dropped_operations_count
 
         operations_preprocessor = OperationsPreprocessor()
-        operations_preprocessor.process(operations_batch.operations)
+        operations_preprocessor.process_batch(operations_batch.operations)
 
-        preprocessed_operations = operations_preprocessor.get_operations()
+        preprocessed_operations = operations_preprocessor.accumulate_operations()
         errors.extend(preprocessed_operations.errors)
 
         if preprocessed_operations.artifact_operations:
@@ -503,6 +504,53 @@ class HostedNeptuneBackend(NeptuneBackend):
             errors,
         )
 
+    def execute_operations_from_accumulator(
+        self,
+        container_id: UniqueId,
+        container_type: ContainerType,
+        accumulated_operations: "AccumulatedOperations",
+        operation_storage: OperationStorage,
+    ) -> Tuple[int, List[NeptuneException]]:
+        errors: List[NeptuneException] = accumulated_operations.errors
+
+        if accumulated_operations.artifact_operations:
+            self.verify_feature_available(OptionalFeatures.ARTIFACTS)
+
+        # Upload operations should be done first since they are idempotent
+        if accumulated_operations.upload_operations:
+            errors.extend(
+                self._execute_upload_operations_with_400_retry(
+                    container_id=container_id,
+                    container_type=container_type,
+                    upload_operations=accumulated_operations.upload_operations,
+                    operation_storage=operation_storage,
+                )
+            )
+
+        if accumulated_operations.artifact_operations:
+            artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
+                container_id=container_id,
+                container_type=container_type,
+                artifact_operations=accumulated_operations.artifact_operations,
+            )
+
+            errors.extend(artifact_operations_errors)
+            accumulated_operations.other_operations.extend(assign_artifact_operations)
+
+        if accumulated_operations.other_operations:
+            errors.extend(
+                self._execute_operations(
+                    container_id,
+                    container_type,
+                    operations=accumulated_operations.other_operations,
+                )
+            )
+
+        for op in itertools.chain(accumulated_operations.upload_operations, accumulated_operations.other_operations):
+            op.clean(operation_storage=operation_storage)
+
+        return accumulated_operations.source_operations_count, errors
+
     def _execute_upload_operations(
         self,
         container_id: str,
@@ -510,7 +558,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         upload_operations: List[Operation],
         operation_storage: OperationStorage,
     ) -> List[NeptuneException]:
-        errors = list()
+        errors: List[NeptuneException] = list()
 
         if self._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD):
             multipart_config = self._client_config.multipart_config
