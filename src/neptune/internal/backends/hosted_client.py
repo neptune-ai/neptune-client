@@ -23,6 +23,7 @@ __all__ = [
 
 import os
 import platform
+import zlib
 from typing import (
     Dict,
     Tuple,
@@ -31,6 +32,11 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests import (
+    PreparedRequest,
+    Response,
+)
+from requests.adapters import HTTPAdapter
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
@@ -48,6 +54,7 @@ from neptune.internal.backends.utils import (
     verify_host_resolution,
 )
 from neptune.internal.credentials import Credentials
+from neptune.internal.utils.logger import logger
 from neptune.version import version as neptune_client_version
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
@@ -64,6 +71,22 @@ DEFAULT_REQUEST_KWARGS = {
         "headers": {"X-Neptune-LegacyClient": "false"},
     }
 }
+
+
+class GzipAdapter(HTTPAdapter):
+    def send(self, request: PreparedRequest, stream: bool = False, **kw) -> Response:
+        if request.body is not None and not stream and request.headers.get("Content-Type", None) == "application/json":
+            try:
+                request_body = request.body if isinstance(request.body, bytes) else bytes(request.body, "utf-8")
+                gzip_compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, zlib.MAX_WBITS | 16)
+                compressed = gzip_compress.compress(request_body) + gzip_compress.flush()
+                request.prepare_body(compressed, None)
+                request.headers["Content-Encoding"] = "gzip"
+            except zlib.error:
+                logger.warning("Error on compressing request")
+                pass
+
+        return super(GzipAdapter, self).send(request, stream, **kw)
 
 
 def _close_connections_on_fork(session: requests.Session):
@@ -174,7 +197,11 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
 
 
 @cache
-def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
+def create_leaderboard_client(client_config: ClientConfig, http_client: RequestsClient) -> SwaggerClientWrapper:
+    if client_config.gzip_upload:
+        http_client.session.mount("http://", GzipAdapter())
+        http_client.session.mount("https://", GzipAdapter())
+
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
