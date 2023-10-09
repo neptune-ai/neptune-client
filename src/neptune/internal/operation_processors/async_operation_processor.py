@@ -25,18 +25,16 @@ from time import (
     time,
 )
 from typing import (
+    TYPE_CHECKING,
     Callable,
     ClassVar,
-    List,
     Optional,
-    Tuple,
 )
 
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.init.parameters import (
@@ -44,21 +42,19 @@ from neptune.internal.init.parameters import (
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_STOP_TIMEOUT,
 )
-from neptune.internal.operation import (
-    CopyAttribute,
-    Operation,
-)
+from neptune.internal.operation import Operation
+from neptune.internal.operation_processors.batcher import Batcher
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
-from neptune.internal.queue.disk_queue import (
-    DiskQueue,
-    QueueElement,
-)
+from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import logger
+
+if TYPE_CHECKING:
+    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
 
 _logger = logging.getLogger(__name__)
 
@@ -264,9 +260,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._queue.close()
 
     class ConsumerThread(Daemon):
-        MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 1000
-        MAX_APPENDS_IN_BATCH: ClassVar[int] = 100000
-        MAX_BATCH_SIZE_BYTES: ClassVar[int] = 100 * 1024 * 1024
+        MAX_POINTS_PER_BATCH: ClassVar[int] = 100000
+        MAX_ATTRIBUTES_IN_BATCH: ClassVar[int] = 1000
+        MAX_POINTS_PER_ATTRIBUTE: ClassVar[int] = 10000
 
         def __init__(
             self,
@@ -279,7 +275,13 @@ class AsyncOperationProcessor(OperationProcessor):
             self._batch_size = batch_size
             self._last_flush = 0
             self._no_progress_exceeded = False
-            self._last_disk_record: Optional[QueueElement[Operation]] = None
+            self._batcher = Batcher(
+                queue=self._processor._queue,
+                backend=self._processor._backend,
+                max_points_per_batch=self.MAX_POINTS_PER_BATCH,
+                max_attributes_in_batch=self.MAX_ATTRIBUTES_IN_BATCH,
+                max_points_per_attribute=self.MAX_POINTS_PER_ATTRIBUTE,
+            )
 
         def run(self):
             try:
@@ -295,49 +297,8 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._last_flush = ts
                 self._processor._queue.flush()
 
-            while True:
-                batch = self.collect_batch()
-                if not batch:
-                    return
-                operations, version = batch
-                self.process_batch(operations, version)
-
-        def collect_batch(self) -> Optional[Tuple[List[Operation], int]]:
-            preprocessor = OperationsPreprocessor()
-            version: Optional[int] = None
-            total_bytes = 0
-            copy_ops: List[CopyAttribute] = []
-            while (
-                preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
-                and preprocessor.final_append_count < self.MAX_APPENDS_IN_BATCH
-                and total_bytes < self.MAX_BATCH_SIZE_BYTES
-            ):
-                record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
-                self._last_disk_record = None
-                if not record:
-                    break
-                if isinstance(record.obj, CopyAttribute):
-                    # CopyAttribute can be only at the start of a batch.
-                    if copy_ops or preprocessor.final_ops_count:
-                        self._last_disk_record = record
-                        break
-                    else:
-                        version = record.ver
-                        copy_ops.append(record.obj)
-                        total_bytes += record.size
-                elif preprocessor.process(record.obj):
-                    version = record.ver
-                    total_bytes += record.size
-                else:
-                    self._last_disk_record = record
-                    break
-            return (copy_ops + preprocessor.get_operations().all_operations(), version) if version is not None else None
-
-        def _check_no_progress(self):
-            if not self._no_progress_exceeded:
-                if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
-                    self._no_progress_exceeded = True
-                    self._processor._should_call_no_progress_callback = True
+            while self.collect_and_process_batch():
+                pass
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
@@ -345,16 +306,32 @@ class AsyncOperationProcessor(OperationProcessor):
                 " synced manually using `neptune sync` command."
             )
         )
-        def process_batch(self, batch: List[Operation], version: int) -> None:
-            expected_count = len(batch)
+        def collect_and_process_batch(self) -> bool:
+            batch = self._batcher.collect_batch()
+
+            if batch:
+                operations, dropped_operations_count, version = batch
+                self.process_batch(operations, dropped_operations_count, version)
+
+            return batch is not None
+
+        def _check_no_progress(self):
+            if not self._no_progress_exceeded:
+                if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
+                    self._no_progress_exceeded = True
+                    self._processor._should_call_no_progress_callback = True
+
+        def process_batch(self, batch: "AccumulatedOperations", dropped_operations_count: int, version: int) -> None:
+            expected_count = batch.operations_count
             version_to_ack = version - expected_count
+
             while True:
                 # TODO: Handle Metadata errors
                 try:
-                    processed_count, errors = self._processor._backend.execute_operations(
+                    processed_count, errors = self._processor._backend.execute_operations_from_accumulator(
                         container_id=self._processor._container_id,
                         container_type=self._processor._container_type,
-                        operations=batch,
+                        accumulated_operations=batch,
                         operation_storage=self._processor._operation_storage,
                     )
                 except Exception as e:
@@ -364,8 +341,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
                 self._no_progress_exceeded = False
 
-                version_to_ack += processed_count
-                batch = batch[processed_count:]
+                version_to_ack += processed_count + dropped_operations_count
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
