@@ -23,7 +23,11 @@ from typing import (
     Optional,
 )
 
-from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
+from neptune.envs import (
+    NEPTUNE_ASYNC_MAX_ATTRIBUTES_IN_BATCH,
+    NEPTUNE_ASYNC_MAX_POINTS_PER_ATTRIBUTE,
+    NEPTUNE_ASYNC_MAX_POINTS_PER_BATCH,
+)
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -59,7 +63,9 @@ def get_operation_processor(
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+            max_points_per_batch=int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_BATCH, "100000")),
+            max_points_per_attribute=int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_ATTRIBUTE, "10000")),
+            max_attributes_in_batch=int(os.environ.get(NEPTUNE_ASYNC_MAX_ATTRIBUTES_IN_BATCH, "1000")),
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,
