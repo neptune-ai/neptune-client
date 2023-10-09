@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.1
+## [UNRELEASED] neptune 1.8.2
 
 ### Changes
 - Upgraded performance of sending series data to Neptune ([#1483](https://github.com/neptune-ai/neptune-client/pull/1483))
