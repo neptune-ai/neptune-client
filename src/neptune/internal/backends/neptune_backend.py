@@ -17,7 +17,6 @@ __all__ = ["NeptuneBackend"]
 
 import abc
 from typing import (
-    TYPE_CHECKING,
     Any,
     List,
     Optional,
@@ -59,9 +58,6 @@ from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-
-if TYPE_CHECKING:
-    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
 
 
 class NeptuneBackend:
@@ -143,16 +139,6 @@ class NeptuneBackend:
         container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
-        operation_storage: OperationStorage,
-    ) -> Tuple[int, List[NeptuneException]]:
-        pass
-
-    @abc.abstractmethod
-    def execute_operations_from_accumulator(
-        self,
-        container_id: UniqueId,
-        container_type: ContainerType,
-        accumulated_operations: "AccumulatedOperations",
         operation_storage: OperationStorage,
     ) -> Tuple[int, List[NeptuneException]]:
         pass
