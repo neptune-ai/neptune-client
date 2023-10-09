@@ -16,7 +16,6 @@
 __all__ = ("SyncOperationProcessor",)
 
 import os
-from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -41,9 +40,7 @@ class SyncOperationProcessor(OperationProcessor):
 
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
+        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, os.getpid())
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(

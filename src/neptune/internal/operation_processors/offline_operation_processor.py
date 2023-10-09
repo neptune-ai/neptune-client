@@ -15,6 +15,7 @@
 #
 __all__ = ("OfflineOperationProcessor",)
 
+import os
 import threading
 from pathlib import Path
 from typing import Optional
@@ -44,7 +45,7 @@ class OfflineOperationProcessor(OperationProcessor):
 
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type, os.getpid())
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)

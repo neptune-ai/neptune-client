@@ -18,22 +18,15 @@ __all__ = ["OperationStorage", "get_container_dir"]
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 
 
-def get_container_dir(
-    type_dir: str, container_id: UniqueId, container_type: ContainerType, process_path: Optional[str] = None
-) -> Path:
-    neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
-    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
-    if process_path:
-        container_dir /= Path(process_path)
-
-    return container_dir
+def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType, process_pid: int) -> Path:
+    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
+    return neptune_data_dir / type_dir / f"{container_type.create_dir_name(container_id)}_{process_pid}"
 
 
 class OperationStorage:
