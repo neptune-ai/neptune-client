@@ -1,3 +1,9 @@
+## neptune 1.8.1
+
+### Fixes
+- Fixed SSL-related error handling ([#1490](https://github.com/neptune-ai/neptune-client/pull/1490))
+
+
 ## neptune 1.8.0
 
 ### Features
