@@ -457,7 +457,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         dropped_count = operations_batch.dropped_operations_count
 
         operations_preprocessor = OperationsPreprocessor()
-        operations_preprocessor.process_batch(operations_batch.operations)
+        operations_preprocessor.process(operations_batch.operations)
 
         preprocessed_operations = operations_preprocessor.get_operations()
         errors.extend(preprocessed_operations.errors)

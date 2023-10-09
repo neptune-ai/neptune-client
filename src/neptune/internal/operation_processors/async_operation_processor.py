@@ -26,32 +26,23 @@ from time import (
 )
 from typing import (
     Callable,
-    ClassVar,
     List,
     Optional,
-    Tuple,
 )
 
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import (
-    DiskQueue,
-    QueueElement,
-)
+from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_STOP_TIMEOUT,
 )
-from neptune.internal.operation import (
-    CopyAttribute,
-    Operation,
-)
+from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -264,10 +255,6 @@ class AsyncOperationProcessor(OperationProcessor):
         self._queue.close()
 
     class ConsumerThread(Daemon):
-        MAX_OPERATIONS_IN_BATCH: ClassVar[int] = 1000
-        MAX_APPENDS_IN_BATCH: ClassVar[int] = 100000
-        MAX_BATCH_SIZE_BYTES: ClassVar[int] = 100 * 1024 * 1024
-
         def __init__(
             self,
             processor: "AsyncOperationProcessor",
@@ -279,7 +266,6 @@ class AsyncOperationProcessor(OperationProcessor):
             self._batch_size = batch_size
             self._last_flush = 0
             self._no_progress_exceeded = False
-            self._last_disk_record: Optional[QueueElement[Operation]] = None
 
         def run(self):
             try:
@@ -296,42 +282,10 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch = self.collect_batch()
+                batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
-                operations, version = batch
-                self.process_batch(operations, version)
-
-        def collect_batch(self) -> Optional[Tuple[List[Operation], int]]:
-            preprocessor = OperationsPreprocessor()
-            version: Optional[int] = None
-            total_bytes = 0
-            copy_ops: List[CopyAttribute] = []
-            while (
-                preprocessor.final_ops_count < self.MAX_OPERATIONS_IN_BATCH
-                and preprocessor.final_append_count < self.MAX_APPENDS_IN_BATCH
-                and total_bytes < self.MAX_BATCH_SIZE_BYTES
-            ):
-                record: Optional[QueueElement[Operation]] = self._last_disk_record or self._processor._queue.get()
-                self._last_disk_record = None
-                if not record:
-                    break
-                if isinstance(record.obj, CopyAttribute):
-                    # CopyAttribute can be only at the start of a batch.
-                    if copy_ops or preprocessor.final_ops_count:
-                        self._last_disk_record = record
-                        break
-                    else:
-                        version = record.ver
-                        copy_ops.append(record.obj)
-                        total_bytes += record.size
-                elif preprocessor.process(record.obj):
-                    version = record.ver
-                    total_bytes += record.size
-                else:
-                    self._last_disk_record = record
-                    break
-            return (copy_ops + preprocessor.get_operations().all_operations(), version) if version is not None else None
+                self.process_batch([element.obj for element in batch], batch[-1].ver)
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
