@@ -1,11 +1,3 @@
-## [UNRELEASED] neptune 1.8.2
-
-### Changes
-- Upgraded performance of sending series data to Neptune ([#1483](https://github.com/neptune-ai/neptune-client/pull/1483))
-- Compress (gzip) request to server, when server support it ([#1476](https://github.com/neptune-ai/neptune-client/pull/1476))
-- Support for batch processing parameters from env variables ([#1495](https://github.com/neptune-ai/neptune-client/pull/1495))
-
-
 ## neptune 1.8.1
 
 ### Fixes
