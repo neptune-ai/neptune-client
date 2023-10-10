@@ -132,7 +132,6 @@ class ClientConfig:
     _missing_features: FrozenSet[str]
     version_info: VersionInfo
     multipart_config: MultipartConfig
-    gzip_upload: bool
 
     def has_feature(self, feature_name: str) -> bool:
         return feature_name not in self._missing_features
@@ -163,7 +162,6 @@ class ClientConfig:
             multipart_upload_config = MultipartConfig(
                 min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
             )
-        gzip_upload = getattr(config, "gzipUpload", False)
 
         artifacts_config_obj = getattr(config, "artifacts", None)
         has_artifacts = getattr(artifacts_config_obj, "enabled", False)
@@ -181,7 +179,6 @@ class ClientConfig:
             _missing_features=frozenset(missing_features),
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
-            gzip_upload=gzip_upload,
         )
 
 
