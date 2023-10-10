@@ -156,12 +156,12 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._project_name: str = self._api_object.project_name
 
         self._async_lag_threshold = async_lag_threshold
-        self._async_lag_callback = self._get_callback(
+        self._async_lag_callback = MetadataContainer._get_callback(
             provided=async_lag_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
         )
         self._async_no_progress_threshold = async_no_progress_threshold
-        self._async_no_progress_callback = self._get_callback(
+        self._async_no_progress_callback = MetadataContainer._get_callback(
             provided=async_no_progress_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
         )
