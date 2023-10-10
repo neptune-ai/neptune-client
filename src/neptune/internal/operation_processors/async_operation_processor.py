@@ -15,11 +15,8 @@
 #
 __all__ = ("AsyncOperationProcessor",)
 
-import logging
 import os
 import threading
-from datetime import datetime
-from pathlib import Path
 from time import (
     monotonic,
     time,
@@ -33,9 +30,6 @@ from typing import (
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -44,31 +38,30 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.batcher import Batcher
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
-)
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import get_container_dir
 from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 from neptune.internal.utils.logger import logger
 
 if TYPE_CHECKING:
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.container_type import ContainerType
+    from neptune.internal.id_formats import UniqueId
     from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
-
-_logger = logging.getLogger(__name__)
 
 
 class AsyncOperationProcessor(OperationProcessor):
     QUEUE_RECORDS_TO_WAKEUP = 500
-    STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
-    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
+    STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30.0
+    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = float(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
 
     def __init__(
         self,
-        container_id: UniqueId,
-        container_type: ContainerType,
-        backend: NeptuneBackend,
+        container_id: "UniqueId",
+        container_type: "ContainerType",
+        backend: "NeptuneBackend",
         lock: threading.RLock,
         max_points_per_attribute: int,
         max_points_per_batch: int,
@@ -79,15 +72,6 @@ class AsyncOperationProcessor(OperationProcessor):
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
-
-        self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
-            to_dict=lambda x: x.to_dict(),
-            from_dict=Operation.from_dict,
-            lock=lock,
-        )
-
         self._container_id = container_id
         self._container_type = container_type
         self._backend = backend
@@ -97,6 +81,20 @@ class AsyncOperationProcessor(OperationProcessor):
         self._async_no_progress_threshold = async_no_progress_threshold
         self._last_version = 0
         self._consumed_version = 0
+        self._lock = lock
+        self._last_ack: float = 0.0
+        self._lag_exceeded = False
+        self._should_call_no_progress_callback = False
+
+        data_path = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+
+        self._operation_storage = OperationStorage(data_path)
+        self._queue = DiskQueue(
+            dir_path=data_path,
+            to_dict=Operation.to_dict,
+            from_dict=Operation.from_dict,
+            lock=lock,
+        )
         self._consumer = self.ConsumerThread(
             self,
             sleep_time=sleep_time,
@@ -104,19 +102,9 @@ class AsyncOperationProcessor(OperationProcessor):
             max_points_per_batch=max_points_per_batch,
             max_attributes_in_batch=max_attributes_in_batch,
         )
-        self._lock = lock
-        self._last_ack = None
-        self._lag_exceeded = False
-        self._should_call_no_progress_callback = False
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
@@ -130,7 +118,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if wait:
             self.wait()
 
-    def wait(self):
+    def wait(self) -> None:
         self.flush()
         waiting_for_version = self._last_version
         self._consumer.wake_up()
@@ -143,7 +131,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
 
-    def _check_lag(self):
+    def _check_lag(self) -> None:
         if self._lag_exceeded or not self._last_ack or monotonic() - self._last_ack <= self._async_lag_threshold:
             return
 
@@ -152,7 +140,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._async_lag_callback()
                 self._lag_exceeded = True
 
-    def _check_no_progress(self):
+    def _check_no_progress(self) -> None:
         if not self._should_call_no_progress_callback:
             return
 
@@ -161,23 +149,24 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._async_no_progress_callback()
                 self._should_call_no_progress_callback = False
 
-    def flush(self):
+    def flush(self) -> None:
         self._queue.flush()
 
-    def start(self):
+    def start(self) -> None:
         self._consumer.start()
 
-    def pause(self):
+    def pause(self) -> None:
         self._consumer.pause()
         self._queue.flush()
 
-    def resume(self):
+    def resume(self) -> None:
         self._consumer.resume()
 
-    def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
-        waiting_start = monotonic()
-        time_elapsed = 0
-        max_reconnect_wait_time = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
+    def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:
+        waiting_start: float = monotonic()
+        time_elapsed: float = 0.0
+        max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
+
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
                 logger.warning(
@@ -203,10 +192,10 @@ class AsyncOperationProcessor(OperationProcessor):
             else:
                 wait_time = max(
                     min(
-                        seconds - time_elapsed,
+                        seconds - float(time_elapsed),
                         self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS,
                     ),
-                    0,
+                    0.0,
                 )
             self._queue.wait_for_empty(wait_time)
             size_remaining = self._queue.size()
@@ -263,9 +252,10 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
+        # TODO: Clean OperationStorage as well (if queue is empty)
         self._queue.cleanup_if_empty()
 
-    def close(self):
+    def close(self) -> None:
         self._queue.close()
 
     class ConsumerThread(Daemon):
@@ -279,7 +269,7 @@ class AsyncOperationProcessor(OperationProcessor):
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor = processor
-            self._last_flush = 0
+            self._last_flush: float = 0.0
             self._no_progress_exceeded = False
             self._batcher = Batcher(
                 queue=self._processor._queue,
@@ -289,7 +279,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 max_points_per_attribute=max_points_per_attribute,
             )
 
-        def run(self):
+        def run(self) -> None:
             try:
                 super().run()
             except Exception:
@@ -321,7 +311,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
             return batch is not None
 
-        def _check_no_progress(self):
+        def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:
                 if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
                     self._no_progress_exceeded = True
@@ -355,7 +345,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._lag_exceeded = False
 
                     for error in errors:
-                        _logger.error(
+                        logger.error(
                             "Error occurred during asynchronous operation processing: %s",
                             error,
                         )

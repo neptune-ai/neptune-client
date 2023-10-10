@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2023, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,26 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["OperationStorage"]
+__all__ = ["get_container_dir"]
 
 import os
-import shutil
 from pathlib import Path
 
+from neptune.constants import NEPTUNE_DATA_DIRECTORY
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import UniqueId
 
-class OperationStorage:
-    UPLOAD_PATH: str = "upload_path"
 
-    def __init__(self, data_path: Path):
-        local_data_path: Path = data_path / OperationStorage.UPLOAD_PATH
-        self._data_path: Path = local_data_path.resolve()
-
-        # initialize directory
-        os.makedirs(local_data_path, exist_ok=True)
-
-    @property
-    def data_path(self) -> Path:
-        return self._data_path
-
-    def cleanup(self) -> None:
-        shutil.rmtree(self._data_path, ignore_errors=True)
+def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType) -> Path:
+    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
+    return neptune_data_dir / type_dir / container_type.create_dir_name(container_id) / f"exec-{os.getpid()}"

@@ -16,7 +16,6 @@
 __all__ = ("OfflineOperationProcessor",)
 
 import threading
-from pathlib import Path
 from typing import Optional
 
 from neptune.constants import OFFLINE_DIRECTORY
@@ -24,46 +23,39 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
-)
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import get_container_dir
 from neptune.internal.queue.disk_queue import DiskQueue
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: UniqueId, container_type: ContainerType, lock: threading.RLock):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+        self._container_id: UniqueId = container_id
+        self._container_type: ContainerType = container_type
 
-        self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
-            to_dict=lambda x: x.to_dict(),
-            from_dict=Operation.from_dict,
-            lock=lock,
+        data_path = get_container_dir(
+            type_dir=OFFLINE_DIRECTORY, container_id=container_id, container_type=container_type
         )
 
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+        self._operation_storage = OperationStorage(data_path=data_path)
+        self._queue = DiskQueue(dir_path=data_path, to_dict=Operation.to_dict, from_dict=Operation.from_dict, lock=lock)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
 
-    def wait(self):
-        self.flush()
-
-    def flush(self):
-        self._queue.flush()
-
-    def start(self):
-        pass
-
     def stop(self, seconds: Optional[float] = None) -> None:
         self.close()
         # Remove local files
+        # TODO: Cleanup operation storage as well
         self._queue.cleanup_if_empty()
+
+    def wait(self) -> None:
+        self.flush()
+
+    def flush(self) -> None:
+        self._queue.flush()
 
     def close(self) -> None:
         self._queue.close()

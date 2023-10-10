@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-__all__ = ["get_operation_processor"]
+__all__ = ("get_operation_processor",)
 
 import os
 import threading
@@ -72,13 +72,13 @@ def get_operation_processor(
             async_no_progress_threshold=async_no_progress_threshold,
         )
     elif mode == Mode.SYNC:
-        return SyncOperationProcessor(container_id, container_type, backend)
+        return SyncOperationProcessor(container_id=container_id, container_type=container_type, backend=backend)
     elif mode == Mode.DEBUG:
-        return SyncOperationProcessor(container_id, container_type, backend)
+        return SyncOperationProcessor(container_id=container_id, container_type=container_type, backend=backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
-        return OfflineOperationProcessor(container_id, container_type, lock)
+        return OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=lock)
     elif mode == Mode.READ_ONLY:
-        return ReadOnlyOperationProcessor(container_id, backend)
+        return ReadOnlyOperationProcessor()
     else:
         raise ValueError(f"mode should be one of {[m for m in Mode]}")

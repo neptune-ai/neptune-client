@@ -204,7 +204,7 @@ class UploadFile(Operation):
             )
         elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
             tmp_file_name = cls.get_tmp_file_name(attribute_path, value.extension)
-            value._save(operation_storage.upload_path / tmp_file_name)
+            value._save(operation_storage.data_path / tmp_file_name)
             operation = UploadFile(path=attribute_path, ext=value.extension, tmp_file_name=tmp_file_name)
         else:
             raise ValueError(f"Unexpected FileType: {value.file_type}")
@@ -247,7 +247,7 @@ class UploadFile(Operation):
         if self.file_path:
             return self.file_path
         elif self.tmp_file_name:
-            return str(operation_storage.upload_path / self.tmp_file_name)
+            return str(operation_storage.data_path / self.tmp_file_name)
 
         raise NeptuneException("Expected 'file_path' or 'tmp_file_name' to be filled.")
 

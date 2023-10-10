@@ -22,32 +22,27 @@ from neptune.internal.operation import Operation
 
 
 class OperationProcessor(abc.ABC):
-    def pause(self):
-        pass
-
-    def resume(self):
-        pass
-
     @abc.abstractmethod
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         ...
 
-    @abc.abstractmethod
-    def wait(self) -> None:
-        ...
-
-    @abc.abstractmethod
-    def flush(self):
-        ...
-
-    @abc.abstractmethod
-    def start(self):
-        ...
-
-    @abc.abstractmethod
     def stop(self, seconds: Optional[float] = None) -> None:
-        ...
+        pass
 
-    @abc.abstractmethod
+    def pause(self) -> None:
+        pass
+
+    def resume(self) -> None:
+        pass
+
+    def wait(self) -> None:
+        pass
+
+    def flush(self) -> None:
+        pass
+
+    def start(self) -> None:
+        pass
+
     def close(self) -> None:
-        ...
+        pass

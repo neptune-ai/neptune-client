@@ -82,8 +82,9 @@ class SyncRunner(AbstractBackendRunner):
         container_type: ContainerType,
     ) -> None:
         operation_storage = OperationStorage(execution_path)
+
         with DiskQueue(
-            dir_path=operation_storage.data_path,
+            dir_path=execution_path,
             to_dict=lambda x: x.to_dict(),
             from_dict=Operation.from_dict,
             lock=threading.RLock(),

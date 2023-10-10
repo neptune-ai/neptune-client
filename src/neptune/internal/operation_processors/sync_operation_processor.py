@@ -15,39 +15,36 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
-import os
-from datetime import datetime
-from pathlib import Path
-from typing import Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 from neptune.constants import SYNC_DIRECTORY
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
-from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
-)
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import get_container_dir
 from neptune.internal.utils.disk_full import ensure_disk_not_full
+
+if TYPE_CHECKING:
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.container_type import ContainerType
+    from neptune.internal.id_formats import UniqueId
+    from neptune.internal.operation import Operation
 
 
 class SyncOperationProcessor(OperationProcessor):
-    def __init__(self, container_id: UniqueId, container_type: ContainerType, backend: NeptuneBackend):
-        self._container_id = container_id
-        self._container_type = container_type
-        self._backend = backend
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+    def __init__(self, container_id: "UniqueId", container_type: "ContainerType", backend: "NeptuneBackend"):
+        self._container_id: "UniqueId" = container_id
+        self._container_type: "ContainerType" = container_type
+        self._backend: "NeptuneBackend" = backend
 
-    @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
+        data_path = get_container_dir(SYNC_DIRECTORY, container_id, container_type)
+
+        self._operation_storage = OperationStorage(data_path)
 
     @ensure_disk_not_full
-    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
+    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(
             container_id=self._container_id,
             container_type=self._container_type,
@@ -57,18 +54,6 @@ class SyncOperationProcessor(OperationProcessor):
         if errors:
             raise errors[0]
 
-    def wait(self):
-        pass
-
-    def flush(self):
-        pass
-
-    def start(self):
-        pass
-
     def stop(self, seconds: Optional[float] = None) -> None:
         # Remove local files
         self._operation_storage.cleanup()
-
-    def close(self) -> None:
-        pass
