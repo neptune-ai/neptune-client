@@ -33,8 +33,11 @@ def _safe_function(func: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except Exception as ex:
-            warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
-            logger.debug("In safe mode exception is ignored", exc_info=True)
+            try:
+                warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
+                logger.debug("In safe mode exception is ignored", exc_info=True)
+            except Exception:
+                pass
 
     return wrapper
 
