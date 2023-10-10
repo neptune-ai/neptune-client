@@ -61,7 +61,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then
         result = processor.get_operations()
@@ -101,7 +101,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then
         result = processor.get_operations()
@@ -160,7 +160,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then
         result = processor.get_operations()
@@ -231,7 +231,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then
         result = processor.get_operations()
@@ -283,7 +283,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then
         result = processor.get_operations()
@@ -328,25 +328,25 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then: there's a cutoff after DeleteAttribute(["a"])
         result = processor.get_operations()
         self.assertEqual(
+            result.upload_operations,
             [
                 UploadFileSet(["b"], ["abc", "defgh"], reset=True),
                 UploadFileSet(["c"], ["abc", "defgh"], reset=True),
                 UploadFileSet(["c"], ["qqq"], reset=False),
                 UploadFileSet(["d"], ["hhh", "gij"], reset=False),
             ],
-            result.upload_operations,
         )
         self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
+            result.other_operations,
             [
                 DeleteAttribute(["a"]),
             ],
-            result.other_operations,
         )
         self.assertEqual(result.errors, [])
         self.assertEqual(processor.processed_ops_count, 6)
@@ -375,7 +375,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ]
 
         # when
-        processor.process_batch(operations)
+        processor.process(operations)
 
         # then: there's a cutoff before second TrackFilesToArtifact(["a"]) due to DeleteAttribute(["a"])
         result = processor.get_operations()
