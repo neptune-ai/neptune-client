@@ -1,3 +1,9 @@
+## neptune 1.8.2
+
+### Changes
+- Support for disabling operation saving based on disk utilization ([#1496](https://github.com/neptune-ai/neptune-client/pull/1496))
+
+
 ## neptune 1.8.1
 
 ### Fixes
