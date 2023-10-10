@@ -27,12 +27,19 @@ from neptune.internal.utils.logger import logger
 
 
 def get_container_dir(
-    type_dir: str, container_id: UniqueId, container_type: ContainerType, process_path: Optional[str] = None
+    type_dir: str,
+    container_id: UniqueId,
+    container_type: ContainerType,
+    process_path: Optional[str] = None,
+    inner: Optional[str] = None,
 ) -> Path:
     neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
     container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
     if process_path:
         container_dir /= Path(process_path)
+
+    if inner:
+        container_dir /= Path(inner)
 
     return container_dir
 
@@ -57,11 +64,11 @@ class OperationStorage:
     def cleanup(self) -> None:
         shutil.rmtree(self.data_path, ignore_errors=True)
 
-        parent = self.data_path.parent
-        files = os.listdir(parent)
-
-        if len(files) == 0:
-            try:
-                os.rmdir(parent)
-            except OSError:
-                logger.debug(f"Cannot remove directory: {parent}")
+        # parent = self.data_path.parent
+        # files = os.listdir(parent)
+        #
+        # if len(files) == 0:
+        #     try:
+        #         os.rmdir(parent)
+        #     except OSError:
+        #         logger.debug(f"Cannot remove directory: {parent}")

@@ -40,6 +40,7 @@ from neptune.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
+from .partitioned_op_processor import PartitionedOperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
@@ -56,6 +57,10 @@ def get_operation_processor(
     async_no_progress_callback: Optional[Callable[[], None]] = None,
     async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
 ) -> OperationProcessor:
+    max_points_per_batch = int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_BATCH, "100000"))
+    max_points_per_attribute = int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_ATTRIBUTE, "10000"))
+    max_attributes_in_batch = int(os.environ.get(NEPTUNE_ASYNC_MAX_ATTRIBUTES_IN_BATCH, "1000"))
+
     if mode == Mode.ASYNC:
         return AsyncOperationProcessor(
             container_id=container_id,
@@ -63,9 +68,9 @@ def get_operation_processor(
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            max_points_per_batch=int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_BATCH, "100000")),
-            max_points_per_attribute=int(os.environ.get(NEPTUNE_ASYNC_MAX_POINTS_PER_ATTRIBUTE, "10000")),
-            max_attributes_in_batch=int(os.environ.get(NEPTUNE_ASYNC_MAX_ATTRIBUTES_IN_BATCH, "1000")),
+            max_points_per_batch=max_points_per_batch,
+            max_points_per_attribute=max_points_per_attribute,
+            max_attributes_in_batch=max_attributes_in_batch,
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,
@@ -80,5 +85,20 @@ def get_operation_processor(
         return OfflineOperationProcessor(container_id, container_type, lock)
     elif mode == Mode.READ_ONLY:
         return ReadOnlyOperationProcessor(container_id, backend)
+    elif mode == Mode.EXPERIMENTAL:
+        return PartitionedOperationProcessor(
+            container_id=container_id,
+            container_type=container_type,
+            backend=backend,
+            lock=lock,
+            sleep_time=flush_period,
+            max_points_per_batch=max_points_per_batch,
+            max_points_per_attribute=max_points_per_attribute,
+            max_attributes_in_batch=max_attributes_in_batch,
+            async_lag_callback=async_lag_callback,
+            async_lag_threshold=async_lag_threshold,
+            async_no_progress_callback=async_no_progress_callback,
+            async_no_progress_threshold=async_no_progress_threshold,
+        )
     else:
         raise ValueError(f"mode should be one of {[m for m in Mode]}")

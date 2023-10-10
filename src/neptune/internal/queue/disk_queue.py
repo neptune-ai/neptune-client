@@ -180,8 +180,9 @@ class DiskQueue(Generic[T]):
         """
         Remove underlying files if queue is empty
         """
-        if self.is_empty():
-            self._remove_data()
+        # if self.is_empty():
+        #     self._remove_data()
+        pass
 
     def _remove_data(self) -> None:
         path = self._dir_path

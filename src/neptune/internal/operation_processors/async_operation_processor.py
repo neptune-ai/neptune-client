@@ -78,8 +78,9 @@ class AsyncOperationProcessor(OperationProcessor):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+        inner: Optional[str] = None,
     ):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type, inner))
 
         self._queue = DiskQueue(
             dir_path=self._operation_storage.data_path,
@@ -113,10 +114,14 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_cond = threading.Condition(lock=lock)
 
     @staticmethod
-    def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType, inner: Optional[str] = None) -> Path:
+        return get_container_dir(
+            type_dir=ASYNC_DIRECTORY,
+            container_id=container_id,
+            container_type=container_type,
+            process_path=f"exec-{os.getpid()}",
+            inner=inner,
+        )
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
