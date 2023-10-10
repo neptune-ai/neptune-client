@@ -101,21 +101,52 @@ __all__ = [
     "__version__",
 ]
 
+import os
+from typing import (
+    Any,
+    Union,
+)
 
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
+from neptune.envs import NEPTUNE_SAFETY_MODE
 from neptune.metadata_containers import (
+    MetadataContainer,
     Model,
     ModelVersion,
     Project,
     Run,
 )
+from neptune.metadata_containers.safe_container import SafeContainer
 from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
 
-init_run = Run
-init_model = Model
-init_model_version = ModelVersion
-init_project = Project
+
+def _init_safety(obj: MetadataContainer) -> Union[MetadataContainer, SafeContainer]:
+    safety_mode = os.environ.get(NEPTUNE_SAFETY_MODE)
+    if safety_mode is not None and bool(safety_mode) and str(safety_mode).lower() != "false" and int(safety_mode) != 0:
+        return obj
+    else:
+        return SafeContainer(obj)
+
+
+def init_run(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+    obj = Run(*args, **kwargs)
+    return _init_safety(obj)
+
+
+def init_model(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+    obj = Model(*args, **kwargs)
+    return _init_safety(obj)
+
+
+def init_model_version(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+    obj = ModelVersion(*args, **kwargs)
+    return _init_safety(obj)
+
+
+def init_project(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+    obj = Project(*args, **kwargs)
+    return _init_safety(obj)
