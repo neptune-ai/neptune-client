@@ -21,7 +21,6 @@ from collections import defaultdict
 from datetime import datetime
 from shutil import copyfile
 from typing import (
-    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -132,10 +131,6 @@ from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 from neptune.types.value_visitor import ValueVisitor
-
-if TYPE_CHECKING:
-    from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
-
 
 Val = TypeVar("Val", bound=Value)
 
@@ -296,20 +291,6 @@ class NeptuneBackendMock(NeptuneBackend):
             except NeptuneException as e:
                 result.append(e)
         return len(operations), result
-
-    def execute_operations_from_accumulator(
-        self,
-        container_id: UniqueId,
-        container_type: ContainerType,
-        accumulated_operations: "AccumulatedOperations",
-        operation_storage: OperationStorage,
-    ) -> Tuple[int, List[NeptuneException]]:
-        return self.execute_operations(
-            container_id=container_id,
-            container_type=container_type,
-            operations=accumulated_operations.all_operations(),
-            operation_storage=operation_storage,
-        )
 
     def _execute_operation(
         self, container_id: UniqueId, container_type: ContainerType, op: Operation, operation_storage: OperationStorage

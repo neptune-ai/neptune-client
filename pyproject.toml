@@ -319,6 +319,7 @@ module = [
     "neptune.internal.backends.offline_neptune_backend",
     "neptune.internal.backends.operation_api_name_visitor",
     "neptune.internal.backends.operation_api_object_converter",
+    "neptune.internal.backends.operations_preprocessor",
     "neptune.internal.backends.project_name_lookup",
     "neptune.internal.backends.swagger_client_wrapper",
     "neptune.internal.backends.utils",
