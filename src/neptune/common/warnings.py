@@ -21,7 +21,6 @@ __all__ = [
     "NeptuneUnsupportedType",
 ]
 
-import hashlib
 import os
 import traceback
 import warnings
@@ -60,7 +59,7 @@ def warn_once(message: str, *, exception: type(Exception) = None):
         if exception is None:
             exception = NeptuneDeprecationWarning
 
-        message_hash = hashlib.sha256(message.encode("utf-8")).hexdigest()
+        message_hash = hash(message)
 
         if message_hash not in warned_once:
             warnings.warn(
