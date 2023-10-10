@@ -13,34 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SafeContainer"]
+__all__ = ["decorator_safety"]
 
+import functools
 from typing import (
     Any,
     Callable,
 )
 
 from neptune.internal.utils.logger import logger
-from neptune.metadata_containers import MetadataContainer
+import inspect
 
 
-class SafeMethodWrapper:
-    def __init__(self, method: Callable):
-        self._method = method
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+def _safe_function(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
         try:
-            return self._method(*args, **kwargs)
+            return func(*args, **kwargs)
         except Exception:
-            logger.exception(f"Exception in method {self._method}")
+            logger.exception(f"Exception in method ")
 
-    def __getattr__(self, item: str) -> Any:
-        return getattr(self._api_method, item)
+    return wrapper
 
 
-class SafeContainer:
-    def __init__(self, container: MetadataContainer):
-        self._container = container
-
-    def __getattr__(self, item: str) -> Any:
-        return SafeMethodWrapper(getattr(self._container, item))
+def decorator_safety(cls):
+    for name, method in inspect.getmembers(cls):
+        if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
+            continue
+        print("Decorating function %s" % name)
+        setattr(cls, name, _safe_function(method))
+    return cls

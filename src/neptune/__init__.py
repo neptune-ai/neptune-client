@@ -104,7 +104,7 @@ __all__ = [
 import os
 from typing import (
     Any,
-    Union,
+    Union, Optional, List,
 )
 
 from neptune.common.patches import apply_patches
@@ -117,36 +117,34 @@ from neptune.metadata_containers import (
     Project,
     Run,
 )
-from neptune.metadata_containers.safe_container import SafeContainer
+from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.safe_container import decorator_safety
+from neptune.types import GitRef
+from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
 
 
-def _init_safety(obj: MetadataContainer) -> Union[MetadataContainer, SafeContainer]:
-    safety_mode = os.environ.get(NEPTUNE_SAFETY_MODE)
-    if safety_mode is None or not bool(safety_mode) or str(safety_mode).lower() == "false" or int(safety_mode) == 0:
-        return obj
-    else:
-        return SafeContainer(obj)
+def init_run(*args: Any, **kwargs: Any) -> Union[MetadataContainer, Run]:
+    @decorator_safety
+    class SafeRun(Run):
+        pass
 
+    obj = SafeRun(*args, **kwargs)
+    return obj
 
-def init_run(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
-    obj = Run(*args, **kwargs)
-    return _init_safety(obj)
-
-
-def init_model(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
-    obj = Model(*args, **kwargs)
-    return _init_safety(obj)
-
-
-def init_model_version(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
-    obj = ModelVersion(*args, **kwargs)
-    return _init_safety(obj)
-
-
-def init_project(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
-    obj = Project(*args, **kwargs)
-    return _init_safety(obj)
+# def init_model(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+#     obj = Model(*args, **kwargs)
+#     return _init_safety(obj)
+#
+#
+# def init_model_version(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+#     obj = ModelVersion(*args, **kwargs)
+#     return _init_safety(obj)
+#
+#
+# def init_project(*args: Any, **kwargs: Any) -> Union[MetadataContainer, SafeContainer]:
+#     obj = Project(*args, **kwargs)
+#     return _init_safety(obj)
