@@ -1,3 +1,7 @@
+## [UNRELEASED] neptune 1.8.3
+
+- Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
+
 ## neptune 1.8.2
 
 ### Changes
