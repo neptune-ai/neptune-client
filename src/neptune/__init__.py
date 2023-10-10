@@ -126,7 +126,7 @@ apply_patches()
 
 def _init_safety(obj: MetadataContainer) -> Union[MetadataContainer, SafeContainer]:
     safety_mode = os.environ.get(NEPTUNE_SAFETY_MODE)
-    if safety_mode is not None and bool(safety_mode) and str(safety_mode).lower() != "false" and int(safety_mode) != 0:
+    if safety_mode is None or not bool(safety_mode) or str(safety_mode).lower() == "false" or int(safety_mode) == 0:
         return obj
     else:
         return SafeContainer(obj)
