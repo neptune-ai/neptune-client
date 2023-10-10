@@ -93,10 +93,13 @@ class PartitionedOperationProcessor(OperationProcessor):
             processor.flush()
 
     def start(self) -> None:
+        # TODO: Handle exceptions
         for processor in self._processors:
             processor.start()
 
     def stop(self, seconds: Optional[float] = None) -> None:
+        # TODO: Handle exceptions
+        # TODO: Better stop (async?)
         if seconds is not None:
             seconds /= self._partitions
 
