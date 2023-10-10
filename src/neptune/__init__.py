@@ -101,77 +101,21 @@ __all__ = [
     "__version__",
 ]
 
-import os
-from typing import (
-    Any,
-    Union,
-)
 
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
-from neptune.envs import NEPTUNE_SAFETY_MODE
 from neptune.metadata_containers import (
-    MetadataContainer,
     Model,
     ModelVersion,
     Project,
     Run,
 )
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.safe_container import safety_decorator
-from neptune.types import GitRef
-from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
 
-SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
-
-
-def init_run(*args: Any, **kwargs: Any) -> Union[MetadataContainer, Run]:
-    if SAFETY_MODE:
-
-        @safety_decorator
-        class SafeRun(Run):
-            pass
-
-        return SafeRun(*args, **kwargs)
-    else:
-        return Run(*args, **kwargs)
-
-
-def init_model(*args: Any, **kwargs: Any) -> Union[MetadataContainer, Model]:
-    if SAFETY_MODE:
-
-        @safety_decorator
-        class SafeModel(Model):
-            pass
-
-        return SafeModel(*args, **kwargs)
-    else:
-        return Model(*args, **kwargs)
-
-
-def init_model_version(*args: Any, **kwargs: Any) -> Union[MetadataContainer, ModelVersion]:
-    if SAFETY_MODE:
-
-        @safety_decorator
-        class SafeModelVersion(ModelVersion):
-            pass
-
-        return SafeModelVersion(*args, **kwargs)
-    else:
-        return ModelVersion(*args, **kwargs)
-
-
-def init_project(*args: Any, **kwargs: Any) -> Union[MetadataContainer, Project]:
-    if SAFETY_MODE:
-
-        @safety_decorator
-        class SafeProject(Project):
-            pass
-
-        return SafeProject(*args, **kwargs)
-    else:
-        return Project(*args, **kwargs)
+init_run = Run
+init_model = Model
+init_model_version = ModelVersion
+init_project = Project

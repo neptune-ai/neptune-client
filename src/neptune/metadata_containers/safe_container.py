@@ -17,14 +17,19 @@ __all__ = ["safety_decorator"]
 
 import functools
 import inspect
+import os
+from typing import Any
 
 from neptune.common.warnings import warn_once
+from neptune.envs import NEPTUNE_SAFETY_MODE
 from neptune.internal.utils.logger import logger
 
+_SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
 
-def _safe_function(func):
+
+def _safe_function(func: Any) -> Any:
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
         except Exception:
@@ -34,9 +39,12 @@ def _safe_function(func):
     return wrapper
 
 
-def safety_decorator(cls):
-    for name, method in inspect.getmembers(cls):
-        if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
-            continue
-        setattr(cls, name, _safe_function(method))
-    return cls
+def safety_decorator(cls: Any) -> Any:
+    if True:
+        for name, method in inspect.getmembers(cls):
+            if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
+                continue
+            setattr(cls, name, _safe_function(method))
+        return cls
+    else:
+        return cls
