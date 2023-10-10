@@ -16,6 +16,7 @@
 __all__ = ("AsyncOperationProcessor",)
 
 import os
+import shutil
 import threading
 from time import (
     monotonic,
@@ -23,7 +24,9 @@ from time import (
 )
 from typing import (
     TYPE_CHECKING,
+    Any,
     Callable,
+    Dict,
     Optional,
 )
 
@@ -50,6 +53,9 @@ if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
     from neptune.internal.preprocessor.accumulated_operations import AccumulatedOperations
+
+
+serializer: Callable[["Operation"], Dict[str, Any]] = lambda x: x.to_dict()
 
 
 class AsyncOperationProcessor(OperationProcessor):
@@ -85,13 +91,11 @@ class AsyncOperationProcessor(OperationProcessor):
         self._last_ack: float = 0.0
         self._lag_exceeded = False
         self._should_call_no_progress_callback = False
-
-        data_path = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
-
-        self._operation_storage = OperationStorage(data_path)
+        self._data_path = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+        self._operation_storage = OperationStorage(self._data_path)
         self._queue = DiskQueue(
-            dir_path=data_path,
-            to_dict=Operation.to_dict,
+            dir_path=self._data_path,
+            to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=lock,
         )
@@ -102,7 +106,6 @@ class AsyncOperationProcessor(OperationProcessor):
             max_points_per_batch=max_points_per_batch,
             max_attributes_in_batch=max_attributes_in_batch,
         )
-
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
 
@@ -237,6 +240,9 @@ class AsyncOperationProcessor(OperationProcessor):
                 already_synced_proc,
             )
 
+    def _cleanup(self) -> None:
+        shutil.rmtree(self._data_path, ignore_errors=True)
+
     def stop(self, seconds: Optional[float] = None) -> None:
         ts = time()
         self._queue.flush()
@@ -252,8 +258,10 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
-        # TODO: Clean OperationStorage as well (if queue is empty)
-        self._queue.cleanup_if_empty()
+        if self._queue.is_empty():
+            self._operation_storage.cleanup()
+            self._queue.cleanup()
+            self._cleanup()
 
     def close(self) -> None:
         self._queue.close()

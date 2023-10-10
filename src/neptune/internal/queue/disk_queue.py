@@ -176,12 +176,8 @@ class DiskQueue(Generic[T]):
         self._last_ack_file.close()
         self._last_put_file.close()
 
-    def cleanup_if_empty(self) -> None:
-        """
-        Remove underlying files if queue is empty
-        """
-        if self.is_empty():
-            shutil.rmtree(self._dir_path, ignore_errors=True)
+    def cleanup(self) -> None:
+        shutil.rmtree(self._dir_path, ignore_errors=True)
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         with self._empty_cond:
@@ -248,4 +244,5 @@ class DiskQueue(Generic[T]):
     ) -> None:
         self.flush()
         self.close()
-        self.cleanup_if_empty()
+        if self.is_empty():
+            self.cleanup()

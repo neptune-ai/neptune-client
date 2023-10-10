@@ -15,6 +15,7 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
+import shutil
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -38,10 +39,8 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
-
-        data_path = get_container_dir(SYNC_DIRECTORY, container_id, container_type)
-
-        self._operation_storage = OperationStorage(data_path)
+        self._data_path = get_container_dir(SYNC_DIRECTORY, container_id, container_type)
+        self._operation_storage = OperationStorage(self._data_path)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
@@ -54,6 +53,10 @@ class SyncOperationProcessor(OperationProcessor):
         if errors:
             raise errors[0]
 
+    def _cleanup(self) -> None:
+        shutil.rmtree(self._data_path, ignore_errors=True)
+
     def stop(self, seconds: Optional[float] = None) -> None:
         # Remove local files
         self._operation_storage.cleanup()
+        self._cleanup()

@@ -218,7 +218,7 @@ def test_cleaning_up(rmtree):
             assert queue.is_empty()
 
             # when
-            queue.cleanup_if_empty()
+            queue.cleanup()
 
             # then
             assert rmtree.assert_called_once_with(Path(dir_path).resolve(), ignore_errors=True) is None

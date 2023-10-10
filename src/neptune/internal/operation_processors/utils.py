@@ -25,4 +25,4 @@ from neptune.internal.id_formats import UniqueId
 
 def get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType) -> Path:
     neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
-    return neptune_data_dir / type_dir / container_type.create_dir_name(container_id) / f"exec-{os.getpid()}"
+    return neptune_data_dir / type_dir / f"{container_type.create_dir_name(container_id)}__{os.getpid()}"

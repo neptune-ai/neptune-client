@@ -48,8 +48,9 @@ class OfflineOperationProcessor(OperationProcessor):
     def stop(self, seconds: Optional[float] = None) -> None:
         self.close()
         # Remove local files
-        # TODO: Cleanup operation storage as well
-        self._queue.cleanup_if_empty()
+        if self._queue.is_empty():
+            self._operation_storage.cleanup()
+            self._queue.cleanup()
 
     def wait(self) -> None:
         self.flush()
