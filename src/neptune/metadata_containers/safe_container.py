@@ -32,15 +32,15 @@ def _safe_function(func: Any) -> Any:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return func(*args, **kwargs)
-        except Exception:
-            warn_once(f"Exception in method {func}")
+        except Exception as ex:
+            warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
             logger.debug("In safe mode exception is ignored", exc_info=True)
 
     return wrapper
 
 
 def safety_decorator(cls: Any) -> Any:
-    if True:
+    if _SAFETY_MODE:
         for name, method in inspect.getmembers(cls):
             if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
                 continue
