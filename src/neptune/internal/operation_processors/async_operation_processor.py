@@ -27,6 +27,7 @@ from time import (
 from typing import (
     TYPE_CHECKING,
     Callable,
+    ClassVar,
     Optional,
 )
 
@@ -59,7 +60,6 @@ _logger = logging.getLogger(__name__)
 
 
 class AsyncOperationProcessor(OperationProcessor):
-    QUEUE_RECORDS_TO_WAKEUP = 500
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = int(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
 
@@ -69,10 +69,8 @@ class AsyncOperationProcessor(OperationProcessor):
         container_type: ContainerType,
         backend: NeptuneBackend,
         lock: threading.RLock,
-        max_points_per_attribute: int,
-        max_points_per_batch: int,
-        max_attributes_in_batch: int,
         sleep_time: float = 5,
+        batch_size: int = 1000,
         async_lag_callback: Optional[Callable[[], None]] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
@@ -90,19 +88,14 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_id = container_id
         self._container_type = container_type
         self._backend = backend
+        self._batch_size = batch_size
         self._async_lag_callback = async_lag_callback or (lambda: None)
         self._async_lag_threshold = async_lag_threshold
         self._async_no_progress_callback = async_no_progress_callback or (lambda: None)
         self._async_no_progress_threshold = async_no_progress_threshold
         self._last_version = 0
         self._consumed_version = 0
-        self._consumer = self.ConsumerThread(
-            self,
-            sleep_time=sleep_time,
-            max_points_per_attribute=max_points_per_attribute,
-            max_points_per_batch=max_points_per_batch,
-            max_attributes_in_batch=max_attributes_in_batch,
-        )
+        self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock = lock
         self._last_ack = None
         self._lag_exceeded = False
@@ -123,7 +116,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._check_lag()
         self._check_no_progress()
 
-        if self._queue.size() > AsyncOperationProcessor.QUEUE_RECORDS_TO_WAKEUP:
+        if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -267,24 +260,27 @@ class AsyncOperationProcessor(OperationProcessor):
         self._queue.close()
 
     class ConsumerThread(Daemon):
+        MAX_POINTS_PER_BATCH: ClassVar[int] = 100000
+        MAX_ATTRIBUTES_IN_BATCH: ClassVar[int] = 1000
+        MAX_POINTS_PER_ATTRIBUTE: ClassVar[int] = 10000
+
         def __init__(
             self,
             processor: "AsyncOperationProcessor",
             sleep_time: float,
-            max_points_per_batch: int,
-            max_attributes_in_batch: int,
-            max_points_per_attribute: int,
+            batch_size: int,
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor = processor
+            self._batch_size = batch_size
             self._last_flush = 0
             self._no_progress_exceeded = False
             self._batcher = Batcher(
                 queue=self._processor._queue,
                 backend=self._processor._backend,
-                max_points_per_batch=max_points_per_batch,
-                max_attributes_in_batch=max_attributes_in_batch,
-                max_points_per_attribute=max_points_per_attribute,
+                max_points_per_batch=self.MAX_POINTS_PER_BATCH,
+                max_attributes_in_batch=self.MAX_ATTRIBUTES_IN_BATCH,
+                max_points_per_attribute=self.MAX_POINTS_PER_ATTRIBUTE,
             )
 
         def run(self):
