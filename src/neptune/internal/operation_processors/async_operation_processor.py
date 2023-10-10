@@ -49,6 +49,7 @@ from neptune.internal.operation_processors.operation_storage import (
     get_container_dir,
 )
 from neptune.internal.threading.daemon import Daemon
+from neptune.internal.utils.disk_full import ensure_disk_not_full
 from neptune.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
@@ -105,6 +106,7 @@ class AsyncOperationProcessor(OperationProcessor):
         process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
+    @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)
 
