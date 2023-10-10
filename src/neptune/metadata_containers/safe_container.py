@@ -13,16 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["decorator_safety"]
+__all__ = ["safety_decorator"]
 
 import functools
-from typing import (
-    Any,
-    Callable,
-)
-
-from neptune.internal.utils.logger import logger
 import inspect
+
+from neptune.common.warnings import warn_once
+from neptune.internal.utils.logger import logger
 
 
 def _safe_function(func):
@@ -31,15 +28,15 @@ def _safe_function(func):
         try:
             return func(*args, **kwargs)
         except Exception:
-            logger.exception(f"Exception in method ")
+            warn_once(f"Exception in method {func}")
+            logger.debug("In safe mode exception is ignored", exc_info=True)
 
     return wrapper
 
 
-def decorator_safety(cls):
+def safety_decorator(cls):
     for name, method in inspect.getmembers(cls):
         if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
             continue
-        print("Decorating function %s" % name)
         setattr(cls, name, _safe_function(method))
     return cls
