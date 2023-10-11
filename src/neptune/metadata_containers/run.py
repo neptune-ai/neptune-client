@@ -259,7 +259,7 @@ class Run(MetadataContainer):
                 custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
                 when this duration is exceeded.
             enable_remote_signals: Whether support handling of remote signals that could manage run.
-                Defaults to 'True', where handling of remote signals will be attached to the run process.
+                Defaults to 'True', where the handling of remote signals will be attached to the run process.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
