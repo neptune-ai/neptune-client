@@ -156,6 +156,7 @@ class Run(MetadataContainer):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+        enable_remote_signals: bool = True,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -257,6 +258,8 @@ class Run(MetadataContainer):
                 object was initialized. If a no-progress callback (default callback enabled via environment variable or
                 custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
                 when this duration is exceeded.
+            enable_remote_signals: Whether support handling of remote signals that could manage run.
+                Defaults to 'True', where handling of remote signals will be attached to the run process.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -345,9 +348,9 @@ class Run(MetadataContainer):
         verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
-        verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, bool, type(None)))
         verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
+        verify_type("enable_remote_signals", enable_remote_signals, bool)
 
         if tags is not None:
             if isinstance(tags, str):
@@ -371,6 +374,7 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
+        self._enable_remote_signals: bool = enable_remote_signals
 
         if type(git_ref) is bool:
             if not git_ref:
@@ -455,9 +459,10 @@ class Run(MetadataContainer):
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
-        if websockets_factory:
-            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+        if self._enable_remote_signals:
+            websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+            if websockets_factory:
+                background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
         if self._capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=self._stdout_path))
