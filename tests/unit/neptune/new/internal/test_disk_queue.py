@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import json
+import os
 import random
 import threading
 import unittest
@@ -21,6 +22,9 @@ from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import mock
+
+from neptune.envs import NEPTUNE_DISABLE_LOCALFILES_CLEANUP
 from neptune.internal.disk_queue import (
     DiskQueue,
     QueueElement,
@@ -137,6 +141,41 @@ class TestDiskQueue(unittest.TestCase):
             )
 
             queue.close()
+
+    def test_cleanup_if_empty(self):
+        with TemporaryDirectory() as dirpath:
+            obj_size = self.get_obj_size_bytes(TestDiskQueue.Obj(1, "1"), 1)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=100,
+                max_batch_size_bytes=obj_size * 3,
+            )
+            assert os.path.exists(dirpath)
+
+            queue.cleanup_if_empty()
+
+            assert not os.path.exists(dirpath)
+
+    @mock.patch.dict(os.environ, {NEPTUNE_DISABLE_LOCALFILES_CLEANUP: "True"})
+    def test_cleanup_if_empty_when_cleanup_disabled(self):
+        with TemporaryDirectory() as dirpath:
+            obj_size = self.get_obj_size_bytes(TestDiskQueue.Obj(1, "1"), 1)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=100,
+                max_batch_size_bytes=obj_size * 3,
+            )
+            assert os.path.exists(dirpath)
+
+            queue.cleanup_if_empty()
+
+            assert os.path.exists(dirpath)
 
     def test_resuming_queue(self):
         with TemporaryDirectory() as dirpath:

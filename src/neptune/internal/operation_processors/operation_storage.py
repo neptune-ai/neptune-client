@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Optional
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
+from neptune.envs import NEPTUNE_DISABLE_LOCALFILES_CLEANUP
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.logger import logger
@@ -55,6 +56,11 @@ class OperationStorage:
         return self.data_path / "upload_path"
 
     def cleanup(self) -> None:
+        disable_cleanup = os.getenv(NEPTUNE_DISABLE_LOCALFILES_CLEANUP, "false").lower() in ("true", "1", "t")
+        if not disable_cleanup:
+            self._remove_storage_folder()
+
+    def _remove_storage_folder(self):
         shutil.rmtree(self.data_path, ignore_errors=True)
 
         parent = self.data_path.parent

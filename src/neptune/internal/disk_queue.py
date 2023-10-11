@@ -32,6 +32,7 @@ from typing import (
     TypeVar,
 )
 
+from neptune.envs import NEPTUNE_DISABLE_LOCALFILES_CLEANUP
 from neptune.exceptions import MalformedOperation
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
@@ -177,7 +178,8 @@ class DiskQueue(Generic[T]):
         """
         Remove underlying files if queue is empty
         """
-        if self.is_empty():
+        disable_cleanup = os.getenv(NEPTUNE_DISABLE_LOCALFILES_CLEANUP, "false").lower() in ("true", "1", "t")
+        if self.is_empty() and not disable_cleanup:
             self._remove_data()
 
     def _remove_data(self):
