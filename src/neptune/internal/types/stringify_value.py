@@ -36,6 +36,7 @@ from typing import Any
 from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
+    UNSUPPORTED_FLOATS,
 )
 from neptune.internal.utils.logger import logger
 
@@ -51,6 +52,14 @@ class StringifyValue:
                 MAX_32_BIT_INT,
             )
             value = float(value)
+        # check if isn't an unsupported float
+        if value in UNSUPPORTED_FLOATS:
+            logger.info(
+                "The value you're trying to log is an unsupported float value (%s) and will be logged as string. "
+                "We'll add support for these types of values in the future.",
+                str(value),
+            )
+            value = str(value)
 
         self.__value = value
 

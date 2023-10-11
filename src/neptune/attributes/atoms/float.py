@@ -18,8 +18,10 @@ __all__ = ["Float"]
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
+from neptune.constants import UNSUPPORTED_FLOATS
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignFloat
+from neptune.internal.utils.logger import logger
 from neptune.types.atoms.float import Float as FloatVal
 
 if typing.TYPE_CHECKING:
@@ -44,6 +46,18 @@ class Float(CopiableAtom):
     def assign(self, value: typing.Union[FloatVal, float, int], *, wait: bool = False):
         if not isinstance(value, FloatVal):
             value = FloatVal(value)
+
+        if value.value in UNSUPPORTED_FLOATS:
+            logger.warning(
+                "WARNING: The value you're trying to log is a non-standard float value (%s) "
+                "that is not currently supported. "
+                "We'll add support for this type of value in the future. "
+                "For now, try logging the value as stringify_unsupported: "
+                "run['field'] = stringify_unsupported(float(%s))",
+                value.value,
+                value.value,
+            )
+            return
 
         with self._container.lock():
             self._enqueue_operation(self.create_assignment_operation(self._path, value.value), wait=wait)

@@ -22,6 +22,7 @@ __all__ = [
     "OFFLINE_NAME_PREFIX",
     "MAX_32_BIT_INT",
     "MIN_32_BIT_INT",
+    "UNSUPPORTED_FLOATS",
 ]
 
 """Constants used by Neptune"""
@@ -39,3 +40,9 @@ OFFLINE_NAME_PREFIX = "offline/"
 
 MAX_32_BIT_INT = 2147483647
 MIN_32_BIT_INT = -2147483648
+
+NAN_FLOAT = float("nan")
+INFINITY_FLOAT = float("inf")
+NEG_INFINITY_FLOAT = float("-inf")
+
+UNSUPPORTED_FLOATS = [NAN_FLOAT, INFINITY_FLOAT, NEG_INFINITY_FLOAT]
