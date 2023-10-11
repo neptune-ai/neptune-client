@@ -32,7 +32,7 @@ from typing import (
     TypeVar,
 )
 
-from neptune.envs import NEPTUNE_DISABLE_LOCALFILES_CLEANUP
+from neptune.envs import NEPTUNE_DISABLE_PARENT_DIR_DELETION
 from neptune.exceptions import MalformedOperation
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
@@ -178,8 +178,7 @@ class DiskQueue(Generic[T]):
         """
         Remove underlying files if queue is empty
         """
-        disable_cleanup = os.getenv(NEPTUNE_DISABLE_LOCALFILES_CLEANUP, "false").lower() in ("true", "1", "t")
-        if self.is_empty() and not disable_cleanup:
+        if self.is_empty():
             self._remove_data()
 
     def _remove_data(self):
@@ -193,7 +192,12 @@ class DiskQueue(Generic[T]):
         except FileNotFoundError:
             files = []
 
-        if len(files) == 0:
+        disable_parent_dir_deletion = os.getenv(NEPTUNE_DISABLE_PARENT_DIR_DELETION, "false").lower() in (
+            "true",
+            "1",
+            "t",
+        )
+        if len(files) == 0 and not disable_parent_dir_deletion:
             try:
                 os.rmdir(parent)
             except OSError:
