@@ -92,6 +92,7 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types import (
     GitRef,
     StringSeries,
@@ -537,6 +538,7 @@ class Run(MetadataContainer):
                 exception=NeptuneWarning,
             )
 
+    @safe_function()
     @property
     def monitoring_namespace(self) -> str:
         return self._monitoring_namespace
@@ -545,6 +547,7 @@ class Run(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(
@@ -555,6 +558,7 @@ class Run(MetadataContainer):
         )
 
 
+@safe_function(False)
 def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
         if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:

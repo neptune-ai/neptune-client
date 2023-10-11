@@ -446,7 +446,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._state = ContainerState.STOPPED
             self._forking_cond.notify_all()
 
-    @safe_function("started")
+    @safe_function()
     def get_state(self) -> str:
         """Returns the current state of the container as a string.
 
@@ -461,6 +461,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._state.value
 
+    @safe_function({})
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
 
@@ -474,6 +475,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._structure.get_structure().to_dict()
 
+    @safe_function()
     def print_structure(self) -> None:
         """Pretty-prints the structure of the object's metadata.
 
@@ -667,6 +669,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             entries=leaderboard_entries,
         )
 
+    @safe_function()
     def get_root_object(self) -> "MetadataContainer":
         """Returns the same Neptune object."""
         return self
