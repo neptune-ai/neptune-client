@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.2rc0
+## [UNRELEASED] neptune 1.8.3
 
 ### Changes
 - Safety (errors suppressing) execution mode ([#1503])(https://github.com/neptune-ai/neptune-client/pull/1503)
