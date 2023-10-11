@@ -92,6 +92,7 @@ from neptune.metadata_containers.abstract import (
     NeptuneObjectCallback,
 )
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
@@ -284,6 +285,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
+    @safe_function
     def __getattr__(self, item):
         if item in self.LEGACY_METHODS:
             raise NeptunePossibleLegacyUsageException()
@@ -300,18 +302,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _ipython_key_completions_(self):
         return self._get_subpath_suggestions()
 
+    @safe_function
     @ensure_not_stopped
     def __getitem__(self, path: str) -> "Handler":
         return Handler(self, path)
 
+    @safe_function
     @ensure_not_stopped
     def __setitem__(self, key: str, value) -> None:
         self.__getitem__(key).assign(value)
 
+    @safe_function
     @ensure_not_stopped
     def __delitem__(self, path) -> None:
         self.pop(path)
 
+    @safe_function
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns values to multiple fields from a dictionary.
@@ -344,6 +350,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         self._get_root_handler().assign(value, wait=wait)
 
+    @safe_function({})
     @ensure_not_stopped
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
@@ -373,15 +380,18 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._get_root_handler().fetch()
 
+    @safe_function
     def ping(self):
         self._backend.ping(self._id, self.container_type)
 
+    @safe_function
     def start(self):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()
         self._bg_job.start(self)
         self._state = ContainerState.STARTED
 
+    @safe_function
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the connection and ends the synchronization thread.
 
@@ -437,6 +447,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._state = ContainerState.STOPPED
             self._forking_cond.notify_all()
 
+    @safe_function("started")
     def get_state(self) -> str:
         """Returns the current state of the container as a string.
 
@@ -489,6 +500,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     )
                 )
 
+    @safe_function
     def define(
         self,
         path: str,
@@ -511,19 +523,23 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             attr.process_assignment(neptune_value, wait=wait)
             return attr
 
+    @safe_function
     def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:
             return self._structure.get(parse_path(path))
 
+    @safe_function
     def set_attribute(self, path: str, attribute: Attribute) -> Optional[Attribute]:
         with self._lock:
             return self._structure.set(parse_path(path), attribute)
 
+    @safe_function(False)
     def exists(self, path: str) -> bool:
         """Checks if there is a field or namespace under the specified path."""
         verify_type("path", path, str)
         return self.get_attribute(path) is not None
 
+    @safe_function
     @ensure_not_stopped
     def pop(self, path: str, *, wait: bool = False) -> None:
         """Removes the field stored under the path and all data associated with it.
@@ -557,6 +573,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def lock(self) -> threading.RLock:
         return self._lock
 
+    @safe_function
     def wait(self, *, disk_only=False) -> None:
         """Wait for all the queued metadata tracking calls to reach the Neptune servers.
 
@@ -573,6 +590,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             else:
                 self._op_processor.wait()
 
+    @safe_function
     def sync(self, *, wait: bool = True) -> None:
         """Synchronizes the local representation of the object with the representation on the Neptune servers.
 

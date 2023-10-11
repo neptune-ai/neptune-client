@@ -92,7 +92,6 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.safe_container import safety_decorator
 from neptune.types import (
     GitRef,
     StringSeries,
@@ -101,7 +100,6 @@ from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.types.mode import Mode
 
 
-@safety_decorator
 class Run(MetadataContainer):
     """Starts a tracked run that logs ML model-building metadata to neptune.ai."""
 
