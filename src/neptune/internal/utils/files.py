@@ -27,7 +27,12 @@ def remove_parent_folder_if_allowed(path: Path) -> None:
 
     if not deletion_disabled:
         parent = path.parent
-        files = os.listdir(parent)
+
+        try:
+            files = os.listdir(parent)
+        except FileNotFoundError:
+            files = []
+
         if len(files) == 0:
             try:
                 os.rmdir(parent)
