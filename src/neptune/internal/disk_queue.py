@@ -32,8 +32,8 @@ from typing import (
     TypeVar,
 )
 
-from neptune.envs import NEPTUNE_DISABLE_PARENT_DIR_DELETION
 from neptune.exceptions import MalformedOperation
+from neptune.internal.utils.files import remove_parent_folder_if_allowed
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
@@ -184,24 +184,7 @@ class DiskQueue(Generic[T]):
     def _remove_data(self):
         path = self._dir_path
         shutil.rmtree(path, ignore_errors=True)
-
-        parent = path.parent
-
-        try:
-            files = os.listdir(parent)
-        except FileNotFoundError:
-            files = []
-
-        disable_parent_dir_deletion = os.getenv(NEPTUNE_DISABLE_PARENT_DIR_DELETION, "false").lower() in (
-            "true",
-            "1",
-            "t",
-        )
-        if len(files) == 0 and not disable_parent_dir_deletion:
-            try:
-                os.rmdir(parent)
-            except OSError:
-                _logger.info(f"Cannot remove directory: {parent}")
+        remove_parent_folder_if_allowed(path)
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         with self._empty_cond:
