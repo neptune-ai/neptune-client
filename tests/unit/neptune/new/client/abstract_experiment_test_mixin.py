@@ -53,7 +53,7 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneOfflineModeFetchException):
                 exp["some/variable"].fetch()
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}"
+            exp_dir = f"{exp.container_type.value}__{exp._id}__{os.getpid()}"
             self.assertIn(exp_dir, os.listdir(".neptune/offline"))
             self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
 
@@ -75,12 +75,11 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertEqual(13, exp["copied/variable"].fetch())
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}"
+            exp_dir = f"{exp.container_type.value}__{exp._id}__{os.getpid()}"
             self.assertIn(exp_dir, os.listdir(".neptune/async"))
-            execution_dir = os.listdir(f".neptune/async/{exp_dir}")[0]
             self.assertIn(
                 "data-1.log",
-                os.listdir(f".neptune/async/{exp_dir}/{execution_dir}"),
+                os.listdir(f".neptune/async/{exp_dir}"),
             )
 
     def test_async_mode_wait_on_dead(self):
@@ -141,7 +140,6 @@ class AbstractExperimentTestMixin:
             exp.stop()
 
             assert not os.path.exists(container_path)
-            assert not os.path.exists(container_path.parent)
 
     @abstractmethod
     def test_read_only_mode(self):
