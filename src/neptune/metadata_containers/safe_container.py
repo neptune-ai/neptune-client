@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["safety_decorator"]
+__all__ = ["safe_function"]
 
 import functools
-import inspect
 import os
-from typing import Any
+from typing import (
+    Any,
+    Dict,
+    Tuple,
+)
 
 from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_SAFETY_MODE
@@ -27,27 +30,24 @@ from neptune.internal.utils.logger import logger
 _SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
 
 
-def _safe_function(func: Any) -> Any:
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        try:
-            return func(*args, **kwargs)
-        except Exception as ex:
-            try:
-                warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
-                logger.debug("In safe mode exception is ignored", exc_info=True)
-            except Exception:
-                pass
+def safe_function(default_return_value: Any = None) -> Any:
+    def decorator(func: Any) -> Any:
+        if _SAFETY_MODE:
 
-    return wrapper
+            @functools.wraps(func)
+            def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> Any:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as ex:
+                    try:
+                        warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
+                        logger.debug("In safe mode exception is ignored", exc_info=True)
+                    except Exception:
+                        pass
+                    return default_return_value
 
+            return wrapper
+        else:
+            return func
 
-def safety_decorator(cls: Any) -> Any:
-    if _SAFETY_MODE:
-        for name, method in inspect.getmembers(cls):
-            if (not inspect.ismethod(method) and not inspect.isfunction(method)) or inspect.isbuiltin(method):
-                continue
-            setattr(cls, name, _safe_function(method))
-        return cls
-    else:
-        return cls
+    return decorator

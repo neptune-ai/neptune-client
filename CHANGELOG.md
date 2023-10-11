@@ -5,6 +5,9 @@
 - Allow to disable handling of remote signals ([#1508])(https://github.com/neptune-ai/neptune-client/pull/1508)
 - Allow to disable delete of local parent folder ([#1511])(https://github.com/neptune-ai/neptune-client/pull/1511)
 
+### Fixes
+- Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
+
 
 ## neptune 1.8.2
 

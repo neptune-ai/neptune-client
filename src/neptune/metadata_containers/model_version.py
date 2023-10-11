@@ -47,12 +47,11 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.safe_container import safety_decorator
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
 
-@safety_decorator
 class ModelVersion(MetadataContainer):
     """Class for managing a version of a neptune.ai model and retrieving information from it."""
 
@@ -239,6 +238,7 @@ class ModelVersion(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelVersionException(label=self._sys_id)
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_version_url(
@@ -249,6 +249,7 @@ class ModelVersion(MetadataContainer):
             model_id=self["sys/model_id"].fetch(),
         )
 
+    @safe_function()
     def change_stage(self, stage: str) -> None:
         """Changes the stage of the model version.
 
