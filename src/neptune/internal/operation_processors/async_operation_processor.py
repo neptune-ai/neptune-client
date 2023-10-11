@@ -93,7 +93,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumed_version = 0
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock = lock
-        self._last_ack = None
+        self._last_ack: Optional[float] = None
         self._lag_exceeded = False
         self._should_call_no_progress_callback = False
 
@@ -291,7 +291,10 @@ class AsyncOperationProcessor(OperationProcessor):
 
         def _check_no_progress(self):
             if not self._no_progress_exceeded:
-                if monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold:
+                if (
+                    self._processor._last_ack
+                    and monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold
+                ):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
