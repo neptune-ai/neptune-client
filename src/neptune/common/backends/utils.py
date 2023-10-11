@@ -34,6 +34,7 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
+from bravado_core.util import RecursiveCallException
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import NewConnectionError
 
@@ -90,6 +91,7 @@ def with_api_exceptions_handler(func):
                 NewConnectionError,
                 ChunkedEncodingError,
                 requests.exceptions.SSLError,
+                RecursiveCallException,
             ) as e:
                 time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                 last_exception = e
