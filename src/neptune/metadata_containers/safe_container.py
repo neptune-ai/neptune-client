@@ -17,29 +17,37 @@ __all__ = ["safe_function"]
 
 import functools
 import os
-from typing import Any
+from typing import (
+    Any,
+    Dict,
+    Tuple,
+)
 
 from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_SAFETY_MODE
 from neptune.internal.utils.logger import logger
 
-_SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
+_SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "True").lower() in ("true", "1", "t")
 
 
 def safe_function(default_return_value: Any = None) -> Any:
     def decorator(func: Any) -> Any:
-        @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            try:
-                return func(*args, **kwargs)
-            except Exception as ex:
-                try:
-                    warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
-                    logger.debug("In safe mode exception is ignored", exc_info=True)
-                except Exception:
-                    pass
-                return default_return_value
+        if _SAFETY_MODE:
 
-        return wrapper
+            @functools.wraps(func)
+            def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> Any:
+                try:
+                    return func(*args, **kwargs)
+                except Exception as ex:
+                    try:
+                        warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
+                        logger.debug("In safe mode exception is ignored", exc_info=True)
+                    except Exception:
+                        pass
+                    return default_return_value
+
+            return wrapper
+        else:
+            return func
 
     return decorator

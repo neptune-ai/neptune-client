@@ -165,7 +165,7 @@ class Handler(SupportsNamespaces):
         """
         return self._container
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns the provided value to the field.
@@ -217,7 +217,7 @@ class Handler(SupportsNamespaces):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def upload(self, value, *, wait: bool = False) -> None:
         """Uploads the provided file under the specified field path.
@@ -257,7 +257,7 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.upload(value, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def upload_files(self, value: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         if is_collection(value):
@@ -272,7 +272,7 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.upload_files(value, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def log(
         self,
@@ -347,7 +347,7 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def append(
         self,
@@ -397,7 +397,7 @@ class Handler(SupportsNamespaces):
         value = ExtendUtils.transform_to_extend_format(value)
         self.extend(value, steps=step, timestamps=timestamp, wait=wait, **kwargs)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def extend(
         self,
@@ -453,7 +453,7 @@ class Handler(SupportsNamespaces):
 
             attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Adds the provided tags to the run.
@@ -477,7 +477,7 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.add(values, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def pop(self, path: str = None, *, wait: bool = False) -> None:
         with self._container.lock():
@@ -498,7 +498,7 @@ class Handler(SupportsNamespaces):
             else:
                 self._container._pop_impl(parse_path(path), wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Removes the provided tags from the set.
@@ -514,7 +514,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def clear(self, *, wait: bool = False):
         """Removes all tags from the `StringSet`.
@@ -587,7 +587,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_values", include_timestamp=include_timestamp)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def delete_files(self, paths: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Deletes the files specified by the paths from the `FileSet` stored on the Neptune servers.
@@ -606,7 +606,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def download(self, destination: str = None) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
@@ -631,7 +631,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="download", destination=destination)
 
-    @safe_function
+    @safe_function()
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
 
@@ -648,7 +648,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="download_last", destination=destination)
 
-    @safe_function
+    @safe_function()
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
 
@@ -657,7 +657,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_hash")
 
-    @safe_function
+    @safe_function()
     def fetch_extension(self) -> str:
         """Fetches the extension of a file.
 
@@ -716,7 +716,7 @@ class Handler(SupportsNamespaces):
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)
 
-    @safe_function
+    @safe_function()
     @check_protected_paths
     def track_files(self, path: str, *, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
