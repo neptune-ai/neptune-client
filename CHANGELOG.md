@@ -1,3 +1,11 @@
+## [UNRELEASED] neptune 1.8.2rc0
+
+### Changes
+- Safety (errors suppressing) execution mode ([#1503])(https://github.com/neptune-ai/neptune-client/pull/1503)
+- Allow to disable handling of remote signals ([#1508])(https://github.com/neptune-ai/neptune-client/pull/1508)
+- Allow to disable local files cleanup ([#1511])(https://github.com/neptune-ai/neptune-client/pull/1511)
+
+
 ## neptune 1.8.2
 
 ### Changes
