@@ -49,7 +49,7 @@ from neptune.common.utils import (
     NoopObject,
     assure_directory_exists,
 )
-from neptune.envs import NEPTUNE_SAFETY_MODE
+from neptune.envs import NEPTUNE_DISABLE_WEBSOCKETS
 from neptune.internal import operation as alpha_operation
 from neptune.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.internal.backends.api_model import AttributeType
@@ -156,7 +156,7 @@ LegacyLeaderboardEntry = namedtuple(
 if TYPE_CHECKING:
     from neptune.legacy.internal.api_clients import HostedNeptuneBackendApiClient
 
-_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
+_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_DISABLE_WEBSOCKETS, "false").lower() in ("true", "1", "t")
 
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):

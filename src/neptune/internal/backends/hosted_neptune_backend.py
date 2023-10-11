@@ -47,8 +47,8 @@ from neptune.common.exceptions import (
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.envs import (
+    NEPTUNE_DISABLE_WEBSOCKETS,
     NEPTUNE_FETCH_TABLE_STEP_SIZE,
-    NEPTUNE_SAFETY_MODE,
 )
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -152,7 +152,7 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
-_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
+_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_DISABLE_WEBSOCKETS, "false").lower() in ("true", "1", "t")
 
 
 class HostedNeptuneBackend(NeptuneBackend):
