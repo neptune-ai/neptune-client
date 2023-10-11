@@ -49,6 +49,7 @@ from neptune.common.utils import (
     NoopObject,
     assure_directory_exists,
 )
+from neptune.envs import NEPTUNE_SAFETY_MODE
 from neptune.internal import operation as alpha_operation
 from neptune.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.internal.backends.api_model import AttributeType
@@ -154,6 +155,8 @@ LegacyLeaderboardEntry = namedtuple(
 
 if TYPE_CHECKING:
     from neptune.legacy.internal.api_clients import HostedNeptuneBackendApiClient
+
+_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
 
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
@@ -1039,8 +1042,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             raise ProjectNotFound(project_identifier=project.full_id)
 
     def websockets_factory(self, project_id, experiment_id):
-        base_url = re.sub(r"^http", "ws", self.api_address) + "/api/notifications/v1"
-        return ReconnectingWebsocketFactory(backend=self, url=base_url + f"/runs/{project_id}/{experiment_id}/signal")
+        if _DISABLE_WEBSOCKETS:
+            return None
+        else:
+            base_url = re.sub(r"^http", "ws", self.api_address) + "/api/notifications/v1"
+            return ReconnectingWebsocketFactory(
+                backend=self, url=base_url + f"/runs/{project_id}/{experiment_id}/signal"
+            )
 
     @staticmethod
     def _to_leaderboard_entry_dto(experiment_attributes):

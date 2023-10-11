@@ -46,7 +46,10 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
+from neptune.envs import (
+    NEPTUNE_FETCH_TABLE_STEP_SIZE,
+    NEPTUNE_SAFETY_MODE,
+)
 from neptune.exceptions import (
     AmbiguousProjectName,
     ContainerUUIDNotFound,
@@ -149,6 +152,8 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
+_DISABLE_WEBSOCKETS = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
+
 
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
@@ -177,12 +182,15 @@ class HostedNeptuneBackend(NeptuneBackend):
         return self._client_config.display_url
 
     def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
-        base_url = re.sub(r"^http", "ws", self._client_config.api_url)
-        return WebsocketsFactory(
-            url=build_operation_url(base_url, f"/api/notifications/v1/runs/{project_id}/{run_id}/signal"),
-            session=self._http_client.authenticator.auth.session,
-            proxies=self.proxies,
-        )
+        if _DISABLE_WEBSOCKETS:
+            return None
+        else:
+            base_url = re.sub(r"^http", "ws", self._client_config.api_url)
+            return WebsocketsFactory(
+                url=build_operation_url(base_url, f"/api/notifications/v1/runs/{project_id}/{run_id}/signal"),
+                session=self._http_client.authenticator.auth.session,
+                proxies=self.proxies,
+            )
 
     @with_api_exceptions_handler
     def get_project(self, project_id: QualifiedName) -> Project:
