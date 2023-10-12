@@ -18,16 +18,21 @@ __all__ = ["OperationStorage", "get_container_dir"]
 import os
 import shutil
 from pathlib import Path
-from typing import Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.files import remove_parent_folder_if_allowed
+
+if TYPE_CHECKING:
+    from neptune.internal.container_type import ContainerType
+    from neptune.internal.id_formats import UniqueId
 
 
 def get_container_dir(
-    type_dir: str, container_id: UniqueId, container_type: ContainerType, process_path: Optional[str] = None
+    type_dir: str, container_id: "UniqueId", container_type: "ContainerType", process_path: Optional[str] = None
 ) -> Path:
     neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
     container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")

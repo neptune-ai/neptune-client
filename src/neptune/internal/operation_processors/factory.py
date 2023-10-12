@@ -73,6 +73,6 @@ def get_operation_processor(
         # the object was returned by mocked backend and has some random ID.
         return OfflineOperationProcessor(container_id, container_type, lock)
     elif mode == Mode.READ_ONLY:
-        return ReadOnlyOperationProcessor(container_id, backend)
+        return ReadOnlyOperationProcessor()
     else:
         raise ValueError(f"mode should be one of {[m for m in Mode]}")
