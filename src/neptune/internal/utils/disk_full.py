@@ -78,7 +78,7 @@ def ensure_disk_not_full(
                 try:
                     if max_disk_utilization:
                         current_utilization = get_disk_utilization_percent()
-                        if current_utilization > max_disk_utilization:
+                        if current_utilization >= max_disk_utilization:
                             warn_once(
                                 f"Max disk utilization {max_disk_utilization}% exceeded with {current_utilization}."
                                 f" Neptune will not be saving your data.",

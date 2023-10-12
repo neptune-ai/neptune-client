@@ -16,7 +16,10 @@
 import unittest
 from io import UnsupportedOperation
 
-from mock import patch
+from mock import (
+    MagicMock,
+    patch,
+)
 from psutil import (
     AccessDenied,
     Error,
@@ -48,3 +51,23 @@ class TestDiskFull(unittest.TestCase):
             get_disk_utilization_percent.side_effect = error
             with self.assertRaises(BaseException):
                 dummy_test_func()
+
+    @patch("neptune.internal.utils.disk_full.get_disk_utilization_percent")
+    def test_not_called_with_usage_100_percent(self, get_disk_utilization_percent):
+        get_disk_utilization_percent.return_value = 100
+        mocked_func = MagicMock()
+        wrapped_func = ensure_disk_not_full(True, 100)(mocked_func)
+
+        wrapped_func()
+
+        mocked_func.assert_not_called()
+
+    @patch("neptune.internal.utils.disk_full.get_disk_utilization_percent")
+    def test_called_when_usage_less_than_limit(self, get_disk_utilization_percent):
+        get_disk_utilization_percent.return_value = 99
+        mocked_func = MagicMock()
+        wrapped_func = ensure_disk_not_full(True, 100)(mocked_func)
+
+        wrapped_func()
+
+        mocked_func.assert_called_once()
