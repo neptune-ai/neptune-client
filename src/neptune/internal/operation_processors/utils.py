@@ -13,16 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["common_metadata"]
+__all__ = ["common_metadata", "get_container_dir"]
 
-import datetime
+import os
 import platform
 import sys
+from datetime import datetime
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
 )
+
+from neptune.constants import NEPTUNE_DATA_DIRECTORY
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
@@ -40,9 +44,14 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "mode": mode,
         "containerId": container_id,
         "containerType": container_type,
-        "structureVersion": 1,
+        "structureVersion": 2,
         "os": platform.platform(),
         "pythonVersion": sys.version,
         "neptuneClientVersion": get_neptune_version(),
-        "createdAt": datetime.datetime.utcnow().isoformat(),
+        "createdAt": datetime.utcnow().isoformat(),
     }
+
+
+def get_container_dir(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
+    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
+    return neptune_data_dir / type_dir / f"{container_type.create_dir_name(container_id)}__{os.getpid()}"

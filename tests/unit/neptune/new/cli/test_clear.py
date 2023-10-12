@@ -70,6 +70,7 @@ def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, conta
     # and
     captured = capsys.readouterr()
     assert captured.out.splitlines() == [
+        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
         "",
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",

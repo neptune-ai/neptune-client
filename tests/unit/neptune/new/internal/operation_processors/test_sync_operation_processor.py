@@ -48,9 +48,10 @@ def test_close(metadata_file_mock, _):
     metadata_file.close.assert_called_once()
 
 
+@patch("neptune.internal.operation_processors.sync_operation_processor.shutil.rmtree")
 @patch("neptune.internal.operation_processors.sync_operation_processor.OperationStorage")
 @patch("neptune.internal.operation_processors.sync_operation_processor.MetadataFile")
-def test_cleanup(metadata_file_mock, operation_storage_mock):
+def test_cleanup(metadata_file_mock, operation_storage_mock, rmtree_mock):
     # given
     container_id = UniqueId(str(uuid4()))
     container_type = ContainerType.RUN
@@ -71,6 +72,7 @@ def test_cleanup(metadata_file_mock, operation_storage_mock):
     # then
     operation_storage.cleanup.assert_called()
     metadata_file.cleanup.assert_called()
+    rmtree_mock.assert_called_with(processor._data_path, ignore_errors=True)
 
 
 @patch("neptune.internal.operation_processors.sync_operation_processor.OperationStorage")

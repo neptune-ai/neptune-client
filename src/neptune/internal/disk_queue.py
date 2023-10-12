@@ -33,7 +33,6 @@ from typing import (
 )
 
 from neptune.exceptions import MalformedOperation
-from neptune.internal.utils.files import remove_parent_folder_if_allowed
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
@@ -174,17 +173,8 @@ class DiskQueue(Generic[T]):
         self._last_ack_file.close()
         self._last_put_file.close()
 
-    def cleanup_if_empty(self) -> None:
-        """
-        Remove underlying files if queue is empty
-        """
-        if self.is_empty():
-            self._remove_data()
-
-    def _remove_data(self):
-        path = self._dir_path
-        shutil.rmtree(path, ignore_errors=True)
-        remove_parent_folder_if_allowed(path)
+    def cleanup(self) -> None:
+        shutil.rmtree(self._dir_path, ignore_errors=True)
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         with self._empty_cond:
@@ -249,4 +239,5 @@ class DiskQueue(Generic[T]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.flush()
         self.close()
-        self.cleanup_if_empty()
+        if self.is_empty():
+            self.cleanup()

@@ -28,16 +28,15 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
     get_container_dir,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 if TYPE_CHECKING:
     import threading
-    from pathlib import Path
 
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
@@ -45,7 +44,9 @@ if TYPE_CHECKING:
 
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
-        data_path = self._init_data_path(container_id, container_type)
+        data_path = get_container_dir(
+            type_dir=OFFLINE_DIRECTORY, container_id=container_id, container_type=container_type
+        )
 
         self._metadata_file = MetadataFile(
             data_path=data_path,
@@ -55,10 +56,6 @@ class OfflineOperationProcessor(OperationProcessor):
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(dir_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
