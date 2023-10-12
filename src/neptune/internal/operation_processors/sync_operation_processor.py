@@ -30,6 +30,7 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 
 class SyncOperationProcessor(OperationProcessor):
@@ -45,6 +46,7 @@ class SyncOperationProcessor(OperationProcessor):
         process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
 
+    @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(
             container_id=self._container_id,

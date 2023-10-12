@@ -23,7 +23,7 @@ from typing import Optional
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.files import remove_parent_folder_if_allowed
 
 
 def get_container_dir(
@@ -56,12 +56,4 @@ class OperationStorage:
 
     def cleanup(self) -> None:
         shutil.rmtree(self.data_path, ignore_errors=True)
-
-        parent = self.data_path.parent
-        files = os.listdir(parent)
-
-        if len(files) == 0:
-            try:
-                os.rmdir(parent)
-            except OSError:
-                logger.debug(f"Cannot remove directory: {parent}")
+        remove_parent_folder_if_allowed(self.data_path)

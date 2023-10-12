@@ -21,6 +21,7 @@ from typing import Optional
 
 from neptune.constants import OFFLINE_DIRECTORY
 from neptune.internal.container_type import ContainerType
+from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -28,7 +29,7 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
-from neptune.internal.queue.disk_queue import DiskQueue
+from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 
 class OfflineOperationProcessor(OperationProcessor):
@@ -46,6 +47,7 @@ class OfflineOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType) -> Path:
         return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
+    @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
 

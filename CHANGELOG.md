@@ -1,7 +1,24 @@
-## [UNRELEASED] neptune 1.9.0
+## [UNRELEASED] neptune 1.8.3
 
 ### Changes
-- Upgraded performance of sending series data to Neptune ([#1483](https://github.com/neptune-ai/neptune-client/pull/1483))
+- Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
+- Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
+- Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
+
+### Fixes
+- Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
+- Retry request in case of bravado RecursiveCallException ([#1521](https://github.com/neptune-ai/neptune-client/pull/1512))
+
+## neptune 1.8.2
+
+### Changes
+- Support for disabling operation saving based on disk utilization ([#1496](https://github.com/neptune-ai/neptune-client/pull/1496))
+
+
+## neptune 1.8.1
+
+### Fixes
+- Fixed SSL-related error handling ([#1490](https://github.com/neptune-ai/neptune-client/pull/1490))
 
 
 ## neptune 1.8.0
