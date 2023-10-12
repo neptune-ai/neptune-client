@@ -17,6 +17,7 @@
 - Added metadata file that stores information about internal directory structure and platform ([#1526](https://github.com/neptune-ai/neptune-client/pull/1526))
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
 - Pin `simplejson` required version to below `3.19` ([#1535](https://github.com/neptune-ai/neptune-client/pull/1535))
+- Cast unsupported floats(infinity, negative infinity, nan) in `stringify_unsupported()` ([#1509](https://github.com/neptune-ai/neptune-client/pull/1509))
 
 
 ## neptune 1.8.2
@@ -24,14 +25,12 @@
 ### Changes
 - Support for disabling operation saving based on disk utilization ([#1496](https://github.com/neptune-ai/neptune-client/pull/1496))
 
-### Fixes
-- Cast unsupported floats(infinity, negative infinity, nan) in `stringify_unsupported()` ([#1509](https://github.com/neptune-ai/neptune-client/pull/1509))
-
 
 ## neptune 1.8.1
 
 ### Fixes
 - Fixed SSL-related error handling ([#1490](https://github.com/neptune-ai/neptune-client/pull/1490))
+
 
 ## neptune 1.8.0
 
