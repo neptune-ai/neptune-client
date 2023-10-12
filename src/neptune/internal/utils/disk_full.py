@@ -27,6 +27,7 @@ from typing import (
 )
 
 import psutil
+from psutil import Error
 
 from neptune.common.warnings import (
     NeptuneWarning,
@@ -60,28 +61,39 @@ def get_max_percentage_from_env() -> Optional[float]:
     return None
 
 
-def ensure_disk_not_full(func: Callable[..., None]) -> Callable[..., None]:
-    non_raising_on_disk_issue = NEPTUNE_NON_RAISING_ON_DISK_ISSUE in os.environ
-    max_disk_utilization = get_max_percentage_from_env()
+def ensure_disk_not_full(
+    non_raise_on_disk_issue: Optional[bool] = None, max_disc_utilization: Optional[float] = None
+) -> Callable[[Callable[..., None]], Callable[..., None]]:
 
-    @wraps(func)
-    def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> None:
-        if non_raising_on_disk_issue:
-            try:
-                if max_disk_utilization:
-                    current_utilization = get_disk_utilization_percent()
-                    if current_utilization > max_disk_utilization:
-                        warn_once(
-                            f"Max disk utilization {max_disk_utilization}% exceeded with {current_utilization}."
-                            f" Neptune will not be saving your data.",
-                            exception=NeptuneWarning,
-                        )
-                        return
+    non_raising_on_disk_issue = (
+        NEPTUNE_NON_RAISING_ON_DISK_ISSUE in os.environ if non_raise_on_disk_issue is None else non_raise_on_disk_issue
+    )
 
-                func(*args, **kwargs)
-            except IOError:
-                warn_once("Encountered disk issue and Neptune will not be saving your data.", exception=NeptuneWarning)
-        else:
-            return func(*args, **kwargs)
+    max_disk_utilization = get_max_percentage_from_env() if max_disc_utilization is None else max_disc_utilization
 
-    return wrapper
+    def ensure_disk_not_full_decorator(func: Callable[..., None]) -> Callable[..., None]:
+        @wraps(func)
+        def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> None:
+            if non_raising_on_disk_issue:
+                try:
+                    if max_disk_utilization:
+                        current_utilization = get_disk_utilization_percent()
+                        if current_utilization > max_disk_utilization:
+                            warn_once(
+                                f"Max disk utilization {max_disk_utilization}% exceeded with {current_utilization}."
+                                f" Neptune will not be saving your data.",
+                                exception=NeptuneWarning,
+                            )
+                            return
+
+                    func(*args, **kwargs)
+                except (OSError, Error):
+                    warn_once(
+                        "Encountered disk issue and Neptune will not be saving your data.", exception=NeptuneWarning
+                    )
+            else:
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return ensure_disk_not_full_decorator
