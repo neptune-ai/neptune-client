@@ -72,11 +72,11 @@ class StatusRunner(AbstractBackendRunner):
         logger.info("\nPlease run with the `neptune sync --help` to see example commands.")
 
     @staticmethod
-    def trashed(cont: ApiExperiment):
+    def trashed(cont: ApiExperiment) -> str:
         return " (Trashed)" if cont.trashed else ""
 
     @staticmethod
-    def log_offline_objects(offline_dirs, info=True):
+    def log_offline_objects(offline_dirs: Sequence[str], info: bool = True) -> None:
         if offline_dirs:
             logger.info("Unsynchronized offline objects:")
             for container_id in offline_dirs:
@@ -85,7 +85,7 @@ class StatusRunner(AbstractBackendRunner):
                 logger.info("\n%s", textwrap.fill(offline_run_explainer, width=90))
 
     @staticmethod
-    def log_unsync_objects(unsynced_containers):
+    def log_unsync_objects(unsynced_containers: Sequence[ApiExperiment]) -> None:
         if unsynced_containers:
             logger.info("Unsynchronized objects:")
             for container in unsynced_containers:
