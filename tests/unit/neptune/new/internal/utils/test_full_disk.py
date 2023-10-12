@@ -28,11 +28,6 @@ from psutil import (
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 
-@ensure_disk_not_full(True, 42)
-def dummy_test_func():
-    pass
-
-
 class TestDiskFull(unittest.TestCase):
 
     # Catching OSError that's base error for all OS and IO errors. More info here: https://peps.python.org/pep-3151
@@ -41,16 +36,23 @@ class TestDiskFull(unittest.TestCase):
     @patch("neptune.internal.utils.disk_full.get_disk_utilization_percent")
     def test_suppressing_of_env_errors(self, get_disk_utilization_percent):
         env_errors = [OSError(), IOError(), EnvironmentError(), UnsupportedOperation(), Error(), AccessDenied()]
-
         for error in env_errors:
+            mocked_func = MagicMock()
+            wrapped_func = ensure_disk_not_full(True, 100)(mocked_func)
             get_disk_utilization_percent.side_effect = error
-            dummy_test_func()  # asserting is not required as expecting that any error will be caught
+
+            wrapped_func()  # asserting is not required as expecting that any error will be caught
+            mocked_func.assert_not_called()
 
         non_env_errors = [ValueError(), OverflowError()]
         for error in non_env_errors:
+            mocked_func = MagicMock()
+            wrapped_func = ensure_disk_not_full(True, 100)(mocked_func)
             get_disk_utilization_percent.side_effect = error
+
             with self.assertRaises(BaseException):
-                dummy_test_func()
+                wrapped_func()
+            mocked_func.assert_not_called()
 
     @patch("neptune.internal.utils.disk_full.get_disk_utilization_percent")
     def test_not_called_with_usage_100_percent(self, get_disk_utilization_percent):
