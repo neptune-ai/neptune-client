@@ -18,7 +18,11 @@ __all__ = ["ClearRunner"]
 
 import shutil
 from pathlib import Path
-from typing import Sequence
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Sequence,
+)
 
 import click
 
@@ -27,13 +31,15 @@ from neptune.cli.container_manager import ContainersManager
 from neptune.cli.status import StatusRunner
 from neptune.cli.utils import get_offline_dirs
 from neptune.constants import SYNC_DIRECTORY
-from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.id_formats import UniqueId
 from neptune.internal.utils.logger import logger
+
+if TYPE_CHECKING:
+    from neptune.internal.backends.api_model import ApiExperiment
+    from neptune.internal.id_formats import UniqueId
 
 
 class ClearRunner(AbstractBackendRunner):
-    def clear(self, path: Path, force: bool = False, clear_eventual: bool = True):
+    def clear(self, path: Path, force: bool = False, clear_eventual: bool = True) -> None:
         container_manager = ContainersManager(self._backend, path)
         synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(path)
 
@@ -49,14 +55,16 @@ class ClearRunner(AbstractBackendRunner):
                 self.remove_data(container_manager, offline_containers, unsynced_containers)
 
     @staticmethod
-    def remove_sync_containers(path: Path):
+    def remove_sync_containers(path: Path) -> None:
         """
         Function can remove SYNC_DIRECTORY safely, Neptune client only stores files to upload in this location.
         """
         shutil.rmtree(path / SYNC_DIRECTORY, ignore_errors=True)
 
     @staticmethod
-    def log_junk_metadata(offline_containers, unsynced_containers):
+    def log_junk_metadata(
+        offline_containers: Sequence["UniqueId"], unsynced_containers: Sequence["ApiExperiment"]
+    ) -> None:
         if unsynced_containers:
             logger.info("")
             StatusRunner.log_unsync_objects(unsynced_containers=unsynced_containers)
@@ -67,9 +75,9 @@ class ClearRunner(AbstractBackendRunner):
     @staticmethod
     def remove_data(
         container_manager: ContainersManager,
-        offline_containers: Sequence[UniqueId],
-        unsynced_containers: Sequence[ApiExperiment],
-    ):
+        offline_containers: Sequence["UniqueId"],
+        unsynced_containers: Sequence["ApiExperiment"],
+    ) -> None:
 
         offline_containers_paths = [container_manager.resolve_offline_container_dir(x) for x in offline_containers]
         unsynced_containers_paths = [
@@ -80,7 +88,7 @@ class ClearRunner(AbstractBackendRunner):
         ClearRunner.remove_containers(unsynced_containers_paths)
 
     @staticmethod
-    def remove_containers(paths):
+    def remove_containers(paths: List[Path]) -> None:
         for path in paths:
             try:
                 shutil.rmtree(path)

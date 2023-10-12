@@ -42,6 +42,7 @@ from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBacken
 from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
 from neptune.internal.credentials import Credentials
 from neptune.internal.disk_queue import DiskQueue  # noqa: F401
+from neptune.internal.id_formats import QualifiedName
 from neptune.internal.operation import Operation  # noqa: F401
 
 
@@ -99,7 +100,7 @@ def sync(
     object_names: List[str],
     project_name: Optional[str],
     offline_only: Optional[bool],
-):
+) -> None:
     """Synchronizes objects with unsent data to the server.
 
      Neptune stores object data on disk in the '.neptune' directory. If an object executes offline
@@ -147,7 +148,8 @@ def sync(
         if object_names:
             raise click.BadParameter("--object and --offline-only are mutually exclusive")
 
-        sync_runner.sync_all_offline_containers(path, project_name)
+        if project_name is not None:
+            sync_runner.sync_all_offline_containers(base_path=path, project_name=QualifiedName(project_name))
 
     elif object_names:
         sync_runner.sync_selected_containers(path, project_name, object_names)
@@ -161,7 +163,7 @@ def sync(
 
 @click.command()
 @path_option
-def clear(path: Path):
+def clear(path: Path) -> None:
     """
     Clears metadata that has been synchronized or trashed, but is still present in local storage.
 
