@@ -62,9 +62,7 @@ def get_max_percentage_from_env() -> Optional[float]:
 
 
 def ensure_disk_not_full(func: Callable[..., None]) -> Callable[..., None]:
-
     non_raising_on_disk_issue = NEPTUNE_NON_RAISING_ON_DISK_ISSUE in os.environ
-
     max_disk_utilization = get_max_percentage_from_env()
 
     @wraps(func)
