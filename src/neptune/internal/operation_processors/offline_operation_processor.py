@@ -57,7 +57,7 @@ class OfflineOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
         return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
-    @ensure_disk_not_full()
+    @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
 
