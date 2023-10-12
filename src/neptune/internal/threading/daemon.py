@@ -18,7 +18,6 @@ __all__ = ["Daemon"]
 import abc
 import functools
 import threading
-import time
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
@@ -133,7 +132,9 @@ class Daemon(threading.Thread):
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
-                        time.sleep(self_.last_backoff_time)
+
+                        with self_._wait_condition:
+                            self_._wait_condition.wait(self_.last_backoff_time)
                     except Exception:
                         logger.error(
                             "Unexpected error occurred in Neptune background thread: %s",

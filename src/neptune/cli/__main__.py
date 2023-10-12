@@ -27,7 +27,7 @@ from neptune.cli.commands import (
 
 
 @click.group()
-def main():
+def main() -> None:
     pass
 
 

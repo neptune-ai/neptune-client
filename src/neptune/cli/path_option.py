@@ -17,6 +17,7 @@
 __all__ = ["path_option"]
 
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -36,15 +37,16 @@ from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.operation import Operation  # noqa: F401
 
 
-def get_neptune_path(ctx, param, path: str) -> Path:
+def get_neptune_path(ctx: Any, param: Any, path: str) -> Path:
     # check if path exists and contains a '.neptune' folder
-    path = Path(path)
-    if (path / NEPTUNE_DATA_DIRECTORY).is_dir():
-        return path / NEPTUNE_DATA_DIRECTORY
-    elif path.name == NEPTUNE_DATA_DIRECTORY and path.is_dir():
-        return path
+    local_path = Path(path)
+
+    if (local_path / NEPTUNE_DATA_DIRECTORY).is_dir():
+        return local_path / NEPTUNE_DATA_DIRECTORY
+    elif local_path.name == NEPTUNE_DATA_DIRECTORY and local_path.is_dir():
+        return local_path
     else:
-        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY))
+        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(local_path, NEPTUNE_DATA_DIRECTORY))
 
 
 path_option = click.option(

@@ -257,7 +257,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_metadata_container(
         self,
         container_id: Union[UniqueId, QualifiedName],
-        expected_container_type: ContainerType,
+        expected_container_type: Optional[ContainerType],
     ) -> ApiExperiment:
         if "/" not in container_id:
             raise ValueError("Backend mock expect container_id as QualifiedName only")
