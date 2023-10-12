@@ -91,7 +91,7 @@ class ModelVersion(MetadataContainer):
                 The identifier is stored in the model version's "sys/id" field.
                 If left empty, a new model version is created.
             name: Custom name for the model version. You can add it as a column in the model versions table
-                ("sys/name"). You can also edit the name in the app, in the model version information.
+                ("sys/name"). You can also edit the name in the app, in the information view.
             model: Identifier of the model for which the new version should be created.
                 Required when creating a new model version.
                 You can find the model ID in the leftmost column of the models table, or in a model's "sys/id" field.

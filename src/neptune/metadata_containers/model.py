@@ -96,7 +96,7 @@ class Model(MetadataContainer):
                 The identifier is stored in the model's "sys/id" field.
                 If left empty, a new model is created.
             name: Custom name for the model. You can add it as a column in the models table ("sys/name").
-                You can also edit the name in the app, in the model information.
+                You can also edit the name in the app, in the information view.
             key: Key for the model. Required when creating a new model.
                 Used together with the project key to form the model identifier.
                 Must be uppercase and unique within the project.
