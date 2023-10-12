@@ -27,6 +27,7 @@ from typing import (
 )
 
 import psutil
+from psutil import Error
 
 from neptune.common.warnings import (
     NeptuneWarning,
@@ -70,7 +71,7 @@ def ensure_disk_not_full(func: Callable[..., None]) -> Callable[..., None]:
             try:
                 if max_disk_utilization:
                     current_utilization = get_disk_utilization_percent()
-                    if current_utilization > max_disk_utilization:
+                    if current_utilization >= max_disk_utilization:
                         warn_once(
                             f"Max disk utilization {max_disk_utilization}% exceeded with {current_utilization}."
                             f" Neptune will not be saving your data.",
@@ -79,7 +80,7 @@ def ensure_disk_not_full(func: Callable[..., None]) -> Callable[..., None]:
                         return
 
                 func(*args, **kwargs)
-            except IOError:
+            except (OSError, Error):
                 warn_once("Encountered disk issue and Neptune will not be saving your data.", exception=NeptuneWarning)
         else:
             return func(*args, **kwargs)
