@@ -9,6 +9,7 @@
 - Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
 - Retry request in case of bravado RecursiveCallException ([#1521](https://github.com/neptune-ai/neptune-client/pull/1512))
 - Fix bug in git tracking when repo was clean ([#1517](https://github.com/neptune-ai/neptune-client/pull/1517))
+- Run async callback in new daemon thread ([#1521](https://github.com/neptune-ai/neptune-client/pull/1521))
 
 
 ## neptune 1.8.2
