@@ -109,7 +109,7 @@ class AsyncOperationProcessor(OperationProcessor):
         process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
-    @ensure_disk_not_full
+    @ensure_disk_not_full()
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)
 
