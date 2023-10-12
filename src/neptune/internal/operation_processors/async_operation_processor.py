@@ -153,7 +153,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
         with self._lock:
             if not self._lag_exceeded:
-                self._async_lag_callback()
+                threading.Thread(target=self._async_lag_callback, daemon=True).start()
                 self._lag_exceeded = True
 
     def _check_no_progress(self) -> None:
@@ -162,7 +162,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
         with self._lock:
             if self._should_call_no_progress_callback:
-                self._async_no_progress_callback()
+                threading.Thread(target=self._async_no_progress_callback, daemon=True).start()
                 self._should_call_no_progress_callback = False
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:

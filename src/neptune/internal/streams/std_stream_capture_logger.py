@@ -58,12 +58,12 @@ class StdStreamCaptureLogger:
 
     class ReportingThread(Daemon):
         def __init__(self, logger: "StdStreamCaptureLogger", name: str):
-            super().__init__(sleep_time=0, name=name)
+            super().__init__(sleep_time=1, name=name)
             self._logger = logger
 
         @Daemon.ConnectionRetryWrapper(kill_message="Killing Neptune STD capturing thread.")
         def work(self) -> None:
-            while True:
+            while not self._logger._log_data_queue.empty():
                 data = self._logger._log_data_queue.get()
                 if data is None:
                     break
