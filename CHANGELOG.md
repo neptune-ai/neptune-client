@@ -4,6 +4,8 @@
 - Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
 - Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
 - Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
+- Update Neptune object docstrings ([#1516](https://github.com/neptune-ai/neptune-client/pull/1516))
+
 
 ### Fixes
 - Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
