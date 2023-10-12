@@ -76,8 +76,9 @@ class AsyncOperationProcessor(OperationProcessor):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+        path_suffix: Optional[str] = None,
     ):
-        data_path = self._init_data_path(container_id, container_type)
+        data_path = self._init_data_path(container_id, container_type, path_suffix)
         self._metadata_file = MetadataFile(
             data_path=data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
@@ -112,10 +113,13 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_cond = threading.Condition(lock=lock)
 
     @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
+    def _init_data_path(
+        container_id: "UniqueId", container_type: "ContainerType", path_suffix: Optional[str] = None
+    ) -> Path:
+        if path_suffix is None:
+            now = datetime.now()
+            path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
