@@ -25,7 +25,6 @@ from typing import (
 
 from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_SAFETY_MODE
-from neptune.internal.utils.logger import logger
 
 _SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
 
@@ -41,7 +40,6 @@ def safe_function(default_return_value: Any = None) -> Any:
                 except Exception as ex:
                     try:
                         warn_once(f"Exception in method {func}: {ex.__class__.__name__}")
-                        logger.debug("In safe mode exception is ignored", exc_info=True)
                     except Exception:
                         pass
                     return default_return_value
