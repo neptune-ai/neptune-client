@@ -130,3 +130,27 @@ def test_cleaning(remove, makedirs):
         # then
         makedirs.assert_called_with(data_path, exist_ok=True)
         remove.assert_called_with(resolved_path)
+
+
+@patch("os.makedirs")
+@patch("builtins.open")
+def test_initial_metadata(open_mock, makedirs):
+    # given
+    output_file = StringIO()
+    open_mock.return_value = output_file
+
+    # and
+    file_path = MagicMock(
+        spec=Path,
+        resolve=lambda: MagicMock(
+            spec=Path,
+            exists=lambda: False,
+        ),
+    )
+    data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
+
+    # when
+    with MetadataFile(data_path=data_path, metadata={"version": 5, "dependencies": ["a==1.0", "b==2.0"]}):
+        # then
+        makedirs.assert_called_with(data_path, exist_ok=True)
+        assert output_file.getvalue() == sample_content

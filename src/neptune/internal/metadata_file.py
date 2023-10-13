@@ -31,7 +31,7 @@ from typing import (
 class MetadataFile:
     METADATA_FILE: str = "metadata.json"
 
-    def __init__(self, data_path: Path):
+    def __init__(self, data_path: Path, metadata: Optional[Dict[str, Any]] = None):
         self._metadata_path: Path = (data_path / MetadataFile.METADATA_FILE).resolve()
 
         # initialize directory
@@ -39,6 +39,11 @@ class MetadataFile:
 
         self._data: Dict[str, Any] = self._read_or_default()
         self._file_handler: IO[str] = open(self._metadata_path, "w")
+
+        if metadata:
+            for key, value in metadata.items():
+                self.__setitem__(key, value)
+            self.flush()
 
     @property
     def metadata_path(self) -> Path:
