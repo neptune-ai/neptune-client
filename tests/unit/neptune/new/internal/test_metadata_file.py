@@ -112,8 +112,8 @@ def test_loading_existing_state(open_mock, makedirs):
 
 @patch("os.makedirs")
 @patch("os.remove")
-@patch("builtins.open", return_value=StringIO())
-def test_cleaning(open_mock, remove, makedirs):
+@patch("builtins.open", MagicMock())
+def test_cleaning(remove, makedirs):
     # given
     resolved_path = MagicMock(
         spec=Path,
