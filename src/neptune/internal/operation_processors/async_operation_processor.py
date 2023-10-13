@@ -41,12 +41,14 @@ from neptune.internal.init.parameters import (
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_STOP_TIMEOUT,
 )
+from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 from neptune.internal.utils.logger import logger
@@ -74,7 +76,17 @@ class AsyncOperationProcessor(OperationProcessor):
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+        data_path = self._init_data_path(container_id, container_type)
+        self._metadata_file = MetadataFile(
+            data_path=data_path,
+            metadata={
+                "mode": "async",
+                "containerId": container_id,
+                "containerType": container_type,
+                **common_metadata(),
+            },
+        )
+        self._operation_storage = OperationStorage(data_path=data_path)
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
@@ -255,10 +267,14 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
-        self._queue.cleanup_if_empty()
+        if self._queue.is_empty():
+            # TODO: Will be refactored
+            self._queue.cleanup_if_empty()
+            self._metadata_file.cleanup()
 
     def close(self) -> None:
         self._queue.close()
+        self._metadata_file.close()
 
     class ConsumerThread(Daemon):
         def __init__(
