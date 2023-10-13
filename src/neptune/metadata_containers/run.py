@@ -376,10 +376,7 @@ class Run(MetadataContainer):
         self._enable_remote_signals: bool = enable_remote_signals
 
         if type(git_ref) is bool:
-            if not git_ref:
-                git_ref = GitRefDisabled
-            else:
-                git_ref = GitRef()
+            git_ref = GitRef() if git_ref else GitRef.DISABLED
 
         self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref or GitRef()
         self._dependencies: Optional[str, os.PathLike] = dependencies

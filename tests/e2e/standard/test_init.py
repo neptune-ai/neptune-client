@@ -74,7 +74,7 @@ class TestInitRun(BaseE2ETest):
             exp.sync()
             assert exp.exists("source_code/git")
 
-    def test_git_disabled(self, environment):
+    def test_git_disabled(self, environment, recwarn):
         with neptune.init_run(
             git_ref=GitRef.DISABLED,
             project=environment.project,
@@ -90,6 +90,8 @@ class TestInitRun(BaseE2ETest):
             # download sources
             exp.sync()
             assert not exp.exists("source_code/git")
+
+        assert len(recwarn) == 0  # upload was not skipped due to an exception that would raise a warning
 
     def test_infer_dependencies(self, environment):
         with neptune.init_run(
