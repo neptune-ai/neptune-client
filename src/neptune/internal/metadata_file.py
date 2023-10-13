@@ -18,12 +18,9 @@ __all__ = ["MetadataFile"]
 import json
 import os
 from pathlib import Path
-from types import TracebackType
 from typing import (
     Any,
     Dict,
-    Optional,
-    Type,
 )
 
 
