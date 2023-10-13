@@ -20,7 +20,6 @@ import os
 from pathlib import Path
 from types import TracebackType
 from typing import (
-    IO,
     Any,
     Dict,
     Optional,
@@ -38,7 +37,6 @@ class MetadataFile:
         os.makedirs(data_path, exist_ok=True)
 
         self._data: Dict[str, Any] = self._read_or_default()
-        self._file_handler: IO[str] = open(self._metadata_path, "w")
 
         if metadata:
             for key, value in metadata.items():
@@ -56,7 +54,8 @@ class MetadataFile:
         self._data[key] = value
 
     def flush(self) -> None:
-        json.dump(self._data, self._file_handler, indent=2)
+        with open(self._metadata_path, "w") as handler:
+            json.dump(self._data, handler, indent=2)
 
     def _read_or_default(self) -> Dict[str, Any]:
         if self._metadata_path.exists():
@@ -68,7 +67,6 @@ class MetadataFile:
 
     def close(self) -> None:
         self.flush()
-        self._file_handler.close()
 
     def cleanup(self) -> None:
         try:

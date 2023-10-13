@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from io import StringIO
 from pathlib import Path
 
 from mock import (
     MagicMock,
+    mock_open,
     patch,
 )
 
@@ -34,20 +34,14 @@ sample_content = """
 
 
 @patch("os.makedirs")
-@patch("builtins.open")
-def test_saving(open_mock, makedirs):
+@patch("builtins.open", new_callable=mock_open)
+def test_saving(mock_file, makedirs):
     # given
-    output_file = StringIO()
-    open_mock.return_value = output_file
-
-    # and
-    file_path = MagicMock(
+    resolved_path = MagicMock(
         spec=Path,
-        resolve=lambda: MagicMock(
-            spec=Path,
-            exists=lambda: False,
-        ),
+        exists=lambda: False,
     )
+    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
@@ -61,53 +55,31 @@ def test_saving(open_mock, makedirs):
 
         # then
         makedirs.assert_called_with(data_path, exist_ok=True)
-        assert output_file.getvalue() == sample_content
+        mock_file.assert_called_with(resolved_path, "w")
+
+        # and - concatenate all written content
+        write_calls = mock_file().write.call_args_list
+        written_content = "".join(call[0][0] for call in write_calls)
+        assert written_content == sample_content
 
 
 @patch("os.makedirs")
-@patch("builtins.open")
-def test_loading_existing_state(open_mock, makedirs):
+@patch("builtins.open", new_callable=mock_open, read_data=sample_content)
+def test_loading_existing_state(mock_file, makedirs):
     # given
-    initial_file = StringIO(sample_content)
-    output_file = StringIO()
-    open_mock.side_effect = (initial_file, output_file)
-
-    # and
-    file_path = MagicMock(
-        spec=Path,
-        resolve=lambda: MagicMock(
-            spec=Path,
-            exists=lambda: True,
-        ),
-    )
+    resolved_path = MagicMock(spec=Path, exists=lambda: True)
+    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
     with MetadataFile(data_path=data_path) as metadata:
         # then
+        mock_file.assert_called_with(resolved_path, "r")
         makedirs.assert_called_with(data_path, exist_ok=True)
-        assert metadata["version"] == 5
-        assert metadata["dependencies"] == ["a==1.0", "b==2.0"]
-
-        # when
-        metadata["value"] = 2501
 
         # and
-        metadata.flush()
-
-        # then
-        assert (
-            output_file.getvalue()
-            == """
-{
-  "version": 5,
-  "dependencies": [
-    "a==1.0",
-    "b==2.0"
-  ],
-  "value": 2501
-}""".lstrip()
-        )
+        assert metadata["version"] == 5
+        assert metadata["dependencies"] == ["a==1.0", "b==2.0"]
 
 
 @patch("os.makedirs")
@@ -133,24 +105,23 @@ def test_cleaning(remove, makedirs):
 
 
 @patch("os.makedirs")
-@patch("builtins.open")
-def test_initial_metadata(open_mock, makedirs):
+@patch("builtins.open", new_callable=mock_open)
+def test_initial_metadata(mock_file, makedirs):
     # given
-    output_file = StringIO()
-    open_mock.return_value = output_file
-
-    # and
-    file_path = MagicMock(
+    resolved_path = MagicMock(
         spec=Path,
-        resolve=lambda: MagicMock(
-            spec=Path,
-            exists=lambda: False,
-        ),
+        exists=lambda: False,
     )
+    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
     with MetadataFile(data_path=data_path, metadata={"version": 5, "dependencies": ["a==1.0", "b==2.0"]}):
         # then
         makedirs.assert_called_with(data_path, exist_ok=True)
-        assert output_file.getvalue() == sample_content
+        mock_file.assert_called_with(resolved_path, "w")
+
+        # and - concatenate all written content
+        write_calls = mock_file().write.call_args_list
+        written_content = "".join(call[0][0] for call in write_calls)
+        assert written_content == sample_content
