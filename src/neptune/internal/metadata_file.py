@@ -33,10 +33,13 @@ __all__ = ["MetadataFile"]
 import json
 import os
 from pathlib import Path
+from types import TracebackType
 from typing import (
     IO,
     Any,
     Dict,
+    Optional,
+    Type,
 )
 
 
@@ -49,8 +52,8 @@ class MetadataFile:
         # initialize directory
         os.makedirs(data_path, exist_ok=True)
 
-        self._file_handler: IO = open(self._metadata_path, "w")
-        self._data: Dict[str, Any] = dict()
+        self._data: Dict[str, Any] = self._read_or_default()
+        self._file_handler: IO[str] = open(self._metadata_path, "w")
 
     @property
     def metadata_path(self) -> Path:
@@ -65,6 +68,14 @@ class MetadataFile:
     def flush(self) -> None:
         json.dump(self._data, self._file_handler, indent=2)
 
+    def _read_or_default(self) -> Dict[str, Any]:
+        if self._metadata_path.exists():
+            with open(self._metadata_path, "r") as handler:
+                data: Dict[str, Any] = json.load(handler)
+                return data
+
+        return dict()
+
     def close(self) -> None:
         self.flush()
         self._file_handler.close()
@@ -74,3 +85,14 @@ class MetadataFile:
             os.remove(self._metadata_path)
         except OSError:
             pass
+
+    def __enter__(self) -> "MetadataFile":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Type[Optional[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()
