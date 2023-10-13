@@ -43,10 +43,6 @@ class MetadataFile:
                 self.__setitem__(key, value)
             self.flush()
 
-    @property
-    def metadata_path(self) -> Path:
-        return self._metadata_path
-
     def __getitem__(self, item: str) -> Any:
         return self._data[item]
 
