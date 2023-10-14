@@ -18,6 +18,14 @@
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
 
 
+### Changes
+- Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
+- Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
+- Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
+- Made the disk checking more reliable for env specific errors ([#1519](https://github.com/neptune-ai/neptune-client/pull/1519))
+- Added metadata file that stores information about internal directory structure and platform ([#1526](https://github.com/neptune-ai/neptune-client/pull/1526))
+
+
 ## neptune 1.8.2
 
 ### Changes
