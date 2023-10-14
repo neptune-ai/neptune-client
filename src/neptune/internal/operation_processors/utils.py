@@ -19,9 +19,14 @@ import datetime
 import platform
 import sys
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
 )
+
+if TYPE_CHECKING:
+    from neptune.internal.container_type import ContainerType
+    from neptune.internal.id_formats import UniqueId
 
 
 def get_neptune_version() -> str:
@@ -30,8 +35,11 @@ def get_neptune_version() -> str:
     return neptune_version
 
 
-def common_metadata() -> Dict[str, Any]:
+def common_metadata(mode: str, container_id: "UniqueId", container_type: "ContainerType") -> Dict[str, Any]:
     return {
+        "mode": mode,
+        "containerId": container_id,
+        "containerType": container_type,
         "structureVersion": 1,
         "os": platform.platform(),
         "pythonVersion": sys.version,

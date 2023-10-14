@@ -49,12 +49,7 @@ class OfflineOperationProcessor(OperationProcessor):
 
         self._metadata_file = MetadataFile(
             data_path=data_path,
-            metadata={
-                "mode": "offline",
-                "containerId": container_id,
-                "containerType": container_type,
-                **common_metadata(),
-            },
+            metadata=common_metadata(mode="offline", container_id=container_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=data_path)
 

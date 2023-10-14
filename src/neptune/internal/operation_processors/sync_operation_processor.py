@@ -50,12 +50,7 @@ class SyncOperationProcessor(OperationProcessor):
         data_path = self._init_data_path(container_id, container_type)
         self._metadata_file = MetadataFile(
             data_path=data_path,
-            metadata={
-                "mode": "sync",
-                "containerId": container_id,
-                "containerType": container_type,
-                **common_metadata(),
-            },
+            metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=data_path)
 
