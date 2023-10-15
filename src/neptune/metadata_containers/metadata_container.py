@@ -301,7 +301,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _ipython_key_completions_(self):
         return self._get_subpath_suggestions()
 
-    @safe_function()
+    @safe_function(Handler(None, None))
     @ensure_not_stopped
     def __getitem__(self, path: str) -> "Handler":
         return Handler(self, path)

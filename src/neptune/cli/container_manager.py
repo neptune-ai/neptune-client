@@ -19,6 +19,8 @@ __all__ = ["ContainersManager"]
 import abc
 from pathlib import Path
 from typing import (
+    TYPE_CHECKING,
+    Iterator,
     List,
     Tuple,
 )
@@ -33,22 +35,25 @@ from neptune.constants import (
     OFFLINE_DIRECTORY,
     SYNC_DIRECTORY,
 )
-from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.id_formats import UniqueId
+
+if TYPE_CHECKING:
+    from neptune.internal.backends.api_model import ApiExperiment
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
+    from neptune.internal.container_type import ContainerType
+    from neptune.internal.id_formats import UniqueId
 
 
 class ContainersManager(abc.ABC):
-    _backend: NeptuneBackend
+    _backend: "NeptuneBackend"
 
-    def __init__(self, backend: NeptuneBackend, base_path: Path):
+    def __init__(self, backend: "NeptuneBackend", base_path: Path):
         self._backend = backend
         self._base_path = base_path
 
     def partition_containers_and_clean_junk(
         self,
         base_path: Path,
-    ) -> Tuple[List[ApiExperiment], List[ApiExperiment], List[Path]]:
+    ) -> Tuple[List["ApiExperiment"], List["ApiExperiment"], List[Path]]:
         synced_containers = []
         unsynced_containers = []
         not_found = []
@@ -73,11 +78,11 @@ class ContainersManager(abc.ABC):
 
         return synced_containers, unsynced_containers, not_found
 
-    def resolve_async_path(self, container: ApiExperiment) -> Path:
+    def resolve_async_path(self, container: "ApiExperiment") -> Path:
         return self._base_path / ASYNC_DIRECTORY / container.type.create_dir_name(container.id)
 
-    def resolve_offline_container_dir(self, offline_id: UniqueId):
+    def resolve_offline_container_dir(self, offline_id: "UniqueId") -> Path:
         return self._base_path / OFFLINE_DIRECTORY / offline_id
 
-    def iterate_sync_containers(self):
+    def iterate_sync_containers(self) -> Iterator[Tuple["ContainerType", "UniqueId", Path]]:
         return iterate_containers(self._base_path / SYNC_DIRECTORY)

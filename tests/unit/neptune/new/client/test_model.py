@@ -24,6 +24,10 @@ from neptune import (
 )
 from neptune.attributes import String
 from neptune.common.exceptions import NeptuneException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -68,22 +72,18 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
-    def test_read_only_mode(self):
-        exp = init_model(mode="read-only", with_id="whatever")
-
-        with self.assertLogs() as caplog:
+    @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
+    def test_read_only_mode(self, warn_once):
+        warned_once.clear()
+        with init_model(mode="read-only", with_id="whatever") as exp:
             exp["some/variable"] = 13
             exp["some/other_variable"] = 11
-            self.assertEqual(
-                caplog.output,
-                [
-                    "WARNING:neptune.internal.operation_processors.read_only_operation_processor:"
-                    "Client in read-only mode, nothing will be saved to server."
-                ],
-            )
 
-        self.assertEqual(42, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+            warn_once.assert_called_with(
+                "Client in read-only mode, nothing will be saved to server.", exception=NeptuneWarning
+            )
+            self.assertEqual(42, exp["some/variable"].fetch())
+            self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
