@@ -265,6 +265,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if self._queue.is_empty():
             # TODO: Will be refactored
             self._queue.cleanup_if_empty()
+            self._operation_storage.cleanup()
             self._metadata_file.cleanup()
 
     def close(self) -> None:
