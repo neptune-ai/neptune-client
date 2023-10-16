@@ -262,7 +262,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._cleanup()
 
     def _cleanup(self) -> None:
-        shutil.rmtree(self._data_path)
+        shutil.rmtree(self._data_path, ignore_errors=True)
 
     def close(self) -> None:
         self._queue.close()
