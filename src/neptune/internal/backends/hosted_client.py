@@ -77,6 +77,9 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
 
+    adapter = requests.adapters.HTTPAdapter(pool_connections=128, pool_maxsize=128)
+    http_client.session.mount('https://', adapter)
+    http_client.session.mount('http://', adapter)
     _close_connections_on_fork(http_client.session)
 
     update_session_proxies(http_client.session, proxies)

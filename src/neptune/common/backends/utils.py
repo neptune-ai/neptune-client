@@ -50,7 +50,7 @@ from neptune.common.exceptions import (
 
 _logger = logging.getLogger(__name__)
 
-MAX_RETRY_TIME = 30
+MAX_RETRY_TIME = 8
 MAX_RETRY_MULTIPLIER = 10
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
@@ -61,7 +61,7 @@ def get_retry_from_headers_or_default(headers, retry_count):
             int(headers["retry-after"][0]) if "retry-after" in headers else 2 ** min(MAX_RETRY_MULTIPLIER, retry_count)
         )
     except Exception:
-        return min(2 ** min(MAX_RETRY_MULTIPLIER, retry_count), MAX_RETRY_TIME)
+        return min(1.2 ** min(MAX_RETRY_MULTIPLIER, retry_count), MAX_RETRY_TIME)
 
 
 def with_api_exceptions_handler(func):
