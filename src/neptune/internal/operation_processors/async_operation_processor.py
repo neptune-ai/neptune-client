@@ -209,7 +209,7 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
-                logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
+                # logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
