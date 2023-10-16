@@ -62,6 +62,10 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
     container_type = ContainerType.RUN
 
     # and
+    backend = MagicMock()
+    backend.execute_operations.return_value = (0, 0)
+
+    # and
     metadata_file = metadata_file_mock.return_value
     operation_storage = operation_storage_mock.return_value
     disk_queue = disk_queue_mock.return_value
@@ -70,7 +74,7 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
 
     # and
     processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
+        container_id=container_id, container_type=container_type, backend=backend, lock=MagicMock()
     )
 
     # and
@@ -98,6 +102,10 @@ def test_cleanup_if_non_empty(metadata_file_mock, operation_storage_mock, disk_q
     container_type = ContainerType.RUN
 
     # and
+    backend = MagicMock()
+    backend.execute_operations.return_value = (0, 0)
+
+    # and
     metadata_file = metadata_file_mock.return_value
     operation_storage = operation_storage_mock.return_value
     disk_queue = disk_queue_mock.return_value
@@ -105,7 +113,7 @@ def test_cleanup_if_non_empty(metadata_file_mock, operation_storage_mock, disk_q
 
     # and
     processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
+        container_id=container_id, container_type=container_type, backend=backend, lock=MagicMock()
     )
 
     # and
