@@ -53,7 +53,7 @@ def test_close(metadata_file_mock, _, disk_queue_mock):
     metadata_file.close.assert_called_once()
 
 
-@patch("neptune.internal.operation_processors.sync_operation_processor.shutil.rmtree")
+@patch("neptune.internal.operation_processors.async_operation_processor.shutil.rmtree")
 @patch("neptune.internal.operation_processors.async_operation_processor.DiskQueue")
 @patch("neptune.internal.operation_processors.async_operation_processor.OperationStorage")
 @patch("neptune.internal.operation_processors.async_operation_processor.MetadataFile")

@@ -16,9 +16,8 @@
 __all__ = ("AsyncOperationProcessor",)
 
 import os
+import shutil
 import threading
-from datetime import datetime
-from pathlib import Path
 from time import (
     monotonic,
     time,
@@ -44,11 +43,11 @@ from neptune.internal.init.parameters import (
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
     get_container_dir,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 from neptune.internal.utils.logger import logger
@@ -76,16 +75,16 @@ class AsyncOperationProcessor(OperationProcessor):
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        data_path = self._init_data_path(container_id, container_type)
+        self._data_path = get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
+            dir_path=self._data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=lock,
@@ -109,12 +108,6 @@ class AsyncOperationProcessor(OperationProcessor):
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
@@ -263,9 +256,13 @@ class AsyncOperationProcessor(OperationProcessor):
 
         # Remove local files
         if self._queue.is_empty():
-            # TODO: Will be refactored
             self._metadata_file.cleanup()
-            self._queue.cleanup_if_empty()
+            self._operation_storage.cleanup()
+            self._queue.cleanup()
+            self._cleanup()
+
+    def _cleanup(self) -> None:
+        shutil.rmtree(self._data_path)
 
     def close(self) -> None:
         self._queue.close()

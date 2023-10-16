@@ -15,8 +15,7 @@
 #
 __all__ = ("SyncOperationProcessor",)
 
-import os
-from datetime import datetime
+import shutil
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -25,16 +24,14 @@ from typing import (
 from neptune.constants import SYNC_DIRECTORY
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
     get_container_dir,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
@@ -47,18 +44,12 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
 
-        data_path = self._init_data_path(container_id, container_type)
+        self._data_path = get_container_dir(SYNC_DIRECTORY, container_id, container_type)
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
-
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
@@ -75,6 +66,10 @@ class SyncOperationProcessor(OperationProcessor):
         # Remove local files
         self._metadata_file.cleanup()
         self._operation_storage.cleanup()
+        self._cleanup()
+
+    def _cleanup(self) -> None:
+        shutil.rmtree(self._data_path)
 
     def close(self) -> None:
         self._metadata_file.close()
