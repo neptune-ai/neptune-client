@@ -183,28 +183,27 @@ class Run(MetadataContainer):
 
         Args:
             project: Name of the project where the run should go, in the form `workspace-name/project_name`.
-            If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
+                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
-                If None (default) is passed, starts a new tracked run.
+                If left empty, a new run is created.
             custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
                 Make sure to use the same identifier throughout the whole pipeline execution.
             mode: Connection mode in which the tracking will work.
-                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If left empty, the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
                 Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            name: Editable name of the run. Defaults to "Untitled".
-                The name is displayed in the run details and as a column in the runs table.
-            description: Editable description of the run. Defaults to `""`.
-                The description is displayed in the run details and can be added to the runs table as a column.
-            tags: Tags of the run as a list of strings. Defaults to `[]`.
-                Tags are displayed in the run details and in the runs table as a column.
-                You can edit the tags after the run is created, either through the app or the API.
+            name: Custom name for the run. You can add it as a column in the runs table ("sys/name").
+                You can also edit the name in the app: Open the run menu and access the run information.
+            description:  Custom description of the run. You can add it as a column in the runs table
+                ("sys/description").
+                You can also edit the description in the app: Open the run menu and access the run information.
+            tags: Tags of the run as a list of strings.
+                You can edit the tags through the "sys/tags" field or in the app (run menu -> information).
+                You can also select multiple runs and manage their tags as a single action.
             source_files: List of source files to be uploaded.
-                Uploaded source files are displayed in the "Source code" tab of the run view.
+                Uploaded source files are displayed in the "Source code" dashboard.
                 To not upload anything, pass an empty list (`[]`).
                 Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
                 all Python files from the current directory.
@@ -237,7 +236,7 @@ class Run(MetadataContainer):
                 To turn off Git tracking for the run, set to False or GitRef.DISABLED.
             dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
                 You can also pass a path to your dependency file directly.
-                If left empty, no dependency file is uploaded.
+                If left empty, no dependencies are tracked.
             async_lag_callback: Custom callback which is called if the lag between a queued operation and its
                 synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
                 should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
@@ -257,8 +256,8 @@ class Run(MetadataContainer):
                 object was initialized. If a no-progress callback (default callback enabled via environment variable or
                 custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
                 when this duration is exceeded.
-            enable_remote_signals: Whether support handling of remote signals that could manage run.
-                Defaults to 'True', where the handling of remote signals will be attached to the run process.
+            enable_remote_signals: Whether to support handling of remote signals that could manage the run (such as
+                stop or abort signals). Enabled by default.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.

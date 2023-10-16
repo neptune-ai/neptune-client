@@ -86,13 +86,11 @@ class Project(MetadataContainer):
 
         Args:
             project: Name of a project in the form `workspace-name/project-name`.
-                If None, the value of the NEPTUNE_PROJECT environment variable is used.
+                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             mode: Connection mode in which the tracking will work.
-                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If left empty, the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
                 Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
             flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
