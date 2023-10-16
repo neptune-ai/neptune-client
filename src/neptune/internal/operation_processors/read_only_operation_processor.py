@@ -15,38 +15,18 @@
 #
 __all__ = ("ReadOnlyOperationProcessor",)
 
-import logging
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.operation import Operation
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 
-_logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from neptune.internal.operation import Operation
 
 
 class ReadOnlyOperationProcessor(OperationProcessor):
-    def __init__(self, container_id: str, backend: NeptuneBackend):
-        self._container_id = container_id
-        self._backend = backend
-        self._warning_emitted = False
-
-    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
-        if not self._warning_emitted:
-            self._warning_emitted = True
-            _logger.warning("Client in read-only mode, nothing will be saved to server.")
-
-    def wait(self):
-        pass
-
-    def flush(self):
-        pass
-
-    def start(self):
-        pass
-
-    def stop(self, seconds: Optional[float] = None) -> None:
-        pass
-
-    def close(self) -> None:
-        pass
+    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
+        warn_once("Client in read-only mode, nothing will be saved to server.", exception=NeptuneWarning)

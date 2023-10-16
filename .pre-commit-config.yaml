@@ -33,6 +33,7 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
+        additional_dependencies: [ types-click ]
 exclude: |
   (?x)(
      ^tests/unit/data/|

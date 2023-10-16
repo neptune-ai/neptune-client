@@ -55,6 +55,7 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 
 
@@ -92,18 +93,17 @@ class Model(MetadataContainer):
 
         Args:
              with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
-                The identifier is stored in the object's "sys/id" field.
-                If omitted or `None` is passed, a new model is created.
-            name: A custom name for the model.
-            key: Key for the new model. Required when creating a new model version.
+                The identifier is stored in the model's "sys/id" field.
+                If left empty, a new model is created.
+            name: Custom name for the model. You can add it as a column in the models table ("sys/name").
+                You can also edit the name in the app, in the information view.
+            key: Key for the model. Required when creating a new model.
                 Used together with the project key to form the model identifier.
                 Must be uppercase and unique within the project.
             project: Name of a project in the form `workspace-name/project-name`.
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             mode: Connection mode in which the tracking will work.
                 If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
@@ -244,6 +244,7 @@ class Model(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelException(label=self._sys_id)
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_url(
@@ -253,6 +254,7 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
+    @safe_function()
     def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
 

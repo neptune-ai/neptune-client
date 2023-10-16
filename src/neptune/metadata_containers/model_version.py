@@ -47,6 +47,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
@@ -87,17 +88,17 @@ class ModelVersion(MetadataContainer):
 
         Args:
             with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
-                The identifier is stored in the object's "sys/id" field.
-                If omitted or None is passed, a new model version is created.
-            name: A custom name for the model version. Defaults to "Untitled".
+                The identifier is stored in the model version's "sys/id" field.
+                If left empty, a new model version is created.
+            name: Custom name for the model version. You can add it as a column in the model versions table
+                ("sys/name"). You can also edit the name in the app, in the information view.
             model: Identifier of the model for which the new version should be created.
-                Required when creating a new model version. The identifier is stored in the model's "sys/id" field.
+                Required when creating a new model version.
+                You can find the model ID in the leftmost column of the models table, or in a model's "sys/id" field.
             project: Name of a project in the form `workspace-name/project-name`.
                 If None, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             mode: Connection mode in which the tracking will work.
                 If None (default), the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
@@ -237,6 +238,7 @@ class ModelVersion(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelVersionException(label=self._sys_id)
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_version_url(
@@ -247,6 +249,7 @@ class ModelVersion(MetadataContainer):
             model_id=self["sys/model_id"].fetch(),
         )
 
+    @safe_function()
     def change_stage(self, stage: str) -> None:
         """Changes the stage of the model version.
 

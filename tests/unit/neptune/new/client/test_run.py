@@ -24,6 +24,10 @@ from neptune import (
 )
 from neptune.attributes.atoms import String
 from neptune.common.utils import IS_WINDOWS
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -65,19 +69,16 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
-    def test_read_only_mode(self):
+    @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
+    def test_read_only_mode(self, warn_once):
+        warned_once.clear()
         with init_run(mode="read-only", with_id="whatever") as exp:
-            with self.assertLogs() as caplog:
-                exp["some/variable"] = 13
-                exp["some/other_variable"] = 11
-                self.assertEqual(
-                    caplog.output,
-                    [
-                        "WARNING:neptune.internal.operation_processors.read_only_operation_processor:"
-                        "Client in read-only mode, nothing will be saved to server."
-                    ],
-                )
+            exp["some/variable"] = 13
+            exp["some/other_variable"] = 11
 
+            warn_once.assert_called_with(
+                "Client in read-only mode, nothing will be saved to server.", exception=NeptuneWarning
+            )
             self.assertEqual(42, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
@@ -213,6 +214,13 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             stderr_job.assert_called_once_with(attribute_name="monitoring/some_hash/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
+
+    @patch("neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.websockets_factory")
+    @patch("neptune.internal.websockets.websocket_signals_background_job.WebsocketSignalsBackgroundJob")
+    def test_disabled_remote_signals(self, ws_factory, signals_job):
+        with init_run(mode="debug", enable_remote_signals=False):
+            assert not ws_factory.called
+            assert not signals_job.called
 
     @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.metadata_containers.run.get_hostname", lambda *vals: "localhost")

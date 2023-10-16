@@ -49,6 +49,7 @@ from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 
 
@@ -85,13 +86,11 @@ class Project(MetadataContainer):
 
         Args:
             project: Name of a project in the form `workspace-name/project-name`.
-                If None, the value of the NEPTUNE_PROJECT environment variable is used.
+                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             mode: Connection mode in which the tracking will work.
-                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If left empty, the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
                 Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
             flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
@@ -182,6 +181,7 @@ class Project(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_project_url(
@@ -271,6 +271,7 @@ class Project(MetadataContainer):
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
         return query
 
+    @safe_function()
     def fetch_runs_table(
         self,
         *,
@@ -369,6 +370,7 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
+    @safe_function()
     def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = False) -> Table:
         """Retrieve models stored in the project.
 

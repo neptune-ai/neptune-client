@@ -30,6 +30,9 @@ import textwrap
 import threading
 from pathlib import Path
 from typing import (
+    Any,
+    Callable,
+    Dict,
     Iterator,
     List,
     Optional,
@@ -66,7 +69,7 @@ def get_metadata_container(
 ) -> Optional[ApiExperiment]:
     public_container_type = container_type or "object"
     try:
-        return backend.get_metadata_container(container_id, expected_container_type=container_type)
+        return backend.get_metadata_container(container_id=container_id, expected_container_type=container_type)
     except MetadataContainerNotFound:
         logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
@@ -92,7 +95,12 @@ def _project_not_found_message(project_name: QualifiedName) -> str:
 
 
 def get_project(project_name_flag: Optional[QualifiedName], backend: NeptuneBackend) -> Optional[Project]:
-    project_name = project_name_flag or QualifiedName(os.getenv(PROJECT_ENV_NAME))
+    project_name: Optional[QualifiedName] = project_name_flag
+    if project_name_flag is None:
+        project_name_from_env = os.getenv(PROJECT_ENV_NAME)
+        if project_name_from_env is not None:
+            project_name = QualifiedName(project_name_from_env)
+
     if not project_name:
         logger.warning(textwrap.fill(_project_name_missing_message))
         return None
@@ -115,8 +123,12 @@ def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
     """
     The DiskQueue.close() method removes junk metadata from the disk when the queue is empty.
     """
-    with DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()) as disk_queue:
-        return disk_queue.is_empty()
+    serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+    with DiskQueue(execution_path, serializer, Operation.from_dict, threading.RLock()) as disk_queue:
+        is_queue_empty: bool = disk_queue.is_empty()
+
+    return is_queue_empty
 
 
 def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:

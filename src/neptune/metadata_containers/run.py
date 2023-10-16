@@ -92,6 +92,7 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.safe_container import safe_function
 from neptune.types import (
     GitRef,
     StringSeries,
@@ -154,6 +155,7 @@ class Run(MetadataContainer):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+        enable_remote_signals: bool = True,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -181,28 +183,27 @@ class Run(MetadataContainer):
 
         Args:
             project: Name of the project where the run should go, in the form `workspace-name/project_name`.
-            If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
+                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
             api_token: User's API token.
-                If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
-                Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
-                placing it in plain text in the source code.
+                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
             with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
-                If None (default) is passed, starts a new tracked run.
+                If left empty, a new run is created.
             custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
                 Make sure to use the same identifier throughout the whole pipeline execution.
             mode: Connection mode in which the tracking will work.
-                If None (default), the value of the NEPTUNE_MODE environment variable is used.
+                If left empty, the value of the NEPTUNE_MODE environment variable is used.
                 If no value was set for the environment variable, "async" is used by default.
                 Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            name: Editable name of the run. Defaults to "Untitled".
-                The name is displayed in the run details and as a column in the runs table.
-            description: Editable description of the run. Defaults to `""`.
-                The description is displayed in the run details and can be added to the runs table as a column.
-            tags: Tags of the run as a list of strings. Defaults to `[]`.
-                Tags are displayed in the run details and in the runs table as a column.
-                You can edit the tags after the run is created, either through the app or the API.
+            name: Custom name for the run. You can add it as a column in the runs table ("sys/name").
+                You can also edit the name in the app: Open the run menu and access the run information.
+            description:  Custom description of the run. You can add it as a column in the runs table
+                ("sys/description").
+                You can also edit the description in the app: Open the run menu and access the run information.
+            tags: Tags of the run as a list of strings.
+                You can edit the tags through the "sys/tags" field or in the app (run menu -> information).
+                You can also select multiple runs and manage their tags as a single action.
             source_files: List of source files to be uploaded.
-                Uploaded source files are displayed in the "Source code" tab of the run view.
+                Uploaded source files are displayed in the "Source code" dashboard.
                 To not upload anything, pass an empty list (`[]`).
                 Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
                 all Python files from the current directory.
@@ -235,7 +236,7 @@ class Run(MetadataContainer):
                 To turn off Git tracking for the run, set to False or GitRef.DISABLED.
             dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
                 You can also pass a path to your dependency file directly.
-                If left empty, no dependency file is uploaded.
+                If left empty, no dependencies are tracked.
             async_lag_callback: Custom callback which is called if the lag between a queued operation and its
                 synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
                 should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
@@ -255,6 +256,8 @@ class Run(MetadataContainer):
                 object was initialized. If a no-progress callback (default callback enabled via environment variable or
                 custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
                 when this duration is exceeded.
+            enable_remote_signals: Whether to support handling of remote signals that could manage the run (such as
+                stop or abort signals). Enabled by default.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -343,9 +346,9 @@ class Run(MetadataContainer):
         verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
-        verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, bool, type(None)))
         verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
+        verify_type("enable_remote_signals", enable_remote_signals, bool)
 
         if tags is not None:
             if isinstance(tags, str):
@@ -369,12 +372,10 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
+        self._enable_remote_signals: bool = enable_remote_signals
 
         if type(git_ref) is bool:
-            if not git_ref:
-                git_ref = GitRefDisabled
-            else:
-                git_ref = GitRef()
+            git_ref = GitRef() if git_ref else GitRef.DISABLED
 
         self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref or GitRef()
         self._dependencies: Optional[str, os.PathLike] = dependencies
@@ -453,9 +454,10 @@ class Run(MetadataContainer):
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
-        if websockets_factory:
-            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+        if self._enable_remote_signals:
+            websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+            if websockets_factory:
+                background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
         if self._capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=self._stdout_path))
@@ -537,6 +539,7 @@ class Run(MetadataContainer):
                 exception=NeptuneWarning,
             )
 
+    @safe_function()
     @property
     def monitoring_namespace(self) -> str:
         return self._monitoring_namespace
@@ -545,6 +548,7 @@ class Run(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
 
+    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(
@@ -555,6 +559,7 @@ class Run(MetadataContainer):
         )
 
 
+@safe_function(False)
 def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
         if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:

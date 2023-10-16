@@ -22,6 +22,9 @@ import threading
 import time
 from pathlib import Path
 from typing import (
+    Any,
+    Callable,
+    Dict,
     Iterable,
     List,
     Optional,
@@ -82,9 +85,11 @@ class SyncRunner(AbstractBackendRunner):
         container_type: ContainerType,
     ) -> None:
         operation_storage = OperationStorage(execution_path)
+        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
         with DiskQueue(
             dir_path=operation_storage.data_path,
-            to_dict=lambda x: x.to_dict(),
+            to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=threading.RLock(),
         ) as disk_queue:
@@ -206,7 +211,7 @@ class SyncRunner(AbstractBackendRunner):
         base_path: Path,
         project_name: Optional[QualifiedName],
         offline_dirs: Sequence[UniqueId],
-    ):
+    ) -> None:
         if offline_dirs:
             project = get_project(project_name, backend=self._backend)
             if not project:
@@ -215,8 +220,7 @@ class SyncRunner(AbstractBackendRunner):
             offline_containers_names = [get_qualified_name(exp) for exp in registered_containers]
             self.sync_selected_registered_containers(base_path, offline_containers_names)
 
-    def sync_all_offline_containers(self, base_path: Path, project_name: QualifiedName) -> None:
-
+    def sync_all_offline_containers(self, base_path: Path, project_name: Optional[QualifiedName]) -> None:
         offline_dirs = get_offline_dirs(base_path)
         self.sync_offline_containers(base_path, project_name, offline_dirs)
 
@@ -236,8 +240,14 @@ class SyncRunner(AbstractBackendRunner):
             for name in container_names
             if name.startswith(OFFLINE_NAME_PREFIX)
         ]
-        self.sync_offline_containers(base_path, project_name, offline_dirs)
+        self.sync_offline_containers(
+            base_path=base_path,
+            project_name=QualifiedName(project_name) if project_name is not None else None,
+            offline_dirs=offline_dirs,
+        )
 
     def sync_all_containers(self, base_path: Path, project_name: Optional[str]) -> None:
         self.sync_all_registered_containers(base_path)
-        self.sync_all_offline_containers(base_path, project_name)
+        self.sync_all_offline_containers(
+            base_path=base_path, project_name=QualifiedName(project_name) if project_name is not None else None
+        )

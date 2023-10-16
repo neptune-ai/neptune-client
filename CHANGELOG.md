@@ -1,7 +1,20 @@
 ## [UNRELEASED] neptune 1.8.3
 
 ### Fixes
+- Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
+- Retry request in case of bravado RecursiveCallException ([#1521](https://github.com/neptune-ai/neptune-client/pull/1512))
+- Fix bug in git tracking when repo was clean ([#1517](https://github.com/neptune-ai/neptune-client/pull/1517))
+- Run async callback in new daemon thread ([#1521](https://github.com/neptune-ai/neptune-client/pull/1521))
+- Better handle bool values of `git_ref` param in `init_run` ([#1525](https://github.com/neptune-ai/neptune-client/pull/1525))
 - Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
+
+### Changes
+- Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
+- Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
+- Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
+- Made the disk checking more reliable for env specific errors ([#1519](https://github.com/neptune-ai/neptune-client/pull/1519))
+- Update Neptune object docstrings ([#1516](https://github.com/neptune-ai/neptune-client/pull/1516))
+
 
 ## neptune 1.8.2
 
