@@ -73,8 +73,8 @@ class SyncOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None) -> None:
         # Remove local files
-        self._operation_storage.cleanup()
         self._metadata_file.cleanup()
+        self._operation_storage.cleanup()
 
     def close(self) -> None:
         self._metadata_file.close()
