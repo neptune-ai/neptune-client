@@ -31,11 +31,10 @@ class MetadataFile:
     METADATA_FILE: str = "metadata.json"
 
     def __init__(self, data_path: Path, metadata: Optional[Dict[str, Any]] = None):
-        self._metadata_path: Path = (data_path / MetadataFile.METADATA_FILE).resolve()
-
         # initialize directory
         os.makedirs(data_path, exist_ok=True)
 
+        self._metadata_path: Path = (data_path / MetadataFile.METADATA_FILE).resolve(strict=False)
         self._data: Dict[str, Any] = self._read_or_default()
 
         if metadata:
