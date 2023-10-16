@@ -41,7 +41,7 @@ def test_saving(mock_file, makedirs):
         spec=Path,
         exists=lambda: False,
     )
-    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
+    file_path = MagicMock(spec=Path, resolve=lambda strict: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
@@ -68,7 +68,7 @@ def test_saving(mock_file, makedirs):
 def test_loading_existing_state(mock_file, makedirs):
     # given
     resolved_path = MagicMock(spec=Path, exists=lambda: True)
-    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
+    file_path = MagicMock(spec=Path, resolve=lambda strict: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
@@ -91,7 +91,7 @@ def test_cleaning(remove, makedirs):
         spec=Path,
         exists=lambda: False,
     )
-    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
+    file_path = MagicMock(spec=Path, resolve=lambda strict: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
@@ -112,7 +112,7 @@ def test_initial_metadata(mock_file, makedirs):
         spec=Path,
         exists=lambda: False,
     )
-    file_path = MagicMock(spec=Path, resolve=lambda: resolved_path)
+    file_path = MagicMock(spec=Path, resolve=lambda strict: resolved_path)
     data_path = MagicMock(spec=Path, __truediv__=lambda self, key: file_path)
 
     # when
