@@ -26,8 +26,8 @@ from neptune.internal.operation import Operation
 from tests.unit.neptune.new.cli.utils import (
     execute_operations,
     generate_get_metadata_container,
-    prepare_deprecated_run,
-    prepare_metadata_container,
+    prepare_v0_run,
+    prepare_v1_container,
 )
 
 
@@ -46,8 +46,8 @@ def sync_runner_fixture(backend):
 @pytest.mark.parametrize("container_type", list(ContainerType))
 def test_sync_all_runs(tmp_path, mocker, capsys, backend, sync_runner, container_type):
     # given
-    unsynced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=1)
-    synced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
@@ -87,7 +87,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys, backend, sync_runner, container
 
 def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # given
-    offline_run = prepare_metadata_container(container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None)
+    offline_run = prepare_v1_container(container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None)
     get_run_impl = generate_get_metadata_container(registered_containers=(offline_run,))
 
     # and
@@ -125,13 +125,13 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
 
 def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # given
-    unsync_exp = prepare_metadata_container(
+    unsync_exp = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1
     )  # won't be synced, despite fact it's not synced yet
-    sync_exp = prepare_metadata_container(
+    sync_exp = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3
     )  # will be synced despite fact that it's up to date
-    offline_run = prepare_metadata_container(
+    offline_run = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None
     )  # will be synced
     get_run_impl = generate_get_metadata_container(
@@ -196,8 +196,8 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
 
 def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # given
-    deprecated_unsynced_run = prepare_deprecated_run(path=tmp_path, last_ack_version=1)
-    offline_old_run = prepare_deprecated_run(path=tmp_path, last_ack_version=None)
+    deprecated_unsynced_run = prepare_v0_run(path=tmp_path, last_ack_version=1)
+    offline_old_run = prepare_v0_run(path=tmp_path, last_ack_version=None)
     get_container_impl = generate_get_metadata_container(
         registered_containers=(deprecated_unsynced_run, offline_old_run)
     )

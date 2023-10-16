@@ -69,7 +69,7 @@ def _prepare_disk_queue(*, exp_path, last_ack_version):
         SyncOffsetFile(exp_path / "last_ack_version").write(last_ack_version)
 
 
-def prepare_metadata_container(
+def prepare_v1_container(
     *, container_type: ContainerType, path: Path, last_ack_version: Optional[int], trashed: Optional[bool] = False
 ) -> ApiExperiment:
     is_offline = last_ack_version is None
@@ -90,7 +90,7 @@ def prepare_metadata_container(
     return container
 
 
-def prepare_deprecated_run(*, path: Path, last_ack_version: Optional[int]):
+def prepare_v0_run(*, path: Path, last_ack_version: Optional[int]):
     is_offline = last_ack_version is None
 
     run = api_run()

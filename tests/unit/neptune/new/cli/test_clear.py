@@ -29,7 +29,7 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import Operation
 from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
-    prepare_metadata_container,
+    prepare_v1_container,
 )
 
 
@@ -46,9 +46,9 @@ def status_runner_fixture(backend):
 @pytest.mark.parametrize("container_type", list(ContainerType))
 def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
     # given
-    unsynced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=1)
-    synced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=3)
-    offline_containers = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=None)
+    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    offline_containers = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=None)
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
@@ -84,8 +84,8 @@ def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, conta
 @pytest.mark.parametrize("container_type", list(ContainerType))
 def test_clean_deleted_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
     # given
-    unsynced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=1)
-    synced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
     empty_get_container_impl = generate_get_metadata_container(registered_containers=[])
 
     # and
