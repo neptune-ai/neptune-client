@@ -47,6 +47,8 @@ class ClearRunner(AbstractBackendRunner):
 
         ClearRunner.remove_sync_containers(path)
 
+        ClearRunner.remove_synced_data(container_manager=container_manager, synced_containers=synced_containers)
+
         offline_containers = get_offline_dirs(path)
         if clear_eventual and (offline_containers or unsynced_containers):
             self.log_junk_metadata(offline_containers, unsynced_containers)
@@ -88,10 +90,16 @@ class ClearRunner(AbstractBackendRunner):
         ClearRunner.remove_containers(unsynced_containers_paths)
 
     @staticmethod
+    def remove_synced_data(container_manager: ContainersManager, synced_containers: Sequence["ApiExperiment"]) -> None:
+        synced_containers_paths = [container_manager.resolve_async_path(container) for container in synced_containers]
+        ClearRunner.remove_containers(synced_containers_paths)
+
+    @staticmethod
     def remove_containers(paths: List[Path]) -> None:
         for path in paths:
-            try:
-                shutil.rmtree(path)
-                logger.info(f"Deleted: {path}")
-            except OSError:
-                logger.warn(f"Cannot remove directory: {path}")
+            if path.exists():
+                try:
+                    shutil.rmtree(path)
+                    logger.info(f"Deleted: {path}")
+                except OSError:
+                    logger.warn(f"Cannot remove directory: {path}")

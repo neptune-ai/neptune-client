@@ -20,7 +20,6 @@ import abc
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    Iterator,
     List,
     Tuple,
 )
@@ -33,13 +32,11 @@ from neptune.cli.utils import (
 from neptune.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_DIRECTORY,
-    SYNC_DIRECTORY,
 )
 
 if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ApiExperiment
     from neptune.internal.backends.neptune_backend import NeptuneBackend
-    from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
 
 
@@ -83,6 +80,3 @@ class ContainersManager(abc.ABC):
 
     def resolve_offline_container_dir(self, offline_id: "UniqueId") -> Path:
         return self._base_path / OFFLINE_DIRECTORY / offline_id
-
-    def iterate_sync_containers(self) -> Iterator[Tuple["ContainerType", "UniqueId", Path]]:
-        return iterate_containers(self._base_path / SYNC_DIRECTORY)

@@ -23,7 +23,7 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import Operation
 from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
-    prepare_metadata_container,
+    prepare_v1_container,
 )
 
 
@@ -40,8 +40,8 @@ def status_runner_fixture(backend):
 @pytest.mark.parametrize("container_type", list(ContainerType))
 def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
     # given
-    unsynced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=1)
-    synced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
@@ -63,7 +63,7 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
 
 def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     # given
-    offline_run = prepare_metadata_container(
+    offline_run = prepare_v1_container(
         container_type=ContainerType.RUN,
         path=tmp_path,
         last_ack_version=None,
@@ -83,10 +83,10 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
 
 def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
     # given
-    unsynced_container = prepare_metadata_container(
+    unsynced_container = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True
     )
-    synced_container = prepare_metadata_container(
+    synced_container = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True
     )
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
