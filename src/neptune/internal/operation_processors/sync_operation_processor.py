@@ -23,11 +23,13 @@ from typing import (
 )
 
 from neptune.constants import SYNC_DIRECTORY
+from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 
 if TYPE_CHECKING:
@@ -44,7 +46,13 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
-        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
+
+        data_path = self._init_data_path(container_id, container_type)
+        self._metadata_file = MetadataFile(
+            data_path=data_path,
+            metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
+        )
+        self._operation_storage = OperationStorage(data_path=data_path)
 
     @staticmethod
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
@@ -65,4 +73,8 @@ class SyncOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None) -> None:
         # Remove local files
+        self._metadata_file.cleanup()
         self._operation_storage.cleanup()
+
+    def close(self) -> None:
+        self._metadata_file.close()

@@ -16,7 +16,10 @@
 import os
 import unittest
 
-from mock import patch
+from mock import (
+    mock_open,
+    patch,
+)
 
 from neptune import (
     ANONYMOUS_API_TOKEN,
@@ -107,6 +110,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     @patch("neptune.internal.operation_processors.operation_storage.os.listdir", new=lambda path: [])
+    @patch("neptune.internal.metadata_file.open", mock_open())
     def test_entrypoint(self):
         with init_run(mode="debug") as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
@@ -196,6 +200,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     @patch("neptune.internal.operation_processors.operation_storage.os.listdir", new=lambda path: [])
+    @patch("neptune.internal.metadata_file.open", mock_open())
     def test_entrypoint_without_common_root(self):
         with init_run(mode="debug", source_files=["../*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
