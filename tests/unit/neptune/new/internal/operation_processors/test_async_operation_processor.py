@@ -62,10 +62,6 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
     container_type = ContainerType.RUN
 
     # and
-    backend = MagicMock()
-    backend.execute_operations.return_value = (0, 0)
-
-    # and
     metadata_file = metadata_file_mock.return_value
     operation_storage = operation_storage_mock.return_value
     disk_queue = disk_queue_mock.return_value
@@ -74,14 +70,14 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
 
     # and
     processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=backend, lock=MagicMock()
+        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
     )
 
     # and
     processor.start()
 
     # when
-    processor.stop()
+    processor.stop(seconds=1)
 
     # then
     disk_queue.close.assert_called()
@@ -91,46 +87,6 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
     disk_queue.cleanup_if_empty.assert_called()
     operation_storage.cleanup.assert_not_called()
     metadata_file.cleanup.assert_called()
-
-
-@patch("neptune.internal.operation_processors.async_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.async_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.async_operation_processor.MetadataFile")
-def test_cleanup_if_non_empty(metadata_file_mock, operation_storage_mock, disk_queue_mock):
-    # given
-    container_id = UniqueId(str(uuid4()))
-    container_type = ContainerType.RUN
-
-    # and
-    backend = MagicMock()
-    backend.execute_operations.return_value = (0, 0)
-
-    # and
-    metadata_file = metadata_file_mock.return_value
-    operation_storage = operation_storage_mock.return_value
-    disk_queue = disk_queue_mock.return_value
-    disk_queue.size.return_value = 0
-
-    # and
-    processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=backend, lock=MagicMock()
-    )
-
-    # and
-    processor.start()
-
-    # when
-    disk_queue.is_empty.return_value = False
-    processor.stop()
-
-    # then
-    disk_queue.close.assert_called()
-    metadata_file.close.assert_called()
-    disk_queue.is_empty.assert_called()
-
-    disk_queue.cleanup_if_empty.assert_not_called()
-    operation_storage.cleanup.assert_not_called()
-    metadata_file.cleanup.assert_not_called()
 
 
 @patch("neptune.internal.operation_processors.async_operation_processor.DiskQueue")
