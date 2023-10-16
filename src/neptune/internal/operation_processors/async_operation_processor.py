@@ -266,7 +266,6 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def close(self) -> None:
         self._queue.close()
-        self._metadata_file.close()
 
     class ConsumerThread(Daemon):
         def __init__(

@@ -72,4 +72,3 @@ class OfflineOperationProcessor(OperationProcessor):
 
     def close(self) -> None:
         self._queue.close()
-        self._metadata_file.close()

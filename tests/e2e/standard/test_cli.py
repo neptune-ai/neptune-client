@@ -41,7 +41,7 @@ from tests.e2e.utils import (
 runner = CliRunner()
 
 
-class TestSync(BaseE2ETest):
+class TestCli(BaseE2ETest):
     SYNCHRONIZED_SYSID_RE = r"[\w-]+/[\w-]+/([\w-]+)"
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)

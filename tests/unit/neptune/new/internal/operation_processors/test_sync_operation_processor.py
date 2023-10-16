@@ -25,29 +25,6 @@ from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 
 
-@patch("neptune.internal.operation_processors.sync_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.sync_operation_processor.MetadataFile")
-def test_close(metadata_file_mock, _):
-    # given
-    container_id = UniqueId(str(uuid4()))
-    container_type = ContainerType.RUN
-
-    # and
-    metadata_file = metadata_file_mock.return_value
-
-    # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type, backend=MagicMock())
-
-    # and
-    processor.start()
-
-    # when
-    processor.close()
-
-    # then
-    metadata_file.close.assert_called_once()
-
-
 @patch("neptune.internal.operation_processors.sync_operation_processor.shutil.rmtree")
 @patch("neptune.internal.operation_processors.sync_operation_processor.OperationStorage")
 @patch("neptune.internal.operation_processors.sync_operation_processor.MetadataFile")

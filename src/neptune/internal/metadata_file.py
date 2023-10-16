@@ -53,10 +53,13 @@ class MetadataFile:
             json.dump(self._data, handler, indent=2)
 
     def _read_or_default(self) -> Dict[str, Any]:
-        if self._metadata_path.exists():
-            with open(self._metadata_path, "r") as handler:
-                data: Dict[str, Any] = json.load(handler)
-                return data
+        try:
+            if self._metadata_path.exists():
+                with open(self._metadata_path, "r") as handler:
+                    data: Dict[str, Any] = json.load(handler)
+                    return data
+        except (OSError, json.JSONDecodeError):
+            pass
 
         return dict()
 

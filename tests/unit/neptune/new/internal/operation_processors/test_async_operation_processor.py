@@ -28,13 +28,12 @@ from neptune.internal.operation_processors.async_operation_processor import Asyn
 @patch("neptune.internal.operation_processors.async_operation_processor.DiskQueue")
 @patch("neptune.internal.operation_processors.async_operation_processor.OperationStorage")
 @patch("neptune.internal.operation_processors.async_operation_processor.MetadataFile")
-def test_close(metadata_file_mock, _, disk_queue_mock):
+def test_close(_, __, disk_queue_mock):
     # given
     container_id = UniqueId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
-    metadata_file = metadata_file_mock.return_value
     disk_queue = disk_queue_mock.return_value
 
     # and
@@ -50,7 +49,6 @@ def test_close(metadata_file_mock, _, disk_queue_mock):
 
     # then
     disk_queue.close.assert_called_once()
-    metadata_file.close.assert_called_once()
 
 
 @patch("neptune.internal.operation_processors.async_operation_processor.shutil.rmtree")
@@ -82,7 +80,6 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
 
     # then
     disk_queue.close.assert_called()
-    metadata_file.close.assert_called()
 
     disk_queue.is_empty.assert_called()
 

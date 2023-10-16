@@ -18,6 +18,7 @@ import os
 import time
 import unittest
 from abc import abstractmethod
+from glob import glob
 from io import StringIO
 from unittest.mock import Mock
 
@@ -53,9 +54,9 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneOfflineModeFetchException):
                 exp["some/variable"].fetch()
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}__{os.getpid()}"
-            self.assertIn(exp_dir, os.listdir(".neptune/offline"))
-            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
+            exp_dirs = glob(f".neptune/offline/{exp.container_type.value}__{exp._id}__{os.getpid()}__*")
+            self.assertTrue(len(exp_dirs) == 1)
+            self.assertIn("data-1.log", os.listdir(exp_dirs[0]))
 
     def test_sync_mode(self):
         with self.call_init(mode="sync") as exp:
@@ -75,12 +76,9 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertEqual(13, exp["copied/variable"].fetch())
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}__{os.getpid()}"
-            self.assertIn(exp_dir, os.listdir(".neptune/async"))
-            self.assertIn(
-                "data-1.log",
-                os.listdir(f".neptune/async/{exp_dir}"),
-            )
+            exp_dirs = glob(f".neptune/async/{exp.container_type.value}__{exp._id}__{os.getpid()}__*")
+            self.assertTrue(len(exp_dirs) == 1)
+            self.assertIn("data-1.log", os.listdir(exp_dirs[0]))
 
     def test_async_mode_wait_on_dead(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:

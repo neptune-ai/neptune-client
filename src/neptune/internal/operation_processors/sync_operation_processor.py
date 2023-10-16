@@ -70,6 +70,3 @@ class SyncOperationProcessor(OperationProcessor):
 
     def _cleanup(self) -> None:
         shutil.rmtree(self._data_path, ignore_errors=True)
-
-    def close(self) -> None:
-        self._metadata_file.close()

@@ -28,13 +28,12 @@ from neptune.internal.operation_processors.offline_operation_processor import Of
 @patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
 @patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
-def test_close(metadata_file_mock, _, disk_queue_mock):
+def test_close(_, __, disk_queue_mock):
     # given
     container_id = UniqueId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
-    metadata_file = metadata_file_mock.return_value
     disk_queue = disk_queue_mock.return_value
 
     # and
@@ -48,7 +47,6 @@ def test_close(metadata_file_mock, _, disk_queue_mock):
 
     # then
     disk_queue.close.assert_called_once()
-    metadata_file.close.assert_called_once()
 
 
 @patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")

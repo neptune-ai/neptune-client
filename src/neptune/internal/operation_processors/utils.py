@@ -17,6 +17,8 @@ __all__ = ["common_metadata", "get_container_dir"]
 
 import os
 import platform
+import random
+import string
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -52,6 +54,12 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
     }
 
 
+def random_key(length: int) -> str:
+    characters = string.ascii_lowercase + string.digits
+    return "".join(random.choice(characters) for _ in range(length))
+
+
 def get_container_dir(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
     neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
-    return neptune_data_dir / type_dir / f"{container_type.create_dir_name(container_id)}__{os.getpid()}"
+    exec_directory_name = f"{container_type.create_dir_name(container_id)}__{os.getpid()}__{random_key(8)}"
+    return neptune_data_dir / type_dir / exec_directory_name
