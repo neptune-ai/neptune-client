@@ -18,6 +18,7 @@ __all__ = ("OperationProcessor",)
 import abc
 from typing import (
     TYPE_CHECKING,
+    List,
     Optional,
 )
 
@@ -50,3 +51,7 @@ class OperationProcessor(abc.ABC):
 
     def close(self) -> None:
         pass
+
+    # TODO: remove this method
+    def _get_operation_processor(self, path: List[str]) -> "OperationProcessor":
+        return self
