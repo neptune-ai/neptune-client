@@ -63,6 +63,8 @@ class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30.0
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = float(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
 
+    MAX_BATCH_SIZE_START = 1000
+
     def __init__(
         self,
         container_id: "UniqueId",
@@ -70,7 +72,7 @@ class AsyncOperationProcessor(OperationProcessor):
         backend: "NeptuneBackend",
         lock: threading.RLock,
         sleep_time: float = 5,
-        batch_size: int = 1000,
+        batch_size: int = MAX_BATCH_SIZE_START,
         async_lag_callback: Optional[Callable[[], None]] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
@@ -279,6 +281,10 @@ class AsyncOperationProcessor(OperationProcessor):
         self._metadata_file.close()
 
     class ConsumerThread(Daemon):
+        # we want to get o max after ~30 requests
+        INIT_BATCH_SIZE_START = 16
+        BATCH_SIZE_SCALING_FACTOR = 1.15
+
         def __init__(
             self,
             processor: "AsyncOperationProcessor",
@@ -287,7 +293,8 @@ class AsyncOperationProcessor(OperationProcessor):
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor: "AsyncOperationProcessor" = processor
-            self._batch_size: int = batch_size
+            self._batch_size: int = self.INIT_BATCH_SIZE_START
+            self._max_batch_size: int = batch_size
             self._last_flush: float = 0.0
             self._no_progress_exceeded: bool = False
 
@@ -309,7 +316,10 @@ class AsyncOperationProcessor(OperationProcessor):
                 batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
+                #start = monotonic()
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
+                #logger.debug('It took {:.2}s to process batch {} with {}'.format(monotonic() - start, len(batch), self._batch_size))
+                self._batch_size = min(int(self._batch_size * self.BATCH_SIZE_SCALING_FACTOR + 1), self._max_batch_size)
 
         def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:
