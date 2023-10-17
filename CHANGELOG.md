@@ -7,6 +7,7 @@
 - Run async callback in new daemon thread ([#1521](https://github.com/neptune-ai/neptune-client/pull/1521))
 - Better handle bool values of `git_ref` param in `init_run` ([#1525](https://github.com/neptune-ai/neptune-client/pull/1525))
 - Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
+- Fix error massage in case of NeptuneAuthTokenExpired ([#1531](https://github.com/neptune-ai/neptune-client/pull/1531))
 - Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
 
 ### Changes

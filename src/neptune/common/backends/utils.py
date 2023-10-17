@@ -101,7 +101,8 @@ def with_api_exceptions_handler(func):
                 time.sleep(wait_time)
                 last_exception = e
                 continue
-            except NeptuneAuthTokenExpired:
+            except NeptuneAuthTokenExpired as e:
+                last_exception = e
                 continue
             except HTTPUnauthorized:
                 raise Unauthorized()
