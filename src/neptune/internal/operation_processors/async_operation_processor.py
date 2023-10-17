@@ -77,7 +77,9 @@ class AsyncOperationProcessor(OperationProcessor):
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         path_suffix: Optional[str] = None,
+        should_print_logs: bool = True,
     ):
+        self._should_print_logs: bool = should_print_logs
         data_path = self._init_data_path(container_id, container_type, path_suffix)
         self._metadata_file = MetadataFile(
             data_path=data_path,
@@ -217,7 +219,8 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
-                logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
+                if self._should_print_logs:
+                    logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
