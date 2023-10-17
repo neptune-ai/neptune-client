@@ -84,6 +84,7 @@ class PartitionedOperationProcessor(OperationProcessor):
                 async_no_progress_callback=async_no_progress_callback,
                 async_no_progress_threshold=async_no_progress_threshold,
                 path_suffix=f"{exec_path}/partition-{partition_id}",
+                should_print_logs=False,
             )
             for partition_id in range(partitions)
         ]
