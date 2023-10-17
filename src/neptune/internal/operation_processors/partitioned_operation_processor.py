@@ -34,6 +34,7 @@ import threading
 from datetime import datetime
 from typing import (
     Callable,
+    List,
     Optional,
 )
 
@@ -88,9 +89,12 @@ class PartitionedOperationProcessor(OperationProcessor):
         ]
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
-        path_hash = hash(tuple(op.path))
-        processor = self._processors[path_hash % self._partitions]
+        processor = self._get_operation_processor(op.path)
         processor.enqueue_operation(op, wait=wait)
+
+    def _get_operation_processor(self, path: List[str]) -> OperationProcessor:
+        path_hash = hash(tuple(path))
+        return self._processors[path_hash % self._partitions]
 
     def pause(self) -> None:
         for processor in self._processors:
