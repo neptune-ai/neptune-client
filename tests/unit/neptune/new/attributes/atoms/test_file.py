@@ -84,6 +84,7 @@ class TestFile(TestAttributeBase):
             with tmp_context() as tmp_upload_dir:
                 processor = MagicMock()
                 processor._operation_storage = PropertyMock(upload_path=Path(tmp_upload_dir))
+                processor._get_operation_processor.return_value = processor
                 get_operation_processor.return_value = processor
 
                 with self._exp() as exp:
