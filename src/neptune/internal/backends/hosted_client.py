@@ -87,7 +87,7 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 
     if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
         pool_size = int(os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER, DEFAULT_POOLSIZE))
-        adapter = HTTPAdapter(pool_connections=pool_size, pool_maxsize=min(pool_size, MAX_POOL_SIZE))
+        adapter = HTTPAdapter(pool_connections=pool_size, pool_maxsize=4 * pool_size)
         http_client.session.mount("https://", adapter)
         http_client.session.mount("http://", adapter)
 
