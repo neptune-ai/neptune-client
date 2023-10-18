@@ -17,6 +17,7 @@ import os
 import re
 from typing import (
     Optional,
+    Tuple,
     Union,
 )
 
@@ -38,13 +39,13 @@ class CGroupV2FilesystemReader(CGroupAbstractFilesystemReader):
     def get_memory_limit_in_bytes(self) -> int:
         return self.__read_int_file(self.__memory_limit_file)
 
-    def get_cpu_max_limits(self) -> tuple[Union[str, int], int]:
+    def get_cpu_max_limits(self) -> Tuple[Union[str, int], int]:
         return self.__read_two_values_from_first_line(self.__cpu_max_file)
 
     def get_cpuacct_usage_nanos(self) -> int:
         return self.__read_int_attr_in_file(self.__cpu_stat_file, "usage_usec") * 1000
 
-    def __read_two_values_from_first_line(self, filename: str) -> tuple[Union[str, int], int]:
+    def __read_two_values_from_first_line(self, filename: str) -> Tuple[Union[str, int], int]:
         with open(filename) as f:
             line = f.readline()
             cpu_quota_micros, cpu_period_micros = line.split()

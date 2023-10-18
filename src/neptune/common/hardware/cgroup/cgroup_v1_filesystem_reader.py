@@ -15,7 +15,10 @@
 #
 import os
 import re
-from typing import Union
+from typing import (
+    Tuple,
+    Union,
+)
 
 from neptune.common.hardware.cgroup.cgroup_filesystem_reader import CGroupAbstractFilesystemReader
 
@@ -39,7 +42,7 @@ class CGroupV1FilesystemReader(CGroupAbstractFilesystemReader):
     def get_memory_limit_in_bytes(self) -> int:
         return self.__read_int_file(self.__memory_limit_file)
 
-    def get_cpu_max_limits(self) -> tuple[Union[str, int], int]:
+    def get_cpu_max_limits(self) -> Tuple[Union[str, int], int]:
         cpu_quota_micros = self.__get_cpu_quota_micros()
         cpu_period_micros = self.__get_cpu_period_micros()
         if cpu_quota_micros == -1:
