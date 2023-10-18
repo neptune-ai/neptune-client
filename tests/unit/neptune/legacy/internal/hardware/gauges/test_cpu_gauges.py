@@ -20,10 +20,6 @@ from neptune.common.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
 )
-from neptune.common.utils import (
-    IS_MACOS,
-    IS_WINDOWS,
-)
 
 
 class TestCpuGauges(unittest.TestCase):
@@ -39,7 +35,7 @@ class TestCpuGauges(unittest.TestCase):
         self.assertLessEqual(cpu_usage, 100.0)
         self.assertEqual(float, type(cpu_usage))
 
-    @unittest.skipIf(IS_WINDOWS or IS_MACOS, "Windows and MacOS don't have cgroups")
+    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
     def test_cgroup_cpu_gauge_returns_zero_on_first_measurement(self):
         # given
         gauge = CGroupCpuUsageGauge()
@@ -51,7 +47,7 @@ class TestCpuGauges(unittest.TestCase):
         self.assertEqual(0.0, cpu_usage)
         self.assertEqual(float, type(cpu_usage))
 
-    @unittest.skipIf(IS_WINDOWS or IS_MACOS, "Windows and MacOS don't have cgroups")
+    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
     def test_cgroup_cpu_gauge_measurement(self):
         # given
         gauge = CGroupCpuUsageGauge()

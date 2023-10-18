@@ -23,10 +23,6 @@ from neptune.common.hardware.gauges.gauge_mode import GaugeMode
 from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.common.hardware.system.system_monitor import SystemMonitor
-from neptune.common.utils import (
-    IS_MACOS,
-    IS_WINDOWS,
-)
 from tests.unit.neptune.legacy.assertions import AssertionExtensions
 
 
@@ -48,7 +44,7 @@ class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExten
         self.assert_int_greater_or_equal(resource_info.gpu_card_count, 0)
         self.assert_int_greater_or_equal(resource_info.gpu_memory_amount_bytes, 0)
 
-    @unittest.skipIf(IS_WINDOWS or IS_MACOS, "Windows and MacOS don't have cgroups")
+    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
     def test_cgroup_resource_info(self):
         # given
         system_resource_info_factory = SystemResourceInfoFactory(
