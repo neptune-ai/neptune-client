@@ -74,13 +74,13 @@ def prepare_v2_container(
     container_type: ContainerType,
     path: Path,
     pid: int,
-    random_key: str,
+    key: str,
     last_ack_version: Optional[int],
     trashed: Optional[bool] = False,
 ) -> ApiExperiment:
     container = api_metadata_container(container_type, trashed=trashed)
 
-    exec_path = f"{container_type.create_dir_name(container.id)}__{pid}__{random_key}"
+    exec_path = f"{container_type.create_dir_name(container.id)}__{pid}__{key}"
     directory = OFFLINE_DIRECTORY if last_ack_version is None else ASYNC_DIRECTORY
     experiment_path = path / directory / exec_path
 

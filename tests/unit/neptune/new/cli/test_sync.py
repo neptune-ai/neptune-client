@@ -54,10 +54,10 @@ def test_sync_all_v2_containers(tmp_path, mocker, capsys, backend, sync_runner, 
         path=tmp_path,
         last_ack_version=1,
         pid=2501,
-        random_key="a1b2c3",
+        key="a1b2c3",
     )
     synced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=3, pid=2502, random_key="d4e5f6"
+        container_type=container_type, path=tmp_path, last_ack_version=3, pid=2502, key="d4e5f6"
     )
 
     # and
@@ -101,7 +101,7 @@ def test_sync_all_v2_containers(tmp_path, mocker, capsys, backend, sync_runner, 
 def test_sync_all_offline_v2_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # given
     offline_run = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, random_key="a1b2c3"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, key="a1b2c3"
     )
 
     # and
@@ -145,13 +145,13 @@ def test_sync_all_offline_v2_runs(tmp_path, mocker, capsys, backend, sync_runner
 def test_sync_selected_v2_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # given
     unsync_exp = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, pid=2501, random_key="a1b2c3"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, pid=2501, key="a1b2c3"
     )  # won't be synced, despite fact it's not synced yet
     sync_exp = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, pid=2502, random_key="d4e5f6"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, pid=2502, key="d4e5f6"
     )  # will be synced despite fact that it's up to date
     offline_run = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2503, random_key="g7h8j9"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2503, key="g7h8j9"
     )  # will be synced
 
     # and

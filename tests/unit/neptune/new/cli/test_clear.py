@@ -50,13 +50,13 @@ def status_runner_fixture(backend):
 def test_clean_v2_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
     # given
     unsynced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, random_key="a1b2c3"
+        container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, key="a1b2c3"
     )
     synced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=3, pid=1235, random_key="d4e5f6"
+        container_type=container_type, path=tmp_path, last_ack_version=3, pid=1235, key="d4e5f6"
     )
     offline_containers = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=None, pid=1236, random_key="g7h8j9"
+        container_type=container_type, path=tmp_path, last_ack_version=None, pid=1236, key="g7h8j9"
     )
 
     # and
@@ -114,10 +114,10 @@ def test_clean_v2_containers(tmp_path, mocker, capsys, backend, clear_runner, co
 def test_clean_v2_deleted_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
     # given
     unsynced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, random_key="a1b2c3"
+        container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, key="a1b2c3"
     )
     synced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=3, pid=1235, random_key="d4e5f6"
+        container_type=container_type, path=tmp_path, last_ack_version=3, pid=1235, key="d4e5f6"
     )
 
     # and

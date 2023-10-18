@@ -44,10 +44,10 @@ def status_runner_fixture(backend):
 def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
     # given
     unsynced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=1, pid=2501, random_key="a1b2c3"
+        container_type=container_type, path=tmp_path, last_ack_version=1, pid=2501, key="a1b2c3"
     )
     synced_container = prepare_v2_container(
-        container_type=container_type, path=tmp_path, last_ack_version=3, pid=2502, random_key="d4e5f6"
+        container_type=container_type, path=tmp_path, last_ack_version=3, pid=2502, key="d4e5f6"
     )
 
     # and
@@ -73,7 +73,7 @@ def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, co
 def test_list_offline_v2_runs(tmp_path, mocker, capsys, status_runner):
     # given
     offline_run = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, random_key="a1b2c3"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, key="a1b2c3"
     )
 
     # and
@@ -91,10 +91,10 @@ def test_list_offline_v2_runs(tmp_path, mocker, capsys, status_runner):
 def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend, status_runner):
     # given
     unsynced_container = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True, pid=2501, random_key="a1b2c3"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True, pid=2501, key="a1b2c3"
     )
     synced_container = prepare_v2_container(
-        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True, pid=2502, random_key="d4e5f6"
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True, pid=2502, key="d4e5f6"
     )
 
     # and
