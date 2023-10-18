@@ -24,7 +24,10 @@ from neptune.internal.operation import Operation
 from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
     prepare_v1_container,
+    prepare_v2_container,
 )
+
+AVAILABLE_CONTAINERS = [ContainerType.RUN, ContainerType.MODEL_VERSION, ContainerType.MODEL, ContainerType.PROJECT]
 
 
 @pytest.fixture(name="backend")
@@ -37,11 +40,17 @@ def status_runner_fixture(backend):
     return StatusRunner(backend=backend)
 
 
-@pytest.mark.parametrize("container_type", list(ContainerType))
-def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
+@pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
     # given
-    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
-    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    unsynced_container = prepare_v2_container(
+        container_type=container_type, path=tmp_path, last_ack_version=1, pid=2501, random_key="a1b2c3"
+    )
+    synced_container = prepare_v2_container(
+        container_type=container_type, path=tmp_path, last_ack_version=3, pid=2502, random_key="d4e5f6"
+    )
+
+    # and
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
@@ -61,7 +70,80 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
     ]
 
 
-def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
+def test_list_offline_v2_runs(tmp_path, mocker, capsys, status_runner):
+    # given
+    offline_run = prepare_v2_container(
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, random_key="a1b2c3"
+    )
+
+    # and
+    mocker.patch.object(Operation, "from_dict")
+
+    # when
+    status_runner.synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert f"Unsynchronized offline objects:\n- offline/run__{offline_run.id}__2501__a1b2c3" in captured.out
+
+
+def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend, status_runner):
+    # given
+    unsynced_container = prepare_v2_container(
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True, pid=2501, random_key="a1b2c3"
+    )
+    synced_container = prepare_v2_container(
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True, pid=2502, random_key="d4e5f6"
+    )
+
+    # and
+    get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
+
+    # and
+    mocker.patch.object(backend, "get_metadata_container", get_container_impl)
+    mocker.patch.object(Operation, "from_dict")
+
+    # when
+    status_runner.synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.out.splitlines() == [
+        "Unsynchronized objects:",
+        f"- {get_qualified_name(unsynced_container)} (Trashed)",
+        "",
+        "Please run with the `neptune sync --help` to see example commands.",
+    ]
+
+
+@pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+def test_list_v1_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
+    # given
+    unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+
+    # and
+    get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
+
+    # and
+    mocker.patch.object(backend, "get_metadata_container", get_container_impl)
+    mocker.patch.object(Operation, "from_dict")
+
+    # when
+    status_runner.synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.out.splitlines() == [
+        "Unsynchronized objects:",
+        f"- {get_qualified_name(unsynced_container)}",
+        "",
+        "Please run with the `neptune sync --help` to see example commands.",
+    ]
+
+
+def test_list_offline_v1_runs(tmp_path, mocker, capsys, status_runner):
     # given
     offline_run = prepare_v1_container(
         container_type=ContainerType.RUN,
@@ -81,7 +163,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
 
 
-def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
+def test_list_trashed_v1_containers(tmp_path, mocker, capsys, backend, status_runner):
     # given
     unsynced_container = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True
@@ -89,6 +171,8 @@ def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runne
     synced_container = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True
     )
+
+    # and
     get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
