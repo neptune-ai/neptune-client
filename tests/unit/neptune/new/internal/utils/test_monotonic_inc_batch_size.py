@@ -16,7 +16,7 @@
 
 import unittest
 
-from sympy.testing import pytest
+import pytest
 
 from neptune.internal.utils.monotonic_inc_batch_size import MonotonicIncBatchSize
 
