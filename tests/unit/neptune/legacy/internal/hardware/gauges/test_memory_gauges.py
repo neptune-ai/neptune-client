@@ -21,6 +21,10 @@ from neptune.common.hardware.gauges.gauge_factory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,
 )
+from neptune.common.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
+)
 
 
 class TestMemoryGauges(unittest.TestCase):
@@ -39,7 +43,7 @@ class TestMemoryGauges(unittest.TestCase):
         self.assertLess(memory_gb, self.system_memory_gb)
         self.assertEqual(float, type(memory_gb))
 
-    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
+    @unittest.skipIf(IS_WINDOWS or IS_MACOS, "Windows and MacOS don't have cgroups")
     def test_cgroup_memory_gauge(self):
         # given
         gauge = CGroupMemoryUsageGauge()
