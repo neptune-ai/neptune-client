@@ -16,7 +16,9 @@
 
 import time
 
-from neptune.common.hardware.cgroup.cgroup_filesystem_reader import CGroupFilesystemReader
+from neptune.common.hardware.cgroup.cgroup_filesystem_reader import CGroupAbstractFilesystemReader
+from neptune.common.hardware.cgroup.cgroup_v1_filesystem_reader import CGroupV1FilesystemReader
+from neptune.common.hardware.cgroup.cgroup_v2_filesystem_reader import CGroupV2FilesystemReader
 from neptune.common.hardware.system.system_monitor import SystemMonitor
 
 
@@ -30,7 +32,11 @@ class CGroupMonitor(object):
 
     @staticmethod
     def create():
-        return CGroupMonitor(CGroupFilesystemReader(), SystemMonitor())
+        if CGroupV2FilesystemReader.cgroupv2_is_supported():
+            file_reader = CGroupV2FilesystemReader()
+        else:
+            file_reader = CGroupV1FilesystemReader()
+        return CGroupMonitor(file_reader, SystemMonitor())
 
     def get_memory_usage_in_bytes(self):
         return self.__cgroup_filesystem_reader.get_memory_usage_in_bytes()
@@ -41,12 +47,10 @@ class CGroupMonitor(object):
         return min(cgroup_mem_limit, total_virtual_memory)
 
     def get_cpu_usage_limit_in_cores(self):
-        cpu_quota_micros = self.__cgroup_filesystem_reader.get_cpu_quota_micros()
-
-        if cpu_quota_micros == -1:
+        cpu_quota_micros, cpu_period_micros = self.__cgroup_filesystem_reader.get_cpu_max_limits()
+        if cpu_quota_micros == CGroupAbstractFilesystemReader.NO_LIMIT_VALUE:
             return float(self.__system_monitor.cpu_count())
         else:
-            cpu_period_micros = self.__cgroup_filesystem_reader.get_cpu_period_micros()
             return float(cpu_quota_micros) / float(cpu_period_micros)
 
     def get_cpu_usage_percentage(self):
