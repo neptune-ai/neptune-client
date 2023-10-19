@@ -1135,11 +1135,13 @@ class NeptuneModelKeyAlreadyExistsError(NeptuneObjectCreationConflict):
 {h1}
 ----NeptuneModelKeyAlreadyExistsError---------------------------------------------------
 {end}
-A model with the provided key ({model_key}) already exists in this project. A model key has to be unique
-within the project (that includes keys of the trashed models).
+A model with the provided key ({model_key}) already exists in this project.
 
-You can check all of your models in the project on the Models page:
+You can check all of your models in the Models section of the project:
 {models_tab_url}
+
+Note: If there is a model with the same key in the trash, you need to delete the model from the trash to make the key
+available again.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
