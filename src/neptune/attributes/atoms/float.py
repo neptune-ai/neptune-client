@@ -18,11 +18,11 @@ __all__ = ["Float"]
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.constants import IS_UNSUPPORTED_FLOAT
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignFloat
 from neptune.internal.utils.logger import logger
 from neptune.types.atoms.float import Float as FloatVal
+from neptune.utils import is_unsupported_float
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -47,7 +47,7 @@ class Float(CopiableAtom):
         if not isinstance(value, FloatVal):
             value = FloatVal(value)
 
-        if IS_UNSUPPORTED_FLOAT(value.value):
+        if is_unsupported_float(value.value):
             logger.warning(
                 "WARNING: The value you're trying to log is a non-standard float value (%s) "
                 "that is not currently supported. "

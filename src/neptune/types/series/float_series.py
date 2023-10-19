@@ -26,10 +26,10 @@ from typing import (
 )
 
 from neptune.common.warnings import warn_once
-from neptune.constants import IS_UNSUPPORTED_FLOAT
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
+from neptune.utils import is_unsupported_float
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
@@ -104,7 +104,7 @@ class FloatSeries(Series):
     def clear_of_unsupported_values(self):
         cleared_values = []
         for value in self._values:
-            if IS_UNSUPPORTED_FLOAT(value):
+            if is_unsupported_float(value):
                 warn_once(
                     message=f"WARNING: The value you're trying to log (`{str(value)}`) is a non-standard float "
                     f"value that is not currently supported."

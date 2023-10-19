@@ -22,10 +22,8 @@ __all__ = [
     "OFFLINE_NAME_PREFIX",
     "MAX_32_BIT_INT",
     "MIN_32_BIT_INT",
-    "IS_UNSUPPORTED_FLOAT",
 ]
 
-import math
 
 """Constants used by Neptune"""
 
@@ -42,7 +40,3 @@ OFFLINE_NAME_PREFIX = "offline/"
 
 MAX_32_BIT_INT = 2147483647
 MIN_32_BIT_INT = -2147483648
-
-
-def IS_UNSUPPORTED_FLOAT(value: float) -> bool:
-    return math.isinf(value) or math.isnan(value)
