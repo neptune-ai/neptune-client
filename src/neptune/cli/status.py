@@ -93,9 +93,7 @@ class StatusRunner(AbstractBackendRunner):
 
     def synchronization_status(self, base_path: Path) -> None:
         container_manager = ContainersManager(self._backend, base_path)
-        synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(
-            base_path
-        )
+        synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk()
         if len(not_found) > 0:
             logger.warning(
                 "\nWARNING: %s objects was skipped because they do not exist anymore.",

@@ -47,14 +47,11 @@ class ContainersManager(abc.ABC):
         self._backend = backend
         self._base_path = base_path
 
-    def partition_containers_and_clean_junk(
-        self,
-        base_path: Path,
-    ) -> Tuple[List["ApiExperiment"], List["ApiExperiment"], List[Path]]:
+    def partition_containers_and_clean_junk(self) -> Tuple[List["ApiExperiment"], List["ApiExperiment"], List[Path]]:
         synced_containers = []
         unsynced_containers = []
         not_found = []
-        async_path = base_path / ASYNC_DIRECTORY
+        async_path = self._base_path / ASYNC_DIRECTORY
         for container_type, container_id, path in iterate_containers(async_path):
             metadata_container = get_metadata_container(
                 backend=self._backend,
