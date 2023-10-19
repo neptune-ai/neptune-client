@@ -30,6 +30,7 @@
 #
 import logging
 import os
+import re
 import threading
 from datetime import datetime
 from typing import (
@@ -52,6 +53,27 @@ from neptune.internal.operation_processors.operation_processor import OperationP
 _logger = logging.getLogger(__name__)
 
 
+class OperationErrorLogger:
+    MONO_STEP_RE = re.compile(r'X-coordinates \(step\) must be strictly increasing for series attribute: (.*)\. Invalid point: (.*)')
+
+    def __init__(self):
+        self._step_error_logged = set()
+        self._string_error_logged = set()
+
+    def log(self, errors):
+        for e in [str(e) for e in errors]:
+            step_match = self.MONO_STEP_RE.match(e)
+            if step_match:
+                step = step_match.group(2)
+                has_error_been_logged_for_this_step = step in self._step_error_logged
+                if not has_error_been_logged_for_this_step:
+                    self._step_error_logged.add(step)
+                    _logger.error("Error occurred during asynchronous operation processing: %s. Suppressing other errors for this step.", e)
+                continue
+            else:
+                _logger.error("Error occurred during asynchronous operation processing: %s", e)
+
+
 class PartitionedOperationProcessor(OperationProcessor):
     def __init__(
         self,
@@ -70,6 +92,8 @@ class PartitionedOperationProcessor(OperationProcessor):
         now = datetime.now()
         exec_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
 
+        operation_error_logger = OperationErrorLogger()
+
         self._partitions = partitions
         self._processors = [
             AsyncOperationProcessor(
@@ -85,6 +109,7 @@ class PartitionedOperationProcessor(OperationProcessor):
                 async_no_progress_threshold=async_no_progress_threshold,
                 path_suffix=f"{exec_path}/partition-{partition_id}",
                 should_print_logs=False,
+                operation_error_logger=operation_error_logger
             )
             for partition_id in range(partitions)
         ]

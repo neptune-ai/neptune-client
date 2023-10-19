@@ -78,6 +78,7 @@ class AsyncOperationProcessor(OperationProcessor):
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         path_suffix: Optional[str] = None,
         should_print_logs: bool = True,
+        operation_error_logger=None,
     ):
         self._should_print_logs: bool = should_print_logs
         data_path = self._init_data_path(container_id, container_type, path_suffix)
@@ -105,7 +106,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._last_version: int = 0
         self._consumed_version: int = 0
-        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, self._batch_size)
+        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, self._batch_size, operation_error_logger)
         self._lock: threading.RLock = lock
         self._last_ack: Optional[float] = None
         self._lag_exceeded: bool = False
@@ -285,8 +286,10 @@ class AsyncOperationProcessor(OperationProcessor):
             processor: "AsyncOperationProcessor",
             sleep_time: float,
             batch_size: MonotonicIncBatchSize,
+            operation_error_logger
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
+            self._operation_error_logger = operation_error_logger
             self._processor: "AsyncOperationProcessor" = processor
             self._batch_size: MonotonicIncBatchSize = batch_size
             self._last_flush: float = 0.0
@@ -355,11 +358,14 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
 
-                    for error in errors:
-                        logger.error(
-                            "Error occurred during asynchronous operation processing: %s",
-                            error,
-                        )
+                    if self._operation_error_logger is not None:
+                        self._operation_error_logger.log(errors)
+                    else:
+                        for error in errors:
+                            logger.error(
+                                "Error occurred during asynchronous operation processing: %s",
+                                error,
+                            )
 
                     self._processor._consumed_version = version_to_ack
 
