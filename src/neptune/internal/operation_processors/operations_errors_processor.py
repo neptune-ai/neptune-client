@@ -1,5 +1,6 @@
 import os
 import re
+from typing import List
 
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import NEPTUNE_SAMPLE_SERIES_STEPS_ERRORS
@@ -15,7 +16,7 @@ class OperationsErrorsProcessor:
         )
         self._logged_steps = set[str]()
 
-    def handle(self, errors: list[NeptuneException]) -> None:
+    def handle(self, errors: List[NeptuneException]) -> None:
         for error in errors:
             if self._sampling_enabled and isinstance(error, MetadataInconsistency):
                 match_exp = self._error_sampling_exp.match(str(error))
