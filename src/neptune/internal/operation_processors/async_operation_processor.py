@@ -77,16 +77,16 @@ class AsyncOperationProcessor(OperationProcessor):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
-        path_suffix: Optional[str] = None,
+        data_path: Optional[Path] = None,
         should_print_logs: bool = True,
     ):
         self._should_print_logs: bool = should_print_logs
-        data_path = self._init_data_path(container_id, container_type, path_suffix)
+        self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
@@ -116,12 +116,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_cond = threading.Condition(lock=lock)
 
     @staticmethod
-    def _init_data_path(
-        container_id: "UniqueId", container_type: "ContainerType", path_suffix: Optional[str] = None
-    ) -> Path:
-        if path_suffix is None:
-            now = datetime.now()
-            path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
+        now = datetime.now()
+        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     @ensure_disk_not_full

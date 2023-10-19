@@ -84,6 +84,26 @@ class SyncRunner(AbstractBackendRunner):
         container_id: UniqueId,
         container_type: ContainerType,
     ) -> None:
+        if list(execution_path.glob('partition-*')):
+            for partition_path in execution_path.iterdir():
+                self.sync_single_execution(
+                    execution_path=partition_path,
+                    container_id=container_id,
+                    container_type=container_type,
+                )
+        else:
+            self.sync_single_execution(
+                execution_path=execution_path,
+                container_id=container_id,
+                container_type=container_type,
+            )
+
+    def sync_single_execution(
+        self,
+        execution_path: Path,
+        container_id: UniqueId,
+        container_type: ContainerType,
+    ) -> None:
         operation_storage = OperationStorage(execution_path)
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 

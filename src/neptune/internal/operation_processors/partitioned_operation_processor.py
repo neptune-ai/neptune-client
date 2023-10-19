@@ -28,8 +28,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
+import logging
+import shutil
 import threading
 from datetime import datetime
 from typing import (
@@ -37,7 +38,10 @@ from typing import (
     List,
     Optional,
 )
+from pathlib import Path
 
+from neptune.constants import ASYNC_DIRECTORY
+from neptune.internal.operation_processors.operation_storage import get_container_dir
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -67,9 +71,7 @@ class PartitionedOperationProcessor(OperationProcessor):
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         partitions: int = 5,
     ):
-        now = datetime.now()
-        exec_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-
+        self._data_path = self._init_data_path(container_id, container_type)
         self._partitions = partitions
         self._processors = [
             AsyncOperationProcessor(
@@ -83,11 +85,17 @@ class PartitionedOperationProcessor(OperationProcessor):
                 async_lag_threshold=async_lag_threshold,
                 async_no_progress_callback=async_no_progress_callback,
                 async_no_progress_threshold=async_no_progress_threshold,
-                path_suffix=f"{exec_path}/partition-{partition_id}",
+                data_path=self._data_path / f"partition-{partition_id}",
                 should_print_logs=False,
             )
             for partition_id in range(partitions)
         ]
+
+    @staticmethod
+    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
+        now = datetime.now()
+        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         processor = self._get_operation_processor(op.path)
@@ -126,6 +134,12 @@ class PartitionedOperationProcessor(OperationProcessor):
 
         for processor in self._processors:
             processor.stop(seconds=seconds)
+
+        if all(processor._queue.is_empty() for processor in self._processors):
+            shutil.rmtree(self._data_path, ignore_errors=True)
+
+        if not os.listdir(self._data_path.parent):
+            shutil.rmtree(self._data_path.parent, ignore_errors=True)
 
     def close(self) -> None:
         for processor in self._processors:

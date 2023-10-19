@@ -120,6 +120,18 @@ def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
 
 
 def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
+    # TODO: Refactor it
+    if list(execution_path.glob('partition-*')):
+        is_queue_empty = all(
+            _is_single_execution_synced_and_remove_junk(partition_path) for partition_path in execution_path.iterdir()
+        )
+    else:
+        return _is_single_execution_synced_and_remove_junk(execution_path)
+
+    return is_queue_empty
+
+
+def _is_single_execution_synced_and_remove_junk(execution_path: Path) -> bool:
     """
     The DiskQueue.close() method removes junk metadata from the disk when the queue is empty.
     """
