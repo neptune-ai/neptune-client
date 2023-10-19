@@ -1136,7 +1136,7 @@ class NeptuneModelKeyAlreadyExistsError(NeptuneObjectCreationConflict):
 ----NeptuneModelKeyAlreadyExistsError---------------------------------------------------
 {end}
 A model with the provided key ({model_key}) already exists in this project. A model key has to be unique
-within the project.
+within the project (that includes keys of the trashed models).
 
 You can check all of your models in the project on the Models page:
 {models_tab_url}
