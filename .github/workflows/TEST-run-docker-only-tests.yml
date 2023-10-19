@@ -1,0 +1,23 @@
+name: pull-request-unittests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    timeout-minutes: 75
+
+    name: 'TEST - run docker-only test ubuntu'
+    runs-on: 'ubuntu-latest'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        uses: ./.github/actions/test-docker
+        with:
+          python-version: '3.10'
+          os: ubuntu
+          report_job: 'TEST run docker test ubuntu '
