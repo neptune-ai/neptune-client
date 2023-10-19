@@ -1038,10 +1038,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             "url": self._client_config.api_url + "/api/leaderboard/v1/leaderboard/entries/search",
         }
 
-        from icecream import ic
-
-        ic(offset, limit)
-
         return self._http_client.request(request_params=request_params).result().json()["entries"]
 
     @with_api_exceptions_handler
