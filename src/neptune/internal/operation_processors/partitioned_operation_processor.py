@@ -28,20 +28,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import logging
+import os
 import shutil
 import threading
 from datetime import datetime
+from pathlib import Path
 from typing import (
     Callable,
     List,
     Optional,
 )
-from pathlib import Path
 
 from neptune.constants import ASYNC_DIRECTORY
-from neptune.internal.operation_processors.operation_storage import get_container_dir
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -52,6 +51,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.operation_processors.operation_storage import get_container_dir
 
 _logger = logging.getLogger(__name__)
 

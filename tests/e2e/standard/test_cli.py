@@ -25,13 +25,13 @@ import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
 from neptune.common.exceptions import NeptuneException
+from neptune.internal.operation_processors.partitioned_operation_processor import PartitionedOperationProcessor
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from neptune.internal.operation_processors.partitioned_operation_processor import PartitionedOperationProcessor
 from tests.e2e.utils import (
     DISABLE_SYSLOG_KWARGS,
     initialize_container,
@@ -65,8 +65,8 @@ class TestSync(BaseE2ETest):
 
             # manually add operations to queue
             queue_dir = list(Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*"))[0]
-            if list(queue_dir.glob('partition-*')):
-                queue_dir = list(queue_dir.glob('partition-*'))[0]
+            if list(queue_dir.glob("partition-*")):
+                queue_dir = list(queue_dir.glob("partition-*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
             with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:

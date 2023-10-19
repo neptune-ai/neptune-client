@@ -84,7 +84,7 @@ class SyncRunner(AbstractBackendRunner):
         container_id: UniqueId,
         container_type: ContainerType,
     ) -> None:
-        if list(execution_path.glob('partition-*')):
+        if list(execution_path.glob("partition-*")):
             for partition_path in execution_path.iterdir():
                 self.sync_single_execution(
                     execution_path=partition_path,

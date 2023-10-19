@@ -121,7 +121,7 @@ def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
 
 def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
     # TODO: Refactor it
-    if list(execution_path.glob('partition-*')):
+    if list(execution_path.glob("partition-*")):
         is_queue_empty = all(
             _is_single_execution_synced_and_remove_junk(partition_path) for partition_path in execution_path.iterdir()
         )
