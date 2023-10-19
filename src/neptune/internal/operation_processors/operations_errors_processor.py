@@ -17,7 +17,7 @@ class OperationsErrorsProcessor:
         self._error_sampling_exp = re.compile(
             r"X-coordinates \(step\) must be strictly increasing for series attribute: (.*)\. Invalid point: (.*)"
         )
-        self._logged_steps = Set[str]()
+        self._logged_steps: Set[str] = set()
 
     def handle(self, errors: List[NeptuneException]) -> None:
         for error in errors:
