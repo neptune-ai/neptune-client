@@ -15,6 +15,7 @@
 #
 __all__ = ["FloatSeries"]
 
+import math
 import time
 from itertools import cycle
 from typing import (
@@ -27,6 +28,7 @@ from typing import (
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
+from neptune.internal.utils.logger import logger
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -54,6 +56,8 @@ class FloatSeries(Series):
         self._min = min
         self._max = max
         self._unit = unit
+
+        self.clear_of_unsupported_values()
 
         if steps is None:
             self._steps = cycle([None])
@@ -96,3 +100,15 @@ class FloatSeries(Series):
 
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))
+
+    def clear_of_unsupported_values(self):
+        cleared_values = []
+        for value in self._values:
+            if math.isinf(value) or math.isnan(value):
+                logger.warning(
+                    "WARNING: The value you're trying to log is a non-standard float value "
+                    "that is not currently supported. "
+                )
+            else:
+                cleared_values.append(value)
+        self._values = cleared_values
