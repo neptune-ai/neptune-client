@@ -1,6 +1,9 @@
 import os
 import re
-from typing import List
+from typing import (
+    List,
+    Set,
+)
 
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import NEPTUNE_SAMPLE_SERIES_STEPS_ERRORS
@@ -14,7 +17,7 @@ class OperationsErrorsProcessor:
         self._error_sampling_exp = re.compile(
             r"X-coordinates \(step\) must be strictly increasing for series attribute: (.*)\. Invalid point: (.*)"
         )
-        self._logged_steps = set[str]()
+        self._logged_steps = Set[str]()
 
     def handle(self, errors: List[NeptuneException]) -> None:
         for error in errors:
