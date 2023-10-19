@@ -543,3 +543,10 @@ class TestStringifyUnsupported:
         assert run["neg_infinity"].fetch() == "-inf"
 
         assert math.isnan(float(run["nan"].fetch()))
+
+        run["lists"].append({"float_wrong": float("nan"), "float_right": float(3)})
+        run["lists"].append({"inf": float("-inf")})
+        run["lists"].append({"neginf": float("inf")})
+        run["lists"].append({"normal": 2})
+
+        assert run["lists"].fetch() == {}

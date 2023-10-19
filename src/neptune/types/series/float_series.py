@@ -15,7 +15,6 @@
 #
 __all__ = ["FloatSeries"]
 
-import math
 import time
 from itertools import cycle
 from typing import (
@@ -26,9 +25,10 @@ from typing import (
     Union,
 )
 
+from neptune.common.warnings import warn_once
+from neptune.constants import IS_UNSUPPORTED_FLOAT
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
-from neptune.internal.utils.logger import logger
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -104,10 +104,10 @@ class FloatSeries(Series):
     def clear_of_unsupported_values(self):
         cleared_values = []
         for value in self._values:
-            if math.isinf(value) or math.isnan(value):
-                logger.warning(
-                    "WARNING: The value you're trying to log is a non-standard float value "
-                    "that is not currently supported. "
+            if IS_UNSUPPORTED_FLOAT(value):
+                warn_once(
+                    message=f"WARNING: The value you're trying to log (`{str(value)}`) is a non-standard float "
+                    f"value that is not currently supported."
                 )
             else:
                 cleared_values.append(value)

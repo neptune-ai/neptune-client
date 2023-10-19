@@ -34,9 +34,9 @@ __all__ = ["StringifyValue", "extract_if_stringify_value"]
 from typing import Any
 
 from neptune.constants import (
+    IS_UNSUPPORTED_FLOAT,
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
-    UNSUPPORTED_FLOATS,
 )
 from neptune.internal.utils.logger import logger
 
@@ -53,7 +53,7 @@ class StringifyValue:
             )
             value = float(value)
         # check if isn't an unsupported float
-        if value in UNSUPPORTED_FLOATS:
+        if IS_UNSUPPORTED_FLOAT(value):
             logger.info(
                 "The value you're trying to log is an unsupported float value (%s) and will be logged as string. "
                 "We'll add support for these types of values in the future.",
