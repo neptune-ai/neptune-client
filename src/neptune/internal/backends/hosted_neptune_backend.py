@@ -16,10 +16,12 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
+import json
 import logging
 import os
 import re
 import typing
+from concurrent.futures import ThreadPoolExecutor
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -95,6 +97,8 @@ from neptune.internal.backends.hosted_artifact_operations import (
 )
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
+    CONNECT_TIMEOUT,
+    REQUEST_TIMEOUT,
     create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,
@@ -1032,33 +1036,43 @@ class HostedNeptuneBackend(NeptuneBackend):
             attributes_filter = {}
 
         def get_portion(limit, offset):
-            return (
-                self.leaderboard_client.api.searchLeaderboardEntries(
-                    projectIdentifier=project_id,
-                    type=list(map(lambda container_type: container_type.to_api(), types)),
-                    params={
-                        **query_params,
-                        **attributes_filter,
-                        "pagination": {"limit": limit, "offset": offset},
+            import time
+            start = time.time()
+            r = self._http_client.session.post(
+                url=build_operation_url(self._client_config.api_url, '/api/leaderboard/v1/leaderboard/entries/search'),
+                params={
+                    'projectIdentifier': project_id,
+                    'type': 'run'  # list(map(lambda container_type: container_type.to_api(), types))
+                },
+                json={
+                    **query_params,
+                    **attributes_filter,
+                    "pagination": {"limit": limit, "offset": offset}
+                },
+                **{
+                    "timeout": REQUEST_TIMEOUT,
+                    "headers": {
+                        "X-Neptune-LegacyClient": "false",
+                        "Accept-Encoding": "gzip,deflate,br"
                     },
-                    **DEFAULT_REQUEST_KWARGS,
-                )
-                .response()
-                .result.entries
-            )
+                },
+            ).json()
+            print(f'REQUEST limit={limit}, offset={offset}', time.time() - start)
+            return r['entries']
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
             supported_attribute_types = {item.value for item in AttributeType}
             attributes: List[AttributeWithProperties] = []
-            for attr in entry.attributes:
-                if attr.type in supported_attribute_types:
-                    properties = attr.__getitem__("{}Properties".format(attr.type))
-                    attributes.append(AttributeWithProperties(attr.name, AttributeType(attr.type), properties))
-            return LeaderboardEntry(entry.experimentId, attributes)
+            for attr in entry['attributes']:
+                if attr['type'] in supported_attribute_types:
+                    properties = attr.__getitem__("{}Properties".format(attr['type']))
+                    attributes.append(AttributeWithProperties(attr['name'], AttributeType(attr['type']), properties))
+            return LeaderboardEntry(entry['experimentId'], attributes)
 
         try:
-            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
-            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size)]
+            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "20"))
+            return self._get_all_items(get_portion, step=step_size, map_item=to_leaderboard_entry)
+            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size, map_item=to_leaderboard_entry)]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
@@ -1086,9 +1100,27 @@ class HostedNeptuneBackend(NeptuneBackend):
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
 
     @staticmethod
-    def _get_all_items(get_portion, step):
+    def _get_all_items(get_portion, step, map_item):
         max_server_offset = 10000
         items = []
+        workers = 5
+        with ThreadPoolExecutor(max_workers=workers) as executor:
+            def f(limit, offset):
+                return [map_item(i) for i in get_portion(limit, offset)]
+
+            requested_chunks = 0
+            futures = []
+            while True:
+                futures.extend([executor.submit(f, step, step * (requested_chunks + i)) for i in range(workers)])
+                requested_chunks += workers
+
+                last_part = futures[-1].result()
+                if len(last_part) < step:
+                    break
+
+            results = [f.result() for f in futures]
+            return [e for entries in results for e in entries]
+
         previous_items = None
         while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
             previous_items = get_portion(limit=step, offset=len(items))
