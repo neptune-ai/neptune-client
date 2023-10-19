@@ -69,7 +69,7 @@ class TableEntry:
             if attr.path == path:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
-                    return RunState.from_api(attr.properties.value).value
+                    return RunState.from_api(attr.properties.get("value")).value
                 if _type in (
                     AttributeType.FLOAT,
                     AttributeType.INT,
@@ -77,9 +77,9 @@ class TableEntry:
                     AttributeType.STRING,
                     AttributeType.DATETIME,
                 ):
-                    return attr.properties.value
+                    return attr.properties.get("value")
                 if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
-                    return attr.properties.last
+                    return attr.properties.get("last")
                 if _type == AttributeType.IMAGE_SERIES:
                     raise MetadataInconsistency("Cannot get value for image series.")
                 if _type == AttributeType.FILE:
@@ -87,13 +87,13 @@ class TableEntry:
                 if _type == AttributeType.FILE_SET:
                     raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
                 if _type == AttributeType.STRING_SET:
-                    return set(attr.properties.values)
+                    return set(attr.properties.get("values"))
                 if _type == AttributeType.GIT_REF:
-                    return attr.properties.commit.commitId
+                    return attr.properties.get("commit", {}).get("commitId")
                 if _type == AttributeType.NOTEBOOK_REF:
-                    return attr.properties.notebookName
+                    return attr.properties.get("notebookName")
                 if _type == AttributeType.ARTIFACT:
-                    return attr.properties.hash
+                    return attr.properties.get("hash")
                 logger.error(
                     "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
                     _type,
@@ -183,7 +183,7 @@ class Table:
             _type = attribute.type
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
-                return RunState.from_api(_properties.value).value
+                return RunState.from_api(_properties.get("value")).value
             if _type in (
                 AttributeType.FLOAT,
                 AttributeType.INT,
@@ -191,21 +191,21 @@ class Table:
                 AttributeType.STRING,
                 AttributeType.DATETIME,
             ):
-                return _properties.value
+                return _properties.get("value")
             if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
-                return _properties.last
+                return _properties.get("last")
             if _type == AttributeType.IMAGE_SERIES:
                 return None
             if _type == AttributeType.FILE or _type == AttributeType.FILE_SET:
                 return None
             if _type == AttributeType.STRING_SET:
-                return ",".join(_properties.values)
+                return ",".join(_properties.get("values"))
             if _type == AttributeType.GIT_REF:
-                return _properties.commit.commitId
+                return _properties.get("commit", {}).get("commitId")
             if _type == AttributeType.NOTEBOOK_REF:
-                return _properties.notebookName
+                return _properties.get("notebookName")
             if _type == AttributeType.ARTIFACT:
-                return _properties.hash
+                return _properties.get("hash")
             logger.error(
                 "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
                 _type,

@@ -16,6 +16,7 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
+import json
 import logging
 import os
 import re
@@ -1014,6 +1015,35 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
+    def search_entries(self, project_id, types, query_params, attributes_filter, limit, offset):
+        request_params = {
+            "connect_timeout": 30,
+            "data": json.dumps(
+                {
+                    "pagination": {"limit": limit, "offset": offset},
+                    **query_params,
+                    **attributes_filter,
+                }
+            ),
+            "headers": {
+                "Content-Type": "application/json",
+                "X-Neptune-LegacyClient": "false",
+            },
+            "method": "POST",
+            "params": {
+                "projectIdentifier": project_id,
+                "type": list(map(lambda container_type: container_type.to_api(), types)),
+            },
+            "timeout": 600,
+            "url": self._client_config.api_url + "/api/leaderboard/v1/leaderboard/entries/search",
+        }
+
+        from icecream import ic
+
+        ic(offset, limit)
+
+        return self._http_client.request(request_params=request_params).result().json()["entries"]
+
     @with_api_exceptions_handler
     def search_leaderboard_entries(
         self,
@@ -1032,29 +1062,23 @@ class HostedNeptuneBackend(NeptuneBackend):
             attributes_filter = {}
 
         def get_portion(limit, offset):
-            return (
-                self.leaderboard_client.api.searchLeaderboardEntries(
-                    projectIdentifier=project_id,
-                    type=list(map(lambda container_type: container_type.to_api(), types)),
-                    params={
-                        **query_params,
-                        **attributes_filter,
-                        "pagination": {"limit": limit, "offset": offset},
-                    },
-                    **DEFAULT_REQUEST_KWARGS,
-                )
-                .response()
-                .result.entries
+            return self.search_entries(
+                project_id,
+                types,
+                query_params,
+                attributes_filter,
+                limit,
+                offset,
             )
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
             supported_attribute_types = {item.value for item in AttributeType}
             attributes: List[AttributeWithProperties] = []
-            for attr in entry.attributes:
-                if attr.type in supported_attribute_types:
-                    properties = attr.__getitem__("{}Properties".format(attr.type))
-                    attributes.append(AttributeWithProperties(attr.name, AttributeType(attr.type), properties))
-            return LeaderboardEntry(entry.experimentId, attributes)
+            for attr in entry["attributes"]:
+                if attr["type"] in supported_attribute_types:
+                    properties = attr["{}Properties".format(attr["type"])]
+                    attributes.append(AttributeWithProperties(attr["name"], AttributeType(attr["type"]), properties))
+            return LeaderboardEntry(entry["experimentId"], attributes)
 
         try:
             step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
