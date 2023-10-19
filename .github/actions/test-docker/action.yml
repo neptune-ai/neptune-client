@@ -1,0 +1,7 @@
+---
+name: Run docker only tests
+description: Create docker container and run the docker-only tests.
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
