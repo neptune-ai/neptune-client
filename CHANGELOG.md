@@ -7,6 +7,7 @@
 - Run async callback in new daemon thread ([#1521](https://github.com/neptune-ai/neptune-client/pull/1521))
 - Better handle bool values of `git_ref` param in `init_run` ([#1525](https://github.com/neptune-ai/neptune-client/pull/1525))
 - Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
+- Updated NeptuneModelKeyAlreadyExistsError exception message ([#1536](https://github.com/neptune-ai/neptune-client/pull/1536))
 - Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
 
 ### Changes
