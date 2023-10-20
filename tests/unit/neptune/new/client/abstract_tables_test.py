@@ -19,10 +19,7 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import List
 
-from mock import (
-    Mock,
-    patch,
-)
+from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
 from neptune.envs import (
@@ -71,18 +68,18 @@ class AbstractTablesTestMixin:
     @staticmethod
     def build_attributes_leaderboard(now: datetime):
         attributes = []
-        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="idle")))
-        attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
-        attributes.append(AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text")))
-        attributes.append(AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now)))
-        attributes.append(AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7)))
-        attributes.append(AttributeWithProperties("string/series", AttributeType.STRING_SERIES, Mock(last="last text")))
-        attributes.append(AttributeWithProperties("string/set", AttributeType.STRING_SET, Mock(values=["a", "b"])))
+        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, {"value": "idle"}))
+        attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, {"value": 12.5}))
+        attributes.append(AttributeWithProperties("string", AttributeType.STRING, {"value": "some text"}))
+        attributes.append(AttributeWithProperties("datetime", AttributeType.DATETIME, {"value": now}))
+        attributes.append(AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, {"last": 8.7}))
+        attributes.append(AttributeWithProperties("string/series", AttributeType.STRING_SERIES, {"last": "last text"}))
+        attributes.append(AttributeWithProperties("string/set", AttributeType.STRING_SET, {"values": ["a", "b"]}))
         attributes.append(
             AttributeWithProperties(
                 "git/ref",
                 AttributeType.GIT_REF,
-                Mock(commit=Mock(commitId="abcdef0123456789")),
+                {"commit": {"commitId": "abcdef0123456789"}},
             )
         )
         attributes.append(AttributeWithProperties("file", AttributeType.FILE, None))
