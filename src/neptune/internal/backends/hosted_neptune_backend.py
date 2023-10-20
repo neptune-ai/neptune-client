@@ -1038,7 +1038,15 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     def search_entries(
-        self, project_id, types, query: NQLQuery, attributes_filter, limit, offset, direction="ascending"
+        self,
+        project_id,
+        types,
+        query: NQLQuery,
+        attributes_filter,
+        limit,
+        offset,
+        direction="ascending",
+        sort_by_column="sys/id",
     ):
         query_params = {"query": {"query": str(query)}}
         request_params = {
@@ -1049,7 +1057,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     "sorting": {
                         "dir": direction,
                         "aggregationMode": "none",
-                        "sortBy": {"name": "sys/id", "type": "string"},
+                        "sortBy": {"name": sort_by_column, "type": "string"},
                     },
                     "suggestions": {"enabled": False},
                     "truncateStringTo": 1000,
@@ -1087,6 +1095,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             limit=1,
             offset=0,
             direction="ascending",
+            sort_by_column="sys/creation_time",
         )
         minimal_sys_id = data[0]["attributes"][0]["stringProperties"]["value"] if data else None
 
@@ -1100,6 +1109,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 limit=1,
                 offset=0,
                 direction="descending",
+                sort_by_column="sys/creation_time",
             )
             maximal_sys_id = data[0]["attributes"][0]["stringProperties"]["value"] if data else None
 
@@ -1198,7 +1208,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 key = minimal_sys_id.split("-")[0]
                 min_id = int(minimal_sys_id.split("-")[1])
                 max_id = int(maximal_sys_id.split("-")[1])
-                alphanumeric_range = sorted(f"{key}-{x}" for x in range(min_id, max_id)) + [f"{key}-999999999"]
+                alphanumeric_range = list(sorted(f"{key}-{x}" for x in range(min_id, max_id))) + [None]
 
                 sys_id_batch_size = 10000
                 results = []
@@ -1208,8 +1218,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                         types=types,
                         attributes_filter=attributes_filter,
                         query=query,
-                        minimal_sys_id=min(batch_ids),
-                        maximal_sys_id=max(batch_ids),
+                        minimal_sys_id=batch_ids[0],
+                        maximal_sys_id=batch_ids[-1],
                     )
 
                 return results
