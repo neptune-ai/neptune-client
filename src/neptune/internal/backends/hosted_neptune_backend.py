@@ -40,7 +40,6 @@ from bravado.exception import (
     HTTPPaymentRequired,
     HTTPUnprocessableEntity,
 )
-from icecream import ic
 
 from neptune.api.dtos import FileEntry
 from neptune.common.backends.utils import with_api_exceptions_handler
@@ -1042,10 +1041,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         self, project_id, types, query: NQLQuery, attributes_filter, limit, offset, direction="ascending"
     ):
         query_params = {"query": {"query": str(query)}}
-
-        from icecream import ic
-
-        ic(offset, limit)
         request_params = {
             "connect_timeout": 30,
             "data": json.dumps(
@@ -1211,7 +1206,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 results = []
                 for batch_ids in get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size):
                     a, b = min(batch_ids), max(batch_ids)
-                    ic(a, b)
                     results += self.search_leaderboard_entries_by_sys_id_range(
                         project_id=project_id,
                         types=types,
