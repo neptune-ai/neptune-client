@@ -182,6 +182,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.proxies = proxies
         self.missing_features = []
         self.step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+        self.__global_fetch_thread_pool = None
+        self.__local_fetch_thread_pool = None
 
         self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
@@ -195,6 +197,18 @@ class HostedNeptuneBackend(NeptuneBackend):
         else:
             # create a stub
             self.artifacts_client = MissingApiClient(OptionalFeatures.ARTIFACTS)
+
+    @property
+    def _global_fetch_thread_pool(self):
+        if self.__global_fetch_thread_pool is None:
+            self.__global_fetch_thread_pool = ThreadPoolExecutor(max_workers=8)
+        return self.__global_fetch_thread_pool
+
+    @property
+    def _local_fetch_thread_pool(self):
+        if self.__local_fetch_thread_pool is None:
+            self.__local_fetch_thread_pool = ThreadPoolExecutor(max_workers=10)
+        return self.__local_fetch_thread_pool
 
     def verify_feature_available(self, feature_name: str):
         if not self._client_config.has_feature(feature_name):
@@ -1129,19 +1143,18 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> List[LeaderboardEntry]:
         return [
             to_leaderboard_entry(e)
-            for e in self._get_all_items(
+            for e in self._get_all_items_using_thread_pool(
                 get_portion=functools.partial(
                     self.search_entries,
                     project_id=project_id,
                     types=types,
                     query=query,
                     attributes_filter=attributes_filter,
-                ),
-                step=self.step_size,
+                )
             )
         ]
 
-    @with_api_exceptions_handler
+    # @with_api_exceptions_handler
     def search_leaderboard_entries_by_sys_id_range(
         self,
         project_id: UniqueId,
@@ -1182,7 +1195,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             project_id=project_id, types=types, query=_query, attributes_filter=attributes_filter
         )
 
-    @with_api_exceptions_handler
+    # @with_api_exceptions_handler
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
@@ -1216,24 +1229,21 @@ class HostedNeptuneBackend(NeptuneBackend):
 
                 sys_id_batch_size = 10000
                 batches = list(get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size))
-                # threads_count = min(len(batches), 8)
-                threads_count = min(len(batches), 1)
 
-                with ThreadPoolExecutor(max_workers=threads_count) as executor:
-                    futures = {
-                        executor.submit(
-                            self.search_leaderboard_entries_by_sys_id_range,
-                            project_id=project_id,
-                            types=types,
-                            attributes_filter=attributes_filter,
-                            query=query,
-                            minimal_sys_id=batch_ids[0],
-                            maximal_sys_id=batch_ids[-1],
-                        )
-                        for batch_ids in batches
-                    }
+                futures = {
+                    self._global_fetch_thread_pool.submit(
+                        self.search_leaderboard_entries_by_sys_id_range,
+                        project_id=project_id,
+                        types=types,
+                        attributes_filter=attributes_filter,
+                        query=query,
+                        minimal_sys_id=batch_ids[0],
+                        maximal_sys_id=batch_ids[-1],
+                    )
+                    for batch_ids in batches
+                }
 
-                    results = [future.result() for future in as_completed(futures)]
+                results = [future.result() for future in as_completed(futures)]
 
                 merged_result = []
                 for result in results:
@@ -1289,3 +1299,36 @@ class HostedNeptuneBackend(NeptuneBackend):
             previous_items = get_portion(limit=min(step, max_server_offset - len(items)), offset=len(items))
             items += previous_items
         return items
+
+    def _get_all_items_using_thread_pool(self, get_portion):
+        result = []
+        max_server_offset = 10000
+        per_thread_limit = self.step_size
+        global_offsets = list(range(0, max_server_offset, 1000))
+
+        should_stop = False
+
+        for global_offset_begin in global_offsets:
+            global_offset_end = global_offset_begin + 1000
+            local_batches = list(range(global_offset_begin, global_offset_end, per_thread_limit))
+            batch = []
+            futures = {
+                self._local_fetch_thread_pool.submit(
+                    get_portion, limit=min(max_server_offset - local_offset, per_thread_limit), offset=local_offset
+                )
+                for local_offset in local_batches
+            }
+
+            for future in as_completed(futures):
+                partial_result = future.result()
+                if partial_result:
+                    batch.extend(partial_result)
+                else:
+                    should_stop = True
+
+            result.extend(batch)
+
+            if should_stop:
+                break
+
+        return result
