@@ -1074,7 +1074,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         return self._http_client.request(request_params=request_params).result().json()["entries"]
 
     @with_api_exceptions_handler
-    def get_min_run_id(
+    def get_sys_id_range(
         self,
         project_id: UniqueId,
         types: Optional[Iterable[ContainerType]] = None,
@@ -1184,8 +1184,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         if query is None:
             query = NQLEmptyQuery()
 
-        # TODO: Remove
-        columns = ["sys/id", "sys/type"]
         if columns:
             attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
         else:
@@ -1193,14 +1191,14 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             if types == ["run"]:
-                minimal_sys_id, maximal_sys_id = self.get_min_run_id(project_id=project_id, types=types)
+                minimal_sys_id, maximal_sys_id = self.get_sys_id_range(project_id=project_id, types=types)
                 if not minimal_sys_id or not maximal_sys_id:
                     return []
 
                 key = minimal_sys_id.split("-")[0]
                 min_id = int(minimal_sys_id.split("-")[1])
                 max_id = int(maximal_sys_id.split("-")[1])
-                alphanumeric_range = sorted(f"{key}-{x}" for x in range(min_id, max_id))
+                alphanumeric_range = sorted(f"{key}-{x}" for x in range(min_id, max_id)) + [f"{key}-999999999"]
 
                 sys_id_batch_size = 10000
                 results = []
