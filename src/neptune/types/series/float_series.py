@@ -106,8 +106,8 @@ class FloatSeries(Series):
         for value in self._values:
             if is_unsupported_float(value):
                 warn_once(
-                    message=f"WARNING: The value you're trying to log (`{str(value)}`) is a non-standard float "
-                    f"value that is not currently supported."
+                    message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
+                    f"it's a non-standard float value that is not currently supported."
                 )
             else:
                 cleared_values.append(value)
