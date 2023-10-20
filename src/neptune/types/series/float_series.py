@@ -25,7 +25,10 @@ from typing import (
     Union,
 )
 
-from neptune.common.warnings import warn_once
+from neptune.common.warnings import (
+    NeptuneUnsupportedValue,
+    warn_once,
+)
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
@@ -107,7 +110,8 @@ class FloatSeries(Series):
             if is_unsupported_float(value):
                 warn_once(
                     message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
-                    f"it's a non-standard float value that is not currently supported."
+                    f"it's a non-standard float value that is not currently supported.",
+                    exception=NeptuneUnsupportedValue,
                 )
             else:
                 cleared_values.append(value)

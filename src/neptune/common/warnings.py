@@ -19,6 +19,7 @@ __all__ = [
     "NeptuneDeprecationWarning",
     "NeptuneWarning",
     "NeptuneUnsupportedType",
+    "NeptuneUnsupportedValue",
 ]
 
 import os
@@ -37,6 +38,10 @@ class NeptuneWarning(Warning):
 
 
 class NeptuneUnsupportedType(Warning):
+    pass
+
+
+class NeptuneUnsupportedValue(Warning):
     pass
 
 
