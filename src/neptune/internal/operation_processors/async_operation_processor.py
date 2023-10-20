@@ -48,6 +48,7 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
+from neptune.internal.operation_processors.operations_errors_processor import OperationsErrorsProcessor
 from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_full import ensure_disk_not_full
@@ -280,6 +281,7 @@ class AsyncOperationProcessor(OperationProcessor):
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor: "AsyncOperationProcessor" = processor
+            self._errors_processor: OperationsErrorsProcessor = OperationsErrorsProcessor()
             self._batch_size: int = batch_size
             self._last_flush: float = 0.0
             self._no_progress_exceeded: bool = False
@@ -346,11 +348,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
 
-                    for error in errors:
-                        logger.error(
-                            "Error occurred during asynchronous operation processing: %s",
-                            error,
-                        )
+                    self._errors_processor.handle(errors)
 
                     self._processor._consumed_version = version_to_ack
 

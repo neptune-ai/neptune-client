@@ -8,6 +8,7 @@
 - Better handle bool values of `git_ref` param in `init_run` ([#1525](https://github.com/neptune-ai/neptune-client/pull/1525))
 - Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
 - Updated NeptuneModelKeyAlreadyExistsError exception message ([#1536](https://github.com/neptune-ai/neptune-client/pull/1536))
+- Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
 
 ### Changes
 - Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
@@ -17,6 +18,7 @@
 - Update Neptune object docstrings ([#1516](https://github.com/neptune-ai/neptune-client/pull/1516))
 - Added metadata file that stores information about internal directory structure and platform ([#1526](https://github.com/neptune-ai/neptune-client/pull/1526))
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
+- Pin `simplejson` required version to below `3.19` ([#1535](https://github.com/neptune-ai/neptune-client/pull/1535))
 
 
 ## neptune 1.8.2
