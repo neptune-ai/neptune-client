@@ -23,7 +23,10 @@ from typing import (
     Optional,
 )
 
-from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
+from neptune.envs import (
+    NEPTUNE_ASYNC_BATCH_SIZE,
+    NEPTUNE_ASYNC_PARTITIONS_NUMBER,
+)
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -36,6 +39,7 @@ from neptune.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
+from .partitioned_operation_processor import PartitionedOperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
@@ -53,13 +57,32 @@ def get_operation_processor(
     async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
+        batch_size = int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000")
+
+        if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
+            partitions = int(os.environ.get(NEPTUNE_ASYNC_PARTITIONS_NUMBER) or "5")
+            if partitions > 1:
+                return PartitionedOperationProcessor(
+                    container_id=container_id,
+                    container_type=container_type,
+                    backend=backend,
+                    lock=lock,
+                    sleep_time=flush_period,
+                    batch_size=batch_size,
+                    async_lag_callback=async_lag_callback,
+                    async_lag_threshold=async_lag_threshold,
+                    async_no_progress_callback=async_no_progress_callback,
+                    async_no_progress_threshold=async_no_progress_threshold,
+                    partitions=partitions,
+                )
+
         return AsyncOperationProcessor(
             container_id=container_id,
             container_type=container_type,
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+            batch_size=batch_size,
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,

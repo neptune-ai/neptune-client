@@ -25,6 +25,7 @@ import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
 from neptune.common.exceptions import NeptuneException
+from neptune.internal.operation_processors.partitioned_operation_processor import PartitionedOperationProcessor
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -64,6 +65,8 @@ class TestSync(BaseE2ETest):
 
             # manually add operations to queue
             queue_dir = list(Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*"))[0]
+            if list(queue_dir.glob("partition-*")):
+                queue_dir = list(queue_dir.glob("partition-*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
             with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
@@ -114,7 +117,11 @@ class TestSync(BaseE2ETest):
 
     @staticmethod
     def stop_synchronization_process(container):
-        container._op_processor._consumer.interrupt()
+        if isinstance(container._op_processor, PartitionedOperationProcessor):
+            for processor in container._op_processor._processors:
+                processor._consumer.interrupt()
+        else:
+            container._op_processor._consumer.interrupt()
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
@@ -162,14 +169,22 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                if isinstance(container._op_processor, PartitionedOperationProcessor):
+                    container_path = container._op_processor._processors[0]._queue._dir_path
+                    container_path_parent = container_path.parent.parent
+                else:
+                    container_path = container._op_processor._queue._dir_path
+                    container_path_parent = container_path.parent
                 container_sys_id = container._sys_id
 
             with initialize_container(
                 container_type=container_type, project=environment.project, mode="offline"
             ) as container:
                 container[key] = fake.unique.word()
-                offline_container_path = container._op_processor._queue._dir_path
+                if isinstance(container._op_processor, PartitionedOperationProcessor):
+                    offline_container_path = container._op_processor._processors[0]._queue._dir_path
+                else:
+                    offline_container_path = container._op_processor._queue._dir_path
                 offline_container_id = container._id
 
             assert os.path.exists(container_path)
@@ -191,7 +206,7 @@ class TestSync(BaseE2ETest):
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
                 f"Deleted: {offline_container_path}",
-                f"Deleted: {container_path.parent}",
+                f"Deleted: {container_path_parent}",
             ]
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
@@ -203,7 +218,10 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                if isinstance(container._op_processor, PartitionedOperationProcessor):
+                    container_path = container._op_processor._data_path
+                else:
+                    container_path = container._op_processor._queue._dir_path
                 container_sys_id = container._sys_id
 
             assert os.path.exists(container_path)
@@ -218,7 +236,7 @@ class TestSync(BaseE2ETest):
                 f"- {environment.project}/{container_sys_id}",
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
-                f"Deleted: {container_path.parent}",
+                f"Deleted: {container_path.parent.resolve()}",
             ]
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
@@ -230,7 +248,10 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                if isinstance(container._op_processor, PartitionedOperationProcessor):
+                    container_path = container._op_processor._data_path
+                else:
+                    container_path = container._op_processor._queue._dir_path
 
             assert os.path.exists(container_path)
 

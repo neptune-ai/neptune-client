@@ -41,6 +41,10 @@ class TestCopying(BaseE2ETest):
         container_a.sync()
 
         container_b[destination] = container_a[src]
+
+        # TODO: This is a workaround for partitioned async
+        container_b.wait()
+
         container_b[destination2] = container_b[destination]
         container_b.sync()
 

@@ -53,6 +53,7 @@ from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_full import ensure_disk_not_full
 from neptune.internal.utils.logger import logger
+from neptune.internal.utils.monotonic_inc_batch_size import MonotonicIncBatchSize
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -76,13 +77,16 @@ class AsyncOperationProcessor(OperationProcessor):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[Callable[[], None]] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+        data_path: Optional[Path] = None,
+        should_print_logs: bool = True,
     ):
-        data_path = self._init_data_path(container_id, container_type)
+        self._should_print_logs: bool = should_print_logs
+        self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
@@ -95,14 +99,14 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
-        self._batch_size: int = batch_size
+        self._batch_size: MonotonicIncBatchSize = MonotonicIncBatchSize(size_limit=batch_size)
         self._async_lag_callback: Callable[[], None] = async_lag_callback or (lambda: None)
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_callback: Callable[[], None] = async_no_progress_callback or (lambda: None)
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._last_version: int = 0
         self._consumed_version: int = 0
-        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
+        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, self._batch_size)
         self._lock: threading.RLock = lock
         self._last_ack: Optional[float] = None
         self._lag_exceeded: bool = False
@@ -114,8 +118,8 @@ class AsyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
         now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, process_path)
+        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     @ensure_disk_not_full
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
@@ -124,7 +128,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._check_lag()
         self._check_no_progress()
 
-        if self._queue.size() > self._batch_size / 2:
+        if self._queue.size() > self._batch_size.get() / 2:
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -213,7 +217,8 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
-                logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
+                if self._should_print_logs:
+                    logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
@@ -277,12 +282,12 @@ class AsyncOperationProcessor(OperationProcessor):
             self,
             processor: "AsyncOperationProcessor",
             sleep_time: float,
-            batch_size: int,
+            batch_size: MonotonicIncBatchSize,
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor: "AsyncOperationProcessor" = processor
             self._errors_processor: OperationsErrorsProcessor = OperationsErrorsProcessor()
-            self._batch_size: int = batch_size
+            self._batch_size: MonotonicIncBatchSize = batch_size
             self._last_flush: float = 0.0
             self._no_progress_exceeded: bool = False
 
@@ -301,10 +306,11 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch = self._processor._queue.get_batch(self._batch_size)
+                batch = self._processor._queue.get_batch(self._batch_size.get())
                 if not batch:
                     return
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
+                self._batch_size.increase()
 
         def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:

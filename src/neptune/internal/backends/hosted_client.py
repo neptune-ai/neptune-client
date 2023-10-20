@@ -31,10 +31,17 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from requests.adapters import (
+    DEFAULT_POOLSIZE,
+    HTTPAdapter,
+)
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.oauth import NeptuneAuthenticator
-from neptune.envs import NEPTUNE_REQUEST_TIMEOUT
+from neptune.envs import (
+    NEPTUNE_ASYNC_PARTITIONS_NUMBER,
+    NEPTUNE_REQUEST_TIMEOUT,
+)
 from neptune.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.internal.backends.api_model import ClientConfig
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -56,6 +63,7 @@ ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = int(os.getenv(NEPTUNE_REQUEST_TIMEOUT, "600"))
+MAX_POOL_SIZE = 128
 
 DEFAULT_REQUEST_KWARGS = {
     "_request_options": {
@@ -76,6 +84,12 @@ def _close_connections_on_fork(session: requests.Session):
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
+
+    if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
+        pool_size = int(os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER, DEFAULT_POOLSIZE))
+        adapter = HTTPAdapter(pool_connections=pool_size, pool_maxsize=4 * pool_size)
+        http_client.session.mount("https://", adapter)
+        http_client.session.mount("http://", adapter)
 
     _close_connections_on_fork(http_client.session)
 
