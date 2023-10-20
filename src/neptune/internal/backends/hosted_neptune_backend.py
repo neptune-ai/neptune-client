@@ -15,6 +15,7 @@
 #
 __all__ = ["HostedNeptuneBackend"]
 
+import functools
 import itertools
 import json
 import logging
@@ -28,6 +29,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Sequence,
     Tuple,
     Union,
 )
@@ -38,6 +40,7 @@ from bravado.exception import (
     HTTPPaymentRequired,
     HTTPUnprocessableEntity,
 )
+from icecream import ic
 
 from neptune.api.dtos import FileEntry
 from neptune.common.backends.utils import with_api_exceptions_handler
@@ -109,7 +112,15 @@ from neptune.internal.backends.hosted_file_operations import (
     upload_file_set_attribute,
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backends.nql import NQLQuery
+from neptune.internal.backends.nql import (
+    NQLAggregator,
+    NQLAttributeOperator,
+    NQLAttributeType,
+    NQLEmptyQuery,
+    NQLQuery,
+    NQLQueryAggregate,
+    NQLQueryAttribute,
+)
 from neptune.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
@@ -137,6 +148,7 @@ from neptune.internal.operation_processors.operation_storage import OperationSto
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
+from neptune.internal.utils.iteration import get_batches
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
@@ -151,11 +163,22 @@ if TYPE_CHECKING:
 _logger = logging.getLogger(__name__)
 
 
+def to_leaderboard_entry(entry) -> LeaderboardEntry:
+    supported_attribute_types = {item.value for item in AttributeType}
+    attributes: List[AttributeWithProperties] = []
+    for attr in entry["attributes"]:
+        if attr["type"] in supported_attribute_types:
+            properties = attr["{}Properties".format(attr["type"])]
+            attributes.append(AttributeWithProperties(attr["name"], AttributeType(attr["type"]), properties))
+    return LeaderboardEntry(entry["experimentId"], attributes)
+
+
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
         self.proxies = proxies
         self.missing_features = []
+        self.step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
@@ -1015,12 +1038,26 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
-    def search_entries(self, project_id, types, query_params, attributes_filter, limit, offset):
+    def search_entries(
+        self, project_id, types, query: NQLQuery, attributes_filter, limit, offset, direction="ascending"
+    ):
+        query_params = {"query": {"query": str(query)}}
+
+        from icecream import ic
+
+        ic(offset, limit)
         request_params = {
             "connect_timeout": 30,
             "data": json.dumps(
                 {
                     "pagination": {"limit": limit, "offset": offset},
+                    "sorting": {
+                        "dir": direction,
+                        "aggregationMode": "none",
+                        "sortBy": {"name": "sys/id", "type": "string"},
+                    },
+                    "suggestions": {"enabled": False},
+                    "truncateStringTo": 1000,
                     **query_params,
                     **attributes_filter,
                 }
@@ -1028,6 +1065,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             "headers": {
                 "Content-Type": "application/json",
                 "X-Neptune-LegacyClient": "false",
+                "Accept-Encoding": "gzip,deflate,br",
             },
             "method": "POST",
             "params": {
@@ -1041,44 +1079,163 @@ class HostedNeptuneBackend(NeptuneBackend):
         return self._http_client.request(request_params=request_params).result().json()["entries"]
 
     @with_api_exceptions_handler
-    def search_leaderboard_entries(
+    def get_min_run_id(
         self,
         project_id: UniqueId,
         types: Optional[Iterable[ContainerType]] = None,
+    ) -> Tuple[Optional[str], Optional[str]]:
+        data = self.search_entries(
+            project_id=project_id,
+            types=types,
+            query=NQLEmptyQuery(),
+            attributes_filter={"attributeFilters": [{"path": "sys/id"}]},
+            limit=1,
+            offset=0,
+            direction="ascending",
+        )
+        minimal_sys_id = data[0]["attributes"][0]["stringProperties"]["value"] if data else None
+
+        maximal_sys_id = None
+        if minimal_sys_id:
+            data = self.search_entries(
+                project_id=project_id,
+                types=types,
+                query=NQLEmptyQuery(),
+                attributes_filter={"attributeFilters": [{"path": "sys/id"}]},
+                limit=1,
+                offset=0,
+                direction="descending",
+            )
+            maximal_sys_id = data[0]["attributes"][0]["stringProperties"]["value"] if data else None
+
+        return minimal_sys_id, maximal_sys_id
+
+    @with_api_exceptions_handler
+    def search_leaderboard_entries_up_to_10000(
+        self,
+        project_id: UniqueId,
+        types: Iterable[ContainerType],
+        query: NQLQuery,
+        attributes_filter,
+    ) -> List[LeaderboardEntry]:
+        return [
+            to_leaderboard_entry(e)
+            for e in self._get_all_items(
+                get_portion=functools.partial(
+                    self.search_entries,
+                    project_id=project_id,
+                    types=types,
+                    query=query,
+                    attributes_filter=attributes_filter,
+                ),
+                step=self.step_size,
+            )
+        ]
+
+    @with_api_exceptions_handler
+    def search_leaderboard_entries_by_sys_id_range(
+        self,
+        project_id: UniqueId,
+        types: Iterable[ContainerType],
+        attributes_filter,
+        query: Optional[NQLQuery] = None,
+        minimal_sys_id: Optional[str] = None,
+        maximal_sys_id: Optional[str] = None,
+    ) -> List[LeaderboardEntry]:
+        sub_queries = []
+        if minimal_sys_id:
+            sub_queries += [
+                NQLQueryAttribute(
+                    name="sys/id",
+                    type=NQLAttributeType.STRING,
+                    operator=NQLAttributeOperator.GREATER_THAN_OR_EQUALS,
+                    value=minimal_sys_id,
+                )
+            ]
+        if maximal_sys_id:
+            sub_queries += [
+                NQLQueryAttribute(
+                    name="sys/id",
+                    type=NQLAttributeType.STRING,
+                    operator=NQLAttributeOperator.LESS_THAN,
+                    value=maximal_sys_id,
+                )
+            ]
+        if query:
+            sub_queries += [query]
+
+        _query = NQLQueryAggregate(
+            items=sub_queries,
+            aggregator=NQLAggregator.AND,
+        )
+
+        return self.search_leaderboard_entries_up_to_10000(
+            project_id=project_id, types=types, query=_query, attributes_filter=attributes_filter
+        )
+
+    @with_api_exceptions_handler
+    def search_leaderboard_entries(
+        self,
+        project_id: UniqueId,
+        types: Optional[Sequence[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
-        if query:
-            query_params = {"query": {"query": str(query)}}
+        if types is None:
+            types = ["run"]
         else:
-            query_params = {}
+            assert len(types) == 1
+
+        if query is None:
+            query = NQLEmptyQuery()
+
+        # TODO: Remove
+        columns = ["sys/id", "sys/type"]
         if columns:
             attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
         else:
             attributes_filter = {}
 
-        def get_portion(limit, offset):
-            return self.search_entries(
-                project_id,
-                types,
-                query_params,
-                attributes_filter,
-                limit,
-                offset,
-            )
-
-        def to_leaderboard_entry(entry) -> LeaderboardEntry:
-            supported_attribute_types = {item.value for item in AttributeType}
-            attributes: List[AttributeWithProperties] = []
-            for attr in entry["attributes"]:
-                if attr["type"] in supported_attribute_types:
-                    properties = attr["{}Properties".format(attr["type"])]
-                    attributes.append(AttributeWithProperties(attr["name"], AttributeType(attr["type"]), properties))
-            return LeaderboardEntry(entry["experimentId"], attributes)
-
         try:
-            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
-            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size)]
+            if types == ["run"]:
+                minimal_sys_id, maximal_sys_id = self.get_min_run_id(project_id=project_id, types=types)
+                if not minimal_sys_id or not maximal_sys_id:
+                    return []
+
+                key = minimal_sys_id.split("-")[0]
+                min_id = int(minimal_sys_id.split("-")[1])
+                max_id = int(maximal_sys_id.split("-")[1])
+                alphanumeric_range = sorted(f"{key}-{x}" for x in range(min_id, max_id))
+
+                sys_id_batch_size = 10000
+                results = []
+                for batch_ids in get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size):
+                    a, b = min(batch_ids), max(batch_ids)
+                    ic(a, b)
+                    results += self.search_leaderboard_entries_by_sys_id_range(
+                        project_id=project_id,
+                        types=types,
+                        attributes_filter=attributes_filter,
+                        query=query,
+                        minimal_sys_id=a,
+                        maximal_sys_id=b,
+                    )
+
+                return results
+
+            return [
+                to_leaderboard_entry(e)
+                for e in self._get_all_items(
+                    get_portion=functools.partial(
+                        self.search_entries,
+                        project_id=project_id,
+                        types=types,
+                        query=query,
+                        attributes_filter=attributes_filter,
+                    ),
+                    step=self.step_size,
+                )
+            ]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
@@ -1111,6 +1268,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         items = []
         previous_items = None
         while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-            previous_items = get_portion(limit=step, offset=len(items))
+            from icecream import ic
+
+            ic(len(previous_items or []))
+            previous_items = get_portion(limit=min(step, max_server_offset - len(items)), offset=len(items))
             items += previous_items
         return items

@@ -16,6 +16,7 @@
 __all__ = [
     "NQLQuery",
     "NQLAggregator",
+    "NQLEmptyQuery",
     "NQLQueryAggregate",
     "NQLAttributeOperator",
     "NQLAttributeType",
@@ -57,6 +58,10 @@ class NQLQueryAggregate(NQLQuery):
 class NQLAttributeOperator(str, Enum):
     EQUALS = "="
     CONTAINS = "CONTAINS"
+    GREATER_THAN = ">"
+    LESS_THAN = "<"
+    GREATER_THAN_OR_EQUALS = ">="
+    LESS_THAN_OR_EQUALS = "<="
 
 
 class NQLAttributeType(str, Enum):
