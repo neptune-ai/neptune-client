@@ -1205,14 +1205,13 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sys_id_batch_size = 10000
                 results = []
                 for batch_ids in get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size):
-                    a, b = min(batch_ids), max(batch_ids)
                     results += self.search_leaderboard_entries_by_sys_id_range(
                         project_id=project_id,
                         types=types,
                         attributes_filter=attributes_filter,
                         query=query,
-                        minimal_sys_id=a,
-                        maximal_sys_id=b,
+                        minimal_sys_id=min(batch_ids),
+                        maximal_sys_id=max(batch_ids),
                     )
 
                 return results
@@ -1262,9 +1261,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         items = []
         previous_items = None
         while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-            from icecream import ic
-
-            ic(len(previous_items or []))
             previous_items = get_portion(limit=min(step, max_server_offset - len(items)), offset=len(items))
             items += previous_items
         return items
