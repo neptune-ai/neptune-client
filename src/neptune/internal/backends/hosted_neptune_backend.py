@@ -207,7 +207,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @property
     def _local_fetch_thread_pool(self):
         if self.__local_fetch_thread_pool is None:
-            self.__local_fetch_thread_pool = ThreadPoolExecutor(max_workers=10)
+            self.__local_fetch_thread_pool = ThreadPoolExecutor(max_workers=8 * 10)
         return self.__local_fetch_thread_pool
 
     def verify_feature_available(self, feature_name: str):
