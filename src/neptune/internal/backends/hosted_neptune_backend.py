@@ -22,6 +22,10 @@ import logging
 import os
 import re
 import typing
+from concurrent.futures import (
+    ThreadPoolExecutor,
+    as_completed,
+)
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -1211,18 +1215,31 @@ class HostedNeptuneBackend(NeptuneBackend):
                 alphanumeric_range = list(sorted(f"{key}-{x}" for x in range(min_id, max_id))) + [None]
 
                 sys_id_batch_size = 10000
-                results = []
-                for batch_ids in get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size):
-                    results += self.search_leaderboard_entries_by_sys_id_range(
-                        project_id=project_id,
-                        types=types,
-                        attributes_filter=attributes_filter,
-                        query=query,
-                        minimal_sys_id=batch_ids[0],
-                        maximal_sys_id=batch_ids[-1],
-                    )
+                batches = list(get_batches(iterable=alphanumeric_range, batch_size=sys_id_batch_size))
+                # threads_count = min(len(batches), 8)
+                threads_count = min(len(batches), 1)
 
-                return results
+                with ThreadPoolExecutor(max_workers=threads_count) as executor:
+                    futures = {
+                        executor.submit(
+                            self.search_leaderboard_entries_by_sys_id_range,
+                            project_id=project_id,
+                            types=types,
+                            attributes_filter=attributes_filter,
+                            query=query,
+                            minimal_sys_id=batch_ids[0],
+                            maximal_sys_id=batch_ids[-1],
+                        )
+                        for batch_ids in batches
+                    }
+
+                    results = [future.result() for future in as_completed(futures)]
+
+                merged_result = []
+                for result in results:
+                    merged_result.extend(result)
+
+                return merged_result
 
             return [
                 to_leaderboard_entry(e)
