@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 """Utility functions to support ML metadata logging with neptune.ai."""
-__all__ = ["stringify_unsupported", "stop_synchronization_callback"]
+__all__ = ["stringify_unsupported", "stop_synchronization_callback", "is_unsupported_float"]
 
+import math
 from typing import (
     Any,
     Mapping,
@@ -73,3 +74,9 @@ def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
         "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."
     )
     neptune_object.stop(seconds=DEFAULT_STOP_TIMEOUT)
+
+
+def is_unsupported_float(value: float) -> bool:
+    if isinstance(value, float):
+        return math.isinf(value) or math.isnan(value)
+    return False
