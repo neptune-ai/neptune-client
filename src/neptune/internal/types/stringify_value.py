@@ -29,8 +29,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["StringifyValue", "extract_if_stringify_value"]
+__all__ = ["StringifyValue", "extract_if_stringify_value", "is_unsupported_float"]
 
+import math
 from typing import Any
 
 from neptune.constants import (
@@ -38,6 +39,12 @@ from neptune.constants import (
     MIN_32_BIT_INT,
 )
 from neptune.internal.utils.logger import logger
+
+
+def is_unsupported_float(value) -> bool:
+    if isinstance(value, float):
+        return math.isinf(value) or math.isnan(value)
+    return False
 
 
 class StringifyValue:
@@ -51,6 +58,13 @@ class StringifyValue:
                 MAX_32_BIT_INT,
             )
             value = float(value)
+        if is_unsupported_float(value):
+            logger.info(
+                "The value you're trying to log is an unsupported float value (%s) and will be logged as string. "
+                "We'll add support for these types of values in the future.",
+                str(value),
+            )
+            value = str(value)
 
         self.__value = value
 

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import math
 from contextlib import contextmanager
 from datetime import datetime
 from typing import (
@@ -531,3 +532,14 @@ class TestStringifyUnsupported:
 
         with assert_no_warnings():
             run["data"] = data
+
+    def test_stringifying_unsupported_floats(self, run):
+        with assert_no_warnings():
+            run["infinity"] = stringify_unsupported(float("inf"))
+            run["neg_infinity"] = stringify_unsupported(float("-inf"))
+            run["nan"] = stringify_unsupported(float("nan"))
+
+        assert run["infinity"].fetch() == "inf"
+        assert run["neg_infinity"].fetch() == "-inf"
+
+        assert math.isnan(float(run["nan"].fetch()))
