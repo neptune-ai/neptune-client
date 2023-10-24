@@ -55,7 +55,7 @@ class Float(CopiableAtom):
                 message=f"WARNING: The value you're trying to log is a nonstandard float value ({str(value.value)}) "
                 f"that is not currently supported. "
                 f"We'll add support for this type of value in the future. "
-                f"For now, try logging the value as stringify_unsupported: "
+                f"For now, you can use utils.stringify_unsupported() to log one or more values as strings: "
                 f"run['field'] = stringify_unsupported(float({str(value.value)})",
                 exception=NeptuneUnsupportedValue,
             )
