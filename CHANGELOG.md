@@ -22,7 +22,7 @@
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
 - Pin `simplejson` required version to below `3.19` ([#1535](https://github.com/neptune-ai/neptune-client/pull/1535))
 - Added `experimental` mode that supports partitioned operations queue ([#1524](https://github.com/neptune-ai/neptune-client/pull/1524))
-- Warn about unsupported float values (infinity, negative infinity, NaN) in logging floats ([#1542](https://github.com/neptune-ai/neptune-client/pull/1542))
+- Skip and warn about unsupported float values (infinity, negative infinity, NaN) in logging floats ([#1542](https://github.com/neptune-ai/neptune-client/pull/1542))
 
 ## neptune 1.8.2
 
