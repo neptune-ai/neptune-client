@@ -70,3 +70,5 @@ class TestFloat(TestAttributeBase):
             run["infinity"] = float("inf")
             run["neg-infinity"] = float("-inf")
             run["nan"] = float("nan")
+
+        run.stop()

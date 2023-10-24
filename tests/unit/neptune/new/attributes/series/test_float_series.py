@@ -67,3 +67,5 @@ class TestFloatSeries(TestAttributeBase):
             assert run["train/supported_1"].fetch_last() == 1
             assert run["train/supported_2"].fetch_last() == 2
             assert run["train/supported_3"].fetch_last() == 3
+
+        run.stop()
