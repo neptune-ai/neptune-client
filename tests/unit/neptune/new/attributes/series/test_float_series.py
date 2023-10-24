@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from mock import (
     MagicMock,
     patch,
 )
 
+from neptune import init_run
 from neptune.attributes.series.float_series import FloatSeries
+from neptune.common.warnings import NeptuneUnsupportedValue
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -51,3 +54,16 @@ class TestFloatSeries(TestAttributeBase):
             values = list(var.fetch_values()["value"].array)
             expected = list(range(0, 5000))
             self.assertEqual(len(set(expected)), len(set(values)))
+
+    def test_float_warnings(self):
+        run = init_run(mode="debug")
+
+        with pytest.warns(NeptuneUnsupportedValue):
+            run["train"].append({"supported_1": 1, "supported_2": 2})
+            run["train"].append({"unsupported": float("nan"), "supported_3": float(3)})
+            run["train"].append({"nef_infinity": float("-inf")})
+            run["train"].append({"infinity": float("inf")})
+
+            assert run["train/supported_1"].fetch_last() == 1
+            assert run["train/supported_2"].fetch_last() == 2
+            assert run["train/supported_3"].fetch_last() == 3

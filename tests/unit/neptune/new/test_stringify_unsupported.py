@@ -23,7 +23,6 @@ from typing import (
     MutableMapping,
 )
 
-import pytest
 from pytest import (
     fixture,
     raises,
@@ -33,7 +32,6 @@ from pytest import (
 from neptune import init_run
 from neptune.common.warnings import (
     NeptuneUnsupportedType,
-    NeptuneUnsupportedValue,
     warned_once,
 )
 from neptune.constants import (

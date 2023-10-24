@@ -60,8 +60,6 @@ class FloatSeries(Series):
         self._max = max
         self._unit = unit
 
-        self.clear_of_unsupported_values()
-
         if steps is None:
             self._steps = cycle([None])
         else:
@@ -73,6 +71,8 @@ class FloatSeries(Series):
         else:
             assert len(values) == len(timestamps)
             self._timestamps = timestamps
+
+        self.clear_of_unsupported_values()
 
     @property
     def steps(self):
@@ -105,14 +105,16 @@ class FloatSeries(Series):
         return "FloatSeries({})".format(str(self.values))
 
     def clear_of_unsupported_values(self):
-        cleared_values = []
-        for value in self._values:
-            if is_unsupported_float(value):
-                warn_once(
-                    message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
-                    f"it's a non-standard float value that is not currently supported.",
-                    exception=NeptuneUnsupportedValue,
-                )
-            else:
-                cleared_values.append(value)
+        cleared_values = [
+            value
+            if not is_unsupported_float(value)
+            else warn_once(
+                message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
+                f"it's a non-standard float value that is not currently supported.",
+                exception=NeptuneUnsupportedValue,
+            )
+            for value in self._values
+        ]
+        cleared_values = list(filter(lambda x: x is not None, cleared_values))
+
         self._values = cleared_values

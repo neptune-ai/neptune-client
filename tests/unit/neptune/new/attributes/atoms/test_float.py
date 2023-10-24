@@ -13,15 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from mock import (
     MagicMock,
     patch,
 )
 
+from neptune import init_run
 from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
 )
+from neptune.common.warnings import NeptuneUnsupportedValue
 from neptune.internal.operation import AssignFloat
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -60,3 +63,10 @@ class TestFloat(TestAttributeBase):
             var = Float(run, self._random_path())
             var.assign(5)
             self.assertEqual(5, var.fetch())
+
+    def test_float_warnings(self):
+        run = init_run(mode="debug")
+        with pytest.warns(NeptuneUnsupportedValue):
+            run["infinity"] = float("inf")
+            run["neg-infinity"] = float("-inf")
+            run["nan"] = float("nan")

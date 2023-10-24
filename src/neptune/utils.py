@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 """Utility functions to support ML metadata logging with neptune.ai."""
-__all__ = ["stringify_unsupported", "stop_synchronization_callback", "is_unsupported_float"]
+__all__ = ["stringify_unsupported", "stop_synchronization_callback"]
 
 import math
 from typing import (
