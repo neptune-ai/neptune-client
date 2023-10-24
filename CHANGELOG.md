@@ -10,6 +10,7 @@
 - Fix error massage in case of NeptuneAuthTokenExpired ([#1531](https://github.com/neptune-ai/neptune-client/pull/1531))
 - Updated NeptuneModelKeyAlreadyExistsError exception message ([#1536](https://github.com/neptune-ai/neptune-client/pull/1536))
 - Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
+- Added support for unsupported float values in `stringify_unsupported()` ([#1543](https://github.com/neptune-ai/neptune-client/pull/1543))
 
 ### Changes
 - Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
