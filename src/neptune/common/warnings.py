@@ -45,10 +45,6 @@ class NeptuneUnsupportedType(Warning):
     pass
 
 
-class NeptuneUnsupportedValue(Warning):
-    pass
-
-
 warnings.simplefilter("always", category=NeptuneDeprecationWarning)
 
 warned_once = set()
