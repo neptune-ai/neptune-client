@@ -1,10 +1,11 @@
 name: integrations
 
 on:
-  workflow_call:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
+  push:
+#  workflow_call:
+#  workflow_dispatch:
+#  schedule:
+#    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 
 env:
   WORKSPACE_NAME: e2e-tests
@@ -223,7 +224,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-latest, windows-latest ]
         include:
           - python-version: "3.7.16"
             os: macos-latest
@@ -327,7 +328,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.8" ]
+        python-version: [ "3.8", "3.9" ]
         os: [ ubuntu-latest, macos-latest ]
     runs-on: ${{ matrix.os }}
     name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
