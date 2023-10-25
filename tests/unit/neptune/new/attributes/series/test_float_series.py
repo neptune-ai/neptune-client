@@ -69,3 +69,15 @@ class TestFloatSeries(TestAttributeBase):
             assert run["train/supported_3"].fetch_last() == 3
 
         run.stop()
+
+    def test_multiple_values_to_same_namespace(self):
+        run = init_run(mode="debug")
+
+        run["multiple"].extend([1.5, 2.3, str(float("nan")), 4.7])
+        result = run["multiple"].fetch_values()
+
+        assert result["value"][0] == 1.5
+        assert result["value"][1] == 2.3
+        assert result["value"][2] == 4.7
+
+        run.stop()

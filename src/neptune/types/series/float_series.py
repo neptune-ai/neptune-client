@@ -105,7 +105,7 @@ class FloatSeries(Series):
         return "FloatSeries({})".format(str(self.values))
 
     def clear_of_unsupported_values(self):
-        cleared_values = [
+        values = [
             value
             if not is_unsupported_float(value)
             else warn_once(
@@ -115,6 +115,10 @@ class FloatSeries(Series):
             )
             for value in self._values
         ]
-        cleared_values = list(filter(lambda x: x is not None, cleared_values))
+        cleared_values = list(filter(lambda x: x is not None, values))
+        cleared_steps = [step for step, value in zip(self._steps, values) if value is not None]
+        cleared_timestamps = [timestamp for timestamp, value in zip(self._timestamps, values) if value is not None]
 
         self._values = cleared_values
+        self._timestamps = cleared_timestamps
+        self._steps = cleared_steps

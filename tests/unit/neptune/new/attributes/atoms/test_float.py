@@ -71,4 +71,8 @@ class TestFloat(TestAttributeBase):
             run["neg-infinity"] = float("-inf")
             run["nan"] = float("nan")
 
+        self.assertNotIn("infinity", run.__dict__)
+        self.assertNotIn("neg-infinity", run.__dict__)
+        self.assertNotIn("nan", run.__dict__)
+
         run.stop()
