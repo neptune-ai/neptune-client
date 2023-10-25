@@ -25,6 +25,7 @@ from neptune.attributes.atoms.float import (
     FloatVal,
 )
 from neptune.common.warnings import NeptuneUnsupportedValue
+from neptune.exceptions import MetadataInconsistency
 from neptune.internal.operation import AssignFloat
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -71,8 +72,13 @@ class TestFloat(TestAttributeBase):
             run["neg-infinity"] = float("-inf")
             run["nan"] = float("nan")
 
-        self.assertNotIn("infinity", run.__dict__)
-        self.assertNotIn("neg-infinity", run.__dict__)
-        self.assertNotIn("nan", run.__dict__)
+        with pytest.raises(MetadataInconsistency):
+            run["infinity"].fetch()
+
+        with pytest.raises(MetadataInconsistency):
+            run["neg-infinity"].fetch()
+
+        with pytest.raises(MetadataInconsistency):
+            run["nan"].fetch()
 
         run.stop()
