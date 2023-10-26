@@ -101,6 +101,7 @@ __all__ = [
     "__version__",
 ]
 
+
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.internal.extensions import load_extensions
