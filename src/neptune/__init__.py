@@ -101,12 +101,9 @@ __all__ = [
     "__version__",
 ]
 
-import warnings
-
-import pkg_resources
-
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
+from neptune.internal.extensions import load_extensions
 from neptune.metadata_containers import (
     Model,
     ModelVersion,
@@ -117,17 +114,9 @@ from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
+load_extensions()
 
 init_run = Run
 init_model = Model
 init_model_version = ModelVersion
 init_project = Project
-
-extensions = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.extensions")}
-
-for name, entry_point in extensions.items():
-    try:
-        loaded_extension = entry_point.load()
-        _ = loaded_extension()
-    except Exception as e:
-        warnings.warn(f"Failed to load neptune extension `{name}` with exception: {e}")
