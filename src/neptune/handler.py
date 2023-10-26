@@ -112,15 +112,12 @@ class Handler(SupportsNamespaces):
     def _ipython_key_completions_(self):
         return self._container._get_subpath_suggestions(path_prefix=self._path)
 
-    @safe_function()
     def __getitem__(self, path: str) -> "Handler":
         return Handler(self._container, join_paths(self._path, path))
 
-    @safe_function()
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
-    @safe_function()
     def __getattr__(self, item: str):
         run_level_methods = {"exists", "get_structure", "print_structure", "stop", "sync", "wait"}
 
@@ -151,7 +148,6 @@ class Handler(SupportsNamespaces):
         """Returns the container that the attribute is attached to."""
         return self._container
 
-    @safe_function()
     def get_root_object(self) -> "NeptuneObject":
         """Returns the root-level object of a namespace handler.
 

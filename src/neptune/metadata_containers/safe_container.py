@@ -26,7 +26,7 @@ from typing import (
 from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_SAFETY_MODE
 
-_SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "false").lower() in ("true", "1", "t")
+_SAFETY_MODE = os.getenv(NEPTUNE_SAFETY_MODE, "True").lower() in ("true", "1", "t")
 
 
 def safe_function(default_return_value: Any = None) -> Any:

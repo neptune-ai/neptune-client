@@ -55,7 +55,6 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 
 
@@ -244,7 +243,6 @@ class Model(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelException(label=self._sys_id)
 
-    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_url(
@@ -254,7 +252,6 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    @safe_function()
     def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
 
