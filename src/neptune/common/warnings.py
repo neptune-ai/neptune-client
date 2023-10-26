@@ -60,19 +60,16 @@ def get_user_code_stack_level():
 
 
 def warn_once(message: str, *, exception: type(Exception) = None):
-    if len(warned_once) < 1_000:
-        if exception is None:
-            exception = NeptuneDeprecationWarning
+    if exception is None:
+        exception = NeptuneDeprecationWarning
 
-        message_hash = hash(message)
-
-        if message_hash not in warned_once:
-            warnings.warn(
-                message=message,
-                category=exception,
-                stacklevel=get_user_code_stack_level(),
-            )
-            warned_once.add(message_hash)
+    if message not in warned_once:
+        warnings.warn(
+            message=message,
+            category=exception,
+            stacklevel=get_user_code_stack_level(),
+        )
+        warned_once.add(message)
 
 
 def warn_about_unsupported_type(type_str: str):
