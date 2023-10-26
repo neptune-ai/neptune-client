@@ -29,7 +29,7 @@ from neptune.common.warnings import (
 
 
 def load_extensions() -> None:
-    for entry_point in entry_points(group="neptune.extensions"):
+    for entry_point in entry_points().get("neptune.extensions") or tuple():
         try:
             loaded_extension = entry_point.load()
             _ = loaded_extension()
