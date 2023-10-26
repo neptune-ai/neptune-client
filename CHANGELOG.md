@@ -21,6 +21,7 @@
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
 - Pin `simplejson` required version to below `3.19` ([#1535](https://github.com/neptune-ai/neptune-client/pull/1535))
 - Added `experimental` mode that supports partitioned operations queue ([#1524](https://github.com/neptune-ai/neptune-client/pull/1524))
+- Added support for plugins/extensions ([#1545](https://github.com/neptune-ai/neptune-client/pull/1545))
 
 
 ## neptune 1.8.2
