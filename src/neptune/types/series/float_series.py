@@ -25,6 +25,7 @@ from typing import (
     Union,
 )
 
+from neptune.common.utils import is_unsupported_float
 from neptune.common.warnings import (
     NeptuneUnsupportedValue,
     warn_once,
@@ -32,7 +33,6 @@ from neptune.common.warnings import (
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
-from neptune.utils import is_unsupported_float
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor

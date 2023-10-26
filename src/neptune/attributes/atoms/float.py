@@ -18,6 +18,7 @@ __all__ = ["Float"]
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
+from neptune.common.utils import is_unsupported_float
 from neptune.common.warnings import (
     NeptuneUnsupportedValue,
     warn_once,
@@ -25,7 +26,6 @@ from neptune.common.warnings import (
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignFloat
 from neptune.types.atoms.float import Float as FloatVal
-from neptune.utils import is_unsupported_float
 
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
