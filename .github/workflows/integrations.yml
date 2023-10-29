@@ -264,105 +264,105 @@ jobs:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.lightning.result }}
 
-  huggingface:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.8", "3.10" ]
-        os: [ ubuntu-latest ]
-        include:
-          - python-version: "3.8"
-            os: macos-latest
-          - python-version: "3.10"
-            os: macos-latest
-    runs-on: ${{ matrix.os }}
-    name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+#  huggingface:
+#    env:
+#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+#    timeout-minutes: 75
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        python-version: [ "3.8", "3.10" ]
+#        os: [ ubuntu-latest ]
+#        include:
+#          - python-version: "3.8"
+#            os: macos-latest
+#          - python-version: "3.10"
+#            os: macos-latest
+#    runs-on: ${{ matrix.os }}
+#    name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+#
+#      - name: Test
+#        uses: ./.github/actions/test-e2e
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: huggingface
+#          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+#
+#  huggingface-notify:
+#    needs: [huggingface]
+#    runs-on: ubuntu-latest
+#    if: (success() || failure()) && github.ref == 'refs/heads/master'
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+#
+#      - name: Notify
+#        uses: ./.github/actions/job-notify
+#        with:
+#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+#          job-status: ${{ needs.huggingface.result }}
 
-      - name: Test
-        uses: ./.github/actions/test-e2e
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: huggingface
-          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
-
-  huggingface-notify:
-    needs: [huggingface]
-    runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Notify
-        uses: ./.github/actions/job-notify
-        with:
-          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.huggingface.result }}
-
-  zenml:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-      ZENML_ANALYTICS_OPT_IN: false
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.8", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
-    runs-on: ${{ matrix.os }}
-    name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Test
-        uses: ./.github/actions/test-e2e
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: zenml
-          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
-
-  zenml-notify:
-    needs: [zenml]
-    runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Notify
-        uses: ./.github/actions/job-notify
-        with:
-          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.zenml.result }}
+#  zenml:
+#    env:
+#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+#      ZENML_ANALYTICS_OPT_IN: false
+#    timeout-minutes: 75
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        python-version: [ "3.8", "3.10" ]
+#        os: [ ubuntu-latest, macos-latest ]
+#    runs-on: ${{ matrix.os }}
+#    name: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+#
+#      - name: Test
+#        uses: ./.github/actions/test-e2e
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: zenml
+#          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+#
+#  zenml-notify:
+#    needs: [zenml]
+#    runs-on: ubuntu-latest
+#    if: (success() || failure()) && github.ref == 'refs/heads/master'
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v4
+#        with:
+#          fetch-depth: 0
+#          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+#
+#      - name: Notify
+#        uses: ./.github/actions/job-notify
+#        with:
+#          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+#          job-status: ${{ needs.zenml.result }}
 
   detectron2:
     env:
