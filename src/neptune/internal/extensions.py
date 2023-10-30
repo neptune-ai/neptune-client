@@ -16,6 +16,11 @@
 __all__ = ["load_extensions"]
 
 import sys
+from typing import (
+    Callable,
+    List,
+    Tuple,
+)
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import entry_points
@@ -28,18 +33,18 @@ from neptune.common.warnings import (
 )
 
 
-def load_extensions() -> None:
-    if sys.version_info >= (3, 10):
-        entrypoints = entry_points(name="neptune.extensions")
-    else:
-        entrypoints = entry_points().get("neptune.extensions") or tuple()
+def get_entry_points(name: str) -> List[Tuple[str, Callable[[], None]]]:
+    if (3, 8) <= sys.version_info < (3, 10):
+        return [(entry_point.name, entry_point.load()) for entry_point in entry_points().get(name, tuple())]
+    return [(entry_point.name, entry_point.load()) for entry_point in entry_points(group=name)]
 
-    for entry_point in entrypoints:
+
+def load_extensions() -> None:
+    for entry_point_name, loaded_extension in get_entry_points(name="neptune.extensions"):
         try:
-            loaded_extension = entry_point.load()
             _ = loaded_extension()
         except Exception as e:
             warn_once(
-                message=f"Failed to load neptune extension `{entry_point.name}` with exception: {e}",
+                message=f"Failed to load neptune extension `{entry_point_name}` with exception: {e}",
                 exception=NeptuneWarning,
             )
