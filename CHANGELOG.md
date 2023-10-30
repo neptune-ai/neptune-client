@@ -13,7 +13,6 @@
 - Added support for unsupported float values in `stringify_unsupported()` ([#1543](https://github.com/neptune-ai/neptune-client/pull/1543))
 
 ### Changes
-- Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
 - Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
 - Made the disk checking more reliable for env specific errors ([#1519](https://github.com/neptune-ai/neptune-client/pull/1519))
 - Update Neptune object docstrings ([#1516](https://github.com/neptune-ai/neptune-client/pull/1516))
