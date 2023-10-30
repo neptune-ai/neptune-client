@@ -25,12 +25,12 @@ from typing import (
     Union,
 )
 
-from neptune.common.utils import is_unsupported_float
 from neptune.common.warnings import (
     NeptuneUnsupportedValue,
     warn_once,
 )
 from neptune.internal.types.stringify_value import extract_if_stringify_value
+from neptune.internal.types.utils import is_unsupported_float
 from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
 
@@ -76,9 +76,8 @@ class FloatSeries(Series):
             values=values,
             steps=filled_steps,
             timestamps=filled_timestamps,
-            filter_by=is_unsupported_float,
+            filter_by=self.is_unsupported_float_with_warn,
         )
-        self.warn_about_unsupported([value for value in values if value not in clean_values])
         self._values = [float(value) for value in clean_values]
 
     @property
@@ -111,19 +110,19 @@ class FloatSeries(Series):
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))
 
-    def warn_about_unsupported(self, values):
-        for value in values:
+    def is_unsupported_float_with_warn(self, value):
+        if is_unsupported_float(value):
             warn_once(
                 message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
                 f"it's a non-standard float value that is not currently supported.",
                 exception=NeptuneUnsupportedValue,
             )
+            return False
+        return True
 
     def filter_unsupported_values(self, values, steps, timestamps, filter_by):
         filtered = [
-            (value, step, timestamp)
-            for value, step, timestamp in zip(values, steps, timestamps)
-            if not filter_by(value)
+            (value, step, timestamp) for value, step, timestamp in zip(values, steps, timestamps) if filter_by(value)
         ]
         return (
             [value for value, _, _ in filtered],

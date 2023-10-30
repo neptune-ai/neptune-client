@@ -268,9 +268,3 @@ class NoopObject(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-
-def is_unsupported_float(value: float) -> bool:
-    if isinstance(value, float):
-        return math.isinf(value) or math.isnan(value)
-    return False

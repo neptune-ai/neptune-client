@@ -18,13 +18,13 @@ __all__ = ["Float"]
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
-from neptune.common.utils import is_unsupported_float
 from neptune.common.warnings import (
     NeptuneUnsupportedValue,
     warn_once,
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignFloat
+from neptune.internal.types.utils import is_unsupported_float
 from neptune.types.atoms.float import Float as FloatVal
 
 if typing.TYPE_CHECKING:
