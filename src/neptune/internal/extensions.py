@@ -29,7 +29,12 @@ from neptune.common.warnings import (
 
 
 def load_extensions() -> None:
-    for entry_point in entry_points(group="neptune.extensions"):
+    if sys.version_info >= (3, 10):
+        entrypoints = entry_points(name="neptune.extensions")
+    else:
+        entrypoints = entry_points().get("neptune.extensions") or tuple()
+
+    for entry_point in entrypoints:
         try:
             loaded_extension = entry_point.load()
             _ = loaded_extension()
