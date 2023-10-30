@@ -220,13 +220,6 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
 
-    @patch("neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.websockets_factory")
-    @patch("neptune.internal.websockets.websocket_signals_background_job.WebsocketSignalsBackgroundJob")
-    def test_disabled_remote_signals(self, ws_factory, signals_job):
-        with init_run(mode="debug", enable_remote_signals=False):
-            assert not ws_factory.called
-            assert not signals_job.called
-
     @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.metadata_containers.run.get_hostname", lambda *vals: "localhost")
     @patch("neptune.metadata_containers.run.os.getpid", lambda *vals: 1234)
