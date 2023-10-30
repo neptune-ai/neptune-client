@@ -16,7 +16,11 @@
 __all__ = ["load_extensions"]
 
 import sys
-from typing import Optional
+
+if sys.version_info >= (3, 8):
+    from importlib.metadata import entry_points
+else:
+    from importlib_metadata import entry_points
 
 from neptune.common.warnings import (
     NeptuneWarning,
@@ -25,25 +29,7 @@ from neptune.common.warnings import (
 
 
 def load_extensions() -> None:
-    if sys.version_info >= (3, 8):
-        from importlib.metadata import (
-            EntryPoints,
-            entry_points,
-        )
-
-        extensions: Optional[EntryPoints] = entry_points().get("neptune.extensions")
-    else:
-        from importlib_metadata import (
-            EntryPoints,
-            entry_points,
-        )
-
-        extensions: Optional[EntryPoints] = entry_points(group="neptune.extensions")
-
-    if not extensions:
-        return
-
-    for entry_point in extensions:
+    for entry_point in entry_points(group="neptune.extensions"):
         try:
             loaded_extension = entry_point.load()
             _ = loaded_extension()
