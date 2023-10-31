@@ -21,7 +21,6 @@ future = ">=0.17.1"
 # Utility
 packaging = "*"
 click = ">=7.0"
-simplejson = "<3.19.0"
 
 # Networking
 bravado = "^11.0.0"

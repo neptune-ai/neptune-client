@@ -33,15 +33,15 @@ class NeptuneDeprecationWarning(DeprecationWarning):
     pass
 
 
+class NeptuneUnsupportedValue(Warning):
+    pass
+
+
 class NeptuneWarning(Warning):
     pass
 
 
 class NeptuneUnsupportedType(Warning):
-    pass
-
-
-class NeptuneUnsupportedValue(Warning):
     pass
 
 

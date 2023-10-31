@@ -25,7 +25,12 @@ from typing import (
     Union,
 )
 
+from neptune.common.warnings import (
+    NeptuneUnsupportedValue,
+    warn_once,
+)
 from neptune.internal.types.stringify_value import extract_if_stringify_value
+from neptune.internal.types.utils import is_unsupported_float
 from neptune.internal.utils import is_collection
 from neptune.types.series.series import Series
 
@@ -56,16 +61,24 @@ class FloatSeries(Series):
         self._unit = unit
 
         if steps is None:
-            self._steps = cycle([None])
+            filled_steps = cycle([None])
         else:
             assert len(values) == len(steps)
-            self._steps = steps
+            filled_steps = steps
 
         if timestamps is None:
-            self._timestamps = cycle([time.time()])
+            filled_timestamps = cycle([time.time()])
         else:
             assert len(values) == len(timestamps)
-            self._timestamps = timestamps
+            filled_timestamps = timestamps
+
+        clean_values, self._steps, self._timestamps = self.filter_unsupported_values(
+            values=values,
+            steps=filled_steps,
+            timestamps=filled_timestamps,
+            filter_by=self.is_unsupported_float_with_warn,
+        )
+        self._values = [float(value) for value in clean_values]
 
     @property
     def steps(self):
@@ -96,3 +109,23 @@ class FloatSeries(Series):
 
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))
+
+    def is_unsupported_float_with_warn(self, value):
+        if is_unsupported_float(value):
+            warn_once(
+                message=f"WARNING: A value you're trying to log (`{str(value)}`) will be skipped because "
+                f"it's a non-standard float value that is not currently supported.",
+                exception=NeptuneUnsupportedValue,
+            )
+            return False
+        return True
+
+    def filter_unsupported_values(self, values, steps, timestamps, filter_by):
+        filtered = [
+            (value, step, timestamp) for value, step, timestamp in zip(values, steps, timestamps) if filter_by(value)
+        ]
+        return (
+            [value for value, _, _ in filtered],
+            [step for _, step, _ in filtered],
+            [timestamp for _, _, timestamp in filtered],
+        )
