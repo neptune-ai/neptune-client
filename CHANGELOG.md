@@ -11,6 +11,7 @@
 - Updated NeptuneModelKeyAlreadyExistsError exception message ([#1536](https://github.com/neptune-ai/neptune-client/pull/1536))
 - Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
 - Added support for unsupported float values in `stringify_unsupported()` ([#1543](https://github.com/neptune-ai/neptune-client/pull/1543))
+- Clarified message shown when nonexistent ID is passed to `with_id` argument ([#1551](https://github.com/neptune-ai/neptune-client/pull/1551))
 
 ### Changes
 - Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
