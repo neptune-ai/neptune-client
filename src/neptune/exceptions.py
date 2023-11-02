@@ -206,7 +206,7 @@ class MetadataContainerNotFound(NeptuneException):
         self.container_id = container_id
         self.container_type = container_type
         container_type_str = container_type.value.capitalize() if container_type else "object"
-        super().__init__("{} {} not found.".format(container_type_str, container_id))
+        super().__init__(f"No existing {container_type_str} was found at {container_id}.")
 
     @classmethod
     def of_container_type(cls, container_type: Optional[ContainerType], container_id: str):
