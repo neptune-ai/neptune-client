@@ -46,6 +46,17 @@ class TestInitRun(BaseE2ETest):
         with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as exp2:
             assert exp2[key].fetch() == val
 
+    def test_default_run_name(self, environment):
+        with neptune.init_run(project=environment.project) as run:
+            run.sync()
+            sys_id = run["sys/id"].fetch()
+            assert sys_id is not None
+            assert run["sys/name"].fetch() == sys_id
+
+        with neptune.init_run(name="Something", project=environment.project) as run2:
+            run2.sync()
+            assert run2["sys/name"].fetch() == "Something"
+
     def test_send_source_code(self, environment):
         with neptune.init_run(
             source_files="**/*.py",

@@ -59,7 +59,6 @@ from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
-    DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -357,7 +356,7 @@ class Run(MetadataContainer):
                 verify_collection_type("source_files", source_files, str)
 
         self._with_id: Optional[str] = with_id
-        self._name: Optional[str] = DEFAULT_NAME if with_id is None and name is None else name
+        self._name: Optional[str] = name
         self._description: Optional[str] = "" if with_id is None and description is None else description
         self._custom_run_id: Optional[str] = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
         self._hostname: str = get_hostname()
@@ -437,13 +436,18 @@ class Run(MetadataContainer):
 
             notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 
-            return self._backend.create_run(
+            run = self._backend.create_run(
                 project_id=self._project_api_object.id,
                 git_info=git_info,
                 custom_run_id=custom_run_id,
                 notebook_id=notebook_id,
                 checkpoint_id=checkpoint_id,
             )
+
+            if self._name is None:
+                self._name = run.sys_id
+
+            return run
 
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
