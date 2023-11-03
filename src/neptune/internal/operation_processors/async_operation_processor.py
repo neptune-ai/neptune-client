@@ -350,6 +350,12 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
 
+                    for error in errors:
+                        logger.error(
+                            "Error occurred during asynchronous operation processing: %s",
+                            error,
+                        )
+
                     self._processor._consumed_version = version_to_ack
 
                     if version_to_ack == version:
