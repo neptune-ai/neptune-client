@@ -9,17 +9,21 @@ on:
 jobs:
   test:
     timeout-minutes: 75
-
-    name: 'TEST - run docker-only test ubuntu'
-    runs-on: 'ubuntu-latest'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu ]
+        python-version: [ "3.7" ]
+    name: 'TEST - run docker-only test ubuntu (${{ matrix.os }} - py${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build Docker Image
-        run: docker build -t cgroup_tests -f cgrouptest.Dockerfile .
-
-      - name: Run Tests in Docker Container
-        run: docker run cgroup_tests
+      - name: Run tests
+        uses: ./.github/actions/test-docker
+        with:
+          python-version: ${{ python-version }}
+          os: ${{ matrix.os }}
