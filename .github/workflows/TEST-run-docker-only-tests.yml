@@ -2,9 +2,9 @@ name: run-docker-only-tests
 
 on:
   workflow_dispatch:
-  pull_request:
-    types:
-      - opened
+  push:
+    branches:
+      - "mr/add-testing2-on-docker-env"
 
 jobs:
   test:
