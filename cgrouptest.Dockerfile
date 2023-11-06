@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
+# If you need more help, visit the cgrouptest.Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
 ARG PYTHON_VERSION=3.10.11
-FROM python:${PYTHON_VERSION} as base
+FROM python:${PYTHON_VERSION} AS base
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1

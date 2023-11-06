@@ -4,4 +4,4 @@ description: Create docker container and run the docker-only tests.
 
 runs:
   using: 'docker'
-  image: 'Dockerfile'
+  image: 'cgrouptest.Dockerfile'

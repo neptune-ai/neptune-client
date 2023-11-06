@@ -3,6 +3,8 @@ name: run-docker-only-tests
 on:
   workflow_dispatch:
   pull_request:
+    types:
+      - opened
 
 jobs:
   test:
@@ -16,9 +18,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run tests
-        uses: ./.github/actions/test-docker
-        with:
-          python-version: '3.10'
-          os: ubuntu
-          report_job: 'TEST run docker test ubuntu '
+      - name: Build Docker Image
+        run: docker build -t cgroup_tests -f cgrouptest.Dockerfile .
+
+      - name: Run Tests in Docker Container
+        run: docker run my-test-app
