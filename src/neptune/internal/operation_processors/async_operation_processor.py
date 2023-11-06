@@ -32,6 +32,7 @@ from typing import (
     Optional,
 )
 
+from neptune.common.exceptions import NeptuneException
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
@@ -317,6 +318,13 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
 
+        def _handle_errors(self, errors: List[NeptuneException]) -> None:
+            for error in errors:
+                logger.error(
+                    "Error occurred during asynchronous operation processing: %s",
+                    error,
+                )
+
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
                 "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
@@ -350,11 +358,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
 
-                    for error in errors:
-                        logger.error(
-                            "Error occurred during asynchronous operation processing: %s",
-                            error,
-                        )
+                    self._handle_errors(errors)
 
                     self._processor._consumed_version = version_to_ack
 
