@@ -300,11 +300,8 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._waiting_cond.notify_all()
                 raise
 
-        def _single_work(self) -> None:
-            batch = self._processor._queue.get_batch(self._batch_size)
-            if not batch:
-                return
-            self.process_batch([element.obj for element in batch], batch[-1].ver)
+        def _increment(self) -> None:
+            pass
 
         def work(self) -> None:
             ts = time()
@@ -313,7 +310,11 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                self._single_work()
+                batch = self._processor._queue.get_batch(self._batch_size)
+                if not batch:
+                    return
+                self.process_batch([element.obj for element in batch], batch[-1].ver)
+                self._increment()
 
         def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:
