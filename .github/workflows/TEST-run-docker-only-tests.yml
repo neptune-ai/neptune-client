@@ -22,4 +22,4 @@ jobs:
         run: docker build -t cgroup_tests -f cgrouptest.Dockerfile .
 
       - name: Run Tests in Docker Container
-        run: docker run my-test-app
+        run: docker run cgroup_tests
