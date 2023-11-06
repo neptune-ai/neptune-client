@@ -20,6 +20,7 @@
 - Added `experimental` mode that supports partitioned operations queue ([#1524](https://github.com/neptune-ai/neptune-client/pull/1524))
 - Added support for plugins/extensions ([#1545](https://github.com/neptune-ai/neptune-client/pull/1545))
 - Skip and warn about unsupported float values (infinity, negative infinity, NaN) in logging floats ([#1542](https://github.com/neptune-ai/neptune-client/pull/1542))
+- Move error handling to a separate method in `AsyncOperationProcessor` ([#1553](https://github.com/neptune-ai/neptune-client/pull/1553))
 - Make sysId default value for run name if not provided explicitly
 
 ## neptune 1.8.2
