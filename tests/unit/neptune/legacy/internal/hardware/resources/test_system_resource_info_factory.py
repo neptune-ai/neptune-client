@@ -24,6 +24,7 @@ from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.common.hardware.system.system_monitor import SystemMonitor
 from tests.unit.neptune.legacy.assertions import AssertionExtensions
+from tests.unit.neptune.legacy.internal.hardware.gauges.docker_checker import DockerChecker
 
 
 class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExtensions):
@@ -44,7 +45,7 @@ class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExten
         self.assert_int_greater_or_equal(resource_info.gpu_card_count, 0)
         self.assert_int_greater_or_equal(resource_info.gpu_memory_amount_bytes, 0)
 
-    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
+    @unittest.skipUnless(DockerChecker.runing_in_docker(), "We use cgroups only on docker")
     def test_cgroup_resource_info(self):
         # given
         system_resource_info_factory = SystemResourceInfoFactory(
