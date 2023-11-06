@@ -25,5 +25,5 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/test-docker
         with:
-          python-version: ${{ python-version }}
+          python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
