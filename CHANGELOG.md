@@ -21,7 +21,7 @@
 - Added support for plugins/extensions ([#1545](https://github.com/neptune-ai/neptune-client/pull/1545))
 - Skip and warn about unsupported float values (infinity, negative infinity, NaN) in logging floats ([#1542](https://github.com/neptune-ai/neptune-client/pull/1542))
 - Move error handling to a separate method in `AsyncOperationProcessor` ([#1553](https://github.com/neptune-ai/neptune-client/pull/1553))
-
+- Abstract parts of logic to separate methods for AsyncOperationProcessor ([#1557](https://github.com/neptune-ai/neptune-client/pull/1557))
 
 ## neptune 1.8.2
 
