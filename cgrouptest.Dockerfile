@@ -4,7 +4,7 @@
 # If you need more help, visit the cgrouptest.Dockerfile reference guide at
 # https://docs.docker.com/engine/reference/builder/
 
-ARG PYTHON_VERSION=3.10.11
+ARG PYTHON_VERSION=3.7
 FROM python:${PYTHON_VERSION} AS base
 
 # Prevents Python from writing pyc files.
