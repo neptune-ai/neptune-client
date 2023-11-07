@@ -20,6 +20,11 @@ runs:
 
     - name: Build Docker Image
       run: |
+        pip cache dir
+      shell: bash
+
+    - name: Build Docker Image
+      run: |
         docker buildx build --build-context pip-cache=~/.cache/pip -f cgrouptest.Dockerfile .
       shell: bash
 
