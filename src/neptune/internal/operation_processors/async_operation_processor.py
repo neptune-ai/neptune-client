@@ -127,7 +127,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._check_lag()
         self._check_no_progress()
 
-        if self._queue.size() > self._batch_size / 2:
+        if self._check_queue_size():
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -175,6 +175,9 @@ class AsyncOperationProcessor(OperationProcessor):
             if self._should_call_no_progress_callback:
                 threading.Thread(target=self._async_no_progress_callback, daemon=True).start()
                 self._should_call_no_progress_callback = False
+
+    def _check_queue_size(self) -> bool:
+        return self._queue.size() > self._batch_size / 2
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:
         waiting_start: float = monotonic()
