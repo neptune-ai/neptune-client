@@ -32,7 +32,7 @@ RUN adduser \
 # I am not proficient enough in python to build first without relying on sourcecode,
 # this is inefficient
 COPY . .
-RUN --mount=type=cache,target=/root/.cache/pip pip install -e '.[dev]'
+RUN --mount=type=cache,target=/root/.cache/pip,from=pip-cache pip install -e '.[dev]'
 
 # Switch to the non-privileged user to run the application.
 USER appuser

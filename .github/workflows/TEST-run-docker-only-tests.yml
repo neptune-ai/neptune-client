@@ -26,4 +26,4 @@ jobs:
         uses: ./.github/actions/test-docker
         with:
           python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
+          os: ${{ matrix.os }}-docker
