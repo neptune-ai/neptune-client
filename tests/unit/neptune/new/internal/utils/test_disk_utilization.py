@@ -27,27 +27,32 @@ from psutil import (
     Error,
 )
 
-from neptune.envs import NEPTUNE_LIMIT_DISK_UTILIZATION
+from neptune.envs import (
+    NEPTUNE_MAX_DISK_UTILIZATION,
+    NEPTUNE_NON_RAISING_ON_DISK_ISSUE,
+)
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 
 class TestDiskUtilization(unittest.TestCase):
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
     def test_handle_invalid_env_values(self):
         for value in ["True", "101", "-1"]:
-            with patch.dict(os.environ, {NEPTUNE_LIMIT_DISK_UTILIZATION: value}, clear=True):
+            with patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: value}, clear=True):
                 mocked_func = MagicMock()
                 with warnings.catch_warnings(record=True) as warns:
                     wrapped_func = ensure_disk_not_overutilize(mocked_func)
                     wrapped_func()
 
                     assert len(warns) == 1
-                    assert f"invalid value of '{NEPTUNE_LIMIT_DISK_UTILIZATION}': '{value}" in str(warns[-1].message)
+                    assert f"invalid value of '{NEPTUNE_MAX_DISK_UTILIZATION}': '{value}" in str(warns[-1].message)
                     mocked_func.assert_called_once()
 
     # Catching OSError that's base error for all OS and IO errors. More info here: https://peps.python.org/pep-3151
     # Additionally, catching specific psutil's base error - psutil.Error.
     # More info about psutil.Error here: https://psutil.readthedocs.io/en/latest/index.html#psutil.Error
-    @patch.dict(os.environ, {NEPTUNE_LIMIT_DISK_UTILIZATION: "60"})
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
+    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "60"})
     @patch("psutil.disk_usage")
     def test_suppressing_of_env_errors(self, disk_usage_mock):
         env_errors = [
@@ -77,7 +82,8 @@ class TestDiskUtilization(unittest.TestCase):
                 wrapped_func()
             mocked_func.assert_not_called()
 
-    @patch.dict(os.environ, {NEPTUNE_LIMIT_DISK_UTILIZATION: "100"})
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
+    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "100"})
     @patch("psutil.disk_usage")
     def test_not_called_with_usage_100_percent(self, disk_usage_mock):
         disk_usage_mock.return_value.percent = 100
@@ -88,9 +94,22 @@ class TestDiskUtilization(unittest.TestCase):
 
         mocked_func.assert_not_called()
 
-    @patch.dict(os.environ, {NEPTUNE_LIMIT_DISK_UTILIZATION: "100"})
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
+    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "100"})
     @patch("psutil.disk_usage")
     def test_called_when_usage_less_than_limit(self, disk_usage_mock):
+        disk_usage_mock.return_value.percent = 99
+        mocked_func = MagicMock()
+        wrapped_func = ensure_disk_not_overutilize(mocked_func)
+
+        wrapped_func()
+
+        mocked_func.assert_called_once()
+
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "False"})
+    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "60"})
+    @patch("psutil.disk_usage")
+    def test_not_called_when_(self, disk_usage_mock):
         disk_usage_mock.return_value.percent = 99
         mocked_func = MagicMock()
         wrapped_func = ensure_disk_not_overutilize(mocked_func)

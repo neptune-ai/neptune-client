@@ -34,10 +34,13 @@ from neptune.common.warnings import (
     warn_once,
 )
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.envs import NEPTUNE_LIMIT_DISK_UTILIZATION
+from neptune.envs import (
+    NEPTUNE_MAX_DISK_UTILIZATION,
+    NEPTUNE_NON_RAISING_ON_DISK_ISSUE,
+)
 
 
-def get_neptune_data_directory() -> Optional[str]:
+def get_neptune_data_directory() -> str:
     return os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
 
 
@@ -45,8 +48,6 @@ def get_disk_utilization_percent(path: Optional[str] = None) -> Optional[float]:
     try:
         if path is None:
             path = get_neptune_data_directory()
-            if path is None:
-                return None
 
         return float(psutil.disk_usage(path).percent)
     except (ValueError, TypeError, OSError, Error):
@@ -54,9 +55,9 @@ def get_disk_utilization_percent(path: Optional[str] = None) -> Optional[float]:
 
 
 def get_max_disk_utilization_from_env() -> Optional[float]:
-    env_limit_disk_utilization = os.getenv(NEPTUNE_LIMIT_DISK_UTILIZATION, "false")
+    env_limit_disk_utilization = os.getenv(NEPTUNE_MAX_DISK_UTILIZATION)
 
-    if env_limit_disk_utilization.lower() in ("false", "f", 0):
+    if env_limit_disk_utilization is None:
         return None
 
     try:
@@ -66,7 +67,7 @@ def get_max_disk_utilization_from_env() -> Optional[float]:
         return limit_disk_utilization
     except (ValueError, TypeError, AssertionError):
         warn_once(
-            f"Provided invalid value of '{NEPTUNE_LIMIT_DISK_UTILIZATION}': '{env_limit_disk_utilization}'. "
+            f"Provided invalid value of '{NEPTUNE_MAX_DISK_UTILIZATION}': '{env_limit_disk_utilization}'. "
             "Check of disk utilization will not be applied.",
             exception=NeptuneWarning,
         )
@@ -74,11 +75,12 @@ def get_max_disk_utilization_from_env() -> Optional[float]:
 
 
 def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None]:
+    non_raising_on_disk_issue = os.getenv(NEPTUNE_NON_RAISING_ON_DISK_ISSUE, "false").lower() in ("true", "t", "1")
     max_disk_utilization = get_max_disk_utilization_from_env()
 
     @wraps(func)
     def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> None:
-        if max_disk_utilization:
+        if non_raising_on_disk_issue and max_disk_utilization:
             current_utilization = get_disk_utilization_percent()
             if current_utilization is None:
                 warn_once(
