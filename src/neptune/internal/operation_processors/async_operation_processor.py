@@ -300,9 +300,6 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._waiting_cond.notify_all()
                 raise
 
-        def _increment(self) -> None:
-            pass
-
         def work(self) -> None:
             ts = time()
             if ts - self._last_flush >= self._sleep_time:
@@ -314,7 +311,6 @@ class AsyncOperationProcessor(OperationProcessor):
                 if not batch:
                     return
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
-                self._increment()
 
         def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:
