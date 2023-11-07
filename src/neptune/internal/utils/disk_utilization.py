@@ -89,8 +89,8 @@ def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None
 
             if current_utilization >= max_disk_utilization:
                 warn_once(
-                    f"Max disk utilization {max_disk_utilization}% exceeded with {current_utilization}. "
-                    + "Neptune will not be save your data.",
+                    f"Disk usage is at {current_utilization}%, which exceeds the maximum allowed utilization "
+                    + "of {max_disk_utilization}%. Neptune will not save your data.",
                     exception=NeptuneWarning,
                 )
                 return
