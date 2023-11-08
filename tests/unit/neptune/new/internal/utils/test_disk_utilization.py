@@ -18,6 +18,7 @@ import unittest
 import warnings
 from io import UnsupportedOperation
 
+import pytest
 from mock import (
     MagicMock,
     patch,
@@ -31,6 +32,7 @@ from neptune.envs import (
     NEPTUNE_MAX_DISK_UTILIZATION,
     NEPTUNE_NON_RAISING_ON_DISK_ISSUE,
 )
+from neptune.exceptions import NeptuneMaxDiskUtilizationExceeded
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 
@@ -95,7 +97,7 @@ class TestDiskUtilization(unittest.TestCase):
             disk_usage_mock.side_effect = error
 
             wrapped_func()  # asserting is not required as expecting that any error will be caught
-            mocked_func.assert_not_called()
+            mocked_func.assert_called_once()
 
     @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
     @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "100"})
@@ -128,7 +130,7 @@ class TestDiskUtilization(unittest.TestCase):
         disk_usage_mock.return_value.percent = 99
         mocked_func = MagicMock()
         wrapped_func = ensure_disk_not_overutilize(mocked_func)
+        with pytest.raises(NeptuneMaxDiskUtilizationExceeded):
+            wrapped_func()
 
-        wrapped_func()
-
-        mocked_func.assert_called_once()
+        mocked_func.assert_not_called()
