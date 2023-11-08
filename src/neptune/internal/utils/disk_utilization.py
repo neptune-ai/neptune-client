@@ -62,10 +62,11 @@ def get_max_disk_utilization_from_env() -> Optional[float]:
 
     try:
         limit_disk_utilization = float(env_limit_disk_utilization)
-        assert 0 < limit_disk_utilization <= 100
+        if limit_disk_utilization <= 0 or limit_disk_utilization > 100:
+            raise ValueError
 
         return limit_disk_utilization
-    except (ValueError, TypeError, AssertionError):
+    except (ValueError, TypeError):
         warn_once(
             f"Provided invalid value of '{NEPTUNE_MAX_DISK_UTILIZATION}': '{env_limit_disk_utilization}'. "
             "Check of disk utilization will not be applied.",
