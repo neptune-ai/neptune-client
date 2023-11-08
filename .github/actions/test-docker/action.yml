@@ -25,7 +25,7 @@ runs:
 
     - name: Build Docker Image
       run: |
-        docker buildx build --build-context pip-cache=/home/runner/.cache/pip -f cgrouptest.Dockerfile .
+        docker buildx build -t cgroup_tests --build-context pip-cache=/home/runner/.cache/pip -f cgrouptest.Dockerfile .
       shell: bash
 
     - name: Run Tests in Docker Container

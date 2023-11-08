@@ -43,8 +43,10 @@ class CGroupMonitor(object):
 
     def get_memory_limit_in_bytes(self):
         cgroup_mem_limit = self.__cgroup_filesystem_reader.get_memory_limit_in_bytes()
-        total_virtual_memory = self.__system_monitor.virtual_memory().total
-        return min(cgroup_mem_limit, total_virtual_memory)
+        if cgroup_mem_limit == CGroupAbstractFilesystemReader.NO_LIMIT_VALUE:
+            return self.__system_monitor.virtual_memory().total
+        else:
+            return cgroup_mem_limit
 
     def get_cpu_usage_limit_in_cores(self):
         cpu_quota_micros, cpu_period_micros = self.__cgroup_filesystem_reader.get_cpu_max_limits()
