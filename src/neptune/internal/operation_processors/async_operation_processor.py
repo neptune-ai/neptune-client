@@ -32,6 +32,7 @@ from typing import (
     Optional,
 )
 
+from neptune.common.exceptions import NeptuneException
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
@@ -48,12 +49,10 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
-from neptune.internal.operation_processors.operations_errors_processor import OperationsErrorsProcessor
 from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import logger
-from neptune.internal.utils.monotonic_inc_batch_size import MonotonicIncBatchSize
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -99,14 +98,14 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
-        self._batch_size: MonotonicIncBatchSize = MonotonicIncBatchSize(size_limit=batch_size)
+        self._batch_size: int = batch_size
         self._async_lag_callback: Callable[[], None] = async_lag_callback or (lambda: None)
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_callback: Callable[[], None] = async_no_progress_callback or (lambda: None)
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._last_version: int = 0
         self._consumed_version: int = 0
-        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, self._batch_size)
+        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock: threading.RLock = lock
         self._last_ack: Optional[float] = None
         self._lag_exceeded: bool = False
@@ -128,7 +127,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._check_lag()
         self._check_no_progress()
 
-        if self._queue.size() > self._batch_size.get() / 2:
+        if self._check_queue_size():
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -176,6 +175,9 @@ class AsyncOperationProcessor(OperationProcessor):
             if self._should_call_no_progress_callback:
                 threading.Thread(target=self._async_no_progress_callback, daemon=True).start()
                 self._should_call_no_progress_callback = False
+
+    def _check_queue_size(self) -> bool:
+        return self._queue.size() > self._batch_size / 2
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:
         waiting_start: float = monotonic()
@@ -282,12 +284,11 @@ class AsyncOperationProcessor(OperationProcessor):
             self,
             processor: "AsyncOperationProcessor",
             sleep_time: float,
-            batch_size: MonotonicIncBatchSize,
+            batch_size: int,
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor: "AsyncOperationProcessor" = processor
-            self._errors_processor: OperationsErrorsProcessor = OperationsErrorsProcessor()
-            self._batch_size: MonotonicIncBatchSize = batch_size
+            self._batch_size: int = batch_size
             self._last_flush: float = 0.0
             self._no_progress_exceeded: bool = False
 
@@ -306,11 +307,10 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch = self._processor._queue.get_batch(self._batch_size.get())
+                batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
-                self._batch_size.increase()
 
         def _check_no_progress(self) -> None:
             if not self._no_progress_exceeded:
@@ -320,6 +320,13 @@ class AsyncOperationProcessor(OperationProcessor):
                 ):
                     self._no_progress_exceeded = True
                     self._processor._should_call_no_progress_callback = True
+
+        def _handle_errors(self, errors: List[NeptuneException]) -> None:
+            for error in errors:
+                logger.error(
+                    "Error occurred during asynchronous operation processing: %s",
+                    error,
+                )
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
@@ -354,7 +361,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     self._processor._last_ack = monotonic()
                     self._processor._lag_exceeded = False
 
-                    self._errors_processor.handle(errors)
+                    self._handle_errors(errors)
 
                     self._processor._consumed_version = version_to_ack
 

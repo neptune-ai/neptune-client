@@ -49,7 +49,6 @@ from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 
 
@@ -181,7 +180,6 @@ class Project(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
 
-    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_project_url(
@@ -271,7 +269,6 @@ class Project(MetadataContainer):
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
         return query
 
-    @safe_function()
     def fetch_runs_table(
         self,
         *,
@@ -370,7 +367,6 @@ class Project(MetadataContainer):
             columns=columns,
         )
 
-    @safe_function()
     def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = False) -> Table:
         """Retrieve models stored in the project.
 
