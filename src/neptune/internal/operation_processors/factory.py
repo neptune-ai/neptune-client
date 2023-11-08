@@ -23,7 +23,10 @@ from typing import (
     Optional,
 )
 
-from neptune.envs import NEPTUNE_ASYNC_PARTITIONS_NUMBER
+from neptune.envs import (
+    NEPTUNE_ASYNC_BATCH_SIZE,
+    NEPTUNE_ASYNC_PARTITIONS_NUMBER,
+)
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
@@ -54,6 +57,10 @@ def get_operation_processor(
     async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
+        batch_size = int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000")
+        if batch_size <= 0:
+            raise ValueError(f"Batch size must be greater than 0.  Got: {batch_size}")
+
         if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
             partitions = int(os.environ.get(NEPTUNE_ASYNC_PARTITIONS_NUMBER) or "5")
             if partitions > 1:
@@ -62,6 +69,7 @@ def get_operation_processor(
                     container_type=container_type,
                     backend=backend,
                     lock=lock,
+                    batch_size=batch_size,
                     sleep_time=flush_period,
                     async_lag_callback=async_lag_callback,
                     async_lag_threshold=async_lag_threshold,
@@ -76,6 +84,7 @@ def get_operation_processor(
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
+            batch_size=batch_size,
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,
