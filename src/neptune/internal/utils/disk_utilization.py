@@ -50,7 +50,7 @@ def get_disk_utilization_percent(path: Optional[str] = None) -> Optional[float]:
             path = get_neptune_data_directory()
 
         return float(psutil.disk_usage(path).percent)
-    except (ValueError, TypeError, OSError, Error):
+    except (ValueError, TypeError, Error):
         return None
 
 
@@ -80,24 +80,29 @@ def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None
 
     @wraps(func)
     def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> None:
-        if non_raising_on_disk_issue and max_disk_utilization:
-            current_utilization = get_disk_utilization_percent()
-            if current_utilization is None:
-                warn_once(
-                    "Encountered disk issue during utilization check. Neptune will not save your data.",
-                    exception=NeptuneWarning,
-                )
-                return
+        if non_raising_on_disk_issue:
+            try:
+                if max_disk_utilization:
+                    current_utilization = get_disk_utilization_percent()
+                    if current_utilization is None:
+                        warn_once(
+                            "Encountered disk issue during utilization check. Neptune will not save your data.",
+                            exception=NeptuneWarning,
+                        )
+                        return
 
-            if current_utilization >= max_disk_utilization:
-                warn_once(
-                    f"Disk usage is at {current_utilization}%, which exceeds the maximum allowed utilization "
-                    + "of {max_disk_utilization}%. Neptune will not save your data.",
-                    exception=NeptuneWarning,
-                )
-                return
+                    if current_utilization >= max_disk_utilization:
+                        warn_once(
+                            f"Disk usage is at {current_utilization}%, which exceeds the maximum allowed utilization "
+                            + "of {max_disk_utilization}%. Neptune will not save your data.",
+                            exception=NeptuneWarning,
+                        )
+                        return
 
-            func(*args, **kwargs)
+                func(*args, **kwargs)
+            except (OSError, Error):
+                warn_once("Encountered disk issue. Neptune will not save your data.", exception=NeptuneWarning)
+
         else:
             return func(*args, **kwargs)
 

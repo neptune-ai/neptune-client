@@ -52,11 +52,8 @@ class TestDiskUtilization(unittest.TestCase):
     # Additionally, catching specific psutil's base error - psutil.Error.
     # More info about psutil.Error here: https://psutil.readthedocs.io/en/latest/index.html#psutil.Error
     @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
-    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "60"})
-    @patch("psutil.disk_usage")
-    def test_suppressing_of_env_errors(self, disk_usage_mock):
-        env_errors = [
-            TypeError(),
+    def test_suppressing_of_func_errors(self):
+        disk_errors = [
             OSError(),
             IOError(),
             EnvironmentError(),
@@ -64,22 +61,40 @@ class TestDiskUtilization(unittest.TestCase):
             Error(),
             AccessDenied(),
         ]
-        for error in env_errors:
+        for error in disk_errors:
+            mocked_func = MagicMock()
+            wrapped_func = ensure_disk_not_overutilize(mocked_func)
+            mocked_func.side_effect = error
+
+            wrapped_func()  # asserting is not required as expecting that any error will be caught
+            mocked_func.assert_called_once()
+
+        non_disk_errors = [OverflowError(), AttributeError()]
+        for error in non_disk_errors:
+            mocked_func = MagicMock()
+            wrapped_func = ensure_disk_not_overutilize(mocked_func)
+            mocked_func.side_effect = error
+
+            with self.assertRaises(BaseException):
+                wrapped_func()
+            mocked_func.assert_called_once()
+
+    @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
+    @patch.dict(os.environ, {NEPTUNE_MAX_DISK_UTILIZATION: "60"})
+    @patch("psutil.disk_usage")
+    def test_suppressing_of_checking_utilization_errors(self, disk_usage_mock):
+        checking_errors = [
+            TypeError(),
+            UnsupportedOperation(),
+            Error(),
+            AccessDenied(),
+        ]
+        for error in checking_errors:
             mocked_func = MagicMock()
             wrapped_func = ensure_disk_not_overutilize(mocked_func)
             disk_usage_mock.side_effect = error
 
             wrapped_func()  # asserting is not required as expecting that any error will be caught
-            mocked_func.assert_not_called()
-
-        non_env_errors = [OverflowError(), AttributeError()]
-        for error in non_env_errors:
-            mocked_func = MagicMock()
-            wrapped_func = ensure_disk_not_overutilize(mocked_func)
-            disk_usage_mock.side_effect = error
-
-            with self.assertRaises(BaseException):
-                wrapped_func()
             mocked_func.assert_not_called()
 
     @patch.dict(os.environ, {NEPTUNE_NON_RAISING_ON_DISK_ISSUE: "True"})
