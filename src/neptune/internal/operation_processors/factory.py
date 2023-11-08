@@ -58,6 +58,8 @@ def get_operation_processor(
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         batch_size = int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000")
+        if batch_size <= 0:
+            raise ValueError(f"Batch size must be greater than 0.  Got: {batch_size}")
 
         if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
             partitions = int(os.environ.get(NEPTUNE_ASYNC_PARTITIONS_NUMBER) or "5")
