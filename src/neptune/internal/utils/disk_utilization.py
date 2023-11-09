@@ -156,12 +156,12 @@ class RaisingErrorHandler(DiskUtilizationErrorHandlerTemplate):
         return self.func(*self.args, **self.kwargs)
 
     def handle_limit_exceeded(self, current_utilization: float) -> None:
-        assert isinstance(self.max_disk_utilization, float)  # for mypy
+        if isinstance(self.max_disk_utilization, float):
 
-        raise NeptuneMaxDiskUtilizationExceeded(
-            disk_utilization=current_utilization,
-            utilization_limit=self.max_disk_utilization,
-        )
+            raise NeptuneMaxDiskUtilizationExceeded(
+                disk_utilization=current_utilization,
+                utilization_limit=self.max_disk_utilization,
+            )
 
 
 def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None]:
