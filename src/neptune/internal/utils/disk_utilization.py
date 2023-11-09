@@ -87,19 +87,19 @@ class DiskUtilizationErrorHandlerTemplate(ABC):
 
     @abstractmethod
     def handle_limit_not_set(self) -> None:
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def handle_utilization_calculation_error(self) -> None:
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def handle_limit_not_exceeded(self) -> None:
-        ...
+        ...  # pragma: no cover
 
     @abstractmethod
     def handle_limit_exceeded(self, current_utilization: float) -> None:
-        ...
+        ...  # pragma: no cover
 
     def run(self) -> None:
         if not self.max_disk_utilization:
