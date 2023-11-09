@@ -41,6 +41,31 @@ from .sync_operation_processor import SyncOperationProcessor
 
 
 # WARNING: Be careful when changing this function. It is used in the experimental package
+def build_async_operation_processor(
+    container_id: UniqueId,
+    container_type: ContainerType,
+    backend: NeptuneBackend,
+    lock: threading.RLock,
+    sleep_time: float,
+    async_lag_callback: Optional[Callable[[], None]],
+    async_lag_threshold: float,
+    async_no_progress_callback: Optional[Callable[[], None]],
+    async_no_progress_threshold: float,
+) -> OperationProcessor:
+    return AsyncOperationProcessor(
+        container_id=container_id,
+        container_type=container_type,
+        backend=backend,
+        lock=lock,
+        sleep_time=sleep_time,
+        batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+        async_lag_callback=async_lag_callback,
+        async_lag_threshold=async_lag_threshold,
+        async_no_progress_callback=async_no_progress_callback,
+        async_no_progress_threshold=async_no_progress_threshold,
+    )
+
+
 def get_operation_processor(
     mode: Mode,
     container_id: UniqueId,
@@ -54,13 +79,12 @@ def get_operation_processor(
     async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
-        return AsyncOperationProcessor(
+        return build_async_operation_processor(
             container_id=container_id,
             container_type=container_type,
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,
