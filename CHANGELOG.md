@@ -24,6 +24,7 @@
 - Abstract parts of logic to separate methods for AsyncOperationProcessor ([#1557](https://github.com/neptune-ai/neptune-client/pull/1557))
 - Rework disk utilization check ([#1549](https://github.com/neptune-ai/neptune-client/pull/1549))
 - Introduce error handlers for disk utilization ([#1559](https://github.com/neptune-ai/neptune-client/pull/1559))
+- Added support for `neptune[experimental]` extras ([#1560](https://github.com/neptune-ai/neptune-client/pull/1560))
 
 
 ## neptune 1.8.2
