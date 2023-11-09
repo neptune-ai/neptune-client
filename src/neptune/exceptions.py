@@ -1224,7 +1224,7 @@ class NeptuneMaxDiskUtilizationExceeded(NeptuneException):
     {h1}
     ----NeptuneMaxDiskUtilizationExceeded----------------------------------------------
     {end}
-    Current disk utilization ({disk_utilization}) exceeds the limit ({utilization_limit}).
+    Current disk utilization ({disk_utilization}%) exceeds the limit ({utilization_limit}%).
 
     {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
     """
