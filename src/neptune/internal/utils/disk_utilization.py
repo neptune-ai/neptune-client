@@ -25,9 +25,7 @@ from functools import wraps
 from typing import (
     Any,
     Callable,
-    Dict,
     Optional,
-    Tuple,
 )
 
 import psutil
@@ -173,7 +171,7 @@ def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None
     error_handler = NonRaisingErrorHandler if non_raising_on_disk_issue else RaisingErrorHandler
 
     @wraps(func)
-    def wrapper(*args: Tuple, **kwargs: Dict[str, Any]) -> None:
+    def wrapper(*args: Any, **kwargs: Any) -> None:
         error_handler(max_disk_utilization, func, *args, **kwargs).run()
 
     return wrapper
