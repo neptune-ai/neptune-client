@@ -173,6 +173,8 @@ class TestDiskErrorHandler(unittest.TestCase):
 
         handler.handle_limit_exceeded(100)  # should not raise exception
 
+        handler.run()  # should not raise exception
+
     def test_raising_handler(self):
         func = MagicMock()
         func.side_effect = OSError
@@ -192,3 +194,11 @@ class TestDiskErrorHandler(unittest.TestCase):
         with pytest.raises(NeptuneMaxDiskUtilizationExceeded):
             handler = RaisingErrorHandler(90.0, func)
             handler.handle_limit_exceeded(100)
+
+        with pytest.raises(OSError):
+            handler.run()
+
+        func.side_effect = None
+        with patch("neptune.internal.utils.disk_utilization.get_disk_utilization_percent", return_value=95):
+            with pytest.raises(NeptuneMaxDiskUtilizationExceeded):
+                handler.run()
