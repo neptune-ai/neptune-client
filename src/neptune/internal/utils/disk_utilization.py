@@ -81,9 +81,7 @@ def get_max_disk_utilization_from_env() -> Optional[float]:
 
 
 class DiskUtilizationErrorHandlerTemplate(ABC):
-    def __init__(
-        self, max_disk_utilization: Optional[float], func: Callable[..., None], *args: Tuple, **kwargs: Dict[str, Any]
-    ):
+    def __init__(self, max_disk_utilization: Optional[float], func: Callable[..., None], *args: Any, **kwargs: Any):
         self.max_disk_utilization = max_disk_utilization
         self.func = func
         self.args = args
@@ -91,6 +89,10 @@ class DiskUtilizationErrorHandlerTemplate(ABC):
 
     @abstractmethod
     def handle_limit_not_set(self) -> None:
+        ...
+
+    @abstractmethod
+    def handle_utilization_calculation_error(self) -> None:
         ...
 
     @abstractmethod
@@ -108,7 +110,7 @@ class DiskUtilizationErrorHandlerTemplate(ABC):
         current_utilization = get_disk_utilization_percent()
 
         if current_utilization is None:
-            return self.handle_limit_not_set()
+            return self.handle_utilization_calculation_error()
 
         if current_utilization < self.max_disk_utilization:
             return self.handle_limit_not_exceeded()
@@ -120,6 +122,12 @@ class NonRaisingErrorHandler(DiskUtilizationErrorHandlerTemplate):
     DISK_ISSUE_MSG = "Encountered disk issue. Neptune will not save your data."
 
     def handle_limit_not_set(self) -> None:
+        try:
+            return self.func(*self.args, **self.kwargs)
+        except (OSError, Error):
+            warn_once(self.DISK_ISSUE_MSG, exception=NeptuneWarning)
+
+    def handle_utilization_calculation_error(self) -> None:
         try:
             return self.func(*self.args, **self.kwargs)
         except (OSError, Error):
@@ -143,11 +151,15 @@ class RaisingErrorHandler(DiskUtilizationErrorHandlerTemplate):
     def handle_limit_not_set(self) -> None:
         return self.func(*self.args, **self.kwargs)
 
+    def handle_utilization_calculation_error(self) -> None:
+        return self.func(*self.args, **self.kwargs)
+
     def handle_limit_not_exceeded(self) -> None:
         return self.func(*self.args, **self.kwargs)
 
     def handle_limit_exceeded(self, current_utilization: float) -> None:
         assert isinstance(self.max_disk_utilization, float)  # for mypy
+
         raise NeptuneMaxDiskUtilizationExceeded(
             disk_utilization=current_utilization,
             utilization_limit=self.max_disk_utilization,
