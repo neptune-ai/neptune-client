@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.3
+## neptune 1.8.3
 
 ### Fixes
 - Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
