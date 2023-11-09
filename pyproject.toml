@@ -106,6 +106,7 @@ xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
 mlflow = ["neptune-mlflow"]
 airflow = ["neptune-airflow"]
+experimental = ["neptune-experimental"]
 dev = [
     "altair",
     "bokeh",
