@@ -357,7 +357,7 @@ class Run(MetadataContainer):
                 verify_collection_type("source_files", source_files, str)
 
         self._with_id: Optional[str] = with_id
-        self._name: Optional[str] = DEFAULT_NAME if with_id is None and name is None else name
+        self._name: Optional[str] = name
         self._description: Optional[str] = "" if with_id is None and description is None else description
         self._custom_run_id: Optional[str] = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
         self._hostname: str = get_hostname()
@@ -425,25 +425,30 @@ class Run(MetadataContainer):
                 container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
                 expected_container_type=Run.container_type,
             )
-        else:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingRunForReadOnlyMode()
+        if self._mode == Mode.READ_ONLY:
+            raise NeedExistingRunForReadOnlyMode()
 
-            git_info = to_git_info(git_ref=self._git_ref)
+        git_info = to_git_info(git_ref=self._git_ref)
 
-            custom_run_id = self._custom_run_id
-            if custom_run_id_exceeds_length(self._custom_run_id):
-                custom_run_id = None
+        custom_run_id = self._custom_run_id
+        if custom_run_id_exceeds_length(self._custom_run_id):
+            custom_run_id = None
 
-            notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
+        notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 
-            return self._backend.create_run(
-                project_id=self._project_api_object.id,
-                git_info=git_info,
-                custom_run_id=custom_run_id,
-                notebook_id=notebook_id,
-                checkpoint_id=checkpoint_id,
-            )
+        run = self._backend.create_run(
+            project_id=self._project_api_object.id,
+            git_info=git_info,
+            custom_run_id=custom_run_id,
+            notebook_id=notebook_id,
+            checkpoint_id=checkpoint_id,
+        )
+        self._post_run_creation_action(run)
+        return run
+
+    def _post_run_creation_action(self, run: ApiExperiment) -> None:
+        _ = run
+        self._name = self._name if self._name is not None else DEFAULT_NAME
 
     def _prepare_background_jobs(self) -> BackgroundJobList:
         background_jobs = [PingBackgroundJob()]
