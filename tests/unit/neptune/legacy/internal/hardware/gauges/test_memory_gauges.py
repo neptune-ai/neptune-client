@@ -21,6 +21,7 @@ from neptune.common.hardware.gauges.gauge_factory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,
 )
+from tests.unit.neptune.legacy.internal.hardware.gauges.docker_checker import DockerChecker
 
 
 class TestMemoryGauges(unittest.TestCase):
@@ -39,7 +40,7 @@ class TestMemoryGauges(unittest.TestCase):
         self.assertLess(memory_gb, self.system_memory_gb)
         self.assertEqual(float, type(memory_gb))
 
-    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
+    @unittest.skipUnless(DockerChecker.runing_in_docker(), "We use cgroups only in docker")
     def test_cgroup_memory_gauge(self):
         # given
         gauge = CGroupMemoryUsageGauge()
