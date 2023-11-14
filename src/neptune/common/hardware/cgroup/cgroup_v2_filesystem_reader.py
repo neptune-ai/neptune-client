@@ -34,26 +34,30 @@ class CGroupV2FilesystemReader(CGroupAbstractFilesystemReader):
         self.__cpu_stat_file = os.path.join(cgroup_dir, "cpu.stat")
 
     def get_memory_usage_in_bytes(self) -> int:
-        return self.__read_int_file(self.__memory_usage_file)
+        return int(self.__read_value_from_file(self.__memory_usage_file).strip())
 
-    def get_memory_limit_in_bytes(self) -> int:
-        return self.__read_int_file(self.__memory_limit_file)
+    def get_memory_limit_in_bytes(self) -> Union[str, int]:
+        limit = self.__read_value_from_file(self.__memory_limit_file).strip()
+        if limit == CGroupAbstractFilesystemReader.NO_LIMIT_VALUE:
+            return CGroupAbstractFilesystemReader.NO_LIMIT_VALUE
+        else:
+            return int(limit)
 
     def get_cpu_max_limits(self) -> Tuple[Union[str, int], int]:
-        return self.__read_two_values_from_first_line(self.__cpu_max_file)
+        with open(self.__cpu_max_file) as f:
+            line = f.readline()
+            cpu_quota_micros, cpu_period_micros = line.split()
+            if cpu_quota_micros == CGroupAbstractFilesystemReader.NO_LIMIT_VALUE:
+                return CGroupAbstractFilesystemReader.NO_LIMIT_VALUE, int(cpu_period_micros)
+            else:
+                return int(cpu_quota_micros), int(cpu_period_micros)
 
     def get_cpuacct_usage_nanos(self) -> int:
         return self.__read_int_attr_in_file(self.__cpu_stat_file, "usage_usec") * 1000
 
-    def __read_two_values_from_first_line(self, filename: str) -> Tuple[Union[str, int], int]:
+    def __read_value_from_file(self, filename: str) -> str:
         with open(filename) as f:
-            line = f.readline()
-            cpu_quota_micros, cpu_period_micros = line.split()
-            return cpu_quota_micros, int(cpu_period_micros)
-
-    def __read_int_file(self, filename: str) -> int:
-        with open(filename) as f:
-            return int(f.read())
+            return f.read()
 
     def __read_int_attr_in_file(self, filename: str, attribute: str) -> int:
         with open(filename) as f:

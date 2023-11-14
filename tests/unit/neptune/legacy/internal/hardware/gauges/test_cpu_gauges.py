@@ -20,6 +20,7 @@ from neptune.common.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
 )
+from tests.unit.neptune.legacy.internal.hardware.gauges.docker_checker import DockerChecker
 
 
 class TestCpuGauges(unittest.TestCase):
@@ -35,7 +36,7 @@ class TestCpuGauges(unittest.TestCase):
         self.assertLessEqual(cpu_usage, 100.0)
         self.assertEqual(float, type(cpu_usage))
 
-    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
+    @unittest.skipUnless(DockerChecker.runing_in_docker(), "We use cgroups only in docker")
     def test_cgroup_cpu_gauge_returns_zero_on_first_measurement(self):
         # given
         gauge = CGroupCpuUsageGauge()
@@ -47,7 +48,7 @@ class TestCpuGauges(unittest.TestCase):
         self.assertEqual(0.0, cpu_usage)
         self.assertEqual(float, type(cpu_usage))
 
-    @unittest.skip("We do not have docker infrastructure to test cgroupsV1")
+    @unittest.skipUnless(DockerChecker.runing_in_docker(), "We use cgroups only in docker")
     def test_cgroup_cpu_gauge_measurement(self):
         # given
         gauge = CGroupCpuUsageGauge()

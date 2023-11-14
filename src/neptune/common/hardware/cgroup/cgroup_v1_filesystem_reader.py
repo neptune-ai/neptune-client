@@ -39,8 +39,12 @@ class CGroupV1FilesystemReader(CGroupAbstractFilesystemReader):
     def get_memory_usage_in_bytes(self) -> int:
         return self.__read_int_file(self.__memory_usage_file)
 
-    def get_memory_limit_in_bytes(self) -> int:
-        return self.__read_int_file(self.__memory_limit_file)
+    def get_memory_limit_in_bytes(self) -> Union[str, int]:
+        limit = self.__read_int_file(self.__memory_limit_file)
+        if limit == -1:
+            return CGroupAbstractFilesystemReader.NO_LIMIT_VALUE
+        else:
+            return limit
 
     def get_cpu_max_limits(self) -> Tuple[Union[str, int], int]:
         cpu_quota_micros = self.__get_cpu_quota_micros()
