@@ -1,0 +1,29 @@
+name: run-docker-only-tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "mr/add-support-for-cgroupv2-hardware-monitoring"
+
+jobs:
+  test:
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu ]
+        python-version: [ "3.7" ]
+    name: 'run docker-only test ubuntu (${{ matrix.os }} - py${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        uses: ./.github/actions/test-docker
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}-docker
