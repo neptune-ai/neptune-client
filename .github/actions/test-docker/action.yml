@@ -20,7 +20,7 @@ runs:
 
     - name: Build Docker Image
       run: |
-        docker buildx build --build-arg PYTHON_VERSION=${{ python-version }} -t cgroup_tests --build-context pip-cache=/home/runner/.cache/pip -f tests/cgrouptest.Dockerfile .
+        docker buildx build --build-arg PYTHON_VERSION=${{ inputs.python-version }} -t cgroup_tests --build-context pip-cache=/home/runner/.cache/pip -f tests/cgrouptest.Dockerfile .
       shell: bash
 
     - name: Run Tests in Docker Container
