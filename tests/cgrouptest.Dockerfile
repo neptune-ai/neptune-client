@@ -1,11 +1,5 @@
-# syntax=docker/dockerfile:1
-
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Dockerfile reference guide at
-# https://docs.docker.com/engine/reference/builder/
-
-ARG PYTHON_VERSION=3.10.11
-FROM python:${PYTHON_VERSION} as base
+ARG PYTHON_VERSION
+FROM python:${PYTHON_VERSION} AS base
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -29,10 +23,8 @@ RUN adduser \
     appuser
 
 
-# I am not proficient enough in python to build first without relying on sourcecode,
-# this is inefficient
 COPY . .
-RUN pip install -e '.[dev]'
+RUN --mount=type=cache,target=/root/.cache/pip,from=pip-cache pip install -e '.[dev]'
 
 # Switch to the non-privileged user to run the application.
 USER appuser

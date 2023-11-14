@@ -1,7 +1,28 @@
 ---
 name: Run docker only tests
 description: Create docker container and run the docker-only tests.
+inputs:
+  python-version:
+    description: "Python version"
+    required: true
+  os:
+    description: "Operating system"
+    required: true
 
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "composite"
+  steps:
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ inputs.python-version }}
+        os: ${{ inputs.os }}-latest
+
+    - name: Build Docker Image
+      run: |
+        docker buildx build --build-arg PYTHON_VERSION=${{ python-version }} -t cgroup_tests --build-context pip-cache=/home/runner/.cache/pip -f tests/cgrouptest.Dockerfile .
+      shell: bash
+
+    - name: Run Tests in Docker Container
+      run: docker run cgroup_tests
+      shell: bash
