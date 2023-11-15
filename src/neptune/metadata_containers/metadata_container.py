@@ -23,10 +23,7 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import (
-    partial,
-    wraps,
-)
+from functools import wraps
 from typing import (
     Any,
     Dict,
@@ -173,12 +170,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
-            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-            async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_callback=partial(self._async_no_progress_callback, self)
-            if self._async_no_progress_callback
-            else None,
-            async_no_progress_threshold=self._async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -238,12 +229,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
-                async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-                async_lag_threshold=self._async_lag_threshold,
-                async_no_progress_callback=partial(self._async_no_progress_callback, self)
-                if self._async_no_progress_callback
-                else None,
-                async_no_progress_threshold=self._async_no_progress_threshold,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
