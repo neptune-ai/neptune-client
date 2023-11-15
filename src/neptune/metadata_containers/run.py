@@ -466,6 +466,8 @@ class Run(MetadataContainer):
                 TracebackJob(path=f"{self._monitoring_namespace}/traceback", fail_on_exception=self._fail_on_exception)
             )
 
+        # TODO: Add background signals processor that uses self._signals_queue and all async_*_callback arguments
+
         return BackgroundJobList(background_jobs)
 
     def _write_initial_attributes(self):

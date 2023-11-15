@@ -34,6 +34,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
+from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -179,6 +180,10 @@ class Project(MetadataContainer):
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
+
+    def _prepare_background_jobs(self) -> BackgroundJobList:
+        # TODO: Add background signals processor that uses self._signals_queue and all async_*_callback arguments
+        return super()._prepare_background_jobs()
 
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""

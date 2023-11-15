@@ -22,6 +22,7 @@ import os
 import threading
 import time
 import traceback
+from queue import Queue
 from contextlib import AbstractContextManager
 from functools import (
     partial,
@@ -154,6 +155,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._sys_id: SysId = self._api_object.sys_id
         self._workspace: str = self._api_object.workspace
         self._project_name: str = self._api_object.project_name
+
+        self._signals_queue: Queue = Queue(maxsize=0)
 
         self._async_lag_threshold = async_lag_threshold
         self._async_lag_callback = MetadataContainer._get_callback(

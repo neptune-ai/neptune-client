@@ -72,10 +72,6 @@ class AsyncOperationProcessor(OperationProcessor):
         lock: threading.RLock,
         sleep_time: float = 5,
         batch_size: int = 1000,
-        async_lag_callback: Optional[Callable[[], None]] = None,
-        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
-        async_no_progress_callback: Optional[Callable[[], None]] = None,
-        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         data_path: Optional[Path] = None,
         should_print_logs: bool = True,
     ):
@@ -99,17 +95,10 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
         self._batch_size: int = batch_size
-        self._async_lag_callback: Callable[[], None] = async_lag_callback or (lambda: None)
-        self._async_lag_threshold: float = async_lag_threshold
-        self._async_no_progress_callback: Callable[[], None] = async_no_progress_callback or (lambda: None)
-        self._async_no_progress_threshold: float = async_no_progress_threshold
         self._last_version: int = 0
         self._consumed_version: int = 0
         self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock: threading.RLock = lock
-        self._last_ack: Optional[float] = None
-        self._lag_exceeded: bool = False
-        self._should_call_no_progress_callback: bool = False
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
@@ -123,9 +112,6 @@ class AsyncOperationProcessor(OperationProcessor):
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._last_version = self._queue.put(op)
-
-        self._check_lag()
-        self._check_no_progress()
 
         if self._check_queue_size():
             self._consumer.wake_up()
@@ -157,24 +143,6 @@ class AsyncOperationProcessor(OperationProcessor):
             )
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
-
-    def _check_lag(self) -> None:
-        if self._lag_exceeded or not self._last_ack or monotonic() - self._last_ack <= self._async_lag_threshold:
-            return
-
-        with self._lock:
-            if not self._lag_exceeded:
-                threading.Thread(target=self._async_lag_callback, daemon=True).start()
-                self._lag_exceeded = True
-
-    def _check_no_progress(self) -> None:
-        if not self._should_call_no_progress_callback:
-            return
-
-        with self._lock:
-            if self._should_call_no_progress_callback:
-                threading.Thread(target=self._async_no_progress_callback, daemon=True).start()
-                self._should_call_no_progress_callback = False
 
     def _check_queue_size(self) -> bool:
         return self._queue.size() > self._batch_size / 2
@@ -312,15 +280,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     return
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
 
-        def _check_no_progress(self) -> None:
-            if not self._no_progress_exceeded:
-                if (
-                    self._processor._last_ack
-                    and monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold
-                ):
-                    self._no_progress_exceeded = True
-                    self._processor._should_call_no_progress_callback = True
-
+        # WARNING: Be careful when changing this function. It is used in the experimental package
         def _handle_errors(self, errors: List[NeptuneException]) -> None:
             for error in errors:
                 logger.error(
@@ -339,27 +299,18 @@ class AsyncOperationProcessor(OperationProcessor):
             version_to_ack = version - expected_count
             while True:
                 # TODO: Handle Metadata errors
-                try:
-                    processed_count, errors = self._processor._backend.execute_operations(
-                        container_id=self._processor._container_id,
-                        container_type=self._processor._container_type,
-                        operations=batch,
-                        operation_storage=self._processor._operation_storage,
-                    )
-                except Exception as e:
-                    self._check_no_progress()
-                    # Let default retry logic handle this
-                    raise e from e
-
-                self._no_progress_exceeded = False
+                processed_count, errors = self._processor._backend.execute_operations(
+                    container_id=self._processor._container_id,
+                    container_type=self._processor._container_type,
+                    operations=batch,
+                    operation_storage=self._processor._operation_storage,
+                )
 
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
-                    self._processor._last_ack = monotonic()
-                    self._processor._lag_exceeded = False
 
                     self._handle_errors(errors)
 

@@ -227,6 +227,8 @@ class ModelVersion(MetadataContainer):
             )
 
     def _prepare_background_jobs(self) -> BackgroundJobList:
+        # TODO: Add background signals processor that uses self._signals_queue and all async_*_callback arguments
+
         return BackgroundJobList([PingBackgroundJob()])
 
     def _write_initial_attributes(self):
