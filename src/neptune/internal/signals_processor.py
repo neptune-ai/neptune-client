@@ -13,28 +13,55 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ['CallbacksMonitor']
+
 from typing import (
     Optional,
-    TYPE_CHECKING,
+    TYPE_CHECKING, Callable,
 )
-from queue import Queue
+from queue import (
+    Queue,
+    Empty,
+)
 
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
+from neptune.internal.signals_processing.signals import SignalsVisitor
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
+    from neptune.internal.signals_processing.signals import Signal
 
 
 class CallbacksMonitor(BackgroundJob):
-    def __init__(self, queue: Queue, period: float = 10) -> None:
-        self._queue: "Queue" = queue
+    def __init__(
+        self,
+        queue: Queue["Signal"],
+        async_lag_threshold: float,
+        async_no_progress_threshold: float,
+        async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+        async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+        period: float = 10,
+    ) -> None:
+        self._queue: Queue["Signal"] = queue
         self._period: float = period
-        self._thread: Optional["CallbacksMonitor.SignalsProcessor"] = None
-        self._started = False
+        self._thread: Optional["SignalsProcessor"] = None
+        self._started: bool = False
+        self._async_lag_threshold: float = async_lag_threshold
+        self._async_no_progress_threshold: float = async_no_progress_threshold
+        self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
+        self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
 
     def start(self, container: "MetadataContainer") -> None:
-        self._thread = CallbacksMonitor.SignalsProcessor(period=self._period, container=container, queue=self._queue)
+        self._thread = SignalsProcessor(
+            period=self._period,
+            container=container,
+            queue=self._queue,
+            async_lag_threshold=self._async_lag_threshold,
+            async_no_progress_threshold=self._async_no_progress_threshold,
+            async_lag_callback=self._async_lag_callback,
+            async_no_progress_callback=self._async_no_progress_callback,
+        )
         self._thread.start()
         self._started = True
 
@@ -56,11 +83,35 @@ class CallbacksMonitor(BackgroundJob):
         if self._thread:
             self._thread.resume()
 
-    class SignalsProcessor(Daemon):
-        def __init__(self, period: float, container: "MetadataContainer", queue: "Queue") -> None:
-            super().__init__(sleep_time=period, name="CallbacksMonitor")
-            self._container: "MetadataContainer" = container
-            self._queue: "Queue" = queue
 
-        def work(self) -> None:
+class SignalsProcessor(Daemon, SignalsVisitor):
+    def __init__(
+            self,
+            *,
+            period: float,
+            container: "MetadataContainer",
+            queue: Queue["Signal"],
+            async_lag_threshold: float,
+            async_no_progress_threshold: float,
+            async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+            async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+    ) -> None:
+        super().__init__(sleep_time=period, name="CallbacksMonitor")
+        self._container: "MetadataContainer" = container
+        self._queue: Queue["Signal"] = queue
+        self._async_lag_threshold: float = async_lag_threshold
+        self._async_no_progress_threshold: float = async_no_progress_threshold
+        self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
+        self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
+
+        self._last_operation_queued: float = 0
+
+    def visit_operation_queued(self, signal: Signal) -> None:
+        self._last_operation_queued = signal.occured_at
+
+    def work(self) -> None:
+        try:
+            signal = self._queue.get_nowait()
+            signal.accept(self)
+        except Empty:
             pass

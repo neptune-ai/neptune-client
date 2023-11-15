@@ -120,9 +120,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         mode: Mode = Mode.ASYNC,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
-        async_lag_callback: Optional[NeptuneObjectCallback] = None,
+        async_lag_callback: Optional["NeptuneObjectCallback"] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
-        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
+        async_no_progress_callback: Optional["NeptuneObjectCallback"] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
         verify_type("project", project, (str, type(None)))
@@ -176,12 +176,13 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
-            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-            async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_callback=partial(self._async_no_progress_callback, self)
-            if self._async_no_progress_callback
-            else None,
-            async_no_progress_threshold=self._async_no_progress_threshold,
+            # TODO:
+            # async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
+            # async_lag_threshold=self._async_lag_threshold,
+            # async_no_progress_callback=partial(self._async_no_progress_callback, self)
+            # if self._async_no_progress_callback
+            # else None,
+            # async_no_progress_threshold=self._async_no_progress_threshold,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -213,7 +214,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     """
 
     @staticmethod
-    def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
+    def _get_callback(provided: Optional["NeptuneObjectCallback"], env_name: str) -> Optional["NeptuneObjectCallback"]:
         if provided is not None:
             return provided
         if os.getenv(env_name, "") == "TRUE":
