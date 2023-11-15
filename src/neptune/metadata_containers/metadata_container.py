@@ -59,6 +59,7 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.project_name_lookup import project_name_lookup
 from neptune.internal.backgroud_job_list import BackgroundJobList
+from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
@@ -75,6 +76,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
@@ -250,16 +252,29 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
+        jobs = []
+
         if self._mode != Mode.READ_ONLY:
-            return self._prepare_background_jobs()
-        return BackgroundJobList([])
+            jobs.extend(self._get_background_jobs())
+
+        if self._mode == Mode.ASYNC:
+            jobs.append(
+                CallbacksMonitor(
+                    async_lag_threshold=self._async_lag_threshold,
+                    async_no_progress_threshold=self._async_no_progress_threshold,
+                    async_lag_callback=self._async_lag_callback,
+                    async_no_progress_callback=self._async_no_progress_callback,
+                )
+            )
+
+        return BackgroundJobList(jobs)
 
     @abc.abstractmethod
     def _get_or_create_api_object(self) -> ApiExperiment:
         raise NotImplementedError
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([])
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
+        return []
 
     def _write_initial_attributes(self):
         pass
