@@ -19,15 +19,17 @@ from queue import (
     Empty,
     Queue,
 )
+from threading import Thread
+from time import monotonic
 from typing import (
     TYPE_CHECKING,
     Callable,
     Optional,
 )
 
+from neptune.internal.init.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
 from neptune.internal.signals_processing.signals import SignalsVisitor
 from neptune.internal.threading.daemon import Daemon
-from neptune.internal.utils.logger import logger
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
@@ -45,6 +47,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
         async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+        callbacks_interval: float = IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL,
     ) -> None:
         super().__init__(sleep_time=period, name="CallbacksMonitor")
 
@@ -55,16 +58,40 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
         self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
 
-    def visit_batch_started(self, signal: "Signal") -> None:
-        logger.info("Batch started")
+        self._last_batch_started_at: Optional[float] = None
+        self._last_no_progress_callback_at: Optional[float] = None
 
-    def visit_batch_ack(self, signal: "Signal") -> None:
-        logger.info("Batch ack")
+    def visit_batch_started(self, signal: "Signal") -> None:
+        if self._last_batch_started_at is None:
+            self._last_batch_started_at = signal.occured_at
+
+    def visit_batch_processed(self, signal: "Signal") -> None:
+        if self._last_batch_started_at is not None:
+            self._last_batch_started_at = None
+
+    def _check_callbacks(self) -> None:
+        self._check_no_progress()
+
+    def _check_no_progress(self) -> None:
+        if self._last_batch_started_at is not None:
+            if monotonic() - self._last_batch_started_at > self._async_no_progress_threshold:
+                if self._async_no_progress_callback is not None:
+                    if (
+                        self._last_no_progress_callback_at is None
+                        or monotonic() - self._last_no_progress_callback_at > IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
+                    ):
+                        execute_in_async(callback=self._async_no_progress_callback, container=self._container)
+                    self._last_no_progress_callback_at = monotonic()
 
     def work(self) -> None:
         try:
             while not self._queue.empty():
                 signal = self._queue.get_nowait()
                 signal.accept(self)
+            self._check_callbacks()
         except Empty:
             pass
+
+
+def execute_in_async(*, callback: Callable[["MetadataContainer"], None], container: "MetadataContainer") -> None:
+    Thread(target=callback, name="CallbackExecution", args=(container,), daemon=True).start()

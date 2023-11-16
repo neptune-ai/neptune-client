@@ -22,7 +22,7 @@ from enum import Enum
 
 class SignalType(str, Enum):
     BATCH_STARTED = "BatchStarted"
-    BATCH_ACK = "BatchAck"
+    BATCH_PROCESSED = "BatchAck"
 
 
 @dataclass
@@ -33,8 +33,8 @@ class Signal:
     def accept(self, visitor: "SignalsVisitor") -> None:
         if self.type == SignalType.BATCH_STARTED:
             visitor.visit_batch_started(signal=self)
-        if self.type == SignalType.BATCH_ACK:
-            visitor.visit_batch_ack(signal=self)
+        if self.type == SignalType.BATCH_PROCESSED:
+            visitor.visit_batch_processed(signal=self)
 
 
 class SignalsVisitor:
@@ -43,5 +43,5 @@ class SignalsVisitor:
         ...
 
     @abstractmethod
-    def visit_batch_ack(self, signal: Signal) -> None:
+    def visit_batch_processed(self, signal: Signal) -> None:
         ...

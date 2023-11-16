@@ -47,6 +47,10 @@ from neptune.internal.operation_processors.operation_storage import (
     get_container_dir,
 )
 from neptune.internal.operation_processors.utils import common_metadata
+from neptune.internal.signals_processing.utils import (
+    signal_batch_processed,
+    signal_batch_started,
+)
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import logger
@@ -277,6 +281,8 @@ class AsyncOperationProcessor(OperationProcessor):
                 batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
+
+                signal_batch_started(queue=self._processor._signals_queue)
                 self.process_batch([element.obj for element in batch], batch[-1].ver)
 
         # WARNING: Be careful when changing this function. It is used in the experimental package
@@ -305,6 +311,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     operation_storage=self._processor._operation_storage,
                 )
 
+                signal_batch_processed(queue=self._processor._signals_queue)
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 

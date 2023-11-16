@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["signal_batch_ack", "signal_batch_started"]
+__all__ = ["signal_batch_processed", "signal_batch_started"]
 
 from queue import (
     Full,
@@ -45,5 +45,5 @@ def signal_batch_started(*, queue: "Queue[Signal]", occured_at: Optional[float] 
     signal(queue=queue, signal_type=SignalType.BATCH_STARTED, occured_at=occured_at)
 
 
-def signal_batch_ack(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
-    signal(queue=queue, signal_type=SignalType.BATCH_ACK, occured_at=occured_at)
+def signal_batch_processed(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
+    signal(queue=queue, signal_type=SignalType.BATCH_PROCESSED, occured_at=occured_at)
