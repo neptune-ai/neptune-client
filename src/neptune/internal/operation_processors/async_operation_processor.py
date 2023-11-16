@@ -68,7 +68,7 @@ class AsyncOperationProcessor(OperationProcessor):
         container_type: "ContainerType",
         backend: "NeptuneBackend",
         lock: threading.RLock,
-        queue: Queue["Signal"],
+        queue: "Queue[Signal]",
         sleep_time: float = 5,
         batch_size: int = 1000,
         data_path: Optional[Path] = None,
@@ -98,7 +98,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumed_version: int = 0
         self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock: threading.RLock = lock
-        self._signals_queue: Queue["Signal"] = queue
+        self._signals_queue: "Queue[Signal]" = queue
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)

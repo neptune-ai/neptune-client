@@ -30,7 +30,7 @@ from neptune.internal.signals_processing.signals import (
 )
 
 
-def signal_operation_queued(queue: Queue["Signal"], occured_at: Optional[float] = None) -> None:
+def signal_operation_queued(queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
     try:
         queue.put_nowait(
             item=Signal(

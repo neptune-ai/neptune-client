@@ -145,7 +145,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
-        self._signals_queue: Queue["Signal"] = Queue()
+        self._signals_queue: "Queue[Signal]" = Queue()
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 

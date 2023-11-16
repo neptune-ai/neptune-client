@@ -40,7 +40,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         *,
         period: float,
         container: "MetadataContainer",
-        queue: Queue["Signal"],
+        queue: "Queue[Signal]",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
@@ -49,7 +49,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         super().__init__(sleep_time=period, name="CallbacksMonitor")
 
         self._container: "MetadataContainer" = container
-        self._queue: Queue["Signal"] = queue
+        self._queue: "Queue[Signal]" = queue
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback

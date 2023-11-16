@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 class CallbacksMonitor(BackgroundJob):
     def __init__(
         self,
-        queue: Queue["Signal"],
+        queue: "Queue[Signal]",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
@@ -41,7 +41,7 @@ class CallbacksMonitor(BackgroundJob):
         period: float = 10,
     ) -> None:
         self._period: float = period
-        self._queue: Queue["Signal"] = queue
+        self._queue: "Queue[Signal]" = queue
         self._thread: Optional["SignalsProcessor"] = None
         self._started: bool = False
         self._async_lag_threshold: float = async_lag_threshold

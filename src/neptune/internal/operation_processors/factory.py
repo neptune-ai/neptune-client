@@ -44,7 +44,7 @@ def build_async_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     sleep_time: float,
-    queue: Queue["Signal"],
+    queue: "Queue[Signal]",
 ) -> OperationProcessor:
     return AsyncOperationProcessor(
         container_id=container_id,
@@ -64,7 +64,7 @@ def get_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
-    queue: Queue["Signal"],
+    queue: "Queue[Signal]",
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         return build_async_operation_processor(
