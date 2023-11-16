@@ -24,7 +24,9 @@ import time
 import traceback
 from contextlib import AbstractContextManager
 from functools import wraps
+from queue import Queue
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -95,6 +97,9 @@ from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
 
+if TYPE_CHECKING:
+    from neptune.internal.signals_processing.signals import Signal
+
 
 def ensure_not_stopped(fun):
     @wraps(fun)
@@ -139,6 +144,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
+        self._signals_queue: Queue["Signal"] = Queue()
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -260,6 +266,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         if self._mode == Mode.ASYNC:
             jobs.append(
                 CallbacksMonitor(
+                    queue=self._signals_queue,
                     async_lag_threshold=self._async_lag_threshold,
                     async_no_progress_threshold=self._async_no_progress_threshold,
                     async_lag_callback=self._async_lag_callback,
