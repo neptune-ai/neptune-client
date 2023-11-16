@@ -13,67 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["CallbacksMonitor"]
+__all__ = ["SignalsProcessor"]
 
-from queue import Queue
+from queue import (
+    Empty,
+    Queue,
+)
 from typing import (
     TYPE_CHECKING,
     Callable,
     Optional,
 )
 
-from neptune.internal.background_job import BackgroundJob
-from neptune.internal.signals_processing.signals_processor import SignalsProcessor
+from neptune.internal.signals_processing.signals import SignalsVisitor
+from neptune.internal.threading.daemon import Daemon
+from neptune.internal.utils.logger import logger
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
     from neptune.metadata_containers import MetadataContainer
 
 
-class CallbacksMonitor(BackgroundJob):
+class SignalsProcessor(Daemon, SignalsVisitor):
     def __init__(
         self,
+        *,
+        period: float,
+        container: "MetadataContainer",
         queue: Queue["Signal"],
         async_lag_threshold: float,
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
         async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
-        period: float = 10,
     ) -> None:
-        self._period: float = period
+        super().__init__(sleep_time=period, name="CallbacksMonitor")
+        self._container: "MetadataContainer" = container
         self._queue: Queue["Signal"] = queue
-        self._thread: Optional["SignalsProcessor"] = None
-        self._started: bool = False
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
         self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
 
-    def start(self, container: "MetadataContainer") -> None:
-        self._thread = SignalsProcessor(
-            period=self._period,
-            container=container,
-            queue=self._queue,
-            async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_threshold=self._async_no_progress_threshold,
-            async_lag_callback=self._async_lag_callback,
-            async_no_progress_callback=self._async_no_progress_callback,
-        )
-        self._thread.start()
-        self._started = True
+        self._last_operation_queued: float = 0
 
-    def stop(self) -> None:
-        if self._thread and self._started:
-            self._thread.interrupt()
+    def visit_operation_queued(self, signal: "Signal") -> None:
+        self._last_operation_queued = signal.occured_at
+        logger.info("Operation queued")
 
-    def join(self, seconds: Optional[float] = None) -> None:
-        if self._thread and self._started:
-            self._thread.join(seconds)
-
-    def pause(self) -> None:
-        if self._thread:
-            self._thread.pause()
-
-    def resume(self) -> None:
-        if self._thread:
-            self._thread.resume()
+    def work(self) -> None:
+        try:
+            signal = self._queue.get_nowait()
+            signal.accept(self)
+        except Empty:
+            pass

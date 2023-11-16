@@ -13,11 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Signal"]
+__all__ = ["Signal", "SignalsVisitor", "SignalType"]
 
+from abc import abstractmethod
 from dataclasses import dataclass
+from enum import Enum
+
+
+class SignalType(str, Enum):
+    OPERATION_QUEUED = "OperationQueued"
 
 
 @dataclass
 class Signal:
-    ...
+    occured_at: float
+    type: SignalType
+
+    def accept(self, visitor: "SignalsVisitor") -> None:
+        return visitor.visit(self)
+
+
+class SignalsVisitor:
+    def visit(self, signal: Signal) -> None:
+        return signal.accept(self)
+
+    @abstractmethod
+    def visit_operation_queued(self, signal: Signal) -> None:
+        pass
