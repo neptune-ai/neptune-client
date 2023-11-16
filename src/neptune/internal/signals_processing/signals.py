@@ -31,9 +31,9 @@ class Signal:
     type: SignalType
 
     def accept(self, visitor: "SignalsVisitor") -> None:
-        if type == SignalType.BATCH_STARTED:
+        if self.type == SignalType.BATCH_STARTED:
             visitor.visit_batch_started(signal=self)
-        if type == SignalType.BATCH_ACK:
+        if self.type == SignalType.BATCH_ACK:
             visitor.visit_batch_ack(signal=self)
 
 
