@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["signal_batch_ack", "signal_batch_started"]
+
 from queue import (
     Full,
     Queue,
@@ -30,12 +32,18 @@ from neptune.internal.signals_processing.signals import (
 )
 
 
-def signal_operation_queued(queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
+def signal(*, queue: "Queue[Signal]", signal_type: SignalType, occured_at: Optional[float] = None) -> None:
     try:
         queue.put_nowait(
-            item=Signal(
-                occured_at=occured_at if occured_at is not None else monotonic(), type=SignalType.OPERATION_QUEUED
-            )
+            item=Signal(occured_at=occured_at if occured_at is not None else monotonic(), type=signal_type)
         )
     except Full:
         warn_once("Signal queue is full. Some signals will be lost.", exception=NeptuneWarning)
+
+
+def signal_batch_started(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
+    signal(queue=queue, signal_type=SignalType.BATCH_STARTED, occured_at=occured_at)
+
+
+def signal_batch_ack(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
+    signal(queue=queue, signal_type=SignalType.BATCH_ACK, occured_at=occured_at)

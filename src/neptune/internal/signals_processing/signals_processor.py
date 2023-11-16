@@ -55,11 +55,11 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
         self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
 
-        self._last_operation_queued: float = 0
+    def visit_batch_started(self, signal: "Signal") -> None:
+        logger.info("Batch started")
 
-    def visit_operation_queued(self, signal: "Signal") -> None:
-        self._last_operation_queued = signal.occured_at
-        logger.info("Operation queued")
+    def visit_batch_ack(self, signal: "Signal") -> None:
+        logger.info("Batch ack")
 
     def work(self) -> None:
         try:
