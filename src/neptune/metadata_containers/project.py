@@ -27,11 +27,9 @@ from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.nql import (
-    NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
     NQLEmptyQuery,
-    NQLQueryAggregate,
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
@@ -45,10 +43,10 @@ from neptune.internal.utils import (
     as_list,
     verify_type,
 )
-from neptune.internal.utils.run_state import RunState
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.utils import prepare_nql_query
 from neptune.types.mode import Mode
 
 
@@ -188,87 +186,6 @@ class Project(MetadataContainer):
             project_name=self._project_name,
         )
 
-    @staticmethod
-    def _prepare_nql_query(ids, states, owners, tags, trashed):
-        query_items = []
-
-        if trashed is not None:
-            query_items.append(
-                NQLQueryAttribute(
-                    name="sys/trashed",
-                    type=NQLAttributeType.BOOLEAN,
-                    operator=NQLAttributeOperator.EQUALS,
-                    value=trashed,
-                )
-            )
-
-        if ids:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/id",
-                            type=NQLAttributeType.STRING,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=api_id,
-                        )
-                        for api_id in ids
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
-
-        if states:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/state",
-                            type=NQLAttributeType.EXPERIMENT_STATE,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=RunState.from_string(state).to_api(),
-                        )
-                        for state in states
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
-
-        if owners:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/owner",
-                            type=NQLAttributeType.STRING,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=owner,
-                        )
-                        for owner in owners
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
-
-        if tags:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/tags",
-                            type=NQLAttributeType.STRING_SET,
-                            operator=NQLAttributeOperator.CONTAINS,
-                            value=tag,
-                        )
-                        for tag in tags
-                    ],
-                    aggregator=NQLAggregator.AND,
-                )
-            )
-
-        query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
-        return query
-
     def fetch_runs_table(
         self,
         *,
@@ -358,7 +275,7 @@ class Project(MetadataContainer):
 
         verify_type("trashed", trashed, (bool, type(None)))
 
-        nql_query = self._prepare_nql_query(ids, states, owners, tags, trashed)
+        nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
         return MetadataContainer._fetch_entries(
             self,
