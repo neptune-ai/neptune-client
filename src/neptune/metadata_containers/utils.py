@@ -24,7 +24,6 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
-    NQLQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
@@ -37,7 +36,7 @@ def prepare_nql_query(
     owners: Optional[Iterable[str]],
     tags: Optional[Iterable[str]],
     trashed: Optional[bool],
-) -> NQLQuery:
+) -> NQLQueryAggregate:
     query_items: List[Union[NQLQueryAttribute, NQLQueryAggregate]] = []
 
     if trashed is not None:
