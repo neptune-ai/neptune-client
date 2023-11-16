@@ -47,6 +47,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
     ) -> None:
         super().__init__(sleep_time=period, name="CallbacksMonitor")
+
         self._container: "MetadataContainer" = container
         self._queue: Queue["Signal"] = queue
         self._async_lag_threshold: float = async_lag_threshold
@@ -62,7 +63,8 @@ class SignalsProcessor(Daemon, SignalsVisitor):
 
     def work(self) -> None:
         try:
-            signal = self._queue.get_nowait()
-            signal.accept(self)
+            while not self._queue.empty():
+                signal = self._queue.get_nowait()
+                signal.accept(self)
         except Empty:
             pass

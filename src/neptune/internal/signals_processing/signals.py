@@ -30,13 +30,10 @@ class Signal:
     type: SignalType
 
     def accept(self, visitor: "SignalsVisitor") -> None:
-        return visitor.visit(self)
+        return visitor.visit_operation_queued(self)
 
 
 class SignalsVisitor:
-    def visit(self, signal: Signal) -> None:
-        return signal.accept(self)
-
     @abstractmethod
     def visit_operation_queued(self, signal: Signal) -> None:
         pass
