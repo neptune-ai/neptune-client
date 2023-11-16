@@ -79,7 +79,6 @@ from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
-from neptune.internal.signals_processing.no_op_queue import NoopQueue
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
@@ -232,7 +231,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         reset_internal_ssl_state()
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
-            # TODO: Think what should be passed as a queue to forked process
+            self._signals_queue = Queue()
             self._op_processor = get_operation_processor(
                 mode=self._mode,
                 container_id=self._id,
@@ -240,11 +239,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
-                queue=NoopQueue(),
+                queue=self._signals_queue,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
-            self._bg_job = BackgroundJobList([])
+            jobs = []
+            if self._mode == Mode.ASYNC:
+                jobs.append(
+                    CallbacksMonitor(
+                        queue=self._signals_queue,
+                        async_lag_threshold=self._async_lag_threshold,
+                        async_no_progress_threshold=self._async_no_progress_threshold,
+                        async_lag_callback=self._async_lag_callback,
+                        async_no_progress_callback=self._async_no_progress_callback,
+                    )
+                )
+            self._bg_job = BackgroundJobList(jobs)
 
             self._op_processor.start()
 
