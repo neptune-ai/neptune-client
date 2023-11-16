@@ -18,6 +18,8 @@ __all__ = ["get_operation_processor"]
 
 import os
 import threading
+from queue import Queue
+from typing import TYPE_CHECKING
 
 from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -31,6 +33,9 @@ from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
+if TYPE_CHECKING:
+    from neptune.internal.signals_processing.signals import Signal
+
 
 # WARNING: Be careful when changing this function. It is used in the experimental package
 def build_async_operation_processor(
@@ -39,6 +44,7 @@ def build_async_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     sleep_time: float,
+    queue: Queue["Signal"],
 ) -> OperationProcessor:
     return AsyncOperationProcessor(
         container_id=container_id,
@@ -47,6 +53,7 @@ def build_async_operation_processor(
         lock=lock,
         sleep_time=sleep_time,
         batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+        queue=queue,
     )
 
 
@@ -57,6 +64,7 @@ def get_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
+    queue: Queue["Signal"],
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         return build_async_operation_processor(
@@ -65,6 +73,7 @@ def get_operation_processor(
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
+            queue=queue,
         )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(container_id, container_type, backend)
