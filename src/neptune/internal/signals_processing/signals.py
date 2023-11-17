@@ -13,28 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Signal", "SignalsVisitor", "SignalType"]
+__all__ = ["Signal", "SignalsVisitor", "BatchStartedSignal", "BatchProcessedSignal"]
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from enum import Enum
-
-
-class SignalType(str, Enum):
-    BATCH_STARTED = "BatchStarted"
-    BATCH_PROCESSED = "BatchAck"
 
 
 @dataclass
 class Signal:
     occured_at: float
-    type: SignalType
 
+    @abstractmethod
     def accept(self, visitor: "SignalsVisitor") -> None:
-        if self.type == SignalType.BATCH_STARTED:
-            visitor.visit_batch_started(signal=self)
-        if self.type == SignalType.BATCH_PROCESSED:
-            visitor.visit_batch_processed(signal=self)
+        ...
+
+
+class BatchStartedSignal(Signal):
+    def accept(self, visitor: "SignalsVisitor") -> None:
+        visitor.visit_batch_started(signal=self)
+
+
+class BatchProcessedSignal(Signal):
+    def accept(self, visitor: "SignalsVisitor") -> None:
+        visitor.visit_batch_processed(signal=self)
 
 
 class SignalsVisitor:

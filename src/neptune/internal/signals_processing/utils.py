@@ -27,23 +27,22 @@ from neptune.common.warnings import (
     warn_once,
 )
 from neptune.internal.signals_processing.signals import (
+    BatchProcessedSignal,
+    BatchStartedSignal,
     Signal,
-    SignalType,
 )
 
 
-def signal(*, queue: "Queue[Signal]", signal_type: SignalType, occured_at: Optional[float] = None) -> None:
+def signal(*, queue: "Queue[Signal]", obj: "Signal") -> None:
     try:
-        queue.put_nowait(
-            item=Signal(occured_at=occured_at if occured_at is not None else monotonic(), type=signal_type)
-        )
+        queue.put_nowait(item=obj)
     except Full:
         warn_once("Signal queue is full. Some signals will be lost.", exception=NeptuneWarning)
 
 
 def signal_batch_started(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
-    signal(queue=queue, signal_type=SignalType.BATCH_STARTED, occured_at=occured_at)
+    signal(queue=queue, obj=BatchStartedSignal(occured_at=occured_at or monotonic()))
 
 
 def signal_batch_processed(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
-    signal(queue=queue, signal_type=SignalType.BATCH_PROCESSED, occured_at=occured_at)
+    signal(queue=queue, obj=BatchProcessedSignal(occured_at=occured_at or monotonic()))
