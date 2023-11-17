@@ -57,6 +57,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
         self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
+        self._callbacks_interval: float = callbacks_interval
 
         self._last_batch_started_at: Optional[float] = None
         self._last_no_progress_callback_at: Optional[float] = None
@@ -67,18 +68,19 @@ class SignalsProcessor(Daemon, SignalsVisitor):
 
     def visit_batch_processed(self, signal: "Signal") -> None:
         if self._last_batch_started_at is not None:
+            self._check_no_progress(at_timestamp=signal.occured_at)
             self._last_batch_started_at = None
 
     def _check_callbacks(self) -> None:
-        self._check_no_progress()
+        self._check_no_progress(at_timestamp=monotonic())
 
-    def _check_no_progress(self) -> None:
+    def _check_no_progress(self, at_timestamp: float) -> None:
         if self._last_batch_started_at is not None:
-            if monotonic() - self._last_batch_started_at > self._async_no_progress_threshold:
+            if at_timestamp - self._last_batch_started_at > self._async_no_progress_threshold:
                 if self._async_no_progress_callback is not None:
                     if (
                         self._last_no_progress_callback_at is None
-                        or monotonic() - self._last_no_progress_callback_at > IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
+                        or at_timestamp - self._last_no_progress_callback_at > self._callbacks_interval
                     ):
                         execute_in_async(callback=self._async_no_progress_callback, container=self._container)
                     self._last_no_progress_callback_at = monotonic()
