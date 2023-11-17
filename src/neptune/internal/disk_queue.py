@@ -23,6 +23,7 @@ import threading
 from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
+from time import time
 from typing import (
     Callable,
     Generic,
@@ -47,6 +48,7 @@ class QueueElement(Generic[T]):
     obj: T
     ver: int
     size: int
+    at: Optional[float] = None
 
 
 class DiskQueue(Generic[T]):
@@ -91,7 +93,7 @@ class DiskQueue(Generic[T]):
 
     def put(self, obj: T) -> int:
         version = self._last_put_file.read_local() + 1
-        _json = json.dumps(self._serialize(obj, version))
+        _json = json.dumps(self._serialize(obj=obj, version=version, at=time()))
         if self._file_size + len(_json) > self._max_file_size:
             old_writer = self._writer
             self._writer = open(self._get_log_file(version), "a")
@@ -137,8 +139,8 @@ class DiskQueue(Generic[T]):
             # It is safe. Max recursion level is 2.
             return self._get()
         try:
-            obj, ver = self._deserialize(_json)
-            return QueueElement[T](obj, ver, size)
+            obj, ver, at = self._deserialize(_json)
+            return QueueElement[T](obj, ver, size, at)
         except Exception as e:
             raise MalformedOperation from e
 
@@ -237,11 +239,11 @@ class DiskQueue(Generic[T]):
                 return log_versions[i + 1]
         raise ValueError("Missing log file with version > {}".format(version))
 
-    def _serialize(self, obj: T, version: int) -> dict:
-        return {"obj": self._to_dict(obj), "version": version}
+    def _serialize(self, obj: T, version: int, at: Optional[float] = None) -> dict:
+        return {"obj": self._to_dict(obj), "version": version, "at": at}
 
-    def _deserialize(self, data: dict) -> Tuple[T, int]:
-        return self._from_dict(data["obj"]), data["version"]
+    def _deserialize(self, data: dict) -> Tuple[T, int, Optional[float]]:
+        return self._from_dict(data["obj"]), data["version"], data.get("at")
 
     def __enter__(self):
         return self
