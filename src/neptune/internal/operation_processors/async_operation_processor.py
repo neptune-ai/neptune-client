@@ -48,6 +48,7 @@ from neptune.internal.operation_processors.operation_storage import (
 )
 from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.signals_processing.utils import (
+    signal_batch_lag,
     signal_batch_processed,
     signal_batch_started,
 )
@@ -283,7 +284,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     return
 
                 signal_batch_started(queue=self._processor._signals_queue)
-                self.process_batch([element.obj for element in batch], batch[-1].ver)
+                self.process_batch([element.obj for element in batch], batch[-1].ver, batch[-1].at)
 
         # WARNING: Be careful when changing this function. It is used in the experimental package
         def _handle_errors(self, errors: List[NeptuneException]) -> None:
@@ -299,7 +300,10 @@ class AsyncOperationProcessor(OperationProcessor):
                 " synced manually using `neptune sync` command."
             )
         )
-        def process_batch(self, batch: List[Operation], version: int) -> None:
+        def process_batch(self, batch: List[Operation], version: int, occurred_at: Optional[float] = None) -> None:
+            if occurred_at is not None:
+                signal_batch_lag(queue=self._processor._signals_queue, lag=monotonic() - occurred_at)
+
             expected_count = len(batch)
             version_to_ack = version - expected_count
             while True:

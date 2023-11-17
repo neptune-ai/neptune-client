@@ -13,7 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Signal", "SignalsVisitor", "BatchStartedSignal", "BatchProcessedSignal"]
+__all__ = [
+    "Signal",
+    "SignalsVisitor",
+    "BatchStartedSignal",
+    "BatchProcessedSignal",
+    "BatchLagSignal",
+]
 
 from abc import abstractmethod
 from dataclasses import dataclass
@@ -28,14 +34,24 @@ class Signal:
         ...
 
 
+@dataclass
 class BatchStartedSignal(Signal):
     def accept(self, visitor: "SignalsVisitor") -> None:
         visitor.visit_batch_started(signal=self)
 
 
+@dataclass
 class BatchProcessedSignal(Signal):
     def accept(self, visitor: "SignalsVisitor") -> None:
         visitor.visit_batch_processed(signal=self)
+
+
+@dataclass
+class BatchLagSignal(Signal):
+    lag: float
+
+    def accept(self, visitor: "SignalsVisitor") -> None:
+        visitor.visit_batch_lag(signal=self)
 
 
 class SignalsVisitor:
@@ -45,4 +61,8 @@ class SignalsVisitor:
 
     @abstractmethod
     def visit_batch_processed(self, signal: Signal) -> None:
+        ...
+
+    @abstractmethod
+    def visit_batch_lag(self, signal: Signal) -> None:
         ...

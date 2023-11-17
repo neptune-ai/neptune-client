@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["signal_batch_processed", "signal_batch_started"]
+__all__ = ["signal_batch_processed", "signal_batch_started", "signal_batch_lag"]
 
 from queue import (
     Full,
@@ -27,6 +27,7 @@ from neptune.common.warnings import (
     warn_once,
 )
 from neptune.internal.signals_processing.signals import (
+    BatchLagSignal,
     BatchProcessedSignal,
     BatchStartedSignal,
     Signal,
@@ -46,3 +47,7 @@ def signal_batch_started(*, queue: "Queue[Signal]", occured_at: Optional[float] 
 
 def signal_batch_processed(*, queue: "Queue[Signal]", occured_at: Optional[float] = None) -> None:
     signal(queue=queue, obj=BatchProcessedSignal(occured_at=occured_at or monotonic()))
+
+
+def signal_batch_lag(*, queue: "Queue[Signal]", lag: float, occured_at: Optional[float] = None) -> None:
+    signal(queue=queue, obj=BatchLagSignal(occured_at=occured_at or monotonic(), lag=lag))

@@ -28,7 +28,10 @@ from typing import (
 )
 
 from neptune.internal.init.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
-from neptune.internal.signals_processing.signals import SignalsVisitor
+from neptune.internal.signals_processing.signals import (
+    BatchLagSignal,
+    SignalsVisitor,
+)
 from neptune.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
@@ -61,6 +64,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
 
         self._last_batch_started_at: Optional[float] = None
         self._last_no_progress_callback_at: Optional[float] = None
+        self._last_lag_callback_at: Optional[float] = None
 
     def visit_batch_started(self, signal: "Signal") -> None:
         if self._last_batch_started_at is None:
@@ -71,18 +75,33 @@ class SignalsProcessor(Daemon, SignalsVisitor):
             self._check_no_progress(at_timestamp=signal.occured_at)
             self._last_batch_started_at = None
 
+    def visit_batch_lag(self, signal: "Signal") -> None:
+        if self._async_lag_callback is None or not isinstance(signal, BatchLagSignal):
+            return
+
+        if signal.lag > self._async_lag_threshold:
+            current_time = monotonic()
+            if (
+                self._last_lag_callback_at is None
+                or current_time - self._last_lag_callback_at > self._callbacks_interval
+            ):
+                execute_in_async(callback=self._async_lag_callback, container=self._container)
+                self._last_lag_callback_at = current_time
+
     def _check_callbacks(self) -> None:
         self._check_no_progress(at_timestamp=monotonic())
 
     def _check_no_progress(self, at_timestamp: float) -> None:
+        if self._async_no_progress_callback is None:
+            return
+
         if self._last_batch_started_at is not None:
             if at_timestamp - self._last_batch_started_at > self._async_no_progress_threshold:
-                if self._async_no_progress_callback is not None:
-                    if (
-                        self._last_no_progress_callback_at is None
-                        or at_timestamp - self._last_no_progress_callback_at > self._callbacks_interval
-                    ):
-                        execute_in_async(callback=self._async_no_progress_callback, container=self._container)
+                if (
+                    self._last_no_progress_callback_at is None
+                    or at_timestamp - self._last_no_progress_callback_at > self._callbacks_interval
+                ):
+                    execute_in_async(callback=self._async_no_progress_callback, container=self._container)
                     self._last_no_progress_callback_at = monotonic()
 
     def work(self) -> None:
