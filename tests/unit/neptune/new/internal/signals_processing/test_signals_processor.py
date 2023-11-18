@@ -46,6 +46,7 @@ def test__no_progress__no_signal():
         async_no_progress_threshold=1.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -81,6 +82,7 @@ def test__no_progress__proper_execution_of_batch(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -115,6 +117,7 @@ def test__no_progress__too_long_batch_execution(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -152,6 +155,7 @@ def test__no_progress__proper_then_too_long(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -188,6 +192,7 @@ def test__no_progress__proper_then_non_ended(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -225,6 +230,7 @@ def test__no_progress__too_short_time_between_callbacks(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -265,6 +271,7 @@ def test__no_progress__ack_in_between(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -301,6 +308,7 @@ def test__no_progress__proper_then_too_long_different_cycles(monotonic):
         async_no_progress_threshold=5.0,
         async_no_progress_callback=async_no_progress_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -340,6 +348,7 @@ def test__lag__no_signal():
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -373,6 +382,7 @@ def test__lag__proper_execution_of_batch(monotonic):
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -407,6 +417,7 @@ def test__lag__too_big_lag(monotonic):
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -439,6 +450,7 @@ def test__lag__too_short_interval(monotonic):
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -471,6 +483,7 @@ def test__lag__longer_interval(monotonic):
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when
@@ -508,6 +521,7 @@ def test__lag__longer_interval_different_cycles(monotonic):
         async_no_progress_threshold=1.0,
         async_lag_callback=async_lag_callback,
         callbacks_interval=5,
+        in_async=False,
     )
 
     # when

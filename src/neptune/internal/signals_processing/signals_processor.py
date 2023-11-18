@@ -51,6 +51,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
         async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
         callbacks_interval: float = IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL,
+        in_async: bool = True,
     ) -> None:
         super().__init__(sleep_time=period, name="CallbacksMonitor")
 
@@ -61,6 +62,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
         self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
         self._callbacks_interval: float = callbacks_interval
+        self._in_async: bool = in_async
 
         self._last_batch_started_at: Optional[float] = None
         self._last_no_progress_callback_at: Optional[float] = None
@@ -85,7 +87,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
                 self._last_lag_callback_at is None
                 or current_time - self._last_lag_callback_at > self._callbacks_interval
             ):
-                execute_in_async(callback=self._async_lag_callback, container=self._container)
+                execute_callback(callback=self._async_lag_callback, container=self._container, in_async=self._in_async)
                 self._last_lag_callback_at = current_time
 
     def _check_callbacks(self) -> None:
@@ -101,7 +103,9 @@ class SignalsProcessor(Daemon, SignalsVisitor):
                     self._last_no_progress_callback_at is None
                     or at_timestamp - self._last_no_progress_callback_at > self._callbacks_interval
                 ):
-                    execute_in_async(callback=self._async_no_progress_callback, container=self._container)
+                    execute_callback(
+                        callback=self._async_no_progress_callback, container=self._container, in_async=self._in_async
+                    )
                     self._last_no_progress_callback_at = monotonic()
 
     def work(self) -> None:
@@ -114,5 +118,10 @@ class SignalsProcessor(Daemon, SignalsVisitor):
             pass
 
 
-def execute_in_async(*, callback: Callable[["MetadataContainer"], None], container: "MetadataContainer") -> None:
-    Thread(target=callback, name="CallbackExecution", args=(container,), daemon=True).start()
+def execute_callback(
+    *, callback: Callable[["MetadataContainer"], None], container: "MetadataContainer", in_async: bool
+) -> None:
+    if in_async:
+        Thread(target=callback, name="CallbackExecution", args=(container,), daemon=True).start()
+    else:
+        callback(container)
