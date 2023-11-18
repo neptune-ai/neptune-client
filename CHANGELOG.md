@@ -1,10 +1,10 @@
 ## [UNRELEASED] 1.8.5
 
-### Changes
-- Added timestamp of operation put to disk queue ([#1569](https://github.com/neptune-ai/neptune-client/pull/1569))
-
 ### Fixes
 - Fixed no synchronization callbacks behaviour ([#1567](https://github.com/neptune-ai/neptune-client/pull/1567))
+
+### Changes
+- Added timestamp of operation put to disk queue ([#1569](https://github.com/neptune-ai/neptune-client/pull/1569))
 
 
 ## neptune 1.8.4
