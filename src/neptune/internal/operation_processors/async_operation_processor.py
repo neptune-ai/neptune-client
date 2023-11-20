@@ -34,6 +34,10 @@ from typing import (
 )
 
 from neptune.common.exceptions import NeptuneException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
@@ -104,6 +108,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock: threading.RLock = lock
         self._signals_queue: "Queue[Signal]" = queue
+        self._accepts_operations: bool = True
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
@@ -116,6 +121,10 @@ class AsyncOperationProcessor(OperationProcessor):
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
+        if not self._accepts_operations:
+            warn_once("Not accepting operations", exception=NeptuneWarning)
+            return
+
         self._last_version = self._queue.put(op)
 
         if self._check_queue_size():
@@ -249,6 +258,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._queue.cleanup_if_empty()
 
     def close(self) -> None:
+        self._accepts_operations = False
         self._queue.close()
         self._metadata_file.close()
 
