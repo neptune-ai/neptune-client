@@ -80,6 +80,10 @@ from neptune.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
 )
+from neptune.internal.download_hook import (
+    DownloadHook,
+    NullDownloadHook,
+)
 from neptune.internal.utils import (
     get_absolute_paths,
     get_common_root,
@@ -420,6 +424,7 @@ def download_file_attribute(
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
+    hook: Optional[DownloadHook] = None,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -431,7 +436,7 @@ def download_file_attribute(
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": container_id, "attribute": attribute},
     )
-    _store_response_as_file(response, destination)
+    _store_response_as_file(response, destination, hook)
 
 
 def download_file_set_attribute(
@@ -460,18 +465,25 @@ def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
     return download_request.downloadUrl
 
 
-def _store_response_as_file(response: Response, destination: Optional[str] = None):
+def _store_response_as_file(response: Response, destination: Optional[str] = None, hook: Optional[DownloadHook] = None):
     if destination is None:
         target_file = _get_content_disposition_filename(response)
     elif os.path.isdir(destination):
         target_file = os.path.join(destination, _get_content_disposition_filename(response))
     else:
         target_file = destination
+
+    hook = hook if hook else NullDownloadHook()
+
+    total_size = int(response.headers.get("content-length", 0))
+    hook.download_setup(total_size)
     with response:
         with open(target_file, "wb") as f:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
+                hook.on_download_chunk(chunk)
+    hook.post_download()
 
 
 def _get_content_disposition_filename(response: Response) -> str:
