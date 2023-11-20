@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.4
+## neptune 1.8.4
 
 ### Changes
 - Moved `prepare_nql_query` to a separate function ([#1568](https://github.com/neptune-ai/neptune-client/pull/1568))
