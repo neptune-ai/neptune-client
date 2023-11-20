@@ -28,6 +28,7 @@ import time
 from io import BytesIO
 from typing import (
     AnyStr,
+    Callable,
     Dict,
     Iterable,
     List,
@@ -79,10 +80,6 @@ from neptune.internal.backends.swagger_client_wrapper import (
 from neptune.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
-)
-from neptune.internal.download_hook import (
-    DownloadHook,
-    NullDownloadHook,
 )
 from neptune.internal.utils import (
     get_absolute_paths,
@@ -424,7 +421,9 @@ def download_file_attribute(
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
-    hook: Optional[DownloadHook] = None,
+    pre_download_hook: Callable[[int], None] = lambda x: None,
+    download_iter_hook: Callable[[int], None] = lambda x: None,
+    post_download_hook: Callable[[], None] = lambda: None,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -436,13 +435,16 @@ def download_file_attribute(
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": container_id, "attribute": attribute},
     )
-    _store_response_as_file(response, destination, hook)
+    _store_response_as_file(response, destination, pre_download_hook, download_iter_hook, post_download_hook)
 
 
 def download_file_set_attribute(
     swagger_client: SwaggerClientWrapper,
     download_id: str,
     destination: Optional[str] = None,
+    pre_download_hook: Callable[[int], None] = lambda x: None,
+    download_iter_hook: Callable[[int], None] = lambda x: None,
+    post_download_hook: Callable[[], None] = lambda: None,
 ):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -456,7 +458,7 @@ def download_file_set_attribute(
         url=download_url,
         headers={"Accept": "application/zip"},
     )
-    _store_response_as_file(response, destination)
+    _store_response_as_file(response, destination, pre_download_hook, download_iter_hook, post_download_hook)
 
 
 def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
@@ -465,7 +467,13 @@ def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
     return download_request.downloadUrl
 
 
-def _store_response_as_file(response: Response, destination: Optional[str] = None, hook: Optional[DownloadHook] = None):
+def _store_response_as_file(
+    response: Response,
+    destination: Optional[str] = None,
+    pre_download_hook: Callable[[int], None] = lambda x: None,
+    download_iter_hook: Callable[[int], None] = lambda x: None,
+    post_download_hook: Callable[[], None] = lambda: None,
+) -> None:
     if destination is None:
         target_file = _get_content_disposition_filename(response)
     elif os.path.isdir(destination):
@@ -473,17 +481,15 @@ def _store_response_as_file(response: Response, destination: Optional[str] = Non
     else:
         target_file = destination
 
-    hook = hook if hook else NullDownloadHook()
-
     total_size = int(response.headers.get("content-length", 0))
-    hook.download_setup(total_size)
+    pre_download_hook(total_size)
     with response:
         with open(target_file, "wb") as f:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
-                hook.on_download_chunk(chunk)
-    hook.post_download()
+                download_iter_hook(chunk)
+    post_download_hook()
 
 
 def _get_content_disposition_filename(response: Response) -> str:
