@@ -302,7 +302,7 @@ class AsyncOperationProcessor(OperationProcessor):
         )
         def process_batch(self, batch: List[Operation], version: int, occurred_at: Optional[float] = None) -> None:
             if occurred_at is not None:
-                signal_batch_lag(queue=self._processor._signals_queue, lag=monotonic() - occurred_at)
+                signal_batch_lag(queue=self._processor._signals_queue, lag=time() - occurred_at)
 
             expected_count = len(batch)
             version_to_ack = version - expected_count
