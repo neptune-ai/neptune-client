@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.8.5
+## neptune 1.8.5
 
 ### Fixes
 - Fixed no synchronization callbacks behaviour ([#1567](https://github.com/neptune-ai/neptune-client/pull/1567))
