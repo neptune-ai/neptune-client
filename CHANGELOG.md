@@ -1,3 +1,9 @@
+## [UNRELEASED] neptune 1.8.5
+
+### Changes
+- Enabled hooks for internal downloading functions used by the hosted backend ([#1571](https://github.com/neptune-ai/neptune-client/pull/1571))
+
+
 ## neptune 1.8.4
 
 ### Changes
