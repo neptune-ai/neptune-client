@@ -102,12 +102,19 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         swagger_mock = self._get_swagger_mock()
         exp_uuid = str(uuid.uuid4())
 
+        pre_download_hook = MagicMock()
+        download_iter_hook = MagicMock()
+        post_download_hook = MagicMock()
+
         # when
         download_file_attribute(
             swagger_client=swagger_mock,
             container_id=exp_uuid,
             attribute="some/attribute",
             destination=None,
+            pre_download_hook=pre_download_hook,
+            download_iter_hook=download_iter_hook,
+            post_download_hook=post_download_hook,
         )
 
         # then
@@ -117,7 +124,9 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
             headers={"Accept": "application/octet-stream"},
             query_params={"experimentId": str(exp_uuid), "attribute": "some/attribute"},
         )
-        store_response_mock.assert_called_once_with(download_raw.return_value, None)
+        store_response_mock.assert_called_once_with(
+            download_raw.return_value, None, pre_download_hook, download_iter_hook, post_download_hook
+        )
 
     @patch("neptune.internal.backends.hosted_file_operations._store_response_as_file")
     @patch("neptune.internal.backends.hosted_file_operations._download_raw_data")
@@ -130,8 +139,19 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         swagger_mock = self._get_swagger_mock()
         download_id = str(uuid.uuid4())
 
+        pre_download_hook = MagicMock()
+        download_iter_hook = MagicMock()
+        post_download_hook = MagicMock()
+
         # when
-        download_file_set_attribute(swagger_client=swagger_mock, download_id=download_id, destination=None)
+        download_file_set_attribute(
+            swagger_client=swagger_mock,
+            download_id=download_id,
+            destination=None,
+            pre_download_hook=pre_download_hook,
+            download_iter_hook=download_iter_hook,
+            post_download_hook=post_download_hook,
+        )
 
         # then
         download_raw.assert_called_once_with(
@@ -139,7 +159,9 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
             url="some_url",
             headers={"Accept": "application/zip"},
         )
-        store_response_mock.assert_called_once_with(download_raw.return_value, None)
+        store_response_mock.assert_called_once_with(
+            download_raw.return_value, None, pre_download_hook, download_iter_hook, post_download_hook
+        )
 
 
 class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
