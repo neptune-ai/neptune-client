@@ -1,6 +1,7 @@
-## [UNRELEASED] 1.8.5
+## [UNRELEASED] neptune 1.8.5
 
 ### Changes
+- Enabled hooks for internal downloading functions used by the hosted backend ([#1571](https://github.com/neptune-ai/neptune-client/pull/1571))
 - Added timestamp of operation put to disk queue ([#1569](https://github.com/neptune-ai/neptune-client/pull/1569))
 
 
