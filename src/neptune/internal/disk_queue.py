@@ -39,6 +39,7 @@ from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
 T = TypeVar("T")
+Timestamp = float
 
 _logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class QueueElement(Generic[T]):
     obj: T
     ver: int
     size: int
-    at: Optional[float] = None
+    at: Optional[Timestamp] = None
 
 
 class DiskQueue(Generic[T]):
@@ -239,10 +240,10 @@ class DiskQueue(Generic[T]):
                 return log_versions[i + 1]
         raise ValueError("Missing log file with version > {}".format(version))
 
-    def _serialize(self, obj: T, version: int, at: Optional[float] = None) -> dict:
+    def _serialize(self, obj: T, version: int, at: Optional[Timestamp] = None) -> dict:
         return {"obj": self._to_dict(obj), "version": version, "at": at}
 
-    def _deserialize(self, data: dict) -> Tuple[T, int, Optional[float]]:
+    def _deserialize(self, data: dict) -> Tuple[T, int, Optional[Timestamp]]:
         return self._from_dict(data["obj"]), data["version"], data.get("at")
 
     def __enter__(self):
