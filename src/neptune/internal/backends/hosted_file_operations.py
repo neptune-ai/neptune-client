@@ -488,7 +488,7 @@ def _store_response_as_file(
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
-                download_iter_hook(len(chunk))
+                download_iter_hook(len(chunk) if chunk else 0)
     post_download_hook()
 
 
