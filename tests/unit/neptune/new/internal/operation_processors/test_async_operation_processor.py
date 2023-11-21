@@ -39,7 +39,11 @@ def test_close(metadata_file_mock, _, disk_queue_mock):
 
     # and
     processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
+        container_id=container_id,
+        container_type=container_type,
+        backend=MagicMock(),
+        lock=MagicMock(),
+        queue=MagicMock(),
     )
 
     # and
@@ -70,7 +74,11 @@ def test_cleanup_if_empty(metadata_file_mock, operation_storage_mock, disk_queue
 
     # and
     processor = AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
+        container_id=container_id,
+        container_type=container_type,
+        backend=MagicMock(),
+        lock=MagicMock(),
+        queue=MagicMock(),
     )
 
     # and
@@ -99,7 +107,11 @@ def test_metadata(metadata_file_mock, _, __):
 
     # when
     AsyncOperationProcessor(
-        container_id=container_id, container_type=container_type, backend=MagicMock(), lock=MagicMock()
+        container_id=container_id,
+        container_type=container_type,
+        backend=MagicMock(),
+        lock=MagicMock(),
+        queue=MagicMock(),
     )
 
     # then

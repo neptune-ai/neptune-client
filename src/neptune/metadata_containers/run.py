@@ -19,6 +19,7 @@ import os
 import threading
 from platform import node as get_hostname
 from typing import (
+    TYPE_CHECKING,
     List,
     Optional,
     Tuple,
@@ -51,7 +52,6 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
@@ -98,6 +98,9 @@ from neptune.types import (
 )
 from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.types.mode import Mode
+
+if TYPE_CHECKING:
+    from neptune.internal.background_job import BackgroundJob
 
 
 class Run(MetadataContainer):
@@ -445,7 +448,7 @@ class Run(MetadataContainer):
                 checkpoint_id=checkpoint_id,
             )
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
         websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
@@ -466,7 +469,7 @@ class Run(MetadataContainer):
                 TracebackJob(path=f"{self._monitoring_namespace}/traceback", fail_on_exception=self._fail_on_exception)
             )
 
-        return BackgroundJobList(background_jobs)
+        return background_jobs
 
     def _write_initial_attributes(self):
         if self._name is not None:
