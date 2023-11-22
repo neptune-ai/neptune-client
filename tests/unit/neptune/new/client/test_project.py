@@ -38,6 +38,7 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.metadata_containers.utils import prepare_nql_query
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
@@ -101,3 +102,32 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
             self.assertEqual(42, project["some/variable"].fetch())
             self.assertNotIn(str(project._id), os.listdir(".neptune"))
+
+
+def test_prepare_nql_query():
+    query = prepare_nql_query(
+        ["id1", "id2"],
+        ["active"],
+        ["owner1", "owner2"],
+        ["tag1", "tag2"],
+        trashed=True,
+    )
+    assert len(query.items) == 5
+
+    query = prepare_nql_query(
+        ["id1", "id2"],
+        ["active"],
+        ["owner1", "owner2"],
+        ["tag1", "tag2"],
+        trashed=None,
+    )
+    assert len(query.items) == 4
+
+    query = prepare_nql_query(
+        None,
+        None,
+        None,
+        None,
+        trashed=None,
+    )
+    assert len(query.items) == 0

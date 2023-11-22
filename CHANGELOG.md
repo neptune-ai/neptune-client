@@ -1,3 +1,25 @@
+## [UNRELEASED] neptune 1.8.6
+
+### Changes
+- Added method to `Run` to handle post `ApiExperiment` object creation actions ([#1564](https://github.com/neptune-ai/neptune-client/pull/1564))
+
+
+## neptune 1.8.5
+
+### Fixes
+- Fixed no synchronization callbacks behaviour ([#1567](https://github.com/neptune-ai/neptune-client/pull/1567))
+
+### Changes
+- Enabled hooks for internal downloading functions used by the hosted backend ([#1571](https://github.com/neptune-ai/neptune-client/pull/1571))
+- Added timestamp of operation put to disk queue ([#1569](https://github.com/neptune-ai/neptune-client/pull/1569))
+
+
+## neptune 1.8.4
+
+### Changes
+- Moved `prepare_nql_query` to a separate function ([#1568](https://github.com/neptune-ai/neptune-client/pull/1568))
+
+
 ## neptune 1.8.3
 
 ### Fixes
@@ -25,7 +47,8 @@
 - Rework disk utilization check ([#1549](https://github.com/neptune-ai/neptune-client/pull/1549))
 - Introduce error handlers for disk utilization ([#1559](https://github.com/neptune-ai/neptune-client/pull/1559))
 - Added support for `neptune[experimental]` extras ([#1560](https://github.com/neptune-ai/neptune-client/pull/1560))
-- Added method to `Run` to handle post `ApiExperiment` object creation actions ([#1564](https://github.com/neptune-ai/neptune-client/pull/1564))
+- Disk utilization environment variables renamed ([#1565](https://github.com/neptune-ai/neptune-client/pull/1565))
+
 
 
 ## neptune 1.8.2

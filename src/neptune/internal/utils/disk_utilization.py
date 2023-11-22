@@ -37,8 +37,8 @@ from neptune.common.warnings import (
 )
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.envs import (
-    NEPTUNE_MAX_DISK_UTILIZATION,
-    NEPTUNE_NON_RAISING_ON_DISK_ISSUE,
+    NEPTUNE_MAX_DISK_USAGE,
+    NEPTUNE_RAISE_ERROR_ON_DISK_USAGE_EXCEEDED,
 )
 from neptune.exceptions import NeptuneMaxDiskUtilizationExceeded
 
@@ -58,7 +58,7 @@ def get_disk_utilization_percent(path: Optional[str] = None) -> Optional[float]:
 
 
 def get_max_disk_utilization_from_env() -> Optional[float]:
-    env_limit_disk_utilization = os.getenv(NEPTUNE_MAX_DISK_UTILIZATION)
+    env_limit_disk_utilization = os.getenv(NEPTUNE_MAX_DISK_USAGE)
 
     if env_limit_disk_utilization is None:
         return None
@@ -71,7 +71,7 @@ def get_max_disk_utilization_from_env() -> Optional[float]:
         return limit_disk_utilization
     except (ValueError, TypeError):
         warn_once(
-            f"Provided invalid value of '{NEPTUNE_MAX_DISK_UTILIZATION}': '{env_limit_disk_utilization}'. "
+            f"Provided invalid value of '{NEPTUNE_MAX_DISK_USAGE}': '{env_limit_disk_utilization}'. "
             "Check of disk utilization will not be applied.",
             exception=NeptuneWarning,
         )
@@ -165,10 +165,10 @@ class RaisingErrorHandler(DiskUtilizationErrorHandlerTemplate):
 
 
 def ensure_disk_not_overutilize(func: Callable[..., None]) -> Callable[..., None]:
-    non_raising_on_disk_issue = os.getenv(NEPTUNE_NON_RAISING_ON_DISK_ISSUE, "false").lower() in ("true", "t", "1")
+    raising_on_disk_issue = os.getenv(NEPTUNE_RAISE_ERROR_ON_DISK_USAGE_EXCEEDED, "True").lower() in ("true", "t", "1")
     max_disk_utilization = get_max_disk_utilization_from_env()
 
-    error_handler = NonRaisingErrorHandler if non_raising_on_disk_issue else RaisingErrorHandler
+    error_handler = RaisingErrorHandler if raising_on_disk_issue else NonRaisingErrorHandler
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> None:

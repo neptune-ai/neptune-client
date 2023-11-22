@@ -16,7 +16,11 @@
 __all__ = ["ModelVersion"]
 
 import os
-from typing import Optional
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+)
 
 from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
@@ -31,7 +35,6 @@ from neptune.exceptions import (
     NeptuneOfflineModeChangeStageException,
 )
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
@@ -49,6 +52,9 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
+
+if TYPE_CHECKING:
+    from neptune.internal.background_job import BackgroundJob
 
 
 class ModelVersion(MetadataContainer):
@@ -226,8 +232,8 @@ class ModelVersion(MetadataContainer):
                 called_function="init_model_version",
             )
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([PingBackgroundJob()])
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
+        return [PingBackgroundJob()]
 
     def _write_initial_attributes(self):
         if self._name is not None:

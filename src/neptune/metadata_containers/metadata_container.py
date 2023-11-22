@@ -23,11 +23,10 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import (
-    partial,
-    wraps,
-)
+from functools import wraps
+from queue import Queue
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -62,6 +61,7 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.project_name_lookup import project_name_lookup
 from neptune.internal.backgroud_job_list import BackgroundJobList
+from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
@@ -78,6 +78,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
@@ -95,6 +96,9 @@ from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
+
+if TYPE_CHECKING:
+    from neptune.internal.signals_processing.signals import Signal
 
 
 def ensure_not_stopped(fun):
@@ -140,6 +144,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
+        self._signals_queue: "Queue[Signal]" = Queue()
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -173,12 +178,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
-            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-            async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_callback=partial(self._async_no_progress_callback, self)
-            if self._async_no_progress_callback
-            else None,
-            async_no_progress_threshold=self._async_no_progress_threshold,
+            queue=self._signals_queue,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -231,6 +231,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         reset_internal_ssl_state()
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
+            self._signals_queue = Queue()
             self._op_processor = get_operation_processor(
                 mode=self._mode,
                 container_id=self._id,
@@ -238,16 +239,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
-                async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-                async_lag_threshold=self._async_lag_threshold,
-                async_no_progress_callback=partial(self._async_no_progress_callback, self)
-                if self._async_no_progress_callback
-                else None,
-                async_no_progress_threshold=self._async_no_progress_threshold,
+                queue=self._signals_queue,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
-            self._bg_job = BackgroundJobList([])
+            jobs = []
+            if self._mode == Mode.ASYNC:
+                jobs.append(
+                    CallbacksMonitor(
+                        queue=self._signals_queue,
+                        async_lag_threshold=self._async_lag_threshold,
+                        async_no_progress_threshold=self._async_no_progress_threshold,
+                        async_lag_callback=self._async_lag_callback,
+                        async_no_progress_callback=self._async_no_progress_callback,
+                    )
+                )
+            self._bg_job = BackgroundJobList(jobs)
 
             self._op_processor.start()
 
@@ -265,16 +272,30 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
+        jobs = []
+
         if self._mode != Mode.READ_ONLY:
-            return self._prepare_background_jobs()
-        return BackgroundJobList([])
+            jobs.extend(self._get_background_jobs())
+
+        if self._mode == Mode.ASYNC:
+            jobs.append(
+                CallbacksMonitor(
+                    queue=self._signals_queue,
+                    async_lag_threshold=self._async_lag_threshold,
+                    async_no_progress_threshold=self._async_no_progress_threshold,
+                    async_lag_callback=self._async_lag_callback,
+                    async_no_progress_callback=self._async_no_progress_callback,
+                )
+            )
+
+        return BackgroundJobList(jobs)
 
     @abc.abstractmethod
     def _get_or_create_api_object(self) -> ApiExperiment:
         raise NotImplementedError
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([])
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
+        return []
 
     def _write_initial_attributes(self):
         pass

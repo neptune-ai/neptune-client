@@ -20,6 +20,8 @@ import unittest
 from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional
+from unittest.mock import patch
 
 from neptune.internal.disk_queue import (
     DiskQueue,
@@ -37,15 +39,21 @@ class TestDiskQueue(unittest.TestCase):
             return isinstance(other, TestDiskQueue.Obj) and self.num == other.num and self.txt == other.txt
 
     @staticmethod
-    def get_obj_size_bytes(obj, version) -> int:
-        return len(json.dumps({"obj": obj.__dict__, "version": version}))
+    def get_obj_size_bytes(obj, version, at: Optional[int] = None) -> int:
+        return len(json.dumps({"obj": obj.__dict__, "version": version, "at": at}))
 
     @staticmethod
-    def get_queue_element(obj, version) -> QueueElement[Obj]:
-        obj_size = len(json.dumps({"obj": obj.__dict__, "version": version}))
-        return QueueElement(obj, version, obj_size)
+    def get_queue_element(obj, version, at: Optional[int] = None) -> QueueElement[Obj]:
+        obj_size = len(json.dumps({"obj": obj.__dict__, "version": version, "at": at}))
+        return QueueElement(obj, version, obj_size, at)
 
-    def test_put(self):
+    @patch("neptune.internal.disk_queue.time")
+    def test_put(self, time_mock):
+        # given
+        time_mock.side_effect = [
+            1234,
+        ]
+
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
@@ -56,10 +64,14 @@ class TestDiskQueue(unittest.TestCase):
             obj = TestDiskQueue.Obj(5, "test")
             queue.put(obj)
             queue.flush()
-            self.assertEqual(queue.get(), self.get_queue_element(obj, 1))
+            self.assertEqual(queue.get(), self.get_queue_element(obj, 1, 1234))
             queue.close()
 
-    def test_multiple_files(self):
+    @patch("neptune.internal.disk_queue.time")
+    def test_multiple_files(self, time_mock):
+        # given
+        time_mock.side_effect = list(range(1234, 1234 + 100))
+
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
@@ -74,13 +86,17 @@ class TestDiskQueue(unittest.TestCase):
             queue.flush()
             for i in range(1, 101):
                 obj = TestDiskQueue.Obj(i, str(i))
-                self.assertEqual(queue.get(), self.get_queue_element(obj, i))
+                self.assertEqual(queue.get(), self.get_queue_element(obj, i, 1234 + i - 1))
             queue.close()
             self.assertTrue(queue._read_file_version > 90)
             self.assertTrue(queue._write_file_version > 90)
             self.assertTrue(len(glob(dirpath + "/data-*.log")) > 10)
 
-    def test_get_batch(self):
+    @patch("neptune.internal.disk_queue.time")
+    def test_get_batch(self, time_mock):
+        # given
+        time_mock.side_effect = list(range(1234, 1234 + 90))
+
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
@@ -95,23 +111,27 @@ class TestDiskQueue(unittest.TestCase):
             queue.flush()
             self.assertEqual(
                 queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(1, 26)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i, 1234 + i - 1) for i in range(1, 26)],
             )
             self.assertEqual(
                 queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(26, 51)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i, 1234 + i - 1) for i in range(26, 51)],
             )
             self.assertEqual(
                 queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(51, 76)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i, 1234 + i - 1) for i in range(51, 76)],
             )
             self.assertEqual(
                 queue.get_batch(25),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i) for i in range(76, 91)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i, 1234 + i - 1) for i in range(76, 91)],
             )
             queue.close()
 
-    def test_batch_limit(self):
+    @patch("neptune.internal.disk_queue.time")
+    def test_batch_limit(self, time_mock):
+        # given
+        time_mock.side_effect = [1234, 1235, 1236, 1237, 1238]
+
         with TemporaryDirectory() as dirpath:
             obj_size = self.get_obj_size_bytes(TestDiskQueue.Obj(1, "1"), 1)
             queue = DiskQueue[TestDiskQueue.Obj](
@@ -129,16 +149,20 @@ class TestDiskQueue(unittest.TestCase):
 
             self.assertEqual(
                 queue.get_batch(5),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1, 1234 + i) for i in range(3)],
             )
             self.assertEqual(
                 queue.get_batch(2),
-                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3, 5)],
+                [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1, 1234 + i) for i in range(3, 5)],
             )
 
             queue.close()
 
-    def test_resuming_queue(self):
+    @patch("neptune.internal.disk_queue.time")
+    def test_resuming_queue(self, time_mock):
+        # given
+        time_mock.side_effect = list(range(1234, 1234 + 500))
+
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
@@ -172,7 +196,7 @@ class TestDiskQueue(unittest.TestCase):
             )
             for i in range(version_to_ack + 1, 501):
                 obj = TestDiskQueue.Obj(i, str(i))
-                self.assertEqual(queue.get(), self.get_queue_element(obj, i))
+                self.assertEqual(queue.get(), self.get_queue_element(obj, i, 1234 + i - 1))
 
             queue.close()
 
