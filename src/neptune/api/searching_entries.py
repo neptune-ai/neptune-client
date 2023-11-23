@@ -121,9 +121,11 @@ def to_leaderboard_entry(*, entry: Any) -> LeaderboardEntry:
     for attr in entry.attributes:
         if attr.type in supported_attribute_types:
             properties = attr.__getitem__(f"{attr.type}Properties")
-            attributes.append(AttributeWithProperties(attr.name, AttributeType(attr.type), properties))
+            attributes.append(
+                AttributeWithProperties(path=attr.name, type=AttributeType(attr.type), properties=properties)
+            )
 
-    return LeaderboardEntry(entry.experimentId, attributes)
+    return LeaderboardEntry(id=entry.experimentId, attributes=attributes)
 
 
 def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 10000) -> List[Any]:
