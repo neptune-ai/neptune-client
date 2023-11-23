@@ -1,3 +1,9 @@
+## [UNRELEASED] neptune 1.8.6
+
+### Changes
+- Adjusted NeptuneLimitExceedException message ([#1574](https://github.com/neptune-ai/neptune-client/pull/1574))
+
+
 ## neptune 1.8.5
 
 ### Fixes
