@@ -28,6 +28,7 @@ from typing import (
 )
 
 from bravado.exception import HTTPNotFound  # type: ignore
+from tqdm import tqdm
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -44,6 +45,9 @@ if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
+
+
+SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
 
 @with_api_exceptions_handler
@@ -115,24 +119,26 @@ def get_single_page(
 
 
 def to_leaderboard_entry(*, entry: Any) -> LeaderboardEntry:
-    supported_attribute_types = {item.value for item in AttributeType}
-    attributes: List[AttributeWithProperties] = []
-
-    for attr in entry.attributes:
-        if attr.type in supported_attribute_types:
-            properties = attr.__getitem__(f"{attr.type}Properties")
-            attributes.append(
-                AttributeWithProperties(path=attr.name, type=AttributeType(attr.type), properties=properties)
+    return LeaderboardEntry(
+        id=entry.experimentId,
+        attributes=[
+            AttributeWithProperties(
+                path=attr.name, type=AttributeType(attr.type), properties=attr.__getitem__(f"{attr.type}Properties")
             )
+            for attr in entry.attributes
+            if attr.type in SUPPORTED_ATTRIBUTE_TYPES
+        ],
+    )
 
-    return LeaderboardEntry(id=entry.experimentId, attributes=attributes)
 
-
-def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 10000) -> List[Any]:
+def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 500) -> List[Any]:
     items: List[Any] = []
     previous_items = None
-    while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-        previous_items = iter_once(limit=step, offset=len(items))
-        items += previous_items
+
+    with tqdm(desc="Fetching runs", unit=" runs") as progress_bar:
+        while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
+            previous_items = iter_once(limit=step, offset=len(items))
+            progress_bar.update(len(previous_items))
+            items += previous_items
 
     return items
