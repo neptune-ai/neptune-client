@@ -17,8 +17,10 @@ __all__ = ["HostedNeptuneBackend"]
 
 import itertools
 import logging
+import os
 import re
 import typing
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -38,7 +40,11 @@ from bravado.exception import (
 )
 
 from neptune.api.dtos import FileEntry
-from neptune.api.searching_entries import search_leaderboard_entries
+from neptune.api.searching_entries import (
+    get_single_page,
+    iter_over_pages,
+    to_leaderboard_entry,
+)
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -46,6 +52,7 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
     ContainerUUIDNotFound,
@@ -1020,13 +1027,29 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
-        return search_leaderboard_entries(
-            swagger_client=self.leaderboard_client,
-            project_id=project_id,
-            types=types,
-            query=query,
-            columns=columns,
-        )
+        step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+
+        types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
+        query_params = {"query": {"query": str(query)}} if query else {}
+        attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
+
+        try:
+            return [
+                to_leaderboard_entry(entry=entry)
+                for entry in iter_over_pages(
+                    iter_once=partial(
+                        get_single_page,
+                        client=self.leaderboard_client,
+                        project_id=project_id,
+                        types=types_filter,
+                        query_params=query_params,
+                        attributes_filter=attributes_filter,
+                    ),
+                    step=step_size,
+                )
+            ]
+        except HTTPNotFound:
+            raise ProjectNotFound(project_id)
 
     def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         base_url = self.get_display_address()

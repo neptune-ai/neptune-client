@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["search_leaderboard_entries"]
+__all__ = ["get_single_page", "iter_over_pages", "to_leaderboard_entry"]
 
-import os
-from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -30,11 +28,7 @@ from typing import (
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
-from bravado.exception import HTTPNotFound  # type: ignore
 
-from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
-from neptune.exceptions import ProjectNotFound
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -43,47 +37,11 @@ from neptune.internal.backends.api_model import (
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 
 if TYPE_CHECKING:
-    from neptune.internal.backends.nql import NQLQuery
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-    from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
 
 
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
-
-
-@with_api_exceptions_handler
-def search_leaderboard_entries(
-    *,
-    swagger_client: "SwaggerClientWrapper",
-    project_id: "UniqueId",
-    types: Optional[Iterable["ContainerType"]] = None,
-    query: Optional["NQLQuery"] = None,
-    columns: Optional[Iterable[str]] = None,
-) -> List[LeaderboardEntry]:
-    step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
-
-    types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
-    query_params = {"query": {"query": str(query)}} if query else {}
-    attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
-
-    try:
-        return [
-            to_leaderboard_entry(entry=entry)
-            for entry in iter_over_pages(
-                iter_once=partial(
-                    get_single_page,
-                    client=swagger_client,
-                    project_id=project_id,
-                    types=types_filter,
-                    query_params=query_params,
-                    attributes_filter=attributes_filter,
-                ),
-                step=step_size,
-            )
-        ]
-    except HTTPNotFound:
-        raise ProjectNotFound(project_id)
 
 
 def get_single_page(
@@ -143,6 +101,8 @@ def iter_over_pages(
     num_of_collected_items = 0
 
     while (previous_items is None or len(previous_items) >= step) and num_of_collected_items < max_server_offset:
-        previous_items = iter_once(limit=step, offset=num_of_collected_items)
+        previous_items = iter_once(
+            limit=min(step, max_server_offset - num_of_collected_items), offset=num_of_collected_items
+        )
         num_of_collected_items += len(previous_items)
         yield from previous_items
