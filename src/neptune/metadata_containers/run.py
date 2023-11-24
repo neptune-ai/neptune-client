@@ -490,7 +490,7 @@ class Run(MetadataContainer):
         if self._description is not None:
             self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
 
-        if any([self._capture_stderr, self._capture_stdout, self._capture_traceback, self._capture_hardware_metrics]):
+        if any((self._capture_stderr, self._capture_stdout, self._capture_traceback, self._capture_hardware_metrics)):
             self._write_initial_monitoring_attributes()
 
         if self._tags is not None:
