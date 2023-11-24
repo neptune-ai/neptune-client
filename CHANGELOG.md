@@ -1,3 +1,9 @@
+## [UNRELEASED] 1.8.6
+
+### Changes
+- Improved performance of `fetch_*_table()` methods up to 2x ([#1573])(https://github.com/neptune-ai/neptune-client/pull/1573)
+
+
 ## neptune 1.8.5
 
 ### Fixes
