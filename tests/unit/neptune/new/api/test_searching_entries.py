@@ -103,4 +103,4 @@ def test__iter_over_pages__max_server_offset():
     result = list(iter_over_pages(iter_once=iter_once, step=3, max_server_offset=5))
 
     # then
-    assert result == [1, 2, 3, 4, 5, 6]
+    assert result == [1, 2, 3, 4, 5]
