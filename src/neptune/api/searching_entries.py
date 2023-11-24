@@ -62,17 +62,9 @@ def search_leaderboard_entries(
 ) -> List[LeaderboardEntry]:
     step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
-    if query:
-        query_params = {"query": {"query": str(query)}}
-    else:
-        query_params = {}
-
-    if columns:
-        attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
-    else:
-        attributes_filter = {}
-
     types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
+    query_params = {"query": {"query": str(query)}} if query else {}
+    attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
     try:
         return [
@@ -103,8 +95,7 @@ def get_single_page(
     offset: int,
     types: Optional[Iterable[str]] = None,
 ) -> List[Any]:
-    operation = client.api.searchLeaderboardEntries
-    op_kwargs = {
+    params = {
         "projectIdentifier": project_id,
         "type": types,
         "params": {
@@ -112,26 +103,21 @@ def get_single_page(
             **attributes_filter,
             "pagination": {"limit": limit, "offset": offset},
         },
-        **DEFAULT_REQUEST_KWARGS,
     }
 
-    request_options = op_kwargs.pop("_request_options", {})
+    request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
     request_config = RequestConfig(request_options, True)
-
-    request_params = construct_request(operation, request_options, **op_kwargs)
+    request_params = construct_request(client.api.searchLeaderboardEntries, request_options, **params)
 
     http_client = client.swagger_spec.http_client
 
-    return list(
-        http_client.request(
-            request_params,
-            operation=None,
-            request_config=request_config,
-        )
+    result = (
+        http_client.request(request_params, operation=None, request_config=request_config)
         .response()
         .incoming_response.json()
-        .get("entries", [])
     )
+
+    return list(result.get("entries", []))
 
 
 def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
