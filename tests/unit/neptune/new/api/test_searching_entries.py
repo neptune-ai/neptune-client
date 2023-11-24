@@ -13,12 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from dataclasses import dataclass
-from typing import (
-    List,
-    Optional,
-)
-
 from neptune.api.searching_entries import (
     iter_over_pages,
     to_leaderboard_entry,
@@ -29,44 +23,27 @@ from neptune.internal.backends.api_model import (
 )
 
 
-@dataclass
-class AttributesDTO:
-    experimentId: str
-    attributes: List["AttributeDTO"]
-
-
-@dataclass
-class AttributeDTO:
-    name: str
-    type: str
-    floatProperties: Optional[dict] = None
-    stringProperties: Optional[dict] = None
-
-    def __getitem__(self, item):
-        return getattr(self, item)
-
-
 def test__to_leaderboard_entry():
     # given
-    entry = AttributesDTO(
-        experimentId="foo",
-        attributes=[
-            AttributeDTO(
-                name="plugh",
-                type="float",
-                floatProperties={
+    entry = {
+        "experimentId": "foo",
+        "attributes": [
+            {
+                "name": "plugh",
+                "type": "float",
+                "floatProperties": {
                     "value": 1.0,
                 },
-            ),
-            AttributeDTO(
-                name="sys/id",
-                type="string",
-                stringProperties={
+            },
+            {
+                "name": "sys/id",
+                "type": "string",
+                "stringProperties": {
                     "value": "TEST-123",
                 },
-            ),
+            },
         ],
-    )
+    }
 
     # when
     result = to_leaderboard_entry(entry=entry)

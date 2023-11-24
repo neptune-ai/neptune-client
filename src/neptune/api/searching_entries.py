@@ -27,8 +27,9 @@ from typing import (
     Optional,
 )
 
+from bravado.client import construct_request  # type: ignore
+from bravado.config import RequestConfig  # type: ignore
 from bravado.exception import HTTPNotFound  # type: ignore
-from tqdm import tqdm
 
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -102,43 +103,58 @@ def get_single_page(
     offset: int,
     types: Optional[Iterable[str]] = None,
 ) -> List[Any]:
+    operation = client.api.searchLeaderboardEntries
+    op_kwargs = {
+        "projectIdentifier": project_id,
+        "type": types,
+        "params": {
+            **query_params,
+            **attributes_filter,
+            "pagination": {"limit": limit, "offset": offset},
+        },
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    request_options = op_kwargs.pop("_request_options", {})
+    request_config = RequestConfig(request_options, True)
+
+    request_params = construct_request(operation, request_options, **op_kwargs)
+
+    http_client = client.swagger_spec.http_client
+
     return list(
-        client.api.searchLeaderboardEntries(
-            projectIdentifier=project_id,
-            type=types,
-            params={
-                **query_params,
-                **attributes_filter,
-                "pagination": {"limit": limit, "offset": offset},
-            },
-            **DEFAULT_REQUEST_KWARGS,
+        http_client.request(
+            request_params,
+            operation=None,
+            request_config=request_config,
         )
         .response()
-        .result.entries
+        .incoming_response.json()
+        .get("entries", [])
     )
 
 
-def to_leaderboard_entry(*, entry: Any) -> LeaderboardEntry:
+def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
-        id=entry.experimentId,
+        id=entry["experimentId"],
         attributes=[
             AttributeWithProperties(
-                path=attr.name, type=AttributeType(attr.type), properties=attr.__getitem__(f"{attr.type}Properties")
+                path=attr["name"],
+                type=AttributeType(attr["type"]),
+                properties=attr.__getitem__(f"{attr['type']}Properties"),
             )
-            for attr in entry.attributes
-            if attr.type in SUPPORTED_ATTRIBUTE_TYPES
+            for attr in entry["attributes"]
+            if attr["type"] in SUPPORTED_ATTRIBUTE_TYPES
         ],
     )
 
 
-def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 500) -> List[Any]:
+def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 1000) -> List[Any]:
     items: List[Any] = []
     previous_items = None
 
-    with tqdm(desc="Fetching runs", unit=" runs") as progress_bar:
-        while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-            previous_items = iter_once(limit=step, offset=len(items))
-            progress_bar.update(len(previous_items))
-            items += previous_items
+    while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
+        previous_items = iter_once(limit=step, offset=len(items))
+        items += previous_items
 
     return items
