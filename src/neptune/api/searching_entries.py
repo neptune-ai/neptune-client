@@ -22,6 +22,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
     List,
     Optional,
@@ -135,12 +136,13 @@ def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
     )
 
 
-def iter_over_pages(*, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 1000) -> List[Any]:
-    items: List[Any] = []
+def iter_over_pages(
+    *, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 10000
+) -> Generator[Any, None, None]:
     previous_items = None
+    num_of_collected_items = 0
 
-    while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-        previous_items = iter_once(limit=step, offset=len(items))
-        items += previous_items
-
-    return items
+    while (previous_items is None or len(previous_items) >= step) and num_of_collected_items < max_server_offset:
+        previous_items = iter_once(limit=step, offset=num_of_collected_items)
+        num_of_collected_items += len(previous_items)
+        yield from previous_items
