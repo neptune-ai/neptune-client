@@ -2,6 +2,7 @@
 
 ### Changes
 - Improved performance of `fetch_*_table()` methods up to 2x ([#1573])(https://github.com/neptune-ai/neptune-client/pull/1573)
+- Do not create monitoring namespace if all relevant flags are set to False ([#1575](https://github.com/neptune-ai/neptune-client/pull/1575))
 
 
 ## neptune 1.8.5
