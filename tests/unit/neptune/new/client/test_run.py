@@ -266,3 +266,13 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
         with init_run(mode="debug", git_ref=False):
             mock_get_diff.assert_not_called()
+
+    def test_monitoring_namespace_not_created_if_no_monitoring_enabled(self):
+        with init_run(
+            mode="debug",
+            capture_traceback=False,
+            capture_stdout=False,
+            capture_stderr=False,
+            capture_hardware_metrics=False,
+        ) as run:
+            assert not run.exists("monitoring")
