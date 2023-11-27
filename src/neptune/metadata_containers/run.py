@@ -471,13 +471,7 @@ class Run(MetadataContainer):
 
         return background_jobs
 
-    def _write_initial_attributes(self):
-        if self._name is not None:
-            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
-
-        if self._description is not None:
-            self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
-
+    def _write_initial_monitoring_attributes(self) -> None:
         if self._hostname is not None:
             self[f"{self._monitoring_namespace}/hostname"] = self._hostname
             if self._with_id is None:
@@ -488,6 +482,16 @@ class Run(MetadataContainer):
 
         if self._tid is not None:
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
+
+    def _write_initial_attributes(self):
+        if self._name is not None:
+            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+
+        if self._description is not None:
+            self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
+
+        if any((self._capture_stderr, self._capture_stdout, self._capture_traceback, self._capture_hardware_metrics)):
+            self._write_initial_monitoring_attributes()
 
         if self._tags is not None:
             self[SYSTEM_TAGS_ATTRIBUTE_PATH].add(self._tags)

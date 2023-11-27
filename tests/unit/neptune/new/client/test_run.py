@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import itertools
 import os
 import unittest
 
@@ -266,3 +267,25 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
         with init_run(mode="debug", git_ref=False):
             mock_get_diff.assert_not_called()
+
+    def test_monitoring_namespace_not_created_if_no_monitoring_enabled(self):
+        with init_run(
+            mode="debug",
+            capture_traceback=False,
+            capture_stdout=False,
+            capture_stderr=False,
+            capture_hardware_metrics=False,
+        ) as run:
+            assert not run.exists("monitoring")
+
+    def test_monitoring_namespace_created_if_any_flag_enabled(self):
+        for perm in set(itertools.permutations([True, False, False, False])):
+            ct, cso, cse, chm = perm
+            with init_run(
+                mode="debug",
+                capture_traceback=ct,
+                capture_stdout=cso,
+                capture_stderr=cse,
+                capture_hardware_metrics=chm,
+            ) as run:
+                assert run.exists("monitoring")
