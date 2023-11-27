@@ -57,6 +57,7 @@ class NQLQueryAggregate(NQLQuery):
 class NQLAttributeOperator(str, Enum):
     EQUALS = "="
     CONTAINS = "CONTAINS"
+    GREATER_THAN = ">"
 
 
 class NQLAttributeType(str, Enum):

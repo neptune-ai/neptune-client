@@ -28,6 +28,7 @@ from typing import (
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
+from icecream import ic
 
 from neptune.internal.backends.api_model import (
     AttributeType,
@@ -39,7 +40,8 @@ from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
     from neptune.internal.id_formats import UniqueId
-
+from neptune.internal.backends.nql import NQLQuery, NQLEmptyQuery, NQLQueryAggregate, NQLAggregator, NQLQueryAttribute, \
+    NQLAttributeType, NQLAttributeOperator
 
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
@@ -48,21 +50,46 @@ def get_single_page(
     *,
     client: "SwaggerClientWrapper",
     project_id: "UniqueId",
-    query_params: Dict[str, Any],
     attributes_filter: Dict[str, Any],
+    sort_by: str,
     limit: int,
     offset: int,
     types: Optional[Iterable[str]] = None,
+    query: Optional["NQLQuery"] = None,
+    searching_after: Optional[str] = None,
 ) -> List[Any]:
+    nql_query = query or NQLEmptyQuery()
+    if searching_after:
+        nql_query = NQLQueryAggregate(
+            items=[
+                nql_query,
+                NQLQueryAttribute(
+                    name=sort_by,
+                    type=NQLAttributeType.STRING,
+                    operator=NQLAttributeOperator.GREATER_THAN,
+                    value=searching_after,
+                )
+            ],
+            aggregator=NQLAggregator.AND,
+        )
+
+    query_params = {"query": {"query": str(nql_query)}}
     params = {
         "projectIdentifier": project_id,
         "type": types,
         "params": {
+            "sorting": {
+                "dir": "ascending",
+                "aggregationMode": "none",
+                "sortBy": {"name": sort_by, "type": "string"},
+            },
             **query_params,
             **attributes_filter,
             "pagination": {"limit": limit, "offset": offset},
         },
     }
+
+    # ic(params)
 
     request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
     request_config = RequestConfig(request_options, True)
@@ -76,10 +103,10 @@ def get_single_page(
         .incoming_response.json()
     )
 
-    return list(result.get("entries", []))
+    return list(map(to_leaderboard_entry, result.get("entries", [])))
 
 
-def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
+def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
         id=entry["experimentId"],
         attributes=[
@@ -94,15 +121,30 @@ def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
     )
 
 
-def iter_over_pages(
-    *, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 10000
-) -> Generator[Any, None, None]:
-    previous_items = None
-    num_of_collected_items = 0
+def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeWithProperties]:
+    for attr in entry.attributes:
+        if attr.path == path:
+            return attr
+    return None
 
-    while (previous_items is None or len(previous_items) >= step) and num_of_collected_items < max_server_offset:
-        previous_items = iter_once(
-            limit=min(step, max_server_offset - num_of_collected_items), offset=num_of_collected_items
-        )
-        num_of_collected_items += len(previous_items)
-        yield from previous_items
+
+def iter_over_pages(
+    *, iter_once: Callable[..., List[Any]], step: int, sort_by: str = 'sys/id', max_server_offset: int = 10_000
+) -> Generator[Any, None, None]:
+    step = 10
+    batch = None
+    searching_after = None
+    next_searching_after = None
+
+    while searching_after is not None or batch is None:
+        for offset in range(0, max_server_offset, step):
+            batch = iter_once(limit=min(step, max_server_offset-offset), offset=offset, sort_by=sort_by, searching_after=searching_after)
+            if not batch:
+                return
+
+            yield from batch
+
+            sort_by_attribute = find_attribute(entry=batch[-1], path=sort_by)
+            next_searching_after = sort_by_attribute.properties['value'] if sort_by_attribute else None
+
+        searching_after = next_searching_after

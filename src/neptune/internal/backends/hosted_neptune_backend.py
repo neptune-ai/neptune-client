@@ -1030,24 +1030,24 @@ class HostedNeptuneBackend(NeptuneBackend):
         step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
-        query_params = {"query": {"query": str(query)}} if query else {}
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
+        from tqdm import tqdm
+
         try:
-            return [
-                to_leaderboard_entry(entry=entry)
-                for entry in iter_over_pages(
+            return list(
+                tqdm(iter_over_pages(
                     iter_once=partial(
                         get_single_page,
                         client=self.leaderboard_client,
                         project_id=project_id,
                         types=types_filter,
-                        query_params=query_params,
+                        query=query,
                         attributes_filter=attributes_filter,
                     ),
                     step=step_size,
-                )
-            ]
+                ))
+            )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
