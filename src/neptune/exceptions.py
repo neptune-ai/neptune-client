@@ -824,7 +824,9 @@ class NeptuneLimitExceedException(NeptuneException):
 {end}
 {reason}
 
-What happens now?
+Some limit related to your workspace or project was exceeded. You can manage your plan and check usage in the workspace
+settings: https://app.neptune.ai/-/subscription
+What happens to my data?
     If you're using Neptune in asynchronous mode (default), the data that couldn't be uploaded is safely stored on the
     disk. You can still fetch and delete data from your projects.
 How do I upload my offline metadata to Neptune?
