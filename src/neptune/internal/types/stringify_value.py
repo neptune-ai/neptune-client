@@ -29,7 +29,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["StringifyValue", "extract_if_stringify_value", "is_unsupported_float"]
+__all__ = ["StringifyValue", "extract_if_stringify_value"]
 
 import math
 from typing import Any
@@ -59,11 +59,6 @@ class StringifyValue:
             )
             value = float(value)
         if is_unsupported_float(value):
-            logger.info(
-                "The value you're trying to log is an unsupported float value (%s) and will be logged as string. "
-                "We'll add support for these types of values in the future.",
-                str(value),
-            )
             value = str(value)
 
         self.__value = value

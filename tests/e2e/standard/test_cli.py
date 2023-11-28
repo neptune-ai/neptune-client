@@ -25,7 +25,6 @@ import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
 from neptune.common.exceptions import NeptuneException
-from neptune.internal.operation_processors.partitioned_operation_processor import PartitionedOperationProcessor
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -117,11 +116,7 @@ class TestSync(BaseE2ETest):
 
     @staticmethod
     def stop_synchronization_process(container):
-        if isinstance(container._op_processor, PartitionedOperationProcessor):
-            for processor in container._op_processor._processors:
-                processor._consumer.interrupt()
-        else:
-            container._op_processor._consumer.interrupt()
+        container._op_processor._consumer.interrupt()
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
@@ -169,22 +164,15 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                if isinstance(container._op_processor, PartitionedOperationProcessor):
-                    container_path = container._op_processor._processors[0]._queue._dir_path
-                    container_path_parent = container_path.parent.parent
-                else:
-                    container_path = container._op_processor._queue._dir_path
-                    container_path_parent = container_path.parent
+                container_path = container._op_processor._queue._dir_path
+                container_path_parent = container_path.parent
                 container_sys_id = container._sys_id
 
             with initialize_container(
                 container_type=container_type, project=environment.project, mode="offline"
             ) as container:
                 container[key] = fake.unique.word()
-                if isinstance(container._op_processor, PartitionedOperationProcessor):
-                    offline_container_path = container._op_processor._processors[0]._queue._dir_path
-                else:
-                    offline_container_path = container._op_processor._queue._dir_path
+                offline_container_path = container._op_processor._queue._dir_path
                 offline_container_id = container._id
 
             assert os.path.exists(container_path)
@@ -218,10 +206,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                if isinstance(container._op_processor, PartitionedOperationProcessor):
-                    container_path = container._op_processor._data_path
-                else:
-                    container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor._queue._dir_path
                 container_sys_id = container._sys_id
 
             assert os.path.exists(container_path)
@@ -248,10 +233,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                if isinstance(container._op_processor, PartitionedOperationProcessor):
-                    container_path = container._op_processor._data_path
-                else:
-                    container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor._queue._dir_path
 
             assert os.path.exists(container_path)
 

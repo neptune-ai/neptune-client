@@ -18,30 +18,43 @@ __all__ = ["get_operation_processor"]
 
 import os
 import threading
-from typing import (
-    Callable,
-    Optional,
-)
+from queue import Queue
+from typing import TYPE_CHECKING
 
-from neptune.envs import (
-    NEPTUNE_ASYNC_BATCH_SIZE,
-    NEPTUNE_ASYNC_PARTITIONS_NUMBER,
-)
+from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.internal.init.parameters import (
-    ASYNC_LAG_THRESHOLD,
-    ASYNC_NO_PROGRESS_THRESHOLD,
-)
 from neptune.types.mode import Mode
 
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
-from .partitioned_operation_processor import PartitionedOperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
+
+if TYPE_CHECKING:
+    from neptune.internal.signals_processing.signals import Signal
+
+
+# WARNING: Be careful when changing this function. It is used in the experimental package
+def build_async_operation_processor(
+    container_id: UniqueId,
+    container_type: ContainerType,
+    backend: NeptuneBackend,
+    lock: threading.RLock,
+    sleep_time: float,
+    queue: "Queue[Signal]",
+) -> OperationProcessor:
+    return AsyncOperationProcessor(
+        container_id=container_id,
+        container_type=container_type,
+        backend=backend,
+        lock=lock,
+        sleep_time=sleep_time,
+        batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+        queue=queue,
+    )
 
 
 def get_operation_processor(
@@ -51,42 +64,16 @@ def get_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
-    async_lag_callback: Optional[Callable[[], None]] = None,
-    async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
-    async_no_progress_callback: Optional[Callable[[], None]] = None,
-    async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
+    queue: "Queue[Signal]",
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
-        batch_size = int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000")
-
-        if os.getenv(NEPTUNE_ASYNC_PARTITIONS_NUMBER):
-            partitions = int(os.environ.get(NEPTUNE_ASYNC_PARTITIONS_NUMBER) or "5")
-            if partitions > 1:
-                return PartitionedOperationProcessor(
-                    container_id=container_id,
-                    container_type=container_type,
-                    backend=backend,
-                    lock=lock,
-                    sleep_time=flush_period,
-                    batch_size=batch_size,
-                    async_lag_callback=async_lag_callback,
-                    async_lag_threshold=async_lag_threshold,
-                    async_no_progress_callback=async_no_progress_callback,
-                    async_no_progress_threshold=async_no_progress_threshold,
-                    partitions=partitions,
-                )
-
-        return AsyncOperationProcessor(
+        return build_async_operation_processor(
             container_id=container_id,
             container_type=container_type,
             backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            batch_size=batch_size,
-            async_lag_callback=async_lag_callback,
-            async_lag_threshold=async_lag_threshold,
-            async_no_progress_callback=async_no_progress_callback,
-            async_no_progress_threshold=async_no_progress_threshold,
+            queue=queue,
         )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(container_id, container_type, backend)

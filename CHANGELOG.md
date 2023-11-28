@@ -1,4 +1,27 @@
-## [UNRELEASED] neptune 1.8.3
+## [UNRELEASED] 1.8.6
+
+### Changes
+- Improved performance of `fetch_*_table()` methods up to 2x ([#1573])(https://github.com/neptune-ai/neptune-client/pull/1573)
+- Do not create monitoring namespace if all relevant flags are set to False ([#1575](https://github.com/neptune-ai/neptune-client/pull/1575))
+
+
+## neptune 1.8.5
+
+### Fixes
+- Fixed no synchronization callbacks behaviour ([#1567](https://github.com/neptune-ai/neptune-client/pull/1567))
+
+### Changes
+- Enabled hooks for internal downloading functions used by the hosted backend ([#1571](https://github.com/neptune-ai/neptune-client/pull/1571))
+- Added timestamp of operation put to disk queue ([#1569](https://github.com/neptune-ai/neptune-client/pull/1569))
+
+
+## neptune 1.8.4
+
+### Changes
+- Moved `prepare_nql_query` to a separate function ([#1568](https://github.com/neptune-ai/neptune-client/pull/1568))
+
+
+## neptune 1.8.3
 
 ### Fixes
 - Added more safe checking to last ack ([#1510](https://github.com/neptune-ai/neptune-client/pull/1510))
@@ -7,21 +30,25 @@
 - Run async callback in new daemon thread ([#1521](https://github.com/neptune-ai/neptune-client/pull/1521))
 - Better handle bool values of `git_ref` param in `init_run` ([#1525](https://github.com/neptune-ai/neptune-client/pull/1525))
 - Updated management docstrings ([#1500](https://github.com/neptune-ai/neptune-client/pull/1500))
-- Fix error massage in case of NeptuneAuthTokenExpired ([#1531](https://github.com/neptune-ai/neptune-client/pull/1531))
+- Fix error message in case of NeptuneAuthTokenExpired ([#1531](https://github.com/neptune-ai/neptune-client/pull/1531))
 - Updated NeptuneModelKeyAlreadyExistsError exception message ([#1536](https://github.com/neptune-ai/neptune-client/pull/1536))
-- Sample logging for series errors ([#1539](https://github.com/neptune-ai/neptune-client/pull/1539))
 - Added support for unsupported float values in `stringify_unsupported()` ([#1543](https://github.com/neptune-ai/neptune-client/pull/1543))
+- Clarified message shown when nonexistent ID is passed to `with_id` argument ([#1551](https://github.com/neptune-ai/neptune-client/pull/1551))
 
 ### Changes
-- Safety (errors suppressing) execution mode ([#1503](https://github.com/neptune-ai/neptune-client/pull/1503))
-- Allow to disable handling of remote signals ([#1508](https://github.com/neptune-ai/neptune-client/pull/1508))
 - Allow to disable deletion of local parent folder ([#1511](https://github.com/neptune-ai/neptune-client/pull/1511))
 - Made the disk checking more reliable for env specific errors ([#1519](https://github.com/neptune-ai/neptune-client/pull/1519))
 - Update Neptune object docstrings ([#1516](https://github.com/neptune-ai/neptune-client/pull/1516))
 - Added metadata file that stores information about internal directory structure and platform ([#1526](https://github.com/neptune-ai/neptune-client/pull/1526))
 - Minor tweaks to `neptune.cli` and cleaning leftovers after async Experiments ([#1529](https://github.com/neptune-ai/neptune-client/pull/1529))
-- Pin `simplejson` required version to below `3.19` ([#1535](https://github.com/neptune-ai/neptune-client/pull/1535))
-- Added `experimental` mode that supports partitioned operations queue ([#1524](https://github.com/neptune-ai/neptune-client/pull/1524))
+- Added support for plugins/extensions ([#1545](https://github.com/neptune-ai/neptune-client/pull/1545))
+- Skip and warn about unsupported float values (infinity, negative infinity, NaN) in logging floats ([#1542](https://github.com/neptune-ai/neptune-client/pull/1542))
+- Move error handling to a separate method in `AsyncOperationProcessor` ([#1553](https://github.com/neptune-ai/neptune-client/pull/1553))
+- Abstract parts of logic to separate methods for AsyncOperationProcessor ([#1557](https://github.com/neptune-ai/neptune-client/pull/1557))
+- Rework disk utilization check ([#1549](https://github.com/neptune-ai/neptune-client/pull/1549))
+- Introduce error handlers for disk utilization ([#1559](https://github.com/neptune-ai/neptune-client/pull/1559))
+- Added support for `neptune[experimental]` extras ([#1560](https://github.com/neptune-ai/neptune-client/pull/1560))
+- Disk utilization environment variables renamed ([#1565](https://github.com/neptune-ai/neptune-client/pull/1565))
 
 
 ## neptune 1.8.2

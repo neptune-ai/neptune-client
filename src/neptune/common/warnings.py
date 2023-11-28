@@ -33,6 +33,10 @@ class NeptuneDeprecationWarning(DeprecationWarning):
     pass
 
 
+class NeptuneUnsupportedValue(Warning):
+    pass
+
+
 class NeptuneWarning(Warning):
     pass
 
@@ -41,12 +45,9 @@ class NeptuneUnsupportedType(Warning):
     pass
 
 
-class NeptuneUnsupportedValue(Warning):
-    pass
-
-
 warnings.simplefilter("always", category=NeptuneDeprecationWarning)
 
+MAX_WARNED_ONCE_CAPACITY = 1_000
 warned_once = set()
 path_to_root_module = os.path.dirname(os.path.realpath(neptune.__file__))
 
@@ -60,7 +61,7 @@ def get_user_code_stack_level():
 
 
 def warn_once(message: str, *, exception: type(Exception) = None):
-    if len(warned_once) < 1_000:
+    if len(warned_once) < MAX_WARNED_ONCE_CAPACITY:
         if exception is None:
             exception = NeptuneDeprecationWarning
 

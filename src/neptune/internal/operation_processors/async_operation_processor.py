@@ -19,6 +19,7 @@ import os
 import threading
 from datetime import datetime
 from pathlib import Path
+from queue import Queue
 from time import (
     monotonic,
     time,
@@ -32,15 +33,16 @@ from typing import (
     Optional,
 )
 
+from neptune.common.exceptions import NeptuneException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.disk_queue import DiskQueue
-from neptune.internal.init.parameters import (
-    ASYNC_LAG_THRESHOLD,
-    ASYNC_NO_PROGRESS_THRESHOLD,
-    DEFAULT_STOP_TIMEOUT,
-)
+from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -48,17 +50,21 @@ from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
     get_container_dir,
 )
-from neptune.internal.operation_processors.operations_errors_processor import OperationsErrorsProcessor
 from neptune.internal.operation_processors.utils import common_metadata
+from neptune.internal.signals_processing.utils import (
+    signal_batch_lag,
+    signal_batch_processed,
+    signal_batch_started,
+)
 from neptune.internal.threading.daemon import Daemon
-from neptune.internal.utils.disk_full import ensure_disk_not_full
+from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import logger
-from neptune.internal.utils.monotonic_inc_batch_size import MonotonicIncBatchSize
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
+    from neptune.internal.signals_processing.signals import Signal
 
 
 class AsyncOperationProcessor(OperationProcessor):
@@ -71,12 +77,9 @@ class AsyncOperationProcessor(OperationProcessor):
         container_type: "ContainerType",
         backend: "NeptuneBackend",
         lock: threading.RLock,
+        queue: "Queue[Signal]",
         sleep_time: float = 5,
         batch_size: int = 1000,
-        async_lag_callback: Optional[Callable[[], None]] = None,
-        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
-        async_no_progress_callback: Optional[Callable[[], None]] = None,
-        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         data_path: Optional[Path] = None,
         should_print_logs: bool = True,
     ):
@@ -99,18 +102,13 @@ class AsyncOperationProcessor(OperationProcessor):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
-        self._batch_size: MonotonicIncBatchSize = MonotonicIncBatchSize(size_limit=batch_size)
-        self._async_lag_callback: Callable[[], None] = async_lag_callback or (lambda: None)
-        self._async_lag_threshold: float = async_lag_threshold
-        self._async_no_progress_callback: Callable[[], None] = async_no_progress_callback or (lambda: None)
-        self._async_no_progress_threshold: float = async_no_progress_threshold
+        self._batch_size: int = batch_size
         self._last_version: int = 0
         self._consumed_version: int = 0
-        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, self._batch_size)
+        self._consumer: Daemon = self.ConsumerThread(self, sleep_time, batch_size)
         self._lock: threading.RLock = lock
-        self._last_ack: Optional[float] = None
-        self._lag_exceeded: bool = False
-        self._should_call_no_progress_callback: bool = False
+        self._signals_queue: "Queue[Signal]" = queue
+        self._accepts_operations: bool = True
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
@@ -121,14 +119,15 @@ class AsyncOperationProcessor(OperationProcessor):
         path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
         return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
-    @ensure_disk_not_full
+    @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
+        if not self._accepts_operations:
+            warn_once("Not accepting operations", exception=NeptuneWarning)
+            return
+
         self._last_version = self._queue.put(op)
 
-        self._check_lag()
-        self._check_no_progress()
-
-        if self._queue.size() > self._batch_size.get() / 2:
+        if self._check_queue_size():
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -159,23 +158,8 @@ class AsyncOperationProcessor(OperationProcessor):
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
 
-    def _check_lag(self) -> None:
-        if self._lag_exceeded or not self._last_ack or monotonic() - self._last_ack <= self._async_lag_threshold:
-            return
-
-        with self._lock:
-            if not self._lag_exceeded:
-                threading.Thread(target=self._async_lag_callback, daemon=True).start()
-                self._lag_exceeded = True
-
-    def _check_no_progress(self) -> None:
-        if not self._should_call_no_progress_callback:
-            return
-
-        with self._lock:
-            if self._should_call_no_progress_callback:
-                threading.Thread(target=self._async_no_progress_callback, daemon=True).start()
-                self._should_call_no_progress_callback = False
+    def _check_queue_size(self) -> bool:
+        return self._queue.size() > self._batch_size / 2
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:
         waiting_start: float = monotonic()
@@ -274,6 +258,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._queue.cleanup_if_empty()
 
     def close(self) -> None:
+        self._accepts_operations = False
         self._queue.close()
         self._metadata_file.close()
 
@@ -282,14 +267,12 @@ class AsyncOperationProcessor(OperationProcessor):
             self,
             processor: "AsyncOperationProcessor",
             sleep_time: float,
-            batch_size: MonotonicIncBatchSize,
+            batch_size: int,
         ):
             super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor: "AsyncOperationProcessor" = processor
-            self._errors_processor: OperationsErrorsProcessor = OperationsErrorsProcessor()
-            self._batch_size: MonotonicIncBatchSize = batch_size
+            self._batch_size: int = batch_size
             self._last_flush: float = 0.0
-            self._no_progress_exceeded: bool = False
 
         def run(self) -> None:
             try:
@@ -306,20 +289,20 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch = self._processor._queue.get_batch(self._batch_size.get())
+                batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
-                self.process_batch([element.obj for element in batch], batch[-1].ver)
-                self._batch_size.increase()
 
-        def _check_no_progress(self) -> None:
-            if not self._no_progress_exceeded:
-                if (
-                    self._processor._last_ack
-                    and monotonic() - self._processor._last_ack > self._processor._async_no_progress_threshold
-                ):
-                    self._no_progress_exceeded = True
-                    self._processor._should_call_no_progress_callback = True
+                signal_batch_started(queue=self._processor._signals_queue)
+                self.process_batch([element.obj for element in batch], batch[-1].ver, batch[-1].at)
+
+        # WARNING: Be careful when changing this function. It is used in the experimental package
+        def _handle_errors(self, errors: List[NeptuneException]) -> None:
+            for error in errors:
+                logger.error(
+                    "Error occurred during asynchronous operation processing: %s",
+                    error,
+                )
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
@@ -327,34 +310,29 @@ class AsyncOperationProcessor(OperationProcessor):
                 " synced manually using `neptune sync` command."
             )
         )
-        def process_batch(self, batch: List[Operation], version: int) -> None:
+        def process_batch(self, batch: List[Operation], version: int, occurred_at: Optional[float] = None) -> None:
+            if occurred_at is not None:
+                signal_batch_lag(queue=self._processor._signals_queue, lag=time() - occurred_at)
+
             expected_count = len(batch)
             version_to_ack = version - expected_count
             while True:
                 # TODO: Handle Metadata errors
-                try:
-                    processed_count, errors = self._processor._backend.execute_operations(
-                        container_id=self._processor._container_id,
-                        container_type=self._processor._container_type,
-                        operations=batch,
-                        operation_storage=self._processor._operation_storage,
-                    )
-                except Exception as e:
-                    self._check_no_progress()
-                    # Let default retry logic handle this
-                    raise e from e
+                processed_count, errors = self._processor._backend.execute_operations(
+                    container_id=self._processor._container_id,
+                    container_type=self._processor._container_type,
+                    operations=batch,
+                    operation_storage=self._processor._operation_storage,
+                )
 
-                self._no_progress_exceeded = False
-
+                signal_batch_processed(queue=self._processor._signals_queue)
                 version_to_ack += processed_count
                 batch = batch[processed_count:]
 
                 with self._processor._waiting_cond:
                     self._processor._queue.ack(version_to_ack)
-                    self._processor._last_ack = monotonic()
-                    self._processor._lag_exceeded = False
 
-                    self._errors_processor.handle(errors)
+                    self._handle_errors(errors)
 
                     self._processor._consumed_version = version_to_ack
 

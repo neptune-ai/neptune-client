@@ -17,7 +17,9 @@ __all__ = ["Model"]
 
 import os
 from typing import (
+    TYPE_CHECKING,
     Iterable,
+    List,
     Optional,
 )
 
@@ -39,7 +41,6 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
-from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
@@ -55,8 +56,10 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
+
+if TYPE_CHECKING:
+    from neptune.internal.background_job import BackgroundJob
 
 
 class Model(MetadataContainer):
@@ -233,8 +236,8 @@ class Model(MetadataContainer):
                 called_function="init_model",
             )
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([PingBackgroundJob()])
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
+        return [PingBackgroundJob()]
 
     def _write_initial_attributes(self):
         if self._name is not None:
@@ -244,7 +247,6 @@ class Model(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelException(label=self._sys_id)
 
-    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_model_url(
@@ -254,7 +256,6 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    @safe_function()
     def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all versions of the given model.
 

@@ -19,6 +19,7 @@ import os
 import threading
 from platform import node as get_hostname
 from typing import (
+    TYPE_CHECKING,
     List,
     Optional,
     Tuple,
@@ -51,7 +52,6 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.container_type import ContainerType
 from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
@@ -92,13 +92,15 @@ from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.safe_container import safe_function
 from neptune.types import (
     GitRef,
     StringSeries,
 )
 from neptune.types.atoms.git_ref import GitRefDisabled
 from neptune.types.mode import Mode
+
+if TYPE_CHECKING:
+    from neptune.internal.background_job import BackgroundJob
 
 
 class Run(MetadataContainer):
@@ -155,7 +157,6 @@ class Run(MetadataContainer):
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
-        enable_remote_signals: bool = True,
         **kwargs,
     ):
         """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
@@ -256,8 +257,6 @@ class Run(MetadataContainer):
                 object was initialized. If a no-progress callback (default callback enabled via environment variable or
                 custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
                 when this duration is exceeded.
-            enable_remote_signals: Whether to support handling of remote signals that could manage the run (such as
-                stop or abort signals). Enabled by default.
 
         Returns:
             Run object that is used to manage the tracked run and log metadata to it.
@@ -348,7 +347,6 @@ class Run(MetadataContainer):
         verify_type("capture_traceback", capture_traceback, bool)
         verify_type("git_ref", git_ref, (GitRef, str, bool, type(None)))
         verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
-        verify_type("enable_remote_signals", enable_remote_signals, bool)
 
         if tags is not None:
             if isinstance(tags, str):
@@ -372,7 +370,6 @@ class Run(MetadataContainer):
         self._source_files: Optional[List[str]] = source_files
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
-        self._enable_remote_signals: bool = enable_remote_signals
 
         if type(git_ref) is bool:
             git_ref = GitRef() if git_ref else GitRef.DISABLED
@@ -451,13 +448,12 @@ class Run(MetadataContainer):
                 checkpoint_id=checkpoint_id,
             )
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
-        if self._enable_remote_signals:
-            websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
-            if websockets_factory:
-                background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+        if websockets_factory:
+            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
         if self._capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=self._stdout_path))
@@ -473,15 +469,9 @@ class Run(MetadataContainer):
                 TracebackJob(path=f"{self._monitoring_namespace}/traceback", fail_on_exception=self._fail_on_exception)
             )
 
-        return BackgroundJobList(background_jobs)
+        return background_jobs
 
-    def _write_initial_attributes(self):
-        if self._name is not None:
-            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
-
-        if self._description is not None:
-            self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
-
+    def _write_initial_monitoring_attributes(self) -> None:
         if self._hostname is not None:
             self[f"{self._monitoring_namespace}/hostname"] = self._hostname
             if self._with_id is None:
@@ -492,6 +482,16 @@ class Run(MetadataContainer):
 
         if self._tid is not None:
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
+
+    def _write_initial_attributes(self):
+        if self._name is not None:
+            self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
+
+        if self._description is not None:
+            self[SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = self._description
+
+        if any((self._capture_stderr, self._capture_stdout, self._capture_traceback, self._capture_hardware_metrics)):
+            self._write_initial_monitoring_attributes()
 
         if self._tags is not None:
             self[SYSTEM_TAGS_ATTRIBUTE_PATH].add(self._tags)
@@ -539,7 +539,6 @@ class Run(MetadataContainer):
                 exception=NeptuneWarning,
             )
 
-    @safe_function()
     @property
     def monitoring_namespace(self) -> str:
         return self._monitoring_namespace
@@ -548,7 +547,6 @@ class Run(MetadataContainer):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
 
-    @safe_function()
     def get_url(self) -> str:
         """Returns the URL that can be accessed within the browser"""
         return self._backend.get_run_url(
@@ -559,7 +557,6 @@ class Run(MetadataContainer):
         )
 
 
-@safe_function(False)
 def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():
         if mode in {Mode.OFFLINE, Mode.SYNC, Mode.ASYNC}:

@@ -23,11 +23,10 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import (
-    partial,
-    wraps,
-)
+from functools import wraps
+from queue import Queue
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Iterable,
@@ -62,6 +61,7 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.project_name_lookup import project_name_lookup
 from neptune.internal.backgroud_job_list import BackgroundJobList
+from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
@@ -78,6 +78,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
@@ -92,10 +93,12 @@ from neptune.metadata_containers.abstract import (
     NeptuneObjectCallback,
 )
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.safe_container import safe_function
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
+
+if TYPE_CHECKING:
+    from neptune.internal.signals_processing.signals import Signal
 
 
 def ensure_not_stopped(fun):
@@ -141,6 +144,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
+        self._signals_queue: "Queue[Signal]" = Queue()
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -174,12 +178,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
-            async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-            async_lag_threshold=self._async_lag_threshold,
-            async_no_progress_callback=partial(self._async_no_progress_callback, self)
-            if self._async_no_progress_callback
-            else None,
-            async_no_progress_threshold=self._async_no_progress_threshold,
+            queue=self._signals_queue,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -232,6 +231,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         reset_internal_ssl_state()
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
+            self._signals_queue = Queue()
             self._op_processor = get_operation_processor(
                 mode=self._mode,
                 container_id=self._id,
@@ -239,16 +239,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 backend=self._backend,
                 lock=self._lock,
                 flush_period=self._flush_period,
-                async_lag_callback=partial(self._async_lag_callback, self) if self._async_lag_callback else None,
-                async_lag_threshold=self._async_lag_threshold,
-                async_no_progress_callback=partial(self._async_no_progress_callback, self)
-                if self._async_no_progress_callback
-                else None,
-                async_no_progress_threshold=self._async_no_progress_threshold,
+                queue=self._signals_queue,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
-            self._bg_job = BackgroundJobList([])
+            jobs = []
+            if self._mode == Mode.ASYNC:
+                jobs.append(
+                    CallbacksMonitor(
+                        queue=self._signals_queue,
+                        async_lag_threshold=self._async_lag_threshold,
+                        async_no_progress_threshold=self._async_no_progress_threshold,
+                        async_lag_callback=self._async_lag_callback,
+                        async_no_progress_callback=self._async_no_progress_callback,
+                    )
+                )
+            self._bg_job = BackgroundJobList(jobs)
 
             self._op_processor.start()
 
@@ -266,16 +272,30 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._op_processor.pause()
 
     def _prepare_background_jobs_if_non_read_only(self) -> BackgroundJobList:
+        jobs = []
+
         if self._mode != Mode.READ_ONLY:
-            return self._prepare_background_jobs()
-        return BackgroundJobList([])
+            jobs.extend(self._get_background_jobs())
+
+        if self._mode == Mode.ASYNC:
+            jobs.append(
+                CallbacksMonitor(
+                    queue=self._signals_queue,
+                    async_lag_threshold=self._async_lag_threshold,
+                    async_no_progress_threshold=self._async_no_progress_threshold,
+                    async_lag_callback=self._async_lag_callback,
+                    async_no_progress_callback=self._async_no_progress_callback,
+                )
+            )
+
+        return BackgroundJobList(jobs)
 
     @abc.abstractmethod
     def _get_or_create_api_object(self) -> ApiExperiment:
         raise NotImplementedError
 
-    def _prepare_background_jobs(self) -> BackgroundJobList:
-        return BackgroundJobList([])
+    def _get_background_jobs(self) -> List["BackgroundJob"]:
+        return []
 
     def _write_initial_attributes(self):
         pass
@@ -301,22 +321,18 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _ipython_key_completions_(self):
         return self._get_subpath_suggestions()
 
-    @safe_function(Handler(None, None))
     @ensure_not_stopped
     def __getitem__(self, path: str) -> "Handler":
         return Handler(self, path)
 
-    @safe_function()
     @ensure_not_stopped
     def __setitem__(self, key: str, value) -> None:
         self.__getitem__(key).assign(value)
 
-    @safe_function()
     @ensure_not_stopped
     def __delitem__(self, path) -> None:
         self.pop(path)
 
-    @safe_function()
     @ensure_not_stopped
     def assign(self, value, *, wait: bool = False) -> None:
         """Assigns values to multiple fields from a dictionary.
@@ -349,7 +365,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         self._get_root_handler().assign(value, wait=wait)
 
-    @safe_function({})
     @ensure_not_stopped
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
@@ -379,18 +394,15 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._get_root_handler().fetch()
 
-    @safe_function()
     def ping(self):
         self._backend.ping(self._id, self.container_type)
 
-    @safe_function()
     def start(self):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()
         self._bg_job.start(self)
         self._state = ContainerState.STARTED
 
-    @safe_function()
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the connection and ends the synchronization thread.
 
@@ -446,7 +458,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._state = ContainerState.STOPPED
             self._forking_cond.notify_all()
 
-    @safe_function()
     def get_state(self) -> str:
         """Returns the current state of the container as a string.
 
@@ -461,7 +472,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._state.value
 
-    @safe_function({})
     def get_structure(self) -> Dict[str, Any]:
         """Returns the object's metadata structure as a dictionary.
 
@@ -475,7 +485,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         """
         return self._structure.get_structure().to_dict()
 
-    @safe_function()
     def print_structure(self) -> None:
         """Pretty-prints the structure of the object's metadata.
 
@@ -501,7 +510,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     )
                 )
 
-    @safe_function()
     def define(
         self,
         path: str,
@@ -524,23 +532,19 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             attr.process_assignment(neptune_value, wait=wait)
             return attr
 
-    @safe_function()
     def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:
             return self._structure.get(parse_path(path))
 
-    @safe_function()
     def set_attribute(self, path: str, attribute: Attribute) -> Optional[Attribute]:
         with self._lock:
             return self._structure.set(parse_path(path), attribute)
 
-    @safe_function(False)
     def exists(self, path: str) -> bool:
         """Checks if there is a field or namespace under the specified path."""
         verify_type("path", path, str)
         return self.get_attribute(path) is not None
 
-    @safe_function()
     @ensure_not_stopped
     def pop(self, path: str, *, wait: bool = False) -> None:
         """Removes the field stored under the path and all data associated with it.
@@ -574,7 +578,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def lock(self) -> threading.RLock:
         return self._lock
 
-    @safe_function()
     def wait(self, *, disk_only=False) -> None:
         """Wait for all the queued metadata tracking calls to reach the Neptune servers.
 
@@ -591,7 +594,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             else:
                 self._op_processor.wait()
 
-    @safe_function()
     def sync(self, *, wait: bool = True) -> None:
         """Synchronizes the local representation of the object with the representation on the Neptune servers.
 
@@ -669,7 +671,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             entries=leaderboard_entries,
         )
 
-    @safe_function()
     def get_root_object(self) -> "MetadataContainer":
         """Returns the same Neptune object."""
         return self

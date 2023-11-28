@@ -90,6 +90,7 @@ __all__ = [
     "NeptuneSynchronizationAlreadyStoppedException",
     "StreamAlreadyUsedException",
     "NeptuneUserApiInputException",
+    "NeptuneMaxDiskUtilizationExceeded",
 ]
 
 from typing import (
@@ -206,7 +207,7 @@ class MetadataContainerNotFound(NeptuneException):
         self.container_id = container_id
         self.container_type = container_type
         container_type_str = container_type.value.capitalize() if container_type else "object"
-        super().__init__("{} {} not found.".format(container_type_str, container_id))
+        super().__init__(f"No existing {container_type_str} was found at {container_id}.")
 
     @classmethod
     def of_container_type(cls, container_type: Optional[ContainerType], container_id: str):
@@ -1215,3 +1216,18 @@ class FileSetNotFound(NeptuneException):
         {correct}Need help?{end}-> https://docs.neptune.ai/getting_help/
         """
         super().__init__(message.format(path=path_to_str([attribute, path]), **STYLES))
+
+
+class NeptuneMaxDiskUtilizationExceeded(NeptuneException):
+    def __init__(self, disk_utilization: float, utilization_limit: float):
+        message = """
+{h1}
+----NeptuneMaxDiskUtilizationExceeded----------------------------------------------
+{end}
+Current disk utilization ({disk_utilization}%) exceeds the limit ({utilization_limit}%).
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+    """
+        super().__init__(
+            message.format(disk_utilization=disk_utilization, utilization_limit=utilization_limit, **STYLES)
+        )

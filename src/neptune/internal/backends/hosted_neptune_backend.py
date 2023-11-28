@@ -20,6 +20,7 @@ import logging
 import os
 import re
 import typing
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -39,6 +40,11 @@ from bravado.exception import (
 )
 
 from neptune.api.dtos import FileEntry
+from neptune.api.searching_entries import (
+    get_single_page,
+    iter_over_pages,
+    to_leaderboard_entry,
+)
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -67,7 +73,6 @@ from neptune.internal.backends.api_model import (
     ArtifactAttribute,
     Attribute,
     AttributeType,
-    AttributeWithProperties,
     BoolAttribute,
     DatetimeAttribute,
     FileAttribute,
@@ -1022,43 +1027,27 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
-        if query:
-            query_params = {"query": {"query": str(query)}}
-        else:
-            query_params = {}
-        if columns:
-            attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
-        else:
-            attributes_filter = {}
+        step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
-        def get_portion(limit, offset):
-            return (
-                self.leaderboard_client.api.searchLeaderboardEntries(
-                    projectIdentifier=project_id,
-                    type=list(map(lambda container_type: container_type.to_api(), types)),
-                    params={
-                        **query_params,
-                        **attributes_filter,
-                        "pagination": {"limit": limit, "offset": offset},
-                    },
-                    **DEFAULT_REQUEST_KWARGS,
-                )
-                .response()
-                .result.entries
-            )
-
-        def to_leaderboard_entry(entry) -> LeaderboardEntry:
-            supported_attribute_types = {item.value for item in AttributeType}
-            attributes: List[AttributeWithProperties] = []
-            for attr in entry.attributes:
-                if attr.type in supported_attribute_types:
-                    properties = attr.__getitem__("{}Properties".format(attr.type))
-                    attributes.append(AttributeWithProperties(attr.name, AttributeType(attr.type), properties))
-            return LeaderboardEntry(entry.experimentId, attributes)
+        types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
+        query_params = {"query": {"query": str(query)}} if query else {}
+        attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
         try:
-            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
-            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size)]
+            return [
+                to_leaderboard_entry(entry=entry)
+                for entry in iter_over_pages(
+                    iter_once=partial(
+                        get_single_page,
+                        client=self.leaderboard_client,
+                        project_id=project_id,
+                        types=types_filter,
+                        query_params=query_params,
+                        attributes_filter=attributes_filter,
+                    ),
+                    step=step_size,
+                )
+            ]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
@@ -1084,13 +1073,3 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
-
-    @staticmethod
-    def _get_all_items(get_portion, step):
-        max_server_offset = 10000
-        items = []
-        previous_items = None
-        while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
-            previous_items = get_portion(limit=step, offset=len(items))
-            items += previous_items
-        return items
