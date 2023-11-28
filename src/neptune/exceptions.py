@@ -824,25 +824,17 @@ class NeptuneLimitExceedException(NeptuneException):
 {end}
 {reason}
 
-Data synchronization was interrupted because you're out of storage space (or logging hours). If you're using Neptune in
-asynchronous mode (default), the data that couldn't be uploaded is safely stored on the disk.
-You can still fetch and delete data from your project(s).
-How can I free up space in Neptune?
-    - Contact your workspace admin about possible project or workspace storage limits.
-    - Upgrade your subscription with more storage: https://app.neptune.ai/-/subscription
-    - Delete run or model metadata that you don't need.
+Some limit related to your workspace or project was exceeded. You can manage your plan and check usage in the workspace
+settings: https://app.neptune.ai/-/subscription
+What happens to my data?
+    If you're using Neptune in asynchronous mode (default), the data that couldn't be uploaded is safely stored on the
+    disk. You can still fetch and delete data from your projects.
 How do I upload my offline metadata to Neptune?
-    You can upload the data stored on-disk with the following command (replace the workspace and project with your own):
-        {bash}neptune sync -p workspace-name/project-name{end}
-If your subscription is based on logging hours, you may also get this error if you've run out of monitoring time.
-    To continue logging, you need to top up your logging hours or wait for your new monthly package.
+    Once your workspace or project is available, you can upload the data with the following command:
+        {bash}neptune sync{end}
 Learn more in the docs:
     - https://docs.neptune.ai/help/error_limit_exceeded/
-    - https://docs.neptune.ai/help/workspace_read_only/
-    - https://docs.neptune.ai/api/connection_modes/
-    - https://docs.neptune.ai/usage/deleting_data/
-    - https://docs.neptune.ai/api/neptune_sync/
-    - https://docs.neptune.ai/help/storage_tips/
+    - https://docs.neptune.ai/help/workspace_or_project_read_only/
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES, reason=reason))
