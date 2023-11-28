@@ -147,14 +147,13 @@ def iter_over_pages(
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
 ) -> Generator[Any, None, None]:
-    from tqdm import tqdm
-
     searching_after = None
-
-    progress_bar = tqdm(total=0)
+    last_page = None
 
     while True:
-        last_page = None
+        if last_page:
+            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+            searching_after = page_attribute.properties["value"] if page_attribute else None
 
         for offset in range(0, max_offset, step_size):
             page, matching_items_count = iter_once(
@@ -165,18 +164,8 @@ def iter_over_pages(
             )
 
             if not page:
-                progress_bar.close()
                 return
 
             yield from page
 
-            progress_bar.update(len(page))
-            if offset == 0:
-                progress_bar.total += matching_items_count
-                progress_bar.refresh()
-
             last_page = page
-
-        if last_page:
-            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
-            searching_after = page_attribute.properties["value"] if page_attribute else None
