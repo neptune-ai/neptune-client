@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_single_page", "iter_over_pages", "to_leaderboard_entry"]
+__all__ = ["get_single_page", "iter_over_pages"]
 
 from typing import (
     TYPE_CHECKING,
@@ -24,11 +24,11 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Tuple,
 )
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
-from icecream import ic
 
 from neptune.internal.backends.api_model import (
     AttributeType,
@@ -36,12 +36,21 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
+from neptune.internal.backends.nql import (
+    NQLAggregator,
+    NQLAttributeOperator,
+    NQLAttributeType,
+    NQLEmptyQuery,
+    NQLQuery,
+    NQLQueryAggregate,
+    NQLQueryAttribute,
+)
+from neptune.internal.init.parameters import MAX_SERVER_OFFSET
 
 if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
     from neptune.internal.id_formats import UniqueId
-from neptune.internal.backends.nql import NQLQuery, NQLEmptyQuery, NQLQueryAggregate, NQLAggregator, NQLQueryAttribute, \
-    NQLAttributeType, NQLAttributeOperator
+
 
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
@@ -51,15 +60,15 @@ def get_single_page(
     client: "SwaggerClientWrapper",
     project_id: "UniqueId",
     attributes_filter: Dict[str, Any],
-    sort_by: str,
     limit: int,
     offset: int,
+    sort_by: Optional[str] = None,
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
-) -> List[Any]:
+) -> Tuple[List[Any], Optional[int]]:
     nql_query = query or NQLEmptyQuery()
-    if searching_after:
+    if sort_by and searching_after:
         nql_query = NQLQueryAggregate(
             items=[
                 nql_query,
@@ -68,28 +77,34 @@ def get_single_page(
                     type=NQLAttributeType.STRING,
                     operator=NQLAttributeOperator.GREATER_THAN,
                     value=searching_after,
-                )
+                ),
             ],
             aggregator=NQLAggregator.AND,
         )
-
     query_params = {"query": {"query": str(nql_query)}}
-    params = {
-        "projectIdentifier": project_id,
-        "type": types,
-        "params": {
+
+    sorting = (
+        {
             "sorting": {
                 "dir": "ascending",
                 "aggregationMode": "none",
                 "sortBy": {"name": sort_by, "type": "string"},
-            },
+            }
+        }
+        if sort_by
+        else {}
+    )
+
+    params = {
+        "projectIdentifier": project_id,
+        "type": types,
+        "params": {
+            **sorting,
             **query_params,
             **attributes_filter,
             "pagination": {"limit": limit, "offset": offset},
         },
     }
-
-    # ic(params)
 
     request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
     request_config = RequestConfig(request_options, True)
@@ -103,7 +118,7 @@ def get_single_page(
         .incoming_response.json()
     )
 
-    return list(map(to_leaderboard_entry, result.get("entries", [])))
+    return list(map(to_leaderboard_entry, result.get("entries", []))), result.get("matchingItemCount")
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
@@ -122,29 +137,46 @@ def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
 
 
 def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeWithProperties]:
-    for attr in entry.attributes:
-        if attr.path == path:
-            return attr
-    return None
+    return next((attr for attr in entry.attributes if attr.path == path), None)
 
 
 def iter_over_pages(
-    *, iter_once: Callable[..., List[Any]], step: int, sort_by: str = 'sys/id', max_server_offset: int = 10_000
+    *,
+    iter_once: Callable[..., Tuple[List[Any], Optional[int]]],
+    step_size: int,
+    sort_by: str = "sys/id",
+    max_offset: int = MAX_SERVER_OFFSET,
 ) -> Generator[Any, None, None]:
-    step = 10
-    batch = None
-    searching_after = None
-    next_searching_after = None
+    from tqdm import tqdm
 
-    while searching_after is not None or batch is None:
-        for offset in range(0, max_server_offset, step):
-            batch = iter_once(limit=min(step, max_server_offset-offset), offset=offset, sort_by=sort_by, searching_after=searching_after)
-            if not batch:
+    searching_after = None
+
+    progress_bar = tqdm(total=0)
+
+    while True:
+        last_page = None
+
+        for offset in range(0, max_offset, step_size):
+            page, matching_items_count = iter_once(
+                limit=min(step_size, max_offset - offset),
+                offset=offset,
+                sort_by=sort_by,
+                searching_after=searching_after,
+            )
+
+            if not page:
+                progress_bar.close()
                 return
 
-            yield from batch
+            yield from page
 
-            sort_by_attribute = find_attribute(entry=batch[-1], path=sort_by)
-            next_searching_after = sort_by_attribute.properties['value'] if sort_by_attribute else None
+            progress_bar.update(len(page))
+            if offset == 0:
+                progress_bar.total += matching_items_count
+                progress_bar.refresh()
 
-        searching_after = next_searching_after
+            last_page = page
+
+        if last_page:
+            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+            searching_after = page_attribute.properties["value"] if page_attribute else None

@@ -15,6 +15,7 @@
 #
 __all__ = [
     "NQLQuery",
+    "NQLEmptyQuery",
     "NQLAggregator",
     "NQLQueryAggregate",
     "NQLAttributeOperator",

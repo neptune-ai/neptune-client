@@ -43,7 +43,6 @@ from neptune.api.dtos import FileEntry
 from neptune.api.searching_entries import (
     get_single_page,
     iter_over_pages,
-    to_leaderboard_entry,
 )
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
@@ -1032,11 +1031,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
-        from tqdm import tqdm
-
         try:
             return list(
-                tqdm(iter_over_pages(
+                iter_over_pages(
                     iter_once=partial(
                         get_single_page,
                         client=self.leaderboard_client,
@@ -1045,8 +1042,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                         query=query,
                         attributes_filter=attributes_filter,
                     ),
-                    step=step_size,
-                ))
+                    step_size=step_size,
+                )
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
