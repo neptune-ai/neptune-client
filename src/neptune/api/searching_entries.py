@@ -152,7 +152,9 @@ def iter_over_pages(
     while True:
         if last_page:
             page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
-            searching_after = page_attribute.properties["value"] if page_attribute else None
+            if not page_attribute:
+                return
+            searching_after = page_attribute.properties["value"]
 
         for offset in range(0, max_offset, step_size):
             page, matching_items_count = get_single_page(
