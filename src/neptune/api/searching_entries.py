@@ -18,7 +18,6 @@ __all__ = ["get_single_page", "iter_over_pages"]
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Dict,
     Generator,
     Iterable,
@@ -142,10 +141,10 @@ def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeW
 
 def iter_over_pages(
     *,
-    iter_once: Callable[..., Tuple[List[Any], Optional[int]]],
     step_size: int,
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
+    **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None
     last_page = None
@@ -156,11 +155,12 @@ def iter_over_pages(
             searching_after = page_attribute.properties["value"] if page_attribute else None
 
         for offset in range(0, max_offset, step_size):
-            page, matching_items_count = iter_once(
+            page, matching_items_count = get_single_page(
                 limit=min(step_size, max_offset - offset),
                 offset=offset,
                 sort_by=sort_by,
                 searching_after=searching_after,
+                **kwargs,
             )
 
             if not page:

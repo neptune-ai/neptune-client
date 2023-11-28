@@ -20,7 +20,6 @@ import logging
 import os
 import re
 import typing
-from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -40,10 +39,7 @@ from bravado.exception import (
 )
 
 from neptune.api.dtos import FileEntry
-from neptune.api.searching_entries import (
-    get_single_page,
-    iter_over_pages,
-)
+from neptune.api.searching_entries import iter_over_pages
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.exceptions import (
     ClientHttpError,
@@ -1034,14 +1030,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             return list(
                 iter_over_pages(
-                    iter_once=partial(
-                        get_single_page,
-                        client=self.leaderboard_client,
-                        project_id=project_id,
-                        types=types_filter,
-                        query=query,
-                        attributes_filter=attributes_filter,
-                    ),
+                    client=self.leaderboard_client,
+                    project_id=project_id,
+                    types=types_filter,
+                    query=query,
+                    attributes_filter=attributes_filter,
                     step_size=step_size,
                 )
             )
