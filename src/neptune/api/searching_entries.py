@@ -73,7 +73,11 @@ def get_single_page(
             operator=NQLAttributeOperator.GREATER_THAN,
             value=searching_after,
         )
-        normalized_query = NQLQueryAggregate(items=[normalized_query, sort_by_as_nql], aggregator=NQLAggregator.AND)
+
+        if not isinstance(normalized_query, NQLEmptyQuery):
+            normalized_query = NQLQueryAggregate(items=[normalized_query, sort_by_as_nql], aggregator=NQLAggregator.AND)
+        else:
+            normalized_query = sort_by_as_nql
 
     sorting = (
         {
