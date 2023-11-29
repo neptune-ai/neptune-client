@@ -82,7 +82,7 @@ neptune-tensorflow-keras = { version = "*", optional = true }
 neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
-zenml = { version = "*", optional = true, python = "<3.9" }
+zenml = { version = "*", optional = true }
 neptune-aws = { version = "*", optional = true }
 neptune-mlflow = { version = "*", optional = true }
 neptune-airflow = { version = "*", optional = true }
