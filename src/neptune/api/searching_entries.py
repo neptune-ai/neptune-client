@@ -23,7 +23,6 @@ from typing import (
     Iterable,
     List,
     Optional,
-    Tuple,
 )
 
 from bravado.client import construct_request  # type: ignore
@@ -65,7 +64,7 @@ def get_single_page(
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
-) -> Tuple[List[Any], Optional[int]]:
+) -> List[Any]:
     nql_query = query or NQLEmptyQuery()
     if sort_by and searching_after:
         nql_query = NQLQueryAggregate(
@@ -117,7 +116,7 @@ def get_single_page(
         .incoming_response.json()
     )
 
-    return list(map(to_leaderboard_entry, result.get("entries", []))), result.get("matchingItemCount")
+    return list(map(to_leaderboard_entry, result.get("entries", [])))
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
@@ -157,7 +156,7 @@ def iter_over_pages(
             searching_after = page_attribute.properties["value"]
 
         for offset in range(0, max_offset, step_size):
-            page, matching_items_count = get_single_page(
+            page = get_single_page(
                 limit=min(step_size, max_offset - offset),
                 offset=offset,
                 sort_by=sort_by,
