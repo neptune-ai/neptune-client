@@ -78,76 +78,67 @@ def test__to_leaderboard_entry():
 def test__iter_over_pages__single_pagination(get_single_page):
     # given
     get_single_page.side_effect = [
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (None, None),
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
+                ],
+            ),
+        ],
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
+                ],
+            ),
+        ],
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
+                ],
+            ),
+        ],
+        None,
     ]
 
     # when
@@ -204,76 +195,67 @@ def test__iter_over_pages__single_pagination(get_single_page):
 def test__iter_over_pages__multiple_search_after(get_single_page):
     # given
     get_single_page.side_effect = [
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
-                    ],
-                ),
-            ],
-            9,
-        ),
-        (None, None),
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
+                ],
+            ),
+        ],
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
+                ],
+            ),
+        ],
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
+                ],
+            ),
+        ],
+        None,
     ]
 
     # when
@@ -329,7 +311,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page):
 @patch("neptune.api.searching_entries.get_single_page")
 def test__iter_over_pages__empty(get_single_page):
     # given
-    get_single_page.side_effect = [([], 0)]
+    get_single_page.side_effect = [[]]
 
     # when
     result = list(iter_over_pages(step_size=3))
@@ -343,47 +325,41 @@ def test__iter_over_pages__empty(get_single_page):
 def test__iter_over_pages__max_server_offset(get_single_page):
     # given
     get_single_page.side_effect = [
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                    ],
-                ),
-            ],
-            5,
-        ),
-        (
-            [
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                    ],
-                ),
-                LeaderboardEntry(
-                    id="foo",
-                    attributes=[
-                        AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                    ],
-                ),
-            ],
-            5,
-        ),
-        (None, None),
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
+                ],
+            ),
+        ],
+        [
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
+                ],
+            ),
+            LeaderboardEntry(
+                id="foo",
+                attributes=[
+                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
+                ],
+            ),
+        ],
+        None,
     ]
 
     # when
