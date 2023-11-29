@@ -65,21 +65,15 @@ def get_single_page(
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
 ) -> List[Any]:
-    nql_query = query or NQLEmptyQuery()
+    normalized_query = query or NQLEmptyQuery()
     if sort_by and searching_after:
-        nql_query = NQLQueryAggregate(
-            items=[
-                nql_query,
-                NQLQueryAttribute(
-                    name=sort_by,
-                    type=NQLAttributeType.STRING,
-                    operator=NQLAttributeOperator.GREATER_THAN,
-                    value=searching_after,
-                ),
-            ],
-            aggregator=NQLAggregator.AND,
+        sort_by_as_nql = NQLQueryAttribute(
+            name=sort_by,
+            type=NQLAttributeType.STRING,
+            operator=NQLAttributeOperator.GREATER_THAN,
+            value=searching_after,
         )
-    query_params = {"query": {"query": str(nql_query)}}
+        normalized_query = NQLQueryAggregate(items=[normalized_query, sort_by_as_nql], aggregator=NQLAggregator.AND)
 
     sorting = (
         {
@@ -98,8 +92,8 @@ def get_single_page(
         "type": types,
         "params": {
             **sorting,
-            **query_params,
             **attributes_filter,
+            "query": {"query": str(normalized_query)},
             "pagination": {"limit": limit, "offset": offset},
         },
     }
@@ -151,8 +145,10 @@ def iter_over_pages(
     while True:
         if last_page:
             page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+
             if not page_attribute:
-                return
+                raise ValueError(f"Cannot find attribute {sort_by} in last page")
+
             searching_after = page_attribute.properties["value"]
 
         for offset in range(0, max_offset, step_size):
