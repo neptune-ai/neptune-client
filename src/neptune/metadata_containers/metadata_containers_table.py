@@ -22,7 +22,7 @@ from typing import (
     Dict,
     List,
     Optional,
-    Union,
+    Union, Generator,
 )
 
 from neptune.exceptions import MetadataInconsistency
@@ -157,11 +157,12 @@ class Table:
         self,
         backend: NeptuneBackend,
         container_type: ContainerType,
-        entries: List[LeaderboardEntry],
+        entries: Generator[LeaderboardEntry, None, None],
     ):
         self._backend = backend
-        self._entries = entries
+        self._entries: Generator[LeaderboardEntry, None, None] = entries
         self._container_type = container_type
+        self._iterator = iter(self._entries)
 
     def to_rows(self) -> List[TableEntry]:
         return [
@@ -173,6 +174,19 @@ class Table:
             )
             for e in self._entries
         ]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> TableEntry:
+        entry = next(self._iterator)
+
+        return TableEntry(
+            backend=self._backend,
+            container_type=self._container_type,
+            _id=entry.id,
+            attributes=entry.attributes,
+        )
 
     def to_pandas(self):
         import pandas as pd

@@ -21,7 +21,7 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Union,
+    Union, Generator,
 )
 
 from neptune.api.dtos import FileEntry
@@ -303,7 +303,7 @@ class NeptuneBackend:
         types: Optional[List[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[List[str]] = None,
-    ) -> List[LeaderboardEntry]:
+    ) -> Generator[LeaderboardEntry, None, None]:
         pass
 
     @abc.abstractmethod
