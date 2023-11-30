@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_single_page", "iter_over_pages", "to_leaderboard_entry"]
+__all__ = ["get_single_page", "iter_over_pages"]
 
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Dict,
     Generator,
     Iterable,
@@ -35,6 +34,16 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
+from neptune.internal.backends.nql import (
+    NQLAggregator,
+    NQLAttributeOperator,
+    NQLAttributeType,
+    NQLEmptyQuery,
+    NQLQuery,
+    NQLQueryAggregate,
+    NQLQueryAttribute,
+)
+from neptune.internal.init.parameters import MAX_SERVER_OFFSET
 
 if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -48,18 +57,47 @@ def get_single_page(
     *,
     client: "SwaggerClientWrapper",
     project_id: "UniqueId",
-    query_params: Dict[str, Any],
     attributes_filter: Dict[str, Any],
     limit: int,
     offset: int,
+    sort_by: Optional[str] = None,
     types: Optional[Iterable[str]] = None,
+    query: Optional["NQLQuery"] = None,
+    searching_after: Optional[str] = None,
 ) -> List[Any]:
+    normalized_query = query or NQLEmptyQuery()
+    if sort_by and searching_after:
+        sort_by_as_nql = NQLQueryAttribute(
+            name=sort_by,
+            type=NQLAttributeType.STRING,
+            operator=NQLAttributeOperator.GREATER_THAN,
+            value=searching_after,
+        )
+
+        if not isinstance(normalized_query, NQLEmptyQuery):
+            normalized_query = NQLQueryAggregate(items=[normalized_query, sort_by_as_nql], aggregator=NQLAggregator.AND)
+        else:
+            normalized_query = sort_by_as_nql
+
+    sorting = (
+        {
+            "sorting": {
+                "dir": "ascending",
+                "aggregationMode": "none",
+                "sortBy": {"name": sort_by, "type": "string"},
+            }
+        }
+        if sort_by
+        else {}
+    )
+
     params = {
         "projectIdentifier": project_id,
         "type": types,
         "params": {
-            **query_params,
+            **sorting,
             **attributes_filter,
+            "query": {"query": str(normalized_query)},
             "pagination": {"limit": limit, "offset": offset},
         },
     }
@@ -76,10 +114,10 @@ def get_single_page(
         .incoming_response.json()
     )
 
-    return list(result.get("entries", []))
+    return list(map(to_leaderboard_entry, result.get("entries", [])))
 
 
-def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
+def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
         id=entry["experimentId"],
         attributes=[
@@ -94,15 +132,41 @@ def to_leaderboard_entry(*, entry: Dict[str, Any]) -> LeaderboardEntry:
     )
 
 
-def iter_over_pages(
-    *, iter_once: Callable[..., List[Any]], step: int, max_server_offset: int = 10000
-) -> Generator[Any, None, None]:
-    previous_items = None
-    num_of_collected_items = 0
+def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeWithProperties]:
+    return next((attr for attr in entry.attributes if attr.path == path), None)
 
-    while (previous_items is None or len(previous_items) >= step) and num_of_collected_items < max_server_offset:
-        previous_items = iter_once(
-            limit=min(step, max_server_offset - num_of_collected_items), offset=num_of_collected_items
-        )
-        num_of_collected_items += len(previous_items)
-        yield from previous_items
+
+def iter_over_pages(
+    *,
+    step_size: int,
+    sort_by: str = "sys/id",
+    max_offset: int = MAX_SERVER_OFFSET,
+    **kwargs: Any,
+) -> Generator[Any, None, None]:
+    searching_after = None
+    last_page = None
+
+    while True:
+        if last_page:
+            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+
+            if not page_attribute:
+                raise ValueError(f"Cannot find attribute {sort_by} in last page")
+
+            searching_after = page_attribute.properties["value"]
+
+        for offset in range(0, max_offset, step_size):
+            page = get_single_page(
+                limit=min(step_size, max_offset - offset),
+                offset=offset,
+                sort_by=sort_by,
+                searching_after=searching_after,
+                **kwargs,
+            )
+
+            if not page:
+                return
+
+            yield from page
+
+            last_page = page

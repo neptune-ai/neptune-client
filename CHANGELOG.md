@@ -1,10 +1,14 @@
 ## [UNRELEASED] 1.8.6
 
+### Fixes
+- Support for more than 10k entries when using `fetch_*_table()` methods ([#1576](https://github.com/neptune-ai/neptune-client/pull/1576))
+
 ### Changes
 - Improved performance of `fetch_*_table()` methods up to 2x ([#1573])(https://github.com/neptune-ai/neptune-client/pull/1573)
 - Adjusted NeptuneLimitExceedException message ([#1574](https://github.com/neptune-ai/neptune-client/pull/1574))
 - Do not create monitoring namespace if all relevant flags are set to False ([#1575](https://github.com/neptune-ai/neptune-client/pull/1575))
 - Updated README ([#1577](https://github.com/neptune-ai/neptune-client/pull/1577))
+
 
 ## neptune 1.8.5
 
