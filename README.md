@@ -38,21 +38,20 @@ With Neptune, Data Scientists can develop production-ready models faster, and ML
 
 **Step 1:** Create a **[free account](https://neptune.ai/register)**
 
-**Step 2:** Install Neptune client library
+**Step 2:** Install the Neptune client library
 
 ```bash
 pip install neptune
 ```
 
-**Step 3:** Add experiment tracking snippet to your code
+**Step 3:** Add an experiment tracking snippet to your code
 
 ```python
 import neptune
 
-run = neptune.init_run(project="Me/MyProject")
+run = neptune.init_run(project="workspace-name/project-name")
 run["parameters"] = {"lr": 0.1, "dropout": 0.4}
 run["test_accuracy"] = 0.84
-
 ```
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-neptune/notebooks/hello_neptune.ipynb)
@@ -69,7 +68,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 * <a href="https://docs.neptune.ai/logging/what_you_can_log/"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
 
-* <a href="https://docs.neptune.ai/usage/pipelines/"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
+* <a href="https://docs.neptune.ai/usage/best_practices/"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
 &nbsp;
 
 &nbsp;
@@ -107,7 +106,7 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 * <a href="https://docs.neptune.ai/app/comparison/"><b>Compare:</b></a> learning curves, parameters, images, datasets.
 
-* <a href="https://docs.neptune.ai/app/runs_table/#searching-and-filtering-runs"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
+* <a href="https://docs.neptune.ai/app/searching_table/"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
 
 * <a href="https://docs.neptune.ai/app/runs_table/"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
 
@@ -216,7 +215,7 @@ Read how various customers use Neptune to <a href="https://neptune.ai/customers"
 ## Support
 
 If you get stuck or simply want to talk to us about something, here are your options:
-* Check our <a href="https://docs.neptune.ai/getting_help/#frequently-asked-questions">FAQ page</a>.
+* Check our <a href="https://docs.neptune.ai/getting_help/#faq">FAQ page</a>.
 * Take a look at our <a href="https://neptune.ai/resources">resource center</a>.
 * Chat! In the app, click the <a href="https://docs.neptune.ai/getting_help/#chat">blue message icon</a> in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
@@ -227,4 +226,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Paulina, Jakub, Tomek, Magda, Aurimas, Chaz, Alexandra, Marcin, Tymoteusz, Parth, Aleksandra, Sabine, Tytus, Patrycja, Dawid, Dominika, Karolina, Aleksiej, Artur, Prince, Siddhant, Kshiteej, Piotr, Hubert, Adam, Rafał, Patryk, Bartosz, Jakub, Artsiom, Jakub, Marcin, Jakub, Paweł, Franciszek, Bartosz, Siamion, Aleksander, Małgorzata, Michał, Karolina, Martyna, and [you?](https://neptune.ai/jobs)
+Piotr, Paulina, Jakub, Magda, Aurimas, Chaz, James, Alexandra, Tymoteusz, Parth, Eugene, Aleksandra, Damyan, Sabine, Siddhant, Ani, Patrycja, Dawid, Dominika, Karolina, Aleksiej, Artur, Krzysztof, Piotr, Hubert, Adam, Rafał, Patryk, Bartosz, Artsiom, Jakub, Jakub, Anita, Bartosz, Maciej, Marcin, Jakub, Paweł, Mateusz, Franciszek, Bartosz, Siamion, Paweł, Dawid, Aleksander, Małgorzata, Michał, Karolina, Martyna, Magdalena, and [you?](https://neptune.ai/jobs)
