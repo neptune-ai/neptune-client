@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import (
+    List,
+    Sequence,
+)
+
 from mock import (
     call,
     patch,
@@ -78,66 +83,9 @@ def test__to_leaderboard_entry():
 def test__iter_over_pages__single_pagination(get_single_page):
     # given
     get_single_page.side_effect = [
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                ],
-            ),
-        ],
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
-                ],
-            ),
-        ],
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
-                ],
-            ),
-        ],
+        generate_leaderboard_entries(values=["a", "b", "c"]),
+        generate_leaderboard_entries(values=["d", "e", "f"]),
+        generate_leaderboard_entries(values=["g", "h", "j"]),
         None,
     ]
 
@@ -145,44 +93,7 @@ def test__iter_over_pages__single_pagination(get_single_page):
     result = list(iter_over_pages(step_size=3))
 
     # then
-    assert result == [
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})],
-        ),
-    ]
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
     assert get_single_page.mock_calls == [
         call(limit=3, offset=0, sort_by="sys/id", searching_after=None),
         call(limit=3, offset=3, sort_by="sys/id", searching_after=None),
@@ -195,66 +106,9 @@ def test__iter_over_pages__single_pagination(get_single_page):
 def test__iter_over_pages__multiple_search_after(get_single_page):
     # given
     get_single_page.side_effect = [
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                ],
-            ),
-        ],
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})
-                ],
-            ),
-        ],
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})
-                ],
-            ),
-        ],
+        generate_leaderboard_entries(values=["a", "b", "c"]),
+        generate_leaderboard_entries(values=["d", "e", "f"]),
+        generate_leaderboard_entries(values=["g", "h", "j"]),
         None,
     ]
 
@@ -262,44 +116,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page):
     result = list(iter_over_pages(step_size=3, max_offset=6))
 
     # then
-    assert result == [
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "f"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "g"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "h"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "j"})],
-        ),
-    ]
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
     assert get_single_page.mock_calls == [
         call(limit=3, offset=0, sort_by="sys/id", searching_after=None),
         call(limit=3, offset=3, sort_by="sys/id", searching_after=None),
@@ -325,40 +142,8 @@ def test__iter_over_pages__empty(get_single_page):
 def test__iter_over_pages__max_server_offset(get_single_page):
     # given
     get_single_page.side_effect = [
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})
-                ],
-            ),
-        ],
-        [
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})
-                ],
-            ),
-            LeaderboardEntry(
-                id="foo",
-                attributes=[
-                    AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})
-                ],
-            ),
-        ],
+        generate_leaderboard_entries(values=["a", "b", "c"]),
+        generate_leaderboard_entries(values=["d", "e"]),
         None,
     ]
 
@@ -366,30 +151,19 @@ def test__iter_over_pages__max_server_offset(get_single_page):
     result = list(iter_over_pages(step_size=3, max_offset=5))
 
     # then
-    assert result == [
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "a"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "b"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "c"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "d"})],
-        ),
-        LeaderboardEntry(
-            id="foo",
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": "e"})],
-        ),
-    ]
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
     assert get_single_page.mock_calls == [
         call(offset=0, limit=3, sort_by="sys/id", searching_after=None),
         call(offset=3, limit=2, sort_by="sys/id", searching_after=None),
         call(offset=0, limit=3, sort_by="sys/id", searching_after="e"),
+    ]
+
+
+def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> List[LeaderboardEntry]:
+    return [
+        LeaderboardEntry(
+            id=experiment_id,
+            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
+        )
+        for value in values
     ]
