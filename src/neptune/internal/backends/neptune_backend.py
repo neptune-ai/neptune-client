@@ -16,6 +16,7 @@
 __all__ = ["NeptuneBackend"]
 
 import abc
+import typing
 from typing import (
     Any,
     List,
@@ -303,7 +304,7 @@ class NeptuneBackend:
         types: Optional[List[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[List[str]] = None,
-    ) -> List[LeaderboardEntry]:
+    ) -> typing.Generator[LeaderboardEntry, None, None]:
         pass
 
     @abc.abstractmethod
