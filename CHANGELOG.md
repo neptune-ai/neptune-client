@@ -2,6 +2,7 @@
 
 ### Fixes
 - Support for more than 10k entries when using `fetch_*_table()` methods ([#1576](https://github.com/neptune-ai/neptune-client/pull/1576))
+- Docstrings visibility for Neptune objects ([#1580](https://github.com/neptune-ai/neptune-client/pull/1580))
 
 ### Changes
 - Improved performance of `fetch_*_table()` methods up to 2x ([#1573])(https://github.com/neptune-ai/neptune-client/pull/1573)
