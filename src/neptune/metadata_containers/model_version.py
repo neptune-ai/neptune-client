@@ -50,6 +50,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.utils import docstring_from_init
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
@@ -57,9 +58,8 @@ if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
+@docstring_from_init
 class ModelVersion(MetadataContainer):
-    """Class for managing a version of a neptune.ai model and retrieving information from it."""
-
     container_type = ContainerType.MODEL_VERSION
 
     def __init__(

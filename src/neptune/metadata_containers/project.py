@@ -46,13 +46,15 @@ from neptune.internal.utils import (
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.utils import prepare_nql_query
+from neptune.metadata_containers.utils import (
+    docstring_from_init,
+    prepare_nql_query,
+)
 from neptune.types.mode import Mode
 
 
+@docstring_from_init
 class Project(MetadataContainer):
-    """Class for tracking and retrieving project-level metadata of a neptune.ai project."""
-
     container_type = ContainerType.PROJECT
 
     def __init__(
