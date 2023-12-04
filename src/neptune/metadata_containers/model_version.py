@@ -58,7 +58,103 @@ if TYPE_CHECKING:
 
 
 class ModelVersion(MetadataContainer):
-    """Class for managing a version of a neptune.ai model and retrieving information from it."""
+    """Initializes a ModelVersion object from an existing or new model version.
+
+    Before creating model versions, you must first register a model by creating a Model object.
+
+    A ModelVersion object is suitable for storing model metadata that is version-specific. It does not track
+    background metrics or logs automatically, but you can assign metadata to the model version just like you can
+    for runs. You can use the parent Model object to store metadata that is common to all versions of the model.
+    To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+
+    To manage the stage of a model version, use its `change_stage()` method or use the menu in the web app.
+
+    You can also use the ModelVersion object as a context manager (see examples).
+
+    Args:
+        with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
+            The identifier is stored in the model version's "sys/id" field.
+            If left empty, a new model version is created.
+        name: Custom name for the model version. You can add it as a column in the model versions table
+            ("sys/name"). You can also edit the name in the app, in the information view.
+        model: Identifier of the model for which the new version should be created.
+            Required when creating a new model version.
+            You can find the model ID in the leftmost column of the models table, or in a model's "sys/id" field.
+        project: Name of a project in the form `workspace-name/project-name`.
+            If None, the value of the NEPTUNE_PROJECT environment variable is used.
+        api_token: User's API token.
+            If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
+        mode: Connection mode in which the tracking will work.
+            If None (default), the value of the NEPTUNE_MODE environment variable is used.
+            If no value was set for the environment variable, "async" is used by default.
+            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
+            (in seconds).
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+            For more information about proxies, see the Requests documentation.
+        async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+            synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+            should take a ModelVersion object as the argument and can contain any custom code, such as calling
+            `stop()` on the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+        async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
+            If a lag callback (default callback enabled via environment variable or custom callback passed to the
+            `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
+        async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+            whatsoever for the duration defined by `async_no_progress_threshold`. The callback should take a
+            ModelVersion object as the argument and can contain any custom code, such as calling `stop()` on the
+            object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+        async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
+            object was initialized. If a no-progress callback (default callback enabled via environment variable or
+            custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
+            when this duration is exceeded.
+
+    Returns:
+        ModelVersion object that is used to manage the model version and log metadata to it.
+
+    Examples:
+
+        >>> import neptune
+
+        Creating a new model version:
+
+        >>> # Create a new model version for a model with identifier "CLS-PRE"
+        ... model_version = neptune.init_model_version(model="CLS-PRE")
+        >>> model_version["your/structure"] = some_metadata
+
+        >>> # You can provide the project parameter as an environment variable
+        ... # or directly in the init_model_version() function:
+        ... model_version = neptune.init_model_version(
+        ...    model="CLS-PRE",
+        ...    project="ml-team/classification",
+        ... )
+
+        >>> # Or initialize with the constructor:
+        ... model_version = ModelVersion(model="CLS-PRE")
+
+        Connecting to an existing model version:
+
+        >>> # Initialize an existing model version with identifier "CLS-PRE-12"
+        ... model_version = neptune.init_model_version(with_id="CLS-PRE-12")
+
+        >>> # To prevent modifications when connecting to an existing model version,
+        ... # you can connect in read-only mode:
+        ... model_version = neptune.init_model(with_id="CLS-PRE-12", mode="read-only")
+
+        Using the ModelVersion object as context manager:
+
+        >>> with ModelVersion(model="CLS-PRE") as model_version:
+        ...     model_version["metadata"] = some_metadata
+
+    For more, see the docs:
+        Initializing a model version:
+            https://docs.neptune.ai/api/neptune#init_model_version
+        ModelVersion class reference:
+            https://docs.neptune.ai/api/model_version/
+    """
 
     container_type = ContainerType.MODEL_VERSION
 
@@ -78,103 +174,6 @@ class ModelVersion(MetadataContainer):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ) -> None:
-        """Initializes a ModelVersion object from an existing or new model version.
-
-        Before creating model versions, you must first register a model by creating a Model object.
-
-        A ModelVersion object is suitable for storing model metadata that is version-specific. It does not track
-        background metrics or logs automatically, but you can assign metadata to the model version just like you can
-        for runs. You can use the parent Model object to store metadata that is common to all versions of the model.
-        To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
-
-        To manage the stage of a model version, use its `change_stage()` method or use the menu in the web app.
-
-        You can also use the ModelVersion object as a context manager (see examples).
-
-        Args:
-            with_id: The Neptune identifier of an existing model version to resume, such as "CLS-PRE-3".
-                The identifier is stored in the model version's "sys/id" field.
-                If left empty, a new model version is created.
-            name: Custom name for the model version. You can add it as a column in the model versions table
-                ("sys/name"). You can also edit the name in the app, in the information view.
-            model: Identifier of the model for which the new version should be created.
-                Required when creating a new model version.
-                You can find the model ID in the leftmost column of the models table, or in a model's "sys/id" field.
-            project: Name of a project in the form `workspace-name/project-name`.
-                If None, the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token.
-                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
-            mode: Connection mode in which the tracking will work.
-                If None (default), the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, "async" is used by default.
-                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
-                (in seconds).
-            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information about proxies, see the Requests documentation.
-            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
-                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
-                should take a ModelVersion object as the argument and can contain any custom code, such as calling
-                `stop()` on the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
-            async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
-                If a lag callback (default callback enabled via environment variable or custom callback passed to the
-                `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
-            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
-                whatsoever for the duration defined by `async_no_progress_threshold`. The callback should take a
-                ModelVersion object as the argument and can contain any custom code, such as calling `stop()` on the
-                object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
-            async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
-                object was initialized. If a no-progress callback (default callback enabled via environment variable or
-                custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
-                when this duration is exceeded.
-
-        Returns:
-            ModelVersion object that is used to manage the model version and log metadata to it.
-
-        Examples:
-
-            >>> import neptune
-
-            Creating a new model version:
-
-            >>> # Create a new model version for a model with identifier "CLS-PRE"
-            ... model_version = neptune.init_model_version(model="CLS-PRE")
-            >>> model_version["your/structure"] = some_metadata
-
-            >>> # You can provide the project parameter as an environment variable
-            ... # or directly in the init_model_version() function:
-            ... model_version = neptune.init_model_version(
-            ...    model="CLS-PRE",
-            ...    project="ml-team/classification",
-            ... )
-
-            >>> # Or initialize with the constructor:
-            ... model_version = ModelVersion(model="CLS-PRE")
-
-            Connecting to an existing model version:
-
-            >>> # Initialize an existing model version with identifier "CLS-PRE-12"
-            ... model_version = neptune.init_model_version(with_id="CLS-PRE-12")
-
-            >>> # To prevent modifications when connecting to an existing model version,
-            ... # you can connect in read-only mode:
-            ... model_version = neptune.init_model(with_id="CLS-PRE-12", mode="read-only")
-
-            Using the ModelVersion object as context manager:
-
-            >>> with ModelVersion(model="CLS-PRE") as model_version:
-            ...     model_version["metadata"] = some_metadata
-
-        For more, see the docs:
-            Initializing a model version:
-                https://docs.neptune.ai/api/neptune#init_model_version
-            ModelVersion class reference:
-                https://docs.neptune.ai/api/model_version/
-        """
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("model", model, (str, type(None)))

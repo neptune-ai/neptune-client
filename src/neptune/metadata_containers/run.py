@@ -104,7 +104,178 @@ if TYPE_CHECKING:
 
 
 class Run(MetadataContainer):
-    """Starts a tracked run that logs ML model-building metadata to neptune.ai."""
+    """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
+
+    You can log metadata by assigning it to the initialized Run object:
+
+    ```
+    run = neptune.init_run()
+    run["your/structure"] = some_metadata
+    ```
+
+    Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
+    model weights, parameters, checkpoints, and interactive visualizations.
+
+    By default, the run automatically tracks hardware consumption, stdout/stderr, source code, and Git information.
+    If you're using Neptune in an interactive session, however, some background monitoring needs to be enabled
+    explicitly.
+
+    If you provide the ID of an existing run, that run is resumed and no new run is created. You may resume a run
+    either to log more metadata or to fetch metadata from it.
+
+    The run ends either when its `stop()` method is called or when the script finishes execution.
+
+    You can also use the Run object as a context manager (see examples).
+
+    Args:
+        project: Name of the project where the run should go, in the form `workspace-name/project_name`.
+            If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
+        api_token: User's API token.
+            If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
+        with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
+            If left empty, a new run is created.
+        custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
+            Make sure to use the same identifier throughout the whole pipeline execution.
+        mode: Connection mode in which the tracking will work.
+            If left empty, the value of the NEPTUNE_MODE environment variable is used.
+            If no value was set for the environment variable, "async" is used by default.
+            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+        name: Custom name for the run. You can add it as a column in the runs table ("sys/name").
+            You can also edit the name in the app: Open the run menu and access the run information.
+        description:  Custom description of the run. You can add it as a column in the runs table
+            ("sys/description").
+            You can also edit the description in the app: Open the run menu and access the run information.
+        tags: Tags of the run as a list of strings.
+            You can edit the tags through the "sys/tags" field or in the app (run menu -> information).
+            You can also select multiple runs and manage their tags as a single action.
+        source_files: List of source files to be uploaded.
+            Uploaded source files are displayed in the "Source code" dashboard.
+            To not upload anything, pass an empty list (`[]`).
+            Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
+            all Python files from the current directory.
+            If None is passed, the Python file from which the run was created will be uploaded.
+        capture_stdout: Whether to log the stdout of the run.
+            Defaults to `False` in interactive sessions and `True` otherwise.
+            The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
+        capture_stderr: Whether to log the stderr of the run.
+            Defaults to `False` in interactive sessions and `True` otherwise.
+            The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
+        capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
+            Defaults to `False` in interactive sessions and `True` otherwise.
+            The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
+        fail_on_exception: Whether to register an uncaught exception handler to this process and,
+            in case of an exception, set the "sys/failed" field of the run to `True`.
+            An exception is always logged.
+        monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
+            Defaults to "monitoring/<hash>", where the hash is generated based on environment information,
+            to ensure that it's unique for each process.
+        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
+            (in seconds).
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+            For more information about proxies, see the Requests documentation.
+        capture_traceback: Whether to log the traceback of the run in case of an exception.
+            The tracked metadata is stored in the "<monitoring_namespace>/traceback" namespace (see the
+            `monitoring_namespace` parameter).
+        git_ref: GitRef object containing information about the Git repository path.
+            If None, Neptune looks for a repository in the path of the script that is executed.
+            To specify a different location, set to GitRef(repository_path="path/to/repo").
+            To turn off Git tracking for the run, set to False or GitRef.DISABLED.
+        dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
+            You can also pass a path to your dependency file directly.
+            If left empty, no dependencies are tracked.
+        async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+            synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+            should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
+            the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+        async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
+            If a lag callback (default callback enabled via environment variable or custom callback passed to the
+            `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
+        async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+            whatsoever for the duration defined by `async_no_progress_threshold`. The callback
+            should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
+            the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+        async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
+            object was initialized. If a no-progress callback (default callback enabled via environment variable or
+            custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
+            when this duration is exceeded.
+
+    Returns:
+        Run object that is used to manage the tracked run and log metadata to it.
+
+    Examples:
+
+        Creating a new run:
+
+        >>> import neptune
+
+        >>> # Minimal invoke
+        ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
+        ... run = neptune.init_run()
+
+        >>> # Or initialize with the constructor
+        ... run = Run(project="ml-team/classification")
+
+        >>> # Create a run with a name and description, with no sources files or Git info tracked:
+        >>> run = neptune.init_run(
+        ...     name="neural-net-mnist",
+        ...     description="neural net trained on MNIST",
+        ...     source_files=[],
+        ...     git_ref=False,
+        ... )
+
+        >>> # Log all .py files from all subdirectories, excluding hidden files
+        ... run = neptune.init_run(source_files="**/*.py")
+
+        >>> # Log all files and directories in the current working directory, excluding hidden files
+        ... run = neptune.init_run(source_files="*")
+
+        >>> # Larger example
+        ... run = neptune.init_run(
+        ...     project="ml-team/classification",
+        ...     name="first-pytorch-ever",
+        ...     description="Longer description of the run goes here",
+        ...     tags=["tags", "go-here", "as-list-of-strings"],
+        ...     source_files=["training_with_pytorch.py", "net.py"],
+        ...     dependencies="infer",
+        ...     capture_stderr=False,
+        ...     git_ref=GitRef(repository_path="/Users/Jackie/repos/cls_project"),
+        ... )
+
+        Connecting to an existing run:
+
+        >>> # Resume logging to an existing run with the ID "SAN-3"
+        ... run = neptune.init_run(with_id="SAN-3")
+        ... run["parameters/lr"] = 0.1  # modify or add metadata
+
+        >>> # Initialize an existing run in read-only mode (logging new data is not possible, only fetching)
+        ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
+        ... learning_rate = run["parameters/lr"].fetch()
+
+        Using the Run object as context manager:
+
+        >>> with Run() as run:
+        ...     run["metric"].append(value)
+
+    For more, see the docs:
+        Initializing a run:
+            https://docs.neptune.ai/api/neptune#init_run
+        Run class reference:
+            https://docs.neptune.ai/api/run/
+        Essential logging methods:
+            https://docs.neptune.ai/logging/methods/
+        Resuming a run:
+            https://docs.neptune.ai/logging/to_existing_object/
+        Setting a custom run ID:
+            https://docs.neptune.ai/logging/custom_run_id/
+        Logging to multiple runs at once:
+            https://docs.neptune.ai/logging/to_multiple_objects/
+        Accessing the run from multiple places:
+            https://docs.neptune.ai/logging/from_multiple_places/
+    """
 
     container_type = ContainerType.RUN
 
@@ -159,178 +330,6 @@ class Run(MetadataContainer):
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
         **kwargs,
     ):
-        """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
-
-        You can log metadata by assigning it to the initialized Run object:
-
-        ```
-        run = neptune.init_run()
-        run["your/structure"] = some_metadata
-        ```
-
-        Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
-        model weights, parameters, checkpoints, and interactive visualizations.
-
-        By default, the run automatically tracks hardware consumption, stdout/stderr, source code, and Git information.
-        If you're using Neptune in an interactive session, however, some background monitoring needs to be enabled
-        explicitly.
-
-        If you provide the ID of an existing run, that run is resumed and no new run is created. You may resume a run
-        either to log more metadata or to fetch metadata from it.
-
-        The run ends either when its `stop()` method is called or when the script finishes execution.
-
-        You can also use the Run object as a context manager (see examples).
-
-        Args:
-            project: Name of the project where the run should go, in the form `workspace-name/project_name`.
-                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token.
-                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
-            with_id: If you want to resume a run, pass the identifier of an existing run. For example, "SAN-1".
-                If left empty, a new run is created.
-            custom_run_id: A unique identifier to be used when running Neptune in distributed training jobs.
-                Make sure to use the same identifier throughout the whole pipeline execution.
-            mode: Connection mode in which the tracking will work.
-                If left empty, the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, "async" is used by default.
-                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            name: Custom name for the run. You can add it as a column in the runs table ("sys/name").
-                You can also edit the name in the app: Open the run menu and access the run information.
-            description:  Custom description of the run. You can add it as a column in the runs table
-                ("sys/description").
-                You can also edit the description in the app: Open the run menu and access the run information.
-            tags: Tags of the run as a list of strings.
-                You can edit the tags through the "sys/tags" field or in the app (run menu -> information).
-                You can also select multiple runs and manage their tags as a single action.
-            source_files: List of source files to be uploaded.
-                Uploaded source files are displayed in the "Source code" dashboard.
-                To not upload anything, pass an empty list (`[]`).
-                Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
-                all Python files from the current directory.
-                If None is passed, the Python file from which the run was created will be uploaded.
-            capture_stdout: Whether to log the stdout of the run.
-                Defaults to `False` in interactive sessions and `True` otherwise.
-                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
-            capture_stderr: Whether to log the stderr of the run.
-                Defaults to `False` in interactive sessions and `True` otherwise.
-                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
-            capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
-                Defaults to `False` in interactive sessions and `True` otherwise.
-                The data is logged under the monitoring namespace (see the `monitoring_namespace` parameter).
-            fail_on_exception: Whether to register an uncaught exception handler to this process and,
-                in case of an exception, set the "sys/failed" field of the run to `True`.
-                An exception is always logged.
-            monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
-                Defaults to "monitoring/<hash>", where the hash is generated based on environment information,
-                to ensure that it's unique for each process.
-            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
-                (in seconds).
-            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information about proxies, see the Requests documentation.
-            capture_traceback: Whether to log the traceback of the run in case of an exception.
-                The tracked metadata is stored in the "<monitoring_namespace>/traceback" namespace (see the
-                `monitoring_namespace` parameter).
-            git_ref: GitRef object containing information about the Git repository path.
-                If None, Neptune looks for a repository in the path of the script that is executed.
-                To specify a different location, set to GitRef(repository_path="path/to/repo").
-                To turn off Git tracking for the run, set to False or GitRef.DISABLED.
-            dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
-                You can also pass a path to your dependency file directly.
-                If left empty, no dependencies are tracked.
-            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
-                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
-                should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
-                the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
-            async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
-                If a lag callback (default callback enabled via environment variable or custom callback passed to the
-                `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
-            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
-                whatsoever for the duration defined by `async_no_progress_threshold`. The callback
-                should take a Run object as the argument and can contain any custom code, such as calling `stop()` on
-                the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
-            async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
-                object was initialized. If a no-progress callback (default callback enabled via environment variable or
-                custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
-                when this duration is exceeded.
-
-        Returns:
-            Run object that is used to manage the tracked run and log metadata to it.
-
-        Examples:
-
-            Creating a new run:
-
-            >>> import neptune
-
-            >>> # Minimal invoke
-            ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
-            ... run = neptune.init_run()
-
-            >>> # Or initialize with the constructor
-            ... run = Run(project="ml-team/classification")
-
-            >>> # Create a run with a name and description, with no sources files or Git info tracked:
-            >>> run = neptune.init_run(
-            ...     name="neural-net-mnist",
-            ...     description="neural net trained on MNIST",
-            ...     source_files=[],
-            ...     git_ref=False,
-            ... )
-
-            >>> # Log all .py files from all subdirectories, excluding hidden files
-            ... run = neptune.init_run(source_files="**/*.py")
-
-            >>> # Log all files and directories in the current working directory, excluding hidden files
-            ... run = neptune.init_run(source_files="*")
-
-            >>> # Larger example
-            ... run = neptune.init_run(
-            ...     project="ml-team/classification",
-            ...     name="first-pytorch-ever",
-            ...     description="Longer description of the run goes here",
-            ...     tags=["tags", "go-here", "as-list-of-strings"],
-            ...     source_files=["training_with_pytorch.py", "net.py"],
-            ...     dependencies="infer",
-            ...     capture_stderr=False,
-            ...     git_ref=GitRef(repository_path="/Users/Jackie/repos/cls_project"),
-            ... )
-
-            Connecting to an existing run:
-
-            >>> # Resume logging to an existing run with the ID "SAN-3"
-            ... run = neptune.init_run(with_id="SAN-3")
-            ... run["parameters/lr"] = 0.1  # modify or add metadata
-
-            >>> # Initialize an existing run in read-only mode (logging new data is not possible, only fetching)
-            ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
-            ... learning_rate = run["parameters/lr"].fetch()
-
-            Using the Run object as context manager:
-
-            >>> with Run() as run:
-            ...     run["metric"].append(value)
-
-        For more, see the docs:
-            Initializing a run:
-                https://docs.neptune.ai/api/neptune#init_run
-            Run class reference:
-                https://docs.neptune.ai/api/run/
-            Essential logging methods:
-                https://docs.neptune.ai/logging/methods/
-            Resuming a run:
-                https://docs.neptune.ai/logging/to_existing_object/
-            Setting a custom run ID:
-                https://docs.neptune.ai/logging/custom_run_id/
-            Logging to multiple runs at once:
-                https://docs.neptune.ai/logging/to_multiple_objects/
-            Accessing the run from multiple places:
-                https://docs.neptune.ai/logging/from_multiple_places/
-        """
         check_for_extra_kwargs("Run", kwargs)
 
         verify_type("with_id", with_id, (str, type(None)))
