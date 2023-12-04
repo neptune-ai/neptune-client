@@ -129,6 +129,35 @@ class AbstractTablesTestMixin:
             self.assertTrue(df["image/series"])
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_get_table_as_rows(self, search_leaderboard_entries):
+        # given
+        now = datetime.now()
+        attributes = self.build_attributes_leaderboard(now)
+
+        # and
+        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
+        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        search_leaderboard_entries.return_value = [empty_entry, filled_entry]
+
+        # when
+        row = self.get_table().to_rows()[1]
+
+        # then
+        self.assertEqual("Inactive", row.get_attribute_value("run/state"))
+        self.assertEqual(12.5, row.get_attribute_value("float"))
+        self.assertEqual("some text", row.get_attribute_value("string"))
+        self.assertEqual(now, row.get_attribute_value("datetime"))
+        self.assertEqual(8.7, row.get_attribute_value("float/series"))
+        self.assertEqual("last text", row.get_attribute_value("string/series"))
+        self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
+        self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
+
+        with self.assertRaises(MetadataInconsistency):
+            row.get_attribute_value("file")
+        with self.assertRaises(MetadataInconsistency):
+            row.get_attribute_value("image/series")
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     @patch.object(NeptuneBackendMock, "download_file")
     @patch.object(NeptuneBackendMock, "download_file_set")
     def test_get_table_as_table_entries(
