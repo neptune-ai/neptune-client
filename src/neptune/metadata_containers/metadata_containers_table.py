@@ -56,6 +56,9 @@ class TableEntry:
         self._id = _id
         self._attributes = attributes
 
+    def __repr__(self) -> str:
+        return f"TableEntry({self._container_type}, id={self._id})"
+
     def __getitem__(self, path: str) -> "LeaderboardHandler":
         return LeaderboardHandler(table_entry=self, path=path)
 
