@@ -75,6 +75,9 @@ from neptune.internal.backends.api_model import (
     FloatPointValue,
     FloatSeriesAttribute,
     FloatSeriesValues,
+)
+from neptune.internal.backends.api_model import GitRefAttribute as GitRef
+from neptune.internal.backends.api_model import (
     ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
@@ -145,7 +148,6 @@ if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
 
     from neptune.internal.backends.api_model import ClientConfig
-
 
 _logger = logging.getLogger(__name__)
 
@@ -840,6 +842,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             path=path,
             default_request_params=DEFAULT_REQUEST_KWARGS,
         )
+
+    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
+        pass
 
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         return list_artifact_files(

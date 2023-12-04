@@ -38,6 +38,9 @@ from neptune.internal.backends.api_model import (
     FloatAttribute,
     FloatSeriesAttribute,
     FloatSeriesValues,
+)
+from neptune.internal.backends.api_model import GitRefAttribute as GitRef
+from neptune.internal.backends.api_model import (
     ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
@@ -199,6 +202,10 @@ class NeptuneBackend:
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
         pass
 
     @abc.abstractmethod

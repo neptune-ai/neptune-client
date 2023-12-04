@@ -404,6 +404,10 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, Artifact)
         return ArtifactAttribute(val.hash)
 
+    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
+        val = self._get_attribute(container_id, container_type, path, GitRef)
+        return GitRef(val.value)
+
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         return self._artifacts[(project_id, artifact_hash)]
 

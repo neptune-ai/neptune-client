@@ -53,6 +53,7 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils.paths import path_to_str
+from neptune.types import GitRef
 
 
 def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
@@ -264,6 +265,34 @@ def get_artifact_attribute(
     try:
         result = swagger_client.api.getArtifactAttribute(**params).response().result
         return ArtifactAttribute(hash=result.hash)
+    except HTTPNotFound:
+        raise FetchAttributeNotFoundException(path_to_str(path))
+
+
+@with_api_exceptions_handler
+def get_git_ref_attribute(
+    swagger_client: SwaggerClientWrapper,
+    parent_identifier: str,
+    path: List[str],
+    default_request_params: Dict,
+) -> GitRef:
+    requests_params = add_artifact_version_to_request_params(default_request_params)
+    params = {
+        "experimentId": parent_identifier,
+        "attribute": path_to_str(path),
+        **requests_params,
+    }
+    try:
+        result = swagger_client.api.getGitRefAttribute(**params).response().result
+        return GitRef(
+            commitId=result.commitId,
+            commitAuthor=result.commitAuthor,
+            commitDate=result.commitDate,
+            branch=result.branch,
+            tag=result.tag,
+            remote=result.remote,
+            url=result.url,
+        )
     except HTTPNotFound:
         raise FetchAttributeNotFoundException(path_to_str(path))
 

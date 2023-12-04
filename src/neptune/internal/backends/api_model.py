@@ -40,6 +40,7 @@ __all__ = [
     "FloatSeriesAttribute",
     "StringSeriesAttribute",
     "StringSetAttribute",
+    "GitRefAttribute",
 ]
 
 from dataclasses import dataclass
@@ -307,3 +308,15 @@ class StringSeriesAttribute:
 @dataclass
 class StringSetAttribute:
     values: Set[str]
+
+
+@dataclass
+class GitRefAttribute:
+    commitId: str
+    commitAuthor: str
+    commitDate: str
+    branch: str
+    tag: Optional[str]
+    remoteUrl: str
+    url: str
+    pass
