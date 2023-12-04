@@ -56,15 +56,106 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.utils import docstring_from_init
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
-@docstring_from_init
 class Model(MetadataContainer):
+    """Initializes a Model object from an existing or new model.
+
+    You can use this to create a new model from code or to perform actions on existing models.
+
+    A Model object is suitable for storing model metadata that is common to all versions (you can use ModelVersion
+    objects to track version-specific metadata). It does not track background metrics or logs automatically,
+    but you can assign metadata to the Model object just like you can for runs.
+    To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+
+    You can also use the Model object as a context manager (see examples).
+
+    Args:
+         with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
+            The identifier is stored in the model's "sys/id" field.
+            If left empty, a new model is created.
+        name: Custom name for the model. You can add it as a column in the models table ("sys/name").
+            You can also edit the name in the app, in the information view.
+        key: Key for the model. Required when creating a new model.
+            Used together with the project key to form the model identifier.
+            Must be uppercase and unique within the project.
+        project: Name of a project in the form `workspace-name/project-name`.
+            If None, the value of the NEPTUNE_PROJECT environment variable is used.
+        api_token: User's API token.
+            If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
+        mode: Connection mode in which the tracking will work.
+            If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
+            If no value was set for the environment variable, "async" is used by default.
+            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
+            (in seconds).
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+            For more information about proxies, see the Requests documentation.
+        async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+            synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+            should take a Model object as the argument and can contain any custom code, such as calling `stop()` on
+            the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+        async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
+            If a lag callback (default callback enabled via environment variable or custom callback passed to the
+            `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
+        async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+            whatsoever for the duration defined by `async_no_progress_threshold`. The callback should take a Model
+            object as the argument and can contain any custom code, such as calling `stop()` on the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+        async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
+            object was initialized. If a no-progress callback (default callback enabled via environment variable or
+            custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
+            when this duration is exceeded.
+
+    Returns:
+        Model object that is used to manage the model and log metadata to it.
+
+    Examples:
+
+        >>> import neptune
+
+        Creating a new model:
+
+        >>> model = neptune.init_model(key="PRE")
+        >>> model["metadata"] = some_metadata
+
+        >>> # Or initialize with the constructor
+        ... model = Model(key="PRE")
+
+        >>> # You can provide the project parameter as an environment variable
+        ... # or as an argument to the init_model() function:
+        ... model = neptune.init_model(key="PRE", project="workspace-name/project-name")
+
+        >>> # When creating a model, you can give it a name:
+        ... model = neptune.init_model(key="PRE", name="Pre-trained model")
+
+        Connecting to an existing model:
+
+        >>> # Initialize existing model with identifier "CLS-PRE"
+        ... model = neptune.init_model(with_id="CLS-PRE")
+
+        >>> # To prevent modifications when connecting to an existing model, you can connect in read-only mode
+        ... model = neptune.init_model(with_id="CLS-PRE", mode="read-only")
+
+        Using the Model object as context manager:
+
+        >>> with Model(key="PRE") as model:
+        ...     model["metadata"] = some_metadata
+
+    For details, see the docs:
+        Initializing a model:
+            https://docs.neptune.ai/api/neptune#init_model
+        Model class reference:
+            https://docs.neptune.ai/api/model
+    """
+
     container_type = ContainerType.MODEL
 
     def __init__(
@@ -83,98 +174,6 @@ class Model(MetadataContainer):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        """Initializes a Model object from an existing or new model.
-
-        You can use this to create a new model from code or to perform actions on existing models.
-
-        A Model object is suitable for storing model metadata that is common to all versions (you can use ModelVersion
-        objects to track version-specific metadata). It does not track background metrics or logs automatically,
-        but you can assign metadata to the Model object just like you can for runs.
-        To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
-
-        You can also use the Model object as a context manager (see examples).
-
-        Args:
-             with_id: The Neptune identifier of an existing model to resume, such as "CLS-PRE".
-                The identifier is stored in the model's "sys/id" field.
-                If left empty, a new model is created.
-            name: Custom name for the model. You can add it as a column in the models table ("sys/name").
-                You can also edit the name in the app, in the information view.
-            key: Key for the model. Required when creating a new model.
-                Used together with the project key to form the model identifier.
-                Must be uppercase and unique within the project.
-            project: Name of a project in the form `workspace-name/project-name`.
-                If None, the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token.
-                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
-            mode: Connection mode in which the tracking will work.
-                If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, "async" is used by default.
-                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
-                (in seconds).
-            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information about proxies, see the Requests documentation.
-            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
-                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
-                should take a Model object as the argument and can contain any custom code, such as calling `stop()` on
-                the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
-            async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
-                If a lag callback (default callback enabled via environment variable or custom callback passed to the
-                `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
-            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
-                whatsoever for the duration defined by `async_no_progress_threshold`. The callback should take a Model
-                object as the argument and can contain any custom code, such as calling `stop()` on the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
-            async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
-                object was initialized. If a no-progress callback (default callback enabled via environment variable or
-                custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
-                when this duration is exceeded.
-
-        Returns:
-            Model object that is used to manage the model and log metadata to it.
-
-        Examples:
-
-            >>> import neptune
-
-            Creating a new model:
-
-            >>> model = neptune.init_model(key="PRE")
-            >>> model["metadata"] = some_metadata
-
-            >>> # Or initialize with the constructor
-            ... model = Model(key="PRE")
-
-            >>> # You can provide the project parameter as an environment variable
-            ... # or as an argument to the init_model() function:
-            ... model = neptune.init_model(key="PRE", project="workspace-name/project-name")
-
-            >>> # When creating a model, you can give it a name:
-            ... model = neptune.init_model(key="PRE", name="Pre-trained model")
-
-            Connecting to an existing model:
-
-            >>> # Initialize existing model with identifier "CLS-PRE"
-            ... model = neptune.init_model(with_id="CLS-PRE")
-
-            >>> # To prevent modifications when connecting to an existing model, you can connect in read-only mode
-            ... model = neptune.init_model(with_id="CLS-PRE", mode="read-only")
-
-            Using the Model object as context manager:
-
-            >>> with Model(key="PRE") as model:
-            ...     model["metadata"] = some_metadata
-
-        For details, see the docs:
-            Initializing a model:
-                https://docs.neptune.ai/api/neptune#init_model
-            Model class reference:
-                https://docs.neptune.ai/api/model
-        """
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("key", key, (str, type(None)))

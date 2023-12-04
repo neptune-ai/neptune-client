@@ -30,11 +30,6 @@ from neptune.internal.backends.nql import (
 from neptune.internal.utils.run_state import RunState
 
 
-def docstring_from_init(cls):
-    cls.__doc__ = cls.__init__.__doc__
-    return cls
-
-
 def prepare_nql_query(
     ids: Optional[Iterable[str]],
     states: Optional[Iterable[str]],

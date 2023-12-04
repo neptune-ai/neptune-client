@@ -46,15 +46,89 @@ from neptune.internal.utils import (
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.metadata_containers.utils import (
-    docstring_from_init,
-    prepare_nql_query,
-)
+from neptune.metadata_containers.utils import prepare_nql_query
 from neptune.types.mode import Mode
 
 
-@docstring_from_init
 class Project(MetadataContainer):
+    """Starts a connection to an existing Neptune project.
+
+    You can use the Project object to retrieve information about runs, models, and model versions
+    within the project.
+
+    You can also log (and fetch) metadata common to the whole project, such as information about datasets,
+    links to documents, or key project metrics.
+
+    Note: If you want to instead create a project, use the
+    [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
+
+    You can also use the Project object as a context manager (see examples).
+
+    Args:
+        project: Name of a project in the form `workspace-name/project-name`.
+            If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
+        api_token: User's API token.
+            If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
+        mode: Connection mode in which the tracking will work.
+            If left empty, the value of the NEPTUNE_MODE environment variable is used.
+            If no value was set for the environment variable, "async" is used by default.
+            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
+            Defaults to 5 (every 5 seconds).
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+            For more information about proxies, see the Requests documentation.
+        async_lag_callback: Custom callback which is called if the lag between a queued operation and its
+            synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
+            should take a Project object as the argument and can contain any custom code, such as calling `stop()`
+            on the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
+        async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
+            If a lag callback (default callback enabled via environment variable or custom callback passed to the
+            `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
+        async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
+            whatsoever for the duration defined by `async_no_progress_threshold`. The callback
+            should take a Project object as the argument and can contain any custom code, such as calling `stop()`
+            on the object.
+            Note: Instead of using this argument, you can use Neptune's default callback by setting the
+            `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
+        async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
+            object was initialized. If a no-progress callback (default callback enabled via environment variable or
+            custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
+            when this duration is exceeded.
+
+    Returns:
+        Project object that can be used to interact with the project as a whole,
+        like logging or fetching project-level metadata.
+
+    Examples:
+
+        >>> import neptune
+
+        >>> # Connect to the project "classification" in the workspace "ml-team":
+        ... project = neptune.init_project(project="ml-team/classification")
+
+        >>> # Or initialize with the constructor
+        ... project = Project(project="ml-team/classification")
+
+        >>> # Connect to a project in read-only mode:
+        ... project = neptune.init_project(
+        ...     project="ml-team/classification",
+        ...     mode="read-only",
+        ... )
+
+        Using the Project object as context manager:
+
+        >>> with Project(project="ml-team/classification") as project:
+        ...     project["metadata"] = some_metadata
+
+    For more, see the docs:
+        Initializing a project:
+            https://docs.neptune.ai/api/neptune#init_project
+        Project class reference:
+            https://docs.neptune.ai/api/project/
+    """
+
     container_type = ContainerType.PROJECT
 
     def __init__(
@@ -70,83 +144,6 @@ class Project(MetadataContainer):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        """Starts a connection to an existing Neptune project.
-
-        You can use the Project object to retrieve information about runs, models, and model versions
-        within the project.
-
-        You can also log (and fetch) metadata common to the whole project, such as information about datasets,
-        links to documents, or key project metrics.
-
-        Note: If you want to instead create a project, use the
-        [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
-
-        You can also use the Project object as a context manager (see examples).
-
-        Args:
-            project: Name of a project in the form `workspace-name/project-name`.
-                If left empty, the value of the NEPTUNE_PROJECT environment variable is used.
-            api_token: User's API token.
-                If left empty, the value of the NEPTUNE_API_TOKEN environment variable is used (recommended).
-            mode: Connection mode in which the tracking will work.
-                If left empty, the value of the NEPTUNE_MODE environment variable is used.
-                If no value was set for the environment variable, "async" is used by default.
-                Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
-            flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
-                Defaults to 5 (every 5 seconds).
-            proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-                For more information about proxies, see the Requests documentation.
-            async_lag_callback: Custom callback which is called if the lag between a queued operation and its
-                synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
-                should take a Project object as the argument and can contain any custom code, such as calling `stop()`
-                on the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
-            async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
-                If a lag callback (default callback enabled via environment variable or custom callback passed to the
-                `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
-            async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
-                whatsoever for the duration defined by `async_no_progress_threshold`. The callback
-                should take a Project object as the argument and can contain any custom code, such as calling `stop()`
-                on the object.
-                Note: Instead of using this argument, you can use Neptune's default callback by setting the
-                `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
-            async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
-                object was initialized. If a no-progress callback (default callback enabled via environment variable or
-                custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
-                when this duration is exceeded.
-
-        Returns:
-            Project object that can be used to interact with the project as a whole,
-            like logging or fetching project-level metadata.
-
-        Examples:
-
-            >>> import neptune
-
-            >>> # Connect to the project "classification" in the workspace "ml-team":
-            ... project = neptune.init_project(project="ml-team/classification")
-
-            >>> # Or initialize with the constructor
-            ... project = Project(project="ml-team/classification")
-
-            >>> # Connect to a project in read-only mode:
-            ... project = neptune.init_project(
-            ...     project="ml-team/classification",
-            ...     mode="read-only",
-            ... )
-
-            Using the Project object as context manager:
-
-            >>> with Project(project="ml-team/classification") as project:
-            ...     project["metadata"] = some_metadata
-
-        For more, see the docs:
-            Initializing a project:
-                https://docs.neptune.ai/api/neptune#init_project
-            Project class reference:
-                https://docs.neptune.ai/api/project/
-        """
         verify_type("mode", mode, (str, type(None)))
 
         # make mode proper Enum instead of string
