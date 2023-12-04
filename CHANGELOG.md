@@ -1,4 +1,4 @@
-## [UNRELEASED] 1.8.6
+## 1.8.6
 
 ### Fixes
 - Support for more than 10k entries when using `fetch_*_table()` methods ([#1576](https://github.com/neptune-ai/neptune-client/pull/1576))
