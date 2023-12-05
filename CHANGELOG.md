@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune 1.9.0
 
 ### Features
-- Use iterators in `fetch_*_table()` methods for better efficiency ([#1585](https://github.com/neptune-ai/neptune-client/pull/1585))
+- Added fetching with iterators in `fetch_*_table()` methods ([#1585](https://github.com/neptune-ai/neptune-client/pull/1585))
 
 
 ## neptune 1.8.6
