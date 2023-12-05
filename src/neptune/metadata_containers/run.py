@@ -21,11 +21,12 @@ from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
     List,
-    Literal,
     Optional,
     Tuple,
     Union,
 )
+
+from typing_extensions import Literal
 
 from neptune.attributes.constants import (
     SYSTEM_DESCRIPTION_ATTRIBUTE_PATH,

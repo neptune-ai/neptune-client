@@ -20,9 +20,10 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     List,
-    Literal,
     Optional,
 )
+
+from typing_extensions import Literal
 
 from neptune.attributes.constants import SYSTEM_NAME_ATTRIBUTE_PATH
 from neptune.common.exceptions import NeptuneException

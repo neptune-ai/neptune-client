@@ -18,10 +18,11 @@ __all__ = ["Project"]
 import os
 from typing import (
     Iterable,
-    Literal,
     Optional,
     Union,
 )
+
+from typing_extensions import Literal
 
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE

@@ -19,9 +19,10 @@ import os
 from typing import (
     TYPE_CHECKING,
     List,
-    Literal,
     Optional,
 )
+
+from typing_extensions import Literal
 
 from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
