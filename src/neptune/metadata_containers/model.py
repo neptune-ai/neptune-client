@@ -20,6 +20,7 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     List,
+    Literal,
     Optional,
 )
 
@@ -166,7 +167,7 @@ class Model(MetadataContainer):
         key: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,

@@ -19,6 +19,7 @@ import os
 from typing import (
     TYPE_CHECKING,
     List,
+    Literal,
     Optional,
 )
 
@@ -166,7 +167,7 @@ class ModelVersion(MetadataContainer):
         model: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,

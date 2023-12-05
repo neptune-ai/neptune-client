@@ -21,6 +21,7 @@ from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
     List,
+    Literal,
     Optional,
     Tuple,
     Union,
@@ -309,7 +310,7 @@ class Run(MetadataContainer):
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         custom_run_id: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "offline", "read-only", "debug"]] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[List[str], str]] = None,

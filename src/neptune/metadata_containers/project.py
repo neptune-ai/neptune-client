@@ -18,6 +18,7 @@ __all__ = ["Project"]
 import os
 from typing import (
     Iterable,
+    Literal,
     Optional,
     Union,
 )
@@ -136,7 +137,7 @@ class Project(MetadataContainer):
         project: Optional[str] = None,
         *,
         api_token: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
