@@ -73,7 +73,7 @@ class Project(MetadataContainer):
         mode: Connection mode in which the tracking will work.
             If left empty, the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
-            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+            Possible values are `async`, `sync`, `read-only`, and `debug`.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
             Defaults to 5 (every 5 seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
