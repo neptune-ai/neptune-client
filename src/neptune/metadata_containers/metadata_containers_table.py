@@ -169,15 +169,7 @@ class Table:
         self._iterator = iter(entries if entries else ())
 
     def to_rows(self) -> List[TableEntry]:
-        return [
-            TableEntry(
-                backend=self._backend,
-                container_type=self._container_type,
-                _id=e.id,
-                attributes=e.attributes,
-            )
-            for e in self._entries
-        ]
+        return list(self)
 
     def __iter__(self) -> "Table":
         return self
