@@ -23,6 +23,8 @@ from typing import (
     Optional,
 )
 
+from typing_extensions import Literal
+
 from neptune.attributes.constants import SYSTEM_NAME_ATTRIBUTE_PATH
 from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
@@ -90,7 +92,7 @@ class Model(MetadataContainer):
         mode: Connection mode in which the tracking will work.
             If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
-            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+            Possible values are `async`, `sync`, `read-only`, and `debug`.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
             (in seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
@@ -166,7 +168,7 @@ class Model(MetadataContainer):
         key: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,

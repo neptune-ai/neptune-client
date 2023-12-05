@@ -26,6 +26,8 @@ from typing import (
     Union,
 )
 
+from typing_extensions import Literal
+
 from neptune.attributes.constants import (
     SYSTEM_DESCRIPTION_ATTRIBUTE_PATH,
     SYSTEM_FAILED_ATTRIBUTE_PATH,
@@ -309,7 +311,7 @@ class Run(MetadataContainer):
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         custom_run_id: Optional[str] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["async", "sync", "offline", "read-only", "debug"]] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[List[str], str]] = None,

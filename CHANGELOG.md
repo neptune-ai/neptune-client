@@ -1,3 +1,12 @@
+## [UNRELEASED] 1.8.7
+
+### Fixes
+- Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
+
+### Changes
+- Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
+
+
 ## 1.8.6
 
 ### Fixes
