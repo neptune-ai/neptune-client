@@ -139,23 +139,26 @@ class AbstractTablesTestMixin:
         filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
         search_leaderboard_entries.return_value = [empty_entry, filled_entry]
 
+        # and
+        # (check if using both to_rows and table generator produces the same results)
+        table_gen = self.get_table()
+        next(table_gen)  # to move to the second table entry
         # when
-        row = self.get_table().to_rows()[1]
+        for row in (self.get_table().to_rows()[1], next(table_gen)):
+            # then
+            self.assertEqual("Inactive", row.get_attribute_value("run/state"))
+            self.assertEqual(12.5, row.get_attribute_value("float"))
+            self.assertEqual("some text", row.get_attribute_value("string"))
+            self.assertEqual(now, row.get_attribute_value("datetime"))
+            self.assertEqual(8.7, row.get_attribute_value("float/series"))
+            self.assertEqual("last text", row.get_attribute_value("string/series"))
+            self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
+            self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
 
-        # then
-        self.assertEqual("Inactive", row.get_attribute_value("run/state"))
-        self.assertEqual(12.5, row.get_attribute_value("float"))
-        self.assertEqual("some text", row.get_attribute_value("string"))
-        self.assertEqual(now, row.get_attribute_value("datetime"))
-        self.assertEqual(8.7, row.get_attribute_value("float/series"))
-        self.assertEqual("last text", row.get_attribute_value("string/series"))
-        self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
-        self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
-
-        with self.assertRaises(MetadataInconsistency):
-            row.get_attribute_value("file")
-        with self.assertRaises(MetadataInconsistency):
-            row.get_attribute_value("image/series")
+            with self.assertRaises(MetadataInconsistency):
+                row.get_attribute_value("file")
+            with self.assertRaises(MetadataInconsistency):
+                row.get_attribute_value("image/series")
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     @patch.object(NeptuneBackendMock, "download_file")
