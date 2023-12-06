@@ -23,6 +23,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    Generator,
     Iterable,
     List,
     Optional,
@@ -1021,22 +1022,20 @@ class HostedNeptuneBackend(NeptuneBackend):
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
+    ) -> Generator[LeaderboardEntry, None, None]:
         step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
         try:
-            return list(
-                iter_over_pages(
-                    client=self.leaderboard_client,
-                    project_id=project_id,
-                    types=types_filter,
-                    query=query,
-                    attributes_filter=attributes_filter,
-                    step_size=step_size,
-                )
+            return iter_over_pages(
+                client=self.leaderboard_client,
+                project_id=project_id,
+                types=types_filter,
+                query=query,
+                attributes_filter=attributes_filter,
+                step_size=step_size,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)

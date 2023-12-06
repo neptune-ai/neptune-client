@@ -23,6 +23,7 @@ from shutil import copyfile
 from typing import (
     Any,
     Dict,
+    Generator,
     Iterable,
     List,
     Optional,
@@ -542,7 +543,7 @@ class NeptuneBackendMock(NeptuneBackend):
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
+    ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):

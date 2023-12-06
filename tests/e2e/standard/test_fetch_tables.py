@@ -67,6 +67,11 @@ class TestFetchTable(BaseE2ETest):
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
+        versions_table_gen = container.fetch_model_versions_table()
+        for te1, te2 in zip(list(versions_table_gen), versions_table):
+            assert te1._id == te2._id
+            assert te1._container_type == te2._container_type
+
     def _test_fetch_from_container(self, init_container, get_containers_as_rows):
         container_id1, container_id2 = None, None
         key1 = self.gen_key()
