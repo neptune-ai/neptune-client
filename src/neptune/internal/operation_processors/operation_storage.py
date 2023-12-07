@@ -24,7 +24,6 @@ from typing import (
 )
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.internal.utils.files import remove_parent_folder_if_allowed
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
@@ -61,4 +60,3 @@ class OperationStorage:
 
     def cleanup(self) -> None:
         shutil.rmtree(self.data_path, ignore_errors=True)
-        remove_parent_folder_if_allowed(self.data_path)
