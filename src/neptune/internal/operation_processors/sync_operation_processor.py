@@ -31,6 +31,7 @@ from neptune.internal.operation_processors.operation_storage import (
 )
 from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
+from neptune.internal.utils.files import should_clean_internal_data
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -72,7 +73,10 @@ class SyncOperationProcessor(OperationProcessor):
             raise errors[0]
 
     def stop(self, seconds: Optional[float] = None) -> None:
-        # Remove local files
+        if should_clean_internal_data():
+            self._remove_local_files()
+
+    def _remove_local_files(self) -> None:
         self._metadata_file.cleanup()
         self._operation_storage.cleanup()
 

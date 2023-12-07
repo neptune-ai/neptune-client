@@ -34,7 +34,10 @@ from typing import (
 )
 
 from neptune.exceptions import MalformedOperation
-from neptune.internal.utils.files import remove_parent_folder_if_allowed
+from neptune.internal.utils.files import (
+    remove_parent_folder_if_allowed,
+    should_clean_internal_data,
+)
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
@@ -196,19 +199,20 @@ class DiskQueue(Generic[T]):
     def ack(self, version: int) -> None:
         self._last_ack_file.write(version)
 
-        log_versions = self._get_all_log_file_versions()
-        for i in range(0, len(log_versions) - 1):
-            if log_versions[i + 1] <= version:
-                filename = self._get_log_file(log_versions[i])
-                try:
-                    os.remove(filename)
-                except FileNotFoundError:
-                    # not really a problem
-                    pass
-                except Exception:
-                    _logger.exception("Cannot remove queue file %s", filename)
-            else:
-                break
+        if should_clean_internal_data():
+            log_versions = self._get_all_log_file_versions()
+            for i in range(0, len(log_versions) - 1):
+                if log_versions[i + 1] <= version:
+                    filename = self._get_log_file(log_versions[i])
+                    try:
+                        os.remove(filename)
+                    except FileNotFoundError:
+                        # not really a problem
+                        pass
+                    except Exception:
+                        _logger.exception("Cannot remove queue file %s", filename)
+                else:
+                    break
 
         with self._empty_cond:
             if self.is_empty():
@@ -252,4 +256,5 @@ class DiskQueue(Generic[T]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.flush()
         self.close()
-        self.cleanup_if_empty()
+        if should_clean_internal_data():
+            self.cleanup_if_empty()
