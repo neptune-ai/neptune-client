@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["remove_parent_folder_if_allowed"]
+__all__ = ["remove_parent_folder_if_allowed", "should_clean_internal_data"]
 
 import os
 from pathlib import Path
@@ -38,3 +38,7 @@ def remove_parent_folder_if_allowed(path: Path) -> None:
                 os.rmdir(parent)
             except OSError:
                 logger.debug(f"Cannot remove directory: {parent}")
+
+
+def should_clean_internal_data() -> bool:
+    return os.getenv("NEPTUNE_CLEAN_INTERNAL_DATA", "True").lower() in ("true", "t", "1")
