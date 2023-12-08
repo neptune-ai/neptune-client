@@ -19,6 +19,7 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import List
 
+import pytest
 from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
@@ -213,3 +214,25 @@ class AbstractTablesTestMixin:
             path=["file", "set"],
             destination="some_directory",
         )
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_table_limit(self, search_leaderboard_entries):
+        # given
+        now = datetime.now()
+        attributes = self.build_attributes_leaderboard(now)
+
+        # and
+        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
+        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        search_leaderboard_entries.return_value = [empty_entry, filled_entry]
+
+        # and
+        for limit, expected_len in [(1, 1), (2, 2), (3, 2), (10_000, 2)]:
+            # then
+            assert len(self.get_table(limit=limit).to_rows()) == expected_len
+
+        with pytest.raises(ValueError):
+            self.get_table(limit=-4)
+
+        with pytest.raises(ValueError):
+            self.get_table(limit=0)
