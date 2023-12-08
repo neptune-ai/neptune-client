@@ -652,7 +652,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]) -> Table:
+    def _fetch_entries(
+        self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]], limit: Optional[int]
+    ) -> Table:
         if columns is not None:
             # always return entries with `sys/id` column when filter applied
             columns = set(columns)
@@ -664,6 +666,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             query=query,
             columns=columns,
         )
+
+        if limit is not None:
+            leaderboard_entries = itertools.islice(leaderboard_entries, limit)
 
         return Table(
             backend=self._backend,
