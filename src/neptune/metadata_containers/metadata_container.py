@@ -667,8 +667,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             columns=columns,
         )
 
-        if limit is not None:
-            leaderboard_entries = itertools.islice(leaderboard_entries, limit)
+        leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
 
         return Table(
             backend=self._backend,
