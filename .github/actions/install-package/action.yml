@@ -33,6 +33,12 @@ runs:
           pip install ".[dev,e2e]"
         shell: bash
 
+      - name: Install composer
+        run: |
+          pip install git+https://github.com/AleksanderWWW/composer@neptune-logger
+        shell:
+          bash
+
       - name: List dependencies
         run: |
           pip list
