@@ -665,6 +665,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             types=[child_type],
             query=query,
             columns=columns,
+            limit=limit,
         )
 
         leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries

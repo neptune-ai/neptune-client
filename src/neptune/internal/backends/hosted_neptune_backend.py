@@ -1022,8 +1022,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+
+        step_size = min(step_size, limit) if limit else step_size
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
