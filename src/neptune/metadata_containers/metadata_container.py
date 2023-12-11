@@ -661,11 +661,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             columns.add("sys/id")
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id,
-            types=[child_type],
-            query=query,
-            columns=columns,
-            limit=limit,
+            project_id=self._project_id, types=[child_type], query=query, columns=columns, default_step_size=limit
         )
 
         leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
