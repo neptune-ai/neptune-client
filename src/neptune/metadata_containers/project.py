@@ -194,6 +194,7 @@ class Project(MetadataContainer):
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
+        limit: Optional[int] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -225,6 +226,7 @@ class Project(MetadataContainer):
                 If `True`, only trashed runs are retrieved.
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
+            limit: How many entries to return at most (default: None - return all entries).
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -273,6 +275,10 @@ class Project(MetadataContainer):
         tags = as_list("tag", tag)
 
         verify_type("trashed", trashed, (bool, type(None)))
+        verify_type("limit", limit, (int, type(None)))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
         nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
@@ -281,9 +287,16 @@ class Project(MetadataContainer):
             child_type=ContainerType.RUN,
             query=nql_query,
             columns=columns,
+            limit=limit,
         )
 
-    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = False) -> Table:
+    def fetch_models_table(
+        self,
+        *,
+        columns: Optional[Iterable[str]] = None,
+        trashed: Optional[bool] = False,
+        limit: Optional[int] = None,
+    ) -> Table:
         """Retrieve models stored in the project.
 
         Args:
@@ -297,6 +310,7 @@ class Project(MetadataContainer):
                     Fields: `["datasets/test", "info/size"]` - these fields are included as columns.
                     Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the models table are included.
+            limit: How many entries to return at most (default: None - return all entries).
 
         Returns:
             `Table` object containing `Model` objects.
@@ -328,6 +342,11 @@ class Project(MetadataContainer):
         You may also want to check the API referene in the docs:
             https://docs.neptune.ai/api/project#fetch_models_table
         """
+        verify_type("limit", limit, (int, type(None)))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
+
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
@@ -340,4 +359,5 @@ class Project(MetadataContainer):
             if trashed is not None
             else NQLEmptyQuery,
             columns=columns,
+            limit=limit,
         )

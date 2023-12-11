@@ -2,6 +2,7 @@
 
 ### Features
 - Added fetching with iterators in `fetch_*_table()` methods ([#1585](https://github.com/neptune-ai/neptune-client/pull/1585))
+- Added `limit` parameter to `fetch_*_table()` methods ([#1593](https://github.com/neptune-ai/neptune-client/pull/1593))
 
 
 ## neptune 1.8.6
