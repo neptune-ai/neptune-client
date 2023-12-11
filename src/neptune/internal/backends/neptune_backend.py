@@ -304,7 +304,7 @@ class NeptuneBackend:
         types: Optional[List[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[List[str]] = None,
-        default_step_size: Optional[int] = None,
+        limit: Optional[int] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 
