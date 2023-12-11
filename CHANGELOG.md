@@ -3,6 +3,7 @@
 ### Features
 - Add support for seaborn figures ([#1613](https://github.com/neptune-ai/neptune-client/pull/1613))
 - Added fetching with iterators in `fetch_*_table()` methods ([#1585](https://github.com/neptune-ai/neptune-client/pull/1585))
+- Added `limit` parameter to `fetch_*_table()` methods ([#1593](https://github.com/neptune-ai/neptune-client/pull/1593))
 
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))

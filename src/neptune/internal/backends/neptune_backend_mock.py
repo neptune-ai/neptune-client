@@ -543,6 +543,7 @@ class NeptuneBackendMock(NeptuneBackend):
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
