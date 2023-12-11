@@ -257,7 +257,9 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_model_versions_table(
+        self, *, columns: Optional[Iterable[str]] = None, limit: Optional[int] = None
+    ) -> Table:
         """Retrieve all versions of the given model.
 
         Args:
@@ -267,6 +269,7 @@ class Model(MetadataContainer):
                     Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
                     Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
+            limit: How many entries to return at most (default: None - return all entries).
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
@@ -299,6 +302,10 @@ class Model(MetadataContainer):
         See also the API referene:
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
+        verify_type("limit", limit, (int, type(None)))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
@@ -320,4 +327,5 @@ class Model(MetadataContainer):
                 aggregator=NQLAggregator.AND,
             ),
             columns=columns,
+            limit=limit,
         )
