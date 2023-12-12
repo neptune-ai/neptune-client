@@ -80,15 +80,15 @@ def get_single_page(
         else:
             normalized_query = sort_by_as_nql
 
-    if not sort_by_column_type:
-        sort_by_column_type = AttributeType.STRING
-
     sorting = (
         {
             "sorting": {
                 "dir": "ascending",
                 "aggregationMode": "none",
-                "sortBy": {"name": sort_by, "type": sort_by_column_type.value},
+                "sortBy": {
+                    "name": sort_by,
+                    "type": sort_by_column_type.value if sort_by_column_type else AttributeType.STRING.value,
+                },
             }
         }
         if sort_by
