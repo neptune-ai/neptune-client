@@ -662,11 +662,10 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         sort_by: str,
     ) -> Table:
         if columns is not None:
-            # always return entries with `sys/id` column when filter applied
+            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
             columns = set(columns)
             columns.add("sys/id")
-            if sort_by not in columns:
-                raise ValueError(f"Column '{sort_by}' to sort by is not present in the column filter: {columns}")
+            columns.add(sort_by)
 
         sort_by_column_type = _get_atomic_column_type(
             backend=self._backend,

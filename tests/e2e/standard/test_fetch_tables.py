@@ -179,3 +179,39 @@ class TestFetchTable(BaseE2ETest):
         assert not runs.empty
         assert tag in runs["sys/tags"].values
         assert random_val in runs["some_random_val"].values
+
+    def test_fetch_runs_table_sorting(self, environment, project):
+        # given
+        with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
+            run["metrics/accuracy"] = 0.95
+            run["some_val"] = "b"
+
+        with neptune.init_run(project=environment.project, custom_run_id="run2") as run:
+            run["metrics/accuracy"] = 0.90
+            run["some_val"] = "a"
+
+        time.sleep(30)
+
+        # when
+        runs = project.fetch_runs_table(sort_by="sys/creation_time").to_pandas()
+
+        # then
+        # runs are correctly sorted by creation time -> run1 was first
+        assert not runs.empty
+        assert runs["sys/custom_run_id"].tolist() == ["run1", "run2"]
+
+        # when
+        runs = project.fetch_runs_table(sort_by="metrics/accuracy").to_pandas()
+
+        # then
+        # run2 has lower accuracy
+        assert not runs.empty
+        assert runs["sys/custom_run_id"].tolist() == ["run2", "run1"]
+
+        # when
+        runs = project.fetch_runs_table(sort_by="some_val").to_pandas()
+
+        # then
+        # run2 has a "lower" "some_val" field value
+        assert not runs.empty
+        assert runs["sys/custom_run_id"].tolist() == ["run2", "run1"]

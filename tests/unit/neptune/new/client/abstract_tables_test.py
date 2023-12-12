@@ -91,7 +91,7 @@ class AbstractTablesTestMixin:
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_with_columns_filter(self, search_leaderboard_entries):
         # when
-        self.get_table(columns=["datetime"], sort_by="sys/id")
+        self.get_table(columns=["datetime"])
 
         # then
         self.assertEqual(2, search_leaderboard_entries.call_count)  # 1 (to fetch single row and check type) + 1 actual
