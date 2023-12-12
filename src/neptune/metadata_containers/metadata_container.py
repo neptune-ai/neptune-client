@@ -54,11 +54,11 @@ from neptune.handler import Handler
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     AttributeType,
+    AttributeWithProperties,
     Project,
 )
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.project_name_lookup import project_name_lookup
 from neptune.internal.backgroud_job_list import BackgroundJobList
@@ -704,11 +704,12 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 def _get_atomic_column_type(
     backend: NeptuneBackend, project_id: UniqueId, child_type: ContainerType, column: str
 ) -> AttributeType:
-    if isinstance(backend, NeptuneBackendMock):
-        return AttributeType.STRING
-    single_row_attrs = next(
-        backend.search_leaderboard_entries(project_id, types=[child_type], columns=[column], limit=1)
-    ).attributes
+    try:
+        single_row_attrs = next(
+            backend.search_leaderboard_entries(project_id, types=[child_type], columns=[column], limit=1)
+        ).attributes
+    except TypeError:
+        single_row_attrs = [AttributeWithProperties(path="", type=AttributeType.STRING, properties={})]
 
     if not single_row_attrs:
         # TODO better exception

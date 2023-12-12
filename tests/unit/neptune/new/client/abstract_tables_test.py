@@ -94,7 +94,7 @@ class AbstractTablesTestMixin:
         self.get_table(columns=["datetime"], sort_by="sys/id")
 
         # then
-        self.assertEqual(1, search_leaderboard_entries.call_count)
+        self.assertEqual(2, search_leaderboard_entries.call_count)  # 1 (to fetch single row and check type) + 1 actual
         parameters = search_leaderboard_entries.call_args[1]
         self.assertEqual({"sys/id", "datetime"}, parameters.get("columns"))
 
