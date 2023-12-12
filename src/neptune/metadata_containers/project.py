@@ -228,6 +228,9 @@ class Project(MetadataContainer):
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -315,6 +318,9 @@ class Project(MetadataContainer):
                     Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the models table are included.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `Model` objects.

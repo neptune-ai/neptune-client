@@ -272,6 +272,9 @@ class Model(MetadataContainer):
                     Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
