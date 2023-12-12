@@ -299,6 +299,7 @@ class Project(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Table:
         """Retrieve models stored in the project.
 
@@ -363,4 +364,5 @@ class Project(MetadataContainer):
             else NQLEmptyQuery,
             columns=columns,
             limit=limit,
+            sort_by=sort_by,
         )

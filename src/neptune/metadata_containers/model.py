@@ -256,7 +256,11 @@ class Model(MetadataContainer):
         )
 
     def fetch_model_versions_table(
-        self, *, columns: Optional[Iterable[str]] = None, limit: Optional[int] = None
+        self,
+        *,
+        columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Table:
         """Retrieve all versions of the given model.
 
@@ -326,4 +330,5 @@ class Model(MetadataContainer):
             ),
             columns=columns,
             limit=limit,
+            sort_by=sort_by,
         )
