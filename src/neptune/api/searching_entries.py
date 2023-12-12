@@ -61,6 +61,7 @@ def get_single_page(
     limit: int,
     offset: int,
     sort_by: Optional[str] = None,
+    sort_by_column_type: Optional[AttributeType] = None,
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
@@ -79,12 +80,15 @@ def get_single_page(
         else:
             normalized_query = sort_by_as_nql
 
+    if not sort_by_column_type:
+        sort_by_column_type = AttributeType.STRING
+
     sorting = (
         {
             "sorting": {
                 "dir": "ascending",
                 "aggregationMode": "none",
-                "sortBy": {"name": sort_by, "type": "string"},
+                "sortBy": {"name": sort_by, "type": sort_by_column_type.value},
             }
         }
         if sort_by
@@ -141,6 +145,7 @@ def iter_over_pages(
     step_size: int,
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
+    sort_by_column_type: Optional[AttributeType] = None,
     **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None
@@ -160,6 +165,7 @@ def iter_over_pages(
                 limit=min(step_size, max_offset - offset),
                 offset=offset,
                 sort_by=sort_by,
+                sort_by_column_type=sort_by_column_type,
                 searching_after=searching_after,
                 **kwargs,
             )

@@ -653,15 +653,38 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self.stop()
 
     def _fetch_entries(
-        self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]], limit: Optional[int]
+        self,
+        child_type: ContainerType,
+        query: NQLQuery,
+        columns: Optional[Iterable[str]],
+        limit: Optional[int],
+        sort_by: str,
     ) -> Table:
         if columns is not None:
             # always return entries with `sys/id` column when filter applied
             columns = set(columns)
             columns.add("sys/id")
+            if sort_by not in columns:
+                raise ValueError(f"Column '{sort_by}' to sort by is not present in the column filter: {columns}")
+
+        sort_by_column_type = _get_atomic_column_type(
+            backend=self._backend,
+            project_id=self._project_id,
+            child_type=child_type,
+            column=sort_by,
+        )
+
+        if sort_by not in ("sys/creation_time", "sys/id") and not _validate_atomic_column_type(sort_by_column_type):
+            raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id, types=[child_type], query=query, columns=columns, limit=limit
+            project_id=self._project_id,
+            types=[child_type],
+            query=query,
+            columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            sort_by_column_type=sort_by_column_type,
         )
 
         leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
@@ -675,3 +698,27 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def get_root_object(self) -> "MetadataContainer":
         """Returns the same Neptune object."""
         return self
+
+
+def _get_atomic_column_type(
+    backend: NeptuneBackend, project_id: UniqueId, child_type: ContainerType, column: str
+) -> AttributeType:
+    single_row_attrs = next(
+        backend.search_leaderboard_entries(project_id, types=[child_type], columns=[column], limit=1)
+    ).attributes
+
+    if not single_row_attrs:
+        # TODO better exception
+        raise Exception(f"Column '{column}' has no attributes")
+
+    return single_row_attrs[0].type
+
+
+def _validate_atomic_column_type(column_type: AttributeType) -> bool:
+    return column_type in (
+        AttributeType.FLOAT,
+        AttributeType.INT,
+        AttributeType.BOOL,
+        AttributeType.STRING,
+        AttributeType.DATETIME,
+    )
