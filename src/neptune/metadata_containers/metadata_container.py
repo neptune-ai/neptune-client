@@ -667,15 +667,18 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             columns.add("sys/id")
             columns.add(sort_by)
 
-        sort_by_column_type = _get_atomic_column_type(
-            backend=self._backend,
-            project_id=self._project_id,
-            child_type=child_type,
-            column=sort_by,
-        )
+        if sort_by == "sys/creation_time":
+            sort_by_column_type = AttributeType.DATETIME
+        else:
+            sort_by_column_type = _get_atomic_column_type(
+                backend=self._backend,
+                project_id=self._project_id,
+                child_type=child_type,
+                column=sort_by,
+            )
 
-        if sort_by not in ("sys/creation_time", "sys/id") and not _validate_atomic_column_type(sort_by_column_type):
-            raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
+            if not not _validate_atomic_column_type(sort_by_column_type):
+                raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
