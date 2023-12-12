@@ -198,7 +198,7 @@ class TestFetchTable(BaseE2ETest):
         # then
         # runs are correctly sorted by creation time -> run1 was first
         assert not runs.empty
-        assert runs["sys/custom_run_id"].tolist() == ["run1", "run2"]
+        assert runs["sys/custom_run_id"].dropna().to_list() == ["run1", "run2"]
 
         # when
         runs = project.fetch_runs_table(sort_by="metrics/accuracy").to_pandas()
@@ -206,7 +206,7 @@ class TestFetchTable(BaseE2ETest):
         # then
         # run2 has lower accuracy
         assert not runs.empty
-        assert runs["sys/custom_run_id"].tolist() == ["run2", "run1"]
+        assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
 
         # when
         runs = project.fetch_runs_table(sort_by="some_val").to_pandas()
@@ -214,4 +214,4 @@ class TestFetchTable(BaseE2ETest):
         # then
         # run2 has a "lower" "some_val" field value
         assert not runs.empty
-        assert runs["sys/custom_run_id"].tolist() == ["run2", "run1"]
+        assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
