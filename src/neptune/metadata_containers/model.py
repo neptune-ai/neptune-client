@@ -308,6 +308,7 @@ class Model(MetadataContainer):
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
         verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")

@@ -135,7 +135,10 @@ from neptune.internal.operation import (
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_decode
-from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
+from neptune.internal.utils.generic_attribute_mapper import (
+    atomic_attribute_types_map,
+    map_attribute_result_to_value,
+)
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
@@ -1024,7 +1027,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
         sort_by: Optional[str] = None,
-        sort_by_column_type: Optional[AttributeType] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1032,6 +1034,36 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
+
+        if sort_by == "sys/creation_time":
+            sort_by_column_type = AttributeType.DATETIME
+        else:
+            # fetch single row to check the type
+            try:
+                sort_by_column_type = (
+                    next(
+                        itertools.islice(
+                            iter_over_pages(
+                                client=self.leaderboard_client,
+                                project_id=project_id,
+                                types=types_filter,
+                                query=query,
+                                attributes_filter={"attributeFilters": [{"path": sort_by}]},
+                                step_size=1,
+                            ),
+                            1,
+                        )
+                    )
+                    .attributes[0]
+                    .type
+                )
+            except IndexError:
+                sort_by_column_type = AttributeType.STRING
+            except TypeError:
+                raise Exception(f"Column '{sort_by}' has no attributes")
+
+            if sort_by_column_type.value not in atomic_attribute_types_map:
+                raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         try:
             return iter_over_pages(
