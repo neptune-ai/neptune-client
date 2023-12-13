@@ -306,7 +306,6 @@ class NeptuneBackend:
         columns: Optional[List[str]] = None,
         limit: Optional[int] = None,
         sort_by: Optional[str] = None,
-        sort_by_column_type: Optional[AttributeType] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 
