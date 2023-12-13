@@ -17,14 +17,14 @@ import os
 import re
 
 import pytest
-import pytorch_lightning
 import torch
-from pytorch_lightning import (
+from lightning.pytorch import (
     LightningModule,
     Trainer,
 )
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers.neptune import NeptuneLogger
+from lightning.pytorch import __version__ as pytorch_version
+from lightning.pytorch.callbacks import ModelCheckpoint
+from lightning.pytorch.loggers.neptune import NeptuneLogger
 from torch.utils.data import (
     DataLoader,
     Dataset,
@@ -138,7 +138,7 @@ class TestPytorchLightning(BaseE2ETest):
             logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
         else:
             logged_version = pytorch_run["source_code/integrations/pytorch-lightning"].fetch()
-        assert logged_version == pytorch_lightning.__version__
+        assert logged_version == pytorch_version
 
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3
