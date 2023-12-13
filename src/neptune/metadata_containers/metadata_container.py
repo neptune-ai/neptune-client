@@ -85,6 +85,7 @@ from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
 )
+from neptune.internal.utils.generic_attribute_mapper import atomic_attribute_types_map
 from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
@@ -677,7 +678,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 column=sort_by,
             )
 
-            if not not _validate_atomic_column_type(sort_by_column_type):
+            if sort_by_column_type.value not in atomic_attribute_types_map:
                 raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
@@ -718,13 +719,3 @@ def _get_atomic_column_type(
         raise Exception(f"Column '{column}' has no attributes")
 
     return single_row_attrs[0].type
-
-
-def _validate_atomic_column_type(column_type: AttributeType) -> bool:
-    return column_type in (
-        AttributeType.FLOAT,
-        AttributeType.INT,
-        AttributeType.BOOL,
-        AttributeType.STRING,
-        AttributeType.DATETIME,
-    )
