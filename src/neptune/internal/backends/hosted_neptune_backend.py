@@ -31,6 +31,8 @@ from typing import (
     Union,
 )
 
+from bravado.client import construct_request
+from bravado.config import RequestConfig
 from bravado.exception import (
     HTTPConflict,
     HTTPNotFound,
@@ -965,19 +967,22 @@ class HostedNeptuneBackend(NeptuneBackend):
         offset: int,
         limit: int,
     ) -> FloatSeriesValues:
-        params = {
-            "experimentId": container_id,
-            "attribute": path_to_str(path),
-            "limit": limit,
-            "offset": offset,
-            **DEFAULT_REQUEST_KWARGS,
-        }
+        params = {"experimentId": container_id, "attribute": path_to_str(path), "limit": limit, "offset": offset}
         try:
-            result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
-            return FloatSeriesValues(
-                result.totalItemCount,
-                [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
+            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
+            request_config = RequestConfig(request_options, True)
+            request_params = construct_request(
+                self.leaderboard_client.api.getFloatSeriesValues, request_options, **params
             )
+
+            http_client = self.leaderboard_client.swagger_spec.http_client
+
+            result = (
+                http_client.request(request_params, operation=None, request_config=request_config)
+                .response()
+                .incoming_response.json()
+            )
+            return result
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
