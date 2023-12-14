@@ -89,7 +89,7 @@ def get_operation_processor(
             batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
             api_token=api_token,
             proxies=proxies,
-            # TODO: Pass signals queue
+            signals_queue=queue
         )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(container_id, container_type, backend)

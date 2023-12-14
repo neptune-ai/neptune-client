@@ -31,6 +31,7 @@ from typing import (
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.threading.daemon import Daemon
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
@@ -54,10 +55,21 @@ class RequestType(str, Enum):
 
 class ResponseType(str, Enum):
     ACK = "ack"
+    EXCEPTION = "exception"
 
 
 RequestMessage = namedtuple("RequestMessage", ["type", "payload", "ack"])
 ResponseMessage = namedtuple("ResponseMessage", ["type", "payload"])
+SignalMessage = namedtuple("SignalMessage", ["type", "payload"])
+
+
+class CustomSignalsQueue:
+    def __init__(self, queue: "Queue[SignalMessage]"):
+        self._queue: "Queue[SignalMessage]" = queue
+
+    def put_nowait(self, item: "Signal") -> None:
+        print("SENDING SIGNAL MESSAGE:", item)
+        self._queue.put(SignalMessage(type=type(item).__name__, payload=item))
 
 
 class Worker(Process):
@@ -67,6 +79,7 @@ class Worker(Process):
         container_type: "ContainerType",
         requests_queue: "Queue[RequestMessage]",
         responses_queue: "Queue[ResponseMessage]",
+        signals_queue: "Queue[SignalMessage]",
         sleep_time: float = 5,
         batch_size: int = 1000,
         api_token: Optional[str] = None,
@@ -82,13 +95,12 @@ class Worker(Process):
         self._api_token = api_token
         self._proxies = proxies
 
-        self._signals_queue: Optional["ThreadingQueue[Signal]"] = None
+        self._signals_queue = CustomSignalsQueue(queue=signals_queue)
         self._lock: Optional[RLock] = None
         self._backend: Optional["NeptuneBackend"] = None
         self._async_processor: Optional["OperationProcessor"] = None
 
     def run(self) -> None:
-        self._signals_queue = ThreadingQueue()
         self._lock = RLock()
         self._backend = get_backend(mode=Mode.ASYNC, api_token=self._api_token, proxies=self._proxies)
         self._async_processor = AsyncOperationProcessor(
@@ -105,7 +117,7 @@ class Worker(Process):
             message = self._requests_queue.get()
             message_type, message_payload, should_ack = message.type, message.payload, message.ack
 
-            print(f"Subprocess received: {message_payload} of {message_type}")
+            # print(f"Subprocess received: {message_payload} of {message_type}")
             try:
                 if message_type == RequestType.PAUSE:
                     self._async_processor.pause()
@@ -131,6 +143,9 @@ class Worker(Process):
             except KeyboardInterrupt:
                 self._async_processor.stop()
                 break
+            except Exception as e:
+                self._responses_queue.put(ResponseMessage(type=ResponseType.EXCEPTION, payload=e))
+                raise
 
 
 class SubprocessOperationProcessor(OperationProcessor):
@@ -138,6 +153,7 @@ class SubprocessOperationProcessor(OperationProcessor):
         self,
         container_id: "UniqueId",
         container_type: "ContainerType",
+        signals_queue: "Queue[Signal]",
         sleep_time: float = 5,
         batch_size: int = 1000,
         api_token: Optional[str] = None,
@@ -145,11 +161,19 @@ class SubprocessOperationProcessor(OperationProcessor):
     ) -> None:
         self._requests_queue: "Queue[RequestMessage]" = Queue()
         self._responses_queue: "Queue[ResponseMessage]" = Queue()
+        self._worker_signals_queue: "Queue[SignalMessage]" = Queue()
+        self._signals_queue: "ThreadingQueue[Signal]" = signals_queue
+        self._signals_proxy = self.SignalsProxyThread(
+            sleep_time=sleep_time,
+            signals_queue=self._signals_queue,
+            worker_signals_queue=self._worker_signals_queue,
+        )
         self._worker: Process = Worker(
             container_id=container_id,
             container_type=container_type,
             requests_queue=self._requests_queue,
             responses_queue=self._responses_queue,
+            signals_queue=self._worker_signals_queue,
             sleep_time=sleep_time,
             batch_size=batch_size,
             api_token=api_token,
@@ -158,8 +182,28 @@ class SubprocessOperationProcessor(OperationProcessor):
         self._started = False
         self.start()
 
+    class SignalsProxyThread(Daemon):
+        def __init__(
+                self,
+                sleep_time: float,
+                signals_queue: "ThreadingQueue[Signal]",
+                worker_signals_queue: "Queue[SignalMessage]",
+        ):
+            super().__init__(name="SignalsProxyThread", sleep_time=sleep_time)
+            self._signals_queue = signals_queue
+            self._worker_signals_queue = worker_signals_queue
+
+        def work(self):
+            while True:
+                message = self._worker_signals_queue.get()
+                print("RECEIVED SIGNAL MESSAGE:", message)
+                message_type, message_payload = message.type, message.payload
+                self._signals_queue.put_nowait(message_payload)
+
     def _wait_for_ack(self) -> None:
-        self._responses_queue.get()
+        response = self._responses_queue.get()
+        if response.type == ResponseType.EXCEPTION:
+            raise response.payload
 
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
         self._requests_queue.put(RequestMessage(type=RequestType.OPERATION, payload=op, ack=wait))
@@ -169,16 +213,19 @@ class SubprocessOperationProcessor(OperationProcessor):
         if self._started:
             return
 
+        self._signals_proxy.start()
         self._worker.start()
         self._requests_queue.put(RequestMessage(type=RequestType.START, payload=None, ack=True))
         self._wait_for_ack()
         self._started = True
 
     def pause(self) -> None:
+        self._signals_proxy.pause()
         self._requests_queue.put(RequestMessage(type=RequestType.PAUSE, payload=None, ack=True))
         self._wait_for_ack()
 
     def resume(self) -> None:
+        self._signals_proxy.resume()
         self._requests_queue.put(RequestMessage(type=RequestType.RESUME, payload=None, ack=True))
         self._wait_for_ack()
 
@@ -187,6 +234,7 @@ class SubprocessOperationProcessor(OperationProcessor):
         self._wait_for_ack()
 
     def wait(self) -> None:
+        self._signals_proxy.wake_up()
         self._requests_queue.put(RequestMessage(type=RequestType.WAIT, payload=None, ack=True))
         self._wait_for_ack()
 
@@ -194,6 +242,10 @@ class SubprocessOperationProcessor(OperationProcessor):
         self._requests_queue.put(RequestMessage(type=RequestType.STOP, payload={"seconds": seconds}, ack=True))
         self._wait_for_ack()
         self._worker.join()
+        if self._signals_proxy.is_running():
+            self._signals_proxy.disable_sleep()
+            self._signals_proxy.wake_up()
+            self._signals_proxy.interrupt()
 
     def close(self) -> None:
         self._requests_queue.put(RequestMessage(type=RequestType.CLOSE, payload=None, ack=True))

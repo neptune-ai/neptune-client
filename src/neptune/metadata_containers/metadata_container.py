@@ -263,7 +263,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 )
             self._bg_job = BackgroundJobList(jobs)
 
-            # self._op_processor.start()
+            self._op_processor.start()
 
         with self._forking_cond:
             self._forking_state = False
