@@ -57,8 +57,9 @@ class FetchableSeries(Generic[Row]):
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
 
+    # Limit needs to be set to 10000 for float series, for string series it needs to be set to 5k
     def _fetch_row_values(
-        self, limit: int = 10000, include_timestamp: bool = True
+        self, limit: int = 200_000, include_timestamp: bool = True
     ) -> Generator[Dict[str, Union[str, float, datetime]], None, None]:
         offset = 0
 
@@ -82,7 +83,7 @@ class FetchableSeries(Generic[Row]):
         data = {
             index: entry
             for index, entry in enumerate(
-                tqdm(self._fetch_row_values(include_timestamp=include_timestamp), total=10**6)
+                tqdm(self._fetch_row_values(include_timestamp=include_timestamp), total=10_000_000)
             )
         }
 

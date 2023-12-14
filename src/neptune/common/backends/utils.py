@@ -93,6 +93,7 @@ def with_api_exceptions_handler(func):
                 requests.exceptions.SSLError,
                 RecursiveCallException,
             ) as e:
+                print(e)
                 time.sleep(min(2 ** min(MAX_RETRY_MULTIPLIER, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue

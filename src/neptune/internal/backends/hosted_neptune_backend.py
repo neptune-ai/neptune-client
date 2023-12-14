@@ -151,6 +151,8 @@ if TYPE_CHECKING:
 
 _logger = logging.getLogger(__name__)
 
+from neptune.proto import values_pb2
+
 
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
@@ -947,14 +949,32 @@ class HostedNeptuneBackend(NeptuneBackend):
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
-            **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
-            return StringSeriesValues(
-                result.totalItemCount,
-                [StringPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
+            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
+            request_config = RequestConfig(request_options, True)
+            request_params = construct_request(
+                self.leaderboard_client.api.getStringSeriesValuesProto, request_options, **params
             )
+
+            http_client = self.leaderboard_client.swagger_spec.http_client
+
+            result = (
+                http_client.request(request_params, operation=None, request_config=request_config)
+                .response()
+                .incoming_response.bytes()
+            )
+
+            # result = (
+            #     http_client.request(request_params, operation=None, request_config=request_config)
+            #     .response()
+            #     .incoming_response.json()
+            # )
+            # return resultpip in
+            w = values_pb2.FloatSeriesValuesDTO()
+            w.ParseFromString(result)
+            return w
+
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
