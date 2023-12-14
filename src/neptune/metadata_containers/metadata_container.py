@@ -251,7 +251,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
             # TODO: Every implementation of background job should handle fork by itself.
             jobs = []
-            if self._mode == Mode.ASYNC:
+            if self._mode == Mode.ASYNC or self._mode == Mode.SUBPROCESS:
                 jobs.append(
                     CallbacksMonitor(
                         queue=self._signals_queue,
@@ -284,7 +284,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         if self._mode != Mode.READ_ONLY:
             jobs.extend(self._get_background_jobs())
 
-        if self._mode == Mode.ASYNC:
+        if self._mode == Mode.ASYNC or self._mode == Mode.SUBPROCESS:
             jobs.append(
                 CallbacksMonitor(
                     queue=self._signals_queue,

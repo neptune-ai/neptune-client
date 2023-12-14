@@ -68,7 +68,6 @@ class CustomSignalsQueue:
         self._queue: "Queue[SignalMessage]" = queue
 
     def put_nowait(self, item: "Signal") -> None:
-        print("SENDING SIGNAL MESSAGE:", item)
         self._queue.put(SignalMessage(type=type(item).__name__, payload=item))
 
 
@@ -196,7 +195,6 @@ class SubprocessOperationProcessor(OperationProcessor):
         def work(self):
             while True:
                 message = self._worker_signals_queue.get()
-                print("RECEIVED SIGNAL MESSAGE:", message)
                 message_type, message_payload = message.type, message.payload
                 self._signals_queue.put_nowait(message_payload)
 
