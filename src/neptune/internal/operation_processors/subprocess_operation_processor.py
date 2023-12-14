@@ -13,19 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ('SubprocessOperationProcessor',)
+__all__ = ("SubprocessOperationProcessor",)
 
+from collections import namedtuple
 from enum import Enum
+from multiprocessing import (
+    Process,
+    Queue,
+)
+from queue import Queue as ThreadingQueue
 from threading import RLock
 from typing import (
     TYPE_CHECKING,
     Optional,
-)
-from collections import namedtuple
-from queue import Queue as ThreadingQueue
-from multiprocessing import (
-    Queue,
-    Process,
 )
 
 from neptune.internal.backends.factory import get_backend
@@ -34,11 +34,11 @@ from neptune.internal.operation_processors.operation_processor import OperationP
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
-    from neptune.internal.operation import Operation
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
+    from neptune.internal.operation import Operation
     from neptune.internal.signals_processing.signals import Signal
-    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
 class RequestType(str, Enum):
@@ -90,11 +90,7 @@ class Worker(Process):
     def run(self) -> None:
         self._signals_queue = ThreadingQueue()
         self._lock = RLock()
-        self._backend = get_backend(
-            mode=Mode.ASYNC,
-            api_token=self._api_token,
-            proxies=self._proxies
-        )
+        self._backend = get_backend(mode=Mode.ASYNC, api_token=self._api_token, proxies=self._proxies)
         self._async_processor = AsyncOperationProcessor(
             container_id=self._container_id,
             container_type=self._container_type,
