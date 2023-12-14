@@ -30,6 +30,10 @@ from typing import (
     Optional,
 )
 
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.operation_processors.factory import get_operation_processor
@@ -175,6 +179,8 @@ class SubprocessOperationProcessor(OperationProcessor):
         proxies: Optional[dict] = None,
         data_path: Optional[Path] = None,
     ) -> None:
+        warn_once("Subprocess support is still experimental.", exception=NeptuneWarning)
+
         self._signals_queue: "SignalsQueue[Signal]" = signals_queue
         self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
         self._operation_storage = OperationStorage(data_path=self._data_path)
