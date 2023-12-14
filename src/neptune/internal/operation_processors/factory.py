@@ -34,7 +34,6 @@ from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
-from .subprocess_operation_processor import SubprocessOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
 if TYPE_CHECKING:
@@ -82,6 +81,7 @@ def get_operation_processor(
             queue=queue,
         )
     elif mode == Mode.SUBPROCESS:
+        from .subprocess_operation_processor import SubprocessOperationProcessor
         return SubprocessOperationProcessor(
             container_id=container_id,
             container_type=container_type,
@@ -89,7 +89,7 @@ def get_operation_processor(
             batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
             api_token=api_token,
             proxies=proxies,
-            signals_queue=queue
+            signals_queue=queue,
         )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(container_id, container_type, backend)

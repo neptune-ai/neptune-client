@@ -29,7 +29,7 @@ from typing import (
 )
 
 from neptune.internal.backends.factory import get_backend
-from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
+from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.threading.daemon import Daemon
 from neptune.types.mode import Mode
@@ -97,18 +97,18 @@ class Worker(Process):
         self._signals_queue = CustomSignalsQueue(queue=signals_queue)
         self._lock: Optional[RLock] = None
         self._backend: Optional["NeptuneBackend"] = None
-        self._async_processor: Optional["OperationProcessor"] = None
+        self._op_processor: Optional["OperationProcessor"] = None
 
     def run(self) -> None:
         self._lock = RLock()
         self._backend = get_backend(mode=Mode.ASYNC, api_token=self._api_token, proxies=self._proxies)
-        self._async_processor = AsyncOperationProcessor(
+        self._op_processor = get_operation_processor(
+            mode=Mode.ASYNC,
             container_id=self._container_id,
             container_type=self._container_type,
             backend=self._backend,
             lock=self._lock,
-            sleep_time=self._sleep_time,
-            batch_size=self._batch_size,
+            flush_period=self._sleep_time,
             queue=self._signals_queue,
         )
 
@@ -116,31 +116,30 @@ class Worker(Process):
             message = self._requests_queue.get()
             message_type, message_payload, should_ack = message.type, message.payload, message.ack
 
-            # print(f"Subprocess received: {message_payload} of {message_type}")
             try:
                 if message_type == RequestType.PAUSE:
-                    self._async_processor.pause()
+                    self._op_processor.pause()
                 if message_type == RequestType.START:
-                    self._async_processor.start()
+                    self._op_processor.start()
                 elif message_type == RequestType.RESUME:
-                    self._async_processor.resume()
+                    self._op_processor.resume()
                 elif message_type == RequestType.STOP:
                     seconds = message_payload.get("seconds", None)
-                    self._async_processor.stop(seconds=seconds)
+                    self._op_processor.stop(seconds=seconds)
                     self._responses_queue.put(ResponseMessage(type=ResponseType.ACK, payload=None))
                     break
                 elif message_type == RequestType.FLUSH:
-                    self._async_processor.flush()
+                    self._op_processor.flush()
                 elif message_type == RequestType.WAIT:
-                    self._async_processor.wait()
+                    self._op_processor.wait()
                 elif message_type == RequestType.CLOSE:
-                    self._async_processor.close()
+                    self._op_processor.close()
                 elif message_type == RequestType.OPERATION:
-                    self._async_processor.enqueue_operation(message_payload, wait=should_ack)
+                    self._op_processor.enqueue_operation(message_payload, wait=should_ack)
 
                 self._responses_queue.put(ResponseMessage(type=ResponseType.ACK, payload=None))
             except KeyboardInterrupt:
-                self._async_processor.stop()
+                self._op_processor.stop()
                 break
             except Exception as e:
                 self._responses_queue.put(ResponseMessage(type=ResponseType.EXCEPTION, payload=e))
@@ -183,19 +182,19 @@ class SubprocessOperationProcessor(OperationProcessor):
 
     class SignalsProxyThread(Daemon):
         def __init__(
-                self,
-                sleep_time: float,
-                signals_queue: "ThreadingQueue[Signal]",
-                worker_signals_queue: "Queue[SignalMessage]",
+            self,
+            sleep_time: float,
+            signals_queue: "ThreadingQueue[Signal]",
+            worker_signals_queue: "Queue[SignalMessage]",
         ):
             super().__init__(name="SignalsProxyThread", sleep_time=sleep_time)
             self._signals_queue = signals_queue
             self._worker_signals_queue = worker_signals_queue
 
-        def work(self):
+        def work(self) -> None:
             while True:
                 message = self._worker_signals_queue.get()
-                message_type, message_payload = message.type, message.payload
+                _, message_payload = message.type, message.payload
                 self._signals_queue.put_nowait(message_payload)
 
     def _wait_for_ack(self) -> None:
