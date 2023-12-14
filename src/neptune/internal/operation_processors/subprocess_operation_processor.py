@@ -30,6 +30,7 @@ from typing import (
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.signals_processing.abstract import SignalsQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.types.mode import Mode
 
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
     from neptune.internal.operation import Operation
-    from neptune.internal.signals_processing.abstract import SignalsQueue
     from neptune.internal.signals_processing.signals import Signal
 
 
