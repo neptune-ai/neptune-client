@@ -18,7 +18,6 @@ __all__ = ["get_operation_processor"]
 
 import os
 import threading
-from queue import Queue
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -37,6 +36,7 @@ from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
 if TYPE_CHECKING:
+    from neptune.internal.signals_processing.abstract import SignalsQueue
     from neptune.internal.signals_processing.signals import Signal
 
 
@@ -47,7 +47,7 @@ def build_async_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     sleep_time: float,
-    queue: "Queue[Signal]",
+    queue: "SignalsQueue[Signal]",
 ) -> OperationProcessor:
     return AsyncOperationProcessor(
         container_id=container_id,
@@ -67,7 +67,7 @@ def get_operation_processor(
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
-    queue: "Queue[Signal]",
+    queue: "SignalsQueue[Signal]",
     api_token: Optional[str] = None,
     proxies: Optional[dict] = None,
 ) -> OperationProcessor:
@@ -82,6 +82,7 @@ def get_operation_processor(
         )
     elif mode == Mode.SUBPROCESS:
         from .subprocess_operation_processor import SubprocessOperationProcessor
+
         return SubprocessOperationProcessor(
             container_id=container_id,
             container_type=container_type,

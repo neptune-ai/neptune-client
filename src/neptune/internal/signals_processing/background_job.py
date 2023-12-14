@@ -15,7 +15,6 @@
 #
 __all__ = ["CallbacksMonitor"]
 
-from queue import Queue
 from typing import (
     TYPE_CHECKING,
     Callable,
@@ -26,14 +25,14 @@ from neptune.internal.background_job import BackgroundJob
 from neptune.internal.signals_processing.signals_processor import SignalsProcessor
 
 if TYPE_CHECKING:
-    from neptune.internal.signals_processing.signals import Signal
+    from neptune.internal.signals_processing.abstract import SignalsQueue
     from neptune.metadata_containers import MetadataContainer
 
 
 class CallbacksMonitor(BackgroundJob):
     def __init__(
         self,
-        queue: "Queue[Signal]",
+        queue: "SignalsQueue",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
@@ -41,7 +40,7 @@ class CallbacksMonitor(BackgroundJob):
         period: float = 10,
     ) -> None:
         self._period: float = period
-        self._queue: "Queue[Signal]" = queue
+        self._queue: "SignalsQueue" = queue
         self._thread: Optional["SignalsProcessor"] = None
         self._started: bool = False
         self._async_lag_threshold: float = async_lag_threshold

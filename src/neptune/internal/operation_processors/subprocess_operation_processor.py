@@ -21,7 +21,6 @@ from multiprocessing import (
     Process,
     Queue,
 )
-from queue import Queue as ThreadingQueue
 from threading import RLock
 from typing import (
     TYPE_CHECKING,
@@ -39,6 +38,7 @@ if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
     from neptune.internal.operation import Operation
+    from neptune.internal.signals_processing.abstract import SignalsQueue
     from neptune.internal.signals_processing.signals import Signal
 
 
@@ -63,12 +63,18 @@ ResponseMessage = namedtuple("ResponseMessage", ["type", "payload"])
 SignalMessage = namedtuple("SignalMessage", ["type", "payload"])
 
 
-class CustomSignalsQueue:
+class CustomSignalsQueue(SignalsQueue["Signal"]):
     def __init__(self, queue: "Queue[SignalMessage]"):
         self._queue: "Queue[SignalMessage]" = queue
 
     def put_nowait(self, item: "Signal") -> None:
         self._queue.put(SignalMessage(type=type(item).__name__, payload=item))
+
+    def empty(self) -> bool:
+        raise NotImplementedError()
+
+    def get_nowait(self) -> "Signal":
+        raise NotImplementedError()
 
 
 class Worker(Process):
@@ -151,7 +157,7 @@ class SubprocessOperationProcessor(OperationProcessor):
         self,
         container_id: "UniqueId",
         container_type: "ContainerType",
-        signals_queue: "Queue[Signal]",
+        signals_queue: "SignalsQueue[Signal]",
         sleep_time: float = 5,
         batch_size: int = 1000,
         api_token: Optional[str] = None,
@@ -160,7 +166,7 @@ class SubprocessOperationProcessor(OperationProcessor):
         self._requests_queue: "Queue[RequestMessage]" = Queue()
         self._responses_queue: "Queue[ResponseMessage]" = Queue()
         self._worker_signals_queue: "Queue[SignalMessage]" = Queue()
-        self._signals_queue: "ThreadingQueue[Signal]" = signals_queue
+        self._signals_queue: "SignalsQueue[Signal]" = signals_queue
         self._signals_proxy = self.SignalsProxyThread(
             sleep_time=sleep_time,
             signals_queue=self._signals_queue,
@@ -184,7 +190,7 @@ class SubprocessOperationProcessor(OperationProcessor):
         def __init__(
             self,
             sleep_time: float,
-            signals_queue: "ThreadingQueue[Signal]",
+            signals_queue: "SignalsQueue[Signal]",
             worker_signals_queue: "Queue[SignalMessage]",
         ):
             super().__init__(name="SignalsProxyThread", sleep_time=sleep_time)

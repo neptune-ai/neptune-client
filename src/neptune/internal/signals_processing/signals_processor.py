@@ -15,10 +15,7 @@
 #
 __all__ = ["SignalsProcessor"]
 
-from queue import (
-    Empty,
-    Queue,
-)
+from queue import Empty
 from threading import Thread
 from time import monotonic
 from typing import (
@@ -35,6 +32,7 @@ from neptune.internal.signals_processing.signals import (
 from neptune.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
+    from neptune.internal.signals_processing.abstract import SignalsQueue
     from neptune.internal.signals_processing.signals import Signal
     from neptune.metadata_containers import MetadataContainer
 
@@ -45,7 +43,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         *,
         period: float,
         container: "MetadataContainer",
-        queue: "Queue[Signal]",
+        queue: "SignalsQueue",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
         async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
@@ -56,7 +54,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         super().__init__(sleep_time=period, name="CallbacksMonitor")
 
         self._container: "MetadataContainer" = container
-        self._queue: "Queue[Signal]" = queue
+        self._queue: "SignalsQueue" = queue
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_threshold: float = async_no_progress_threshold
         self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
