@@ -18,6 +18,7 @@ __all__ = ["get_operation_processor"]
 
 import os
 import threading
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -48,6 +49,7 @@ def build_async_operation_processor(
     lock: threading.RLock,
     sleep_time: float,
     queue: "SignalsQueue[Signal]",
+    data_path: Optional[Path] = None,
 ) -> OperationProcessor:
     return AsyncOperationProcessor(
         container_id=container_id,
@@ -57,6 +59,7 @@ def build_async_operation_processor(
         sleep_time=sleep_time,
         batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
         queue=queue,
+        data_path=data_path,
     )
 
 
@@ -70,6 +73,7 @@ def get_operation_processor(
     queue: "SignalsQueue[Signal]",
     api_token: Optional[str] = None,
     proxies: Optional[dict] = None,
+    data_path: Optional[Path] = None,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
         return build_async_operation_processor(
@@ -79,6 +83,7 @@ def get_operation_processor(
             lock=lock,
             sleep_time=flush_period,
             queue=queue,
+            data_path=data_path,
         )
     elif mode == Mode.SUBPROCESS:
         from .subprocess_operation_processor import SubprocessOperationProcessor

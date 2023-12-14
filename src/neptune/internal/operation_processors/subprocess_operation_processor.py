@@ -15,21 +15,29 @@
 #
 __all__ = ("SubprocessOperationProcessor",)
 
+import os
 from collections import namedtuple
+from datetime import datetime
 from enum import Enum
 from multiprocessing import (
     Process,
     Queue,
 )
+from pathlib import Path
 from threading import RLock
 from typing import (
     TYPE_CHECKING,
     Optional,
 )
 
+from neptune.constants import ASYNC_DIRECTORY
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.operation_processors.operation_storage import (
+    OperationStorage,
+    get_container_dir,
+)
 from neptune.internal.signals_processing.abstract import SignalsQueue
 from neptune.internal.threading.daemon import Daemon
 from neptune.types.mode import Mode
@@ -89,6 +97,7 @@ class Worker(Process):
         batch_size: int = 1000,
         api_token: Optional[str] = None,
         proxies: Optional[dict] = None,
+        data_path: Optional[Path] = None,
     ) -> None:
         super().__init__()
         self._requests_queue = requests_queue
@@ -98,6 +107,7 @@ class Worker(Process):
         self._sleep_time = sleep_time
         self._batch_size = batch_size
         self._api_token = api_token
+        self._data_path = data_path
         self._proxies = proxies
 
         self._signals_queue = CustomSignalsQueue(queue=signals_queue)
@@ -116,6 +126,7 @@ class Worker(Process):
             lock=self._lock,
             flush_period=self._sleep_time,
             queue=self._signals_queue,
+            data_path=self._data_path,
         )
 
         while True:
@@ -162,11 +173,16 @@ class SubprocessOperationProcessor(OperationProcessor):
         batch_size: int = 1000,
         api_token: Optional[str] = None,
         proxies: Optional[dict] = None,
+        data_path: Optional[Path] = None,
     ) -> None:
+        self._signals_queue: "SignalsQueue[Signal]" = signals_queue
+        self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
+
         self._requests_queue: "Queue[RequestMessage]" = Queue()
         self._responses_queue: "Queue[ResponseMessage]" = Queue()
         self._worker_signals_queue: "Queue[SignalMessage]" = Queue()
-        self._signals_queue: "SignalsQueue[Signal]" = signals_queue
+
         self._signals_proxy = self.SignalsProxyThread(
             sleep_time=sleep_time,
             signals_queue=self._signals_queue,
@@ -182,6 +198,7 @@ class SubprocessOperationProcessor(OperationProcessor):
             batch_size=batch_size,
             api_token=api_token,
             proxies=proxies,
+            data_path=self._data_path,
         )
         self._started = False
         self.start()
@@ -202,6 +219,12 @@ class SubprocessOperationProcessor(OperationProcessor):
                 message = self._worker_signals_queue.get()
                 _, message_payload = message.type, message.payload
                 self._signals_queue.put_nowait(message_payload)
+
+    @staticmethod
+    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
+        now = datetime.now()
+        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     def _wait_for_ack(self) -> None:
         response = self._responses_queue.get()
