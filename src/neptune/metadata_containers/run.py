@@ -311,7 +311,7 @@ class Run(MetadataContainer):
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         custom_run_id: Optional[str] = None,
-        mode: Optional[Literal["async", "sync", "offline", "read-only", "debug"]] = None,
+        mode: Optional[Literal["async", "sync", "offline", "read-only", "debug", "subprocess"]] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[List[str], str]] = None,

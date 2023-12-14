@@ -23,6 +23,7 @@ class Mode(str, Enum):
     DEBUG = "debug"
     ASYNC = "async"
     SYNC = "sync"
+    SUBPROCESS = "subprocess"
     READ_ONLY = "read-only"
 
     def __repr__(self):

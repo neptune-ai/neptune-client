@@ -146,6 +146,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._state: ContainerState = ContainerState.CREATED
         self._signals_queue: "Queue[Signal]" = Queue()
 
+        self._api_token = api_token
+        self._proxies = proxies
+
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
         self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
@@ -179,6 +182,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             lock=self._lock,
             flush_period=flush_period,
             queue=self._signals_queue,
+            api_token=self._api_token,
+            proxies=self._proxies,
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -240,6 +245,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 lock=self._lock,
                 flush_period=self._flush_period,
                 queue=self._signals_queue,
+                api_token=self._api_token,
+                proxies=self._proxies,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
@@ -256,7 +263,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 )
             self._bg_job = BackgroundJobList(jobs)
 
-            self._op_processor.start()
+            # self._op_processor.start()
 
         with self._forking_cond:
             self._forking_state = False
