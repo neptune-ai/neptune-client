@@ -215,3 +215,16 @@ class TestFetchTable(BaseE2ETest):
         # run2 has a "lower" "some_val" field value
         assert not runs.empty
         assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
+
+        # test if now it fails when we add a non-atomic type to that field
+
+        # given
+        with neptune.init_run(project=environment.project, custom_run_id="run3") as run:
+            for i in range(5):
+                run["metrics/accuracy"].log(0.95)
+
+        time.sleep(30)
+
+        # then
+        with pytest.raises(ValueError):
+            project.fetch_runs_table(sort_by="metrics/accuracy")
