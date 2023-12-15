@@ -161,7 +161,6 @@ ATOMIC_ATTRIBUTE_TYPES = {
     AttributeType.BOOL.value,
     AttributeType.DATETIME.value,
     AttributeType.RUN_STATE.value,
-    AttributeType.NOTEBOOK_REF.value,
 }
 
 
