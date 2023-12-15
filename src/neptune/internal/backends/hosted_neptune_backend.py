@@ -48,6 +48,7 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -1019,7 +1020,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def _get_column_type(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> str:
+    def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
         params = {
             "projectIdentifier": project_id,
             "search": column,
@@ -1028,7 +1029,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries[0].type
+            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries
         except HTTPNotFound as e:
             raise ProjectNotFound(project_id=project_id) from e
 
@@ -1052,11 +1053,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         if sort_by == "sys/creation_time":
             sort_by_column_type = AttributeType.DATETIME.value
         else:
-            try:
-                sort_by_column_type = self._get_column_type(project_id, sort_by, types_filter)
-            except IndexError:
-                sort_by_column_type = AttributeType.STRING.value
-
+            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
+            sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
             if sort_by_column_type not in atomic_attribute_types_map:
                 raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
@@ -1096,3 +1094,23 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+
+def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
+    if not entries:  # column chosen is not present in the table - no sorting will be done anyway
+        return AttributeType.STRING.value
+
+    if len(entries) == 1:
+        return entries[0].type
+
+    types = set()
+    for entry in entries:
+        if entry.type not in atomic_attribute_types_map:  # non-atomic type - no need to look further
+            return entry.type
+        types.add(entry.type)
+
+    if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
+        return AttributeType.FLOAT.value
+
+    warn_once(f"Column {column} contains more than one atomic data type. Sorting result might be inaccurate.")
+    return AttributeType.STRING.value
