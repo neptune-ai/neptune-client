@@ -21,6 +21,8 @@ __all__ = [
     "ClickProgressBar",
     "ProgressProgressBar",
     "ProgressProgressSpinner",
+    "IPythonProgressBar",
+    "NullProgressBar",
 ]
 
 import abc
@@ -62,6 +64,9 @@ class ProgressBarCallback(contextlib.AbstractContextManager):
 
 
 class NullProgressBar(ProgressBarCallback):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        ...
+
     def __exit__(
         self,
         exc_type: Optional[Type[BaseException]],

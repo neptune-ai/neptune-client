@@ -45,6 +45,8 @@ from typing import (
     Mapping,
     Optional,
     Text,
+    Type,
+    Union,
 )
 from urllib.parse import (
     urljoin,
@@ -79,6 +81,18 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import logger
+from neptune.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
+from neptune.progress_bar import (
+    ClickProgressBar,
+    IPythonProgressBar,
+    NullProgressBar,
+    ProgressBarCallback,
+    TqdmNotebookProgressBar,
+    TqdmProgressBar,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -276,3 +290,28 @@ class ExecuteOperationsBatchingManager:
                 result.operations.append(op)
 
         return result
+
+
+def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> Type[ProgressBarCallback]:
+    if issubclass(progress_bar, ProgressBarCallback):  # return whatever the user gave us
+        return progress_bar
+
+    if progress_bar or progress_bar is None:  # auto-detect which one to use
+        interactive = in_interactive() or in_notebook()
+        try:
+            import tqdm
+
+            _ = tqdm
+
+            tqdm_available = True
+        except ImportError:  # tqdm not installed
+            tqdm_available = False
+        ...
+
+        if interactive:
+            return TqdmNotebookProgressBar if tqdm_available else IPythonProgressBar
+        else:
+            return TqdmProgressBar if tqdm_available else ClickProgressBar
+
+    if not progress_bar:
+        return NullProgressBar
