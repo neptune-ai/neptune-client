@@ -15,7 +15,9 @@
 #
 import unittest
 import uuid
+from dataclasses import dataclass
 
+import pytest
 from bravado.exception import (
     HTTPBadRequest,
     HTTPConflict,
@@ -30,6 +32,7 @@ from mock import (
     patch,
 )
 
+from neptune.internal.backends.api_model import AttributeType
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
@@ -39,6 +42,7 @@ from neptune.internal.backends.hosted_client import (
     create_leaderboard_client,
     get_client_config,
 )
+from neptune.internal.backends.hosted_neptune_backend import _get_column_type_from_entries
 from neptune.internal.backends.utils import verify_host_resolution
 from neptune.management import (
     MemberRole,
@@ -530,3 +534,31 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(AccessRevokedOnMemberRemoval):
             remove_project_member(project="org/proj", username="tester", api_token=API_TOKEN)
+
+
+def test__get_column_type_from_entries():
+    @dataclass
+    class DTO:
+        type: str
+        name: str = "test_column"
+
+    # when
+    test_cases = [
+        {"entries": [], "exc": ValueError},
+        {"entries": [DTO(type="float")], "result": AttributeType.FLOAT.value},
+        {"entries": [DTO(type="string")], "result": AttributeType.STRING.value},
+        {"entries": [DTO(type="float"), DTO(type="floatSeries")], "exc": ValueError},
+        {"entries": [DTO(type="float"), DTO(type="int")], "result": AttributeType.FLOAT.value},
+        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="datetime")], "result": AttributeType.STRING.value},
+        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="string")], "result": AttributeType.STRING.value},
+    ]
+
+    # then
+    for tc in test_cases:
+        exc = tc.get("exc", None)
+        if exc is not None:
+            with pytest.raises(exc):
+                _get_column_type_from_entries(tc["entries"], column="test_column")
+        else:
+            result = _get_column_type_from_entries(tc["entries"], column="test_column")
+            assert result == tc["result"]

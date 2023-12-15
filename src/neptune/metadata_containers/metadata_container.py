@@ -653,15 +653,26 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self.stop()
 
     def _fetch_entries(
-        self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]], limit: Optional[int]
+        self,
+        child_type: ContainerType,
+        query: NQLQuery,
+        columns: Optional[Iterable[str]],
+        limit: Optional[int],
+        sort_by: str,
     ) -> Table:
         if columns is not None:
-            # always return entries with `sys/id` column when filter applied
+            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
             columns = set(columns)
             columns.add("sys/id")
+            columns.add(sort_by)
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id, types=[child_type], query=query, columns=columns, limit=limit
+            project_id=self._project_id,
+            types=[child_type],
+            query=query,
+            columns=columns,
+            limit=limit,
+            sort_by=sort_by,
         )
 
         leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
