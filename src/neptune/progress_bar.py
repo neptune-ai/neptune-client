@@ -159,13 +159,11 @@ class TqdmNotebookProgressBar(ProgressBarCallback):
 
 class ProgressProgressBar(ProgressBarCallback):
     @_handle_import_error(dependency="progress")
-    def __init__(self, *, description: Optional[str] = None, fill: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(self, *, description: Optional[str] = None, **kwargs: Any) -> None:
         self._description = description
         from progress.bar import Bar  # type: ignore[import]
 
         self._progress_bar = Bar(message=description, **kwargs)
-        fill = fill if fill else "#"
-        self._progress_bar.fill = fill
 
     def __enter__(self) -> "ProgressProgressBar":
         self._progress_bar.__enter__()
