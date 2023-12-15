@@ -29,9 +29,7 @@ from neptune.internal.backends.api_model import (
     FloatAttribute,
     FloatSeriesAttribute,
     FloatSeriesValues,
-)
-from neptune.internal.backends.api_model import GitRefAttribute as GitRef
-from neptune.internal.backends.api_model import (
+    GitRefAttribute,
     ImageSeriesValues,
     IntAttribute,
     StringAttribute,
@@ -76,7 +74,9 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     ) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
+    def get_git_ref_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> GitRefAttribute:
         raise NeptuneOfflineModeFetchException
 
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:

@@ -105,6 +105,7 @@ class OptionalFeatures:
     ARTIFACTS_HASH_EXCLUDE_METADATA = "artifacts_hash_exclude_metadata"
     ARTIFACTS_EXCLUDE_DIRECTORY_FILES = "artifact_exclude_directory_files"
     MULTIPART_UPLOAD = "multipart_upload"
+    GIT_REF = "gitref_enabled"
 
 
 @dataclass(frozen=True)

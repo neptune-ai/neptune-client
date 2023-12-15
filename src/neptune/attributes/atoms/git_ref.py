@@ -18,7 +18,10 @@ __all__ = ["GitRef"]
 import typing
 
 from neptune.attributes.atoms.atom import Atom
-from neptune.internal.backends.api_model import GitRefAttribute
+from neptune.internal.backends.api_model import (
+    GitRefAttribute,
+    OptionalFeatures,
+)
 from neptune.internal.container_type import ContainerType
 
 if typing.TYPE_CHECKING:
@@ -26,6 +29,9 @@ if typing.TYPE_CHECKING:
 
 
 class GitRef(Atom):
+    def _check_feature(self) -> None:
+        self._container._backend.verify_feature_available(OptionalFeatures.GIT_REF)
+
     @staticmethod
     def getter(
         backend: "NeptuneBackend",
@@ -36,5 +42,5 @@ class GitRef(Atom):
         return backend.get_git_ref_attribute(container_id, container_type, path)
 
     def fetch(self) -> GitRefAttribute:
-        print("here")
-        return self._backend.get_git_ref_attribute(self._id, self._type, self._path)
+        self._check_feature()
+        return self._backend.get_git_ref_attribute(self._container_id, self._container_type, self._path)

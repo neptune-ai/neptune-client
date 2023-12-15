@@ -91,6 +91,7 @@ from neptune.internal.backends.api_model import (
     Workspace,
 )
 from neptune.internal.backends.hosted_artifact_operations import (
+    add_artifact_version_to_request_params,
     get_artifact_attribute,
     list_artifact_files,
     track_to_existing_artifact,
@@ -115,6 +116,7 @@ from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
+from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     MissingApiClient,
@@ -843,9 +845,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             default_request_params=DEFAULT_REQUEST_KWARGS,
         )
 
-    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
-        pass
-
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         return list_artifact_files(
             swagger_client=self.artifacts_client,
@@ -1068,3 +1067,39 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+    def get_git_ref_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> GitRef:
+        return self.get_git_ref(
+            swagger_client=self.leaderboard_client,
+            parent_identifier=container_id,
+            path=path,
+            default_request_params=DEFAULT_REQUEST_KWARGS,
+        )
+
+    @with_api_exceptions_handler
+    def get_git_ref(
+        self,
+        swagger_client: SwaggerClientWrapper,
+        parent_identifier: str,
+        path: List[str],
+        default_request_params: Optional[Dict],
+    ) -> GitRef:
+        requests_params = add_artifact_version_to_request_params(default_request_params)
+        params = {
+            "experimentId": parent_identifier,
+            "attribute": path_to_str(path),
+            **requests_params,
+        }
+        try:
+            result = swagger_client.api.getGitRefAttribute(**params).response().result
+            return GitRef(
+                commitId=result.commitId,
+                commitAuthor=result.commitAuthor,
+                commitDate=result.commitDate,
+                branch=result.branch,
+                tag=result.tag,
+                remoteUrl=result.remote,
+                url=result.url,
+            )
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
