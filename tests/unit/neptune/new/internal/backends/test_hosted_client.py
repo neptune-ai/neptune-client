@@ -17,6 +17,7 @@ import unittest
 import uuid
 from dataclasses import dataclass
 
+import pytest
 from bravado.exception import (
     HTTPBadRequest,
     HTTPConflict,
@@ -539,13 +540,14 @@ def test__get_column_type_from_entries():
     @dataclass
     class DTO:
         type: str
+        name: str = "test_column"
 
     # when
     test_cases = [
-        {"entries": [], "result": AttributeType.STRING.value},
+        {"entries": [], "exc": ValueError},
         {"entries": [DTO(type="float")], "result": AttributeType.FLOAT.value},
         {"entries": [DTO(type="string")], "result": AttributeType.STRING.value},
-        {"entries": [DTO(type="float"), DTO(type="floatSeries")], "result": AttributeType.FLOAT_SERIES.value},
+        {"entries": [DTO(type="float"), DTO(type="floatSeries")], "exc": ValueError},
         {"entries": [DTO(type="float"), DTO(type="int")], "result": AttributeType.FLOAT.value},
         {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="datetime")], "result": AttributeType.STRING.value},
         {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="string")], "result": AttributeType.STRING.value},
@@ -553,5 +555,10 @@ def test__get_column_type_from_entries():
 
     # then
     for tc in test_cases:
-        result = _get_column_type_from_entries(tc["entries"], column="test_column")
-        assert result == tc["result"]
+        exc = tc.get("exc", None)
+        if exc is not None:
+            with pytest.raises(exc):
+                _get_column_type_from_entries(tc["entries"], column="test_column")
+        else:
+            result = _get_column_type_from_entries(tc["entries"], column="test_column")
+            assert result == tc["result"]

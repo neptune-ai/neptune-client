@@ -305,7 +305,7 @@ class NeptuneBackend:
         query: Optional[NQLQuery] = None,
         columns: Optional[List[str]] = None,
         limit: Optional[int] = None,
-        sort_by: Optional[str] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 

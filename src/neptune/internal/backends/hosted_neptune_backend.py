@@ -48,7 +48,10 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.common.warnings import warn_once
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -136,10 +139,7 @@ from neptune.internal.operation import (
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_decode
-from neptune.internal.utils.generic_attribute_mapper import (
-    atomic_attribute_types_map,
-    map_attribute_result_to_value,
-)
+from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
@@ -153,6 +153,16 @@ if TYPE_CHECKING:
 
 
 _logger = logging.getLogger(__name__)
+
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+    AttributeType.NOTEBOOK_REF.value,
+}
 
 
 class HostedNeptuneBackend(NeptuneBackend):
@@ -1023,7 +1033,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
         params = {
             "projectIdentifier": project_id,
-            "search": column,
+            "search": f"/^{column}$/",  # exact regex match
             "type": types,
             "params": {},
             **DEFAULT_REQUEST_KWARGS,
@@ -1041,7 +1051,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
-        sort_by: Optional[str] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1055,8 +1065,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         else:
             sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
             sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
-            if sort_by_column_type not in atomic_attribute_types_map:
-                raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         try:
             return iter_over_pages(
@@ -1097,20 +1105,25 @@ class HostedNeptuneBackend(NeptuneBackend):
 
 
 def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
-    if not entries:  # column chosen is not present in the table - no sorting will be done anyway
-        return AttributeType.STRING.value
+    if not entries:  # column chosen is not present in the table
+        raise ValueError(f"Column '{column}' chosen for sorting is not present in the table")
 
-    if len(entries) == 1:
+    if len(entries) == 1 and entries[0].name == column:
         return entries[0].type
 
     types = set()
     for entry in entries:
-        if entry.type not in atomic_attribute_types_map:  # non-atomic type - no need to look further
-            return entry.type
+        if entry.name != column:  # caught by regex, but it's not this column
+            continue
+        if entry.type not in ATOMIC_ATTRIBUTE_TYPES:  # non-atomic type - no need to look further
+            raise ValueError(f"Column {column} used for sorting is not of atomic type.")
         types.add(entry.type)
 
     if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
         return AttributeType.FLOAT.value
 
-    warn_once(f"Column {column} contains more than one atomic data type. Sorting result might be inaccurate.")
+    warn_once(
+        f"Column {column} contains more than one atomic data type. Sorting result might be inaccurate.",
+        exception=NeptuneWarning,
+    )
     return AttributeType.STRING.value
