@@ -195,6 +195,7 @@ class Project(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -227,6 +228,9 @@ class Project(MetadataContainer):
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -276,6 +280,7 @@ class Project(MetadataContainer):
 
         verify_type("trashed", trashed, (bool, type(None)))
         verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -288,6 +293,7 @@ class Project(MetadataContainer):
             query=nql_query,
             columns=columns,
             limit=limit,
+            sort_by=sort_by,
         )
 
     def fetch_models_table(
@@ -296,6 +302,7 @@ class Project(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Table:
         """Retrieve models stored in the project.
 
@@ -311,6 +318,9 @@ class Project(MetadataContainer):
                     Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the models table are included.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `Model` objects.
@@ -343,6 +353,7 @@ class Project(MetadataContainer):
             https://docs.neptune.ai/api/project#fetch_models_table
         """
         verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -360,4 +371,5 @@ class Project(MetadataContainer):
             else NQLEmptyQuery,
             columns=columns,
             limit=limit,
+            sort_by=sort_by,
         )

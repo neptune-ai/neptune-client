@@ -256,7 +256,11 @@ class Model(MetadataContainer):
         )
 
     def fetch_model_versions_table(
-        self, *, columns: Optional[Iterable[str]] = None, limit: Optional[int] = None
+        self,
+        *,
+        columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Table:
         """Retrieve all versions of the given model.
 
@@ -268,6 +272,9 @@ class Model(MetadataContainer):
                     Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
             limit: How many entries to return at most (default: None - return all entries).
+            sort_by: Name of the column to sort the results by.
+                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Default: 'sys/creation_time.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
@@ -301,6 +308,7 @@ class Model(MetadataContainer):
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
         verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -326,4 +334,5 @@ class Model(MetadataContainer):
             ),
             columns=columns,
             limit=limit,
+            sort_by=sort_by,
         )
