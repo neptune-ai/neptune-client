@@ -32,10 +32,11 @@ from types import TracebackType
 from typing import (
     Any,
     Callable,
-    Literal,
     Optional,
     Type,
 )
+
+from typing_extensions import Literal
 
 SPINNER_TYPE = Optional[Literal["moon", "pie", "line", "pixel"]]
 
