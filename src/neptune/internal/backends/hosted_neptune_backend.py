@@ -1019,6 +1019,20 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def _get_column_type(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> str:
+        params = {
+            "projectIdentifier": project_id,
+            "search": column,
+            "type": types,
+            "params": {},
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries[0].type
+        except HTTPNotFound as e:
+            raise ProjectNotFound(project_id=project_id) from e
+
+    @with_api_exceptions_handler
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
@@ -1036,33 +1050,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
         if sort_by == "sys/creation_time":
-            sort_by_column_type = AttributeType.DATETIME
+            sort_by_column_type = AttributeType.DATETIME.value
         else:
-            # fetch single row to check the type
             try:
-                sort_by_column_type = (
-                    next(
-                        itertools.islice(
-                            iter_over_pages(
-                                client=self.leaderboard_client,
-                                project_id=project_id,
-                                types=types_filter,
-                                query=query,
-                                attributes_filter={"attributeFilters": [{"path": sort_by}]},
-                                step_size=1,
-                            ),
-                            1,
-                        )
-                    )
-                    .attributes[0]
-                    .type
-                )
+                sort_by_column_type = self._get_column_type(project_id, sort_by, types_filter)
             except IndexError:
-                sort_by_column_type = AttributeType.STRING
-            except TypeError:
-                raise Exception(f"Column '{sort_by}' has no attributes")
+                sort_by_column_type = AttributeType.STRING.value
 
-            if sort_by_column_type.value not in atomic_attribute_types_map:
+            if sort_by_column_type not in atomic_attribute_types_map:
                 raise ValueError(f"Column {sort_by} used for sorting is not of atomic type.")
 
         try:
