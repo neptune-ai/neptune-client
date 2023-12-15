@@ -306,7 +306,6 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
             tqdm_available = True
         except ImportError:  # tqdm not installed
             tqdm_available = False
-        ...
 
         if interactive:
             return TqdmNotebookProgressBar if tqdm_available else IPythonProgressBar
