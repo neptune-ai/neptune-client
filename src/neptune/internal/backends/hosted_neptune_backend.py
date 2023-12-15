@@ -48,6 +48,10 @@ from neptune.common.exceptions import (
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.core.components.operation_storage import OperationStorage
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -149,6 +153,15 @@ if TYPE_CHECKING:
 
 
 _logger = get_logger()
+
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+}
 
 
 class HostedNeptuneBackend(NeptuneBackend):
@@ -1016,6 +1029,20 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
+        params = {
+            "projectIdentifier": project_id,
+            "search": f"/^{column}$/",  # exact regex match
+            "type": types,
+            "params": {},
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries
+        except HTTPNotFound as e:
+            raise ProjectNotFound(project_id=project_id) from e
+
+    @with_api_exceptions_handler
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
@@ -1023,6 +1050,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1030,6 +1058,12 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
+
+        if sort_by == "sys/creation_time":
+            sort_by_column_type = AttributeType.DATETIME.value
+        else:
+            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
+            sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
 
         try:
             return iter_over_pages(
@@ -1039,6 +1073,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 query=query,
                 attributes_filter=attributes_filter,
                 step_size=step_size,
+                sort_by=sort_by,
+                sort_by_column_type=sort_by_column_type,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
@@ -1065,3 +1101,28 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+
+def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
+    if not entries:  # column chosen is not present in the table
+        raise ValueError(f"Column '{column}' chosen for sorting is not present in the table")
+
+    if len(entries) == 1 and entries[0].name == column:
+        return entries[0].type
+
+    types = set()
+    for entry in entries:
+        if entry.name != column:  # caught by regex, but it's not this column
+            continue
+        if entry.type not in ATOMIC_ATTRIBUTE_TYPES:  # non-atomic type - no need to look further
+            raise ValueError(f"Column {column} used for sorting is not of atomic type.")
+        types.add(entry.type)
+
+    if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
+        return AttributeType.FLOAT.value
+
+    warn_once(
+        f"Column {column} contains more than one atomic data type. Sorting result might be inaccurate.",
+        exception=NeptuneWarning,
+    )
+    return AttributeType.STRING.value

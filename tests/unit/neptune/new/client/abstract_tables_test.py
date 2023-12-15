@@ -96,7 +96,7 @@ class AbstractTablesTestMixin:
         # then
         self.assertEqual(1, search_leaderboard_entries.call_count)
         parameters = search_leaderboard_entries.call_args[1]
-        self.assertEqual({"sys/id", "datetime"}, parameters.get("columns"))
+        self.assertEqual({"sys/id", "sys/creation_time", "datetime"}, parameters.get("columns"))
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_as_pandas(self, search_leaderboard_entries):
