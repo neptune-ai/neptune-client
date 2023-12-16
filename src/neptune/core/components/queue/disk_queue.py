@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["QueueElement", "DiskQueue"]
+__all__ = ["DiskQueue", "QueueElement"]
 
 import json
 import logging
@@ -24,13 +24,16 @@ from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
 from time import time
+from types import TracebackType
 from typing import (
     Callable,
     Generic,
     List,
     Optional,
     Tuple,
+    Type,
     TypeVar,
+    Union,
 )
 
 from neptune.core.components.abstract import WithResources
@@ -63,18 +66,18 @@ class DiskQueue(WithResources, Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
-        max_batch_size_bytes: int = None,
+        max_batch_size_bytes: Optional[int] = None,
     ):
-        self._data_path = data_path.resolve(strict=False)
-        self._to_dict = to_dict
-        self._from_dict = from_dict
-        self._max_file_size = max_file_size
-        self._max_batch_size_bytes = max_batch_size_bytes or int(
+        self._data_path: Path = data_path.resolve()
+        self._to_dict: Callable[[T], dict] = to_dict
+        self._from_dict: Callable[[dict], T] = from_dict
+        self._max_file_size: int = max_file_size
+        self._max_batch_size_bytes: int = max_batch_size_bytes or int(
             os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
         )
 
-        self._last_ack_file = SyncOffsetFile(self._data_path / "last_ack_version", default=0)
-        self._last_put_file = SyncOffsetFile(self._data_path / "last_put_version", default=0)
+        self._last_ack_file = SyncOffsetFile(self._data_path / "last_ack_version")
+        self._last_put_file = SyncOffsetFile(self._data_path / "last_put_version")
 
         (
             self._read_file_version,
@@ -161,12 +164,12 @@ class DiskQueue(WithResources, Generic[T]):
             ret.append(next_obj)
         return ret
 
-    def flush(self):
+    def flush(self) -> None:
         self._writer.flush()
         self._last_ack_file.flush()
         self._last_put_file.flush()
 
-    def close(self):
+    def close(self) -> None:
         self._reader.close()
         self.flush()
 
@@ -215,13 +218,13 @@ class DiskQueue(WithResources, Generic[T]):
     def _get_log_file(self, index: int) -> str:
         return "{}/data-{}.log".format(self._data_path, index)
 
-    def _get_all_log_file_versions(self):
+    def _get_all_log_file_versions(self) -> Union[Tuple[int, int], List[int]]:
         log_files = glob("{}/data-*.log".format(self._data_path))
         if not log_files:
             return 1, 1
         return sorted([int(file[len(str(self._data_path)) + 6 : -4]) for file in log_files])
 
-    def _get_first_and_last_log_file_version(self) -> (int, int):
+    def _get_first_and_last_log_file_version(self) -> Tuple[int, int]:
         log_versions = self._get_all_log_file_versions()
         return min(log_versions), max(log_versions)
 
@@ -235,13 +238,18 @@ class DiskQueue(WithResources, Generic[T]):
     def _serialize(self, obj: T, version: int, at: Optional[Timestamp] = None) -> dict:
         return {"obj": self._to_dict(obj), "version": version, "at": at}
 
-    def __enter__(self):
+    def __enter__(self) -> "DiskQueue[T]":
         # TODO: Remove this method
         return self
 
     def _deserialize(self, data: dict) -> Tuple[T, int, Optional[Timestamp]]:
         return self._from_dict(data["obj"]), data["version"], data.get("at")
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.close()
         self.cleanup_if_empty()

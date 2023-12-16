@@ -20,8 +20,10 @@ from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional
 
-import mock
+from mock import patch
+from pytest import fixture
 
 from neptune.core.components.queue.disk_queue import (
     DiskQueue,
@@ -30,9 +32,9 @@ from neptune.core.components.queue.disk_queue import (
 
 
 def test_put():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -45,13 +47,13 @@ def test_put():
             queue.flush()
 
             # then
-            assert get_queue_element(obj, 1) == queue.get()
+            assert get_queue_element(obj, 1, 1234) == queue.get()
 
 
 def test_multiple_files():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -68,18 +70,18 @@ def test_multiple_files():
             # then
             for i in range(1, 101):
                 obj = Obj(i, str(i))
-                assert get_queue_element(obj, i) == queue.get()
+                assert get_queue_element(obj, i, 1234 + i - 1) == queue.get()
 
             # and
             assert queue._read_file_version > 90
             assert queue._write_file_version > 90
-            assert len(glob(dir_path + "/data-*.log")) > 10
+            assert len(glob(data_path + "/data-*.log")) > 10
 
 
 def test_get_batch():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -94,21 +96,21 @@ def test_get_batch():
             queue.flush()
 
             # then
-            assert [get_queue_element(Obj(i, str(i)), i) for i in range(1, 26)] == queue.get_batch(25)
-            assert [get_queue_element(Obj(i, str(i)), i) for i in range(26, 51)] == queue.get_batch(25)
-            assert [get_queue_element(Obj(i, str(i)), i) for i in range(51, 76)] == queue.get_batch(25)
-            assert [get_queue_element(Obj(i, str(i)), i) for i in range(76, 91)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i, 1234 + i - 1) for i in range(1, 26)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i, 1234 + i - 1) for i in range(26, 51)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i, 1234 + i - 1) for i in range(51, 76)] == queue.get_batch(25)
+            assert [get_queue_element(Obj(i, str(i)), i, 1234 + i - 1) for i in range(76, 91)] == queue.get_batch(25)
 
 
 def test_batch_limit():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
             max_file_size=100,
-            max_batch_size_bytes=get_obj_size_bytes(Obj(1, "1"), 1) * 3,
+            max_batch_size_bytes=get_obj_size_bytes(Obj(1, "1"), 1, 1234) * 3,
         ) as queue:
             # given
             for i in range(5):
@@ -119,14 +121,14 @@ def test_batch_limit():
             queue.flush()
 
             # then
-            assert [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3)] == queue.get_batch(5)
-            assert [get_queue_element(Obj(i, str(i)), i + 1) for i in range(3, 5)] == queue.get_batch(2)
+            assert [get_queue_element(Obj(i, str(i)), i + 1, 1234 + i) for i in range(3)] == queue.get_batch(5)
+            assert [get_queue_element(Obj(i, str(i)), i + 1, 1234 + i) for i in range(3, 5)] == queue.get_batch(2)
 
 
 def test_resuming_queue():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -150,15 +152,15 @@ def test_resuming_queue():
             assert queue._write_file_version > 450
 
             # and
-            data_files = glob(dir_path + "/data-*.log")
-            data_files_versions = [int(file[len(dir_path + "/data-") : -len(".log")]) for file in data_files]
+            data_files = glob(data_path + "/data-*.log")
+            data_files_versions = [int(file[len(data_path + "/data-") : -len(".log")]) for file in data_files]
 
             assert len(data_files) > 10
             assert 1 == len([ver for ver in data_files_versions if ver <= version_to_ack])
 
         # Resume queue
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -166,13 +168,13 @@ def test_resuming_queue():
         ) as queue:
             # then
             for i in range(version_to_ack + 1, 501):
-                assert get_queue_element(Obj(i, str(i)), i) == queue.get()
+                assert get_queue_element(Obj(i, str(i)), i, 1234 + i - 1) == queue.get()
 
 
 def test_ack():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -189,15 +191,15 @@ def test_ack():
             queue.ack(3)
 
             # then
-            assert get_queue_element(Obj(3, "3"), 4) == queue.get()
-            assert get_queue_element(Obj(4, "4"), 5) == queue.get()
+            assert get_queue_element(Obj(3, "3"), 4, 1234 + 3) == queue.get()
+            assert get_queue_element(Obj(4, "4"), 5, 1234 + 4) == queue.get()
 
 
-@mock.patch("shutil.rmtree")
+@patch("shutil.rmtree")
 def test_cleaning_up(rmtree):
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -221,7 +223,7 @@ def test_cleaning_up(rmtree):
             queue.cleanup_if_empty()
 
             # then
-            assert rmtree.assert_called_once_with(Path(dir_path).resolve(), ignore_errors=True) is None
+            assert rmtree.assert_called_once_with(Path(data_path).resolve(), ignore_errors=True) is None
 
 
 @dataclass
@@ -230,12 +232,13 @@ class Obj:
     txt: str
 
 
-def get_obj_size_bytes(obj, version) -> int:
-    return len(json.dumps({"obj": obj.__dict__, "version": version}))
+def get_obj_size_bytes(obj, version, at: Optional[int] = None) -> int:
+    return len(json.dumps({"obj": obj.__dict__, "version": version, "at": at}))
 
 
-def get_queue_element(obj, version) -> QueueElement[Obj]:
-    return QueueElement(obj, version, get_obj_size_bytes(obj, version))
+def get_queue_element(obj, version, at: Optional[int] = None) -> QueueElement[Obj]:
+    obj_size = len(json.dumps({"obj": obj.__dict__, "version": version, "at": at}))
+    return QueueElement(obj, version, obj_size, at)
 
 
 def serializer(obj: "Obj") -> dict:
@@ -248,3 +251,10 @@ def deserializer(obj: dict) -> "Obj":
 
 def version_getter(obj: "Obj") -> int:
     return obj.num
+
+
+@fixture(autouse=True, scope="function")
+def mock_time():
+    with patch("neptune.core.components.queue.disk_queue.time") as time_mock:
+        time_mock.side_effect = list(range(1234, 1234 + 1000))
+        yield time_mock
