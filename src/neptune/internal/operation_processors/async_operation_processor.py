@@ -58,7 +58,6 @@ from neptune.internal.signals_processing.utils import (
 )
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
-from neptune.internal.utils.files import should_clean_internal_data
 from neptune.internal.utils.logger import logger
 
 if TYPE_CHECKING:
@@ -253,7 +252,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
-        if should_clean_internal_data() and self._queue.is_empty():
+        if self._queue.is_empty():
             # TODO: Will be refactored
             self._metadata_file.clean()
             self._queue.cleanup_if_empty()

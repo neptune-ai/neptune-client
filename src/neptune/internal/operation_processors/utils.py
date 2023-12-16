@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["common_metadata"]
+__all__ = ["common_metadata", "get_container_dir"]
 
 import datetime
 import os
