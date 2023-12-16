@@ -69,7 +69,7 @@ def test_cleanup(metadata_file_mock, operation_storage_mock):
     processor.stop()
 
     # then
-    operation_storage.cleanup.assert_called()
+    operation_storage.clean.assert_called()
     metadata_file.clean.assert_called()
 
 

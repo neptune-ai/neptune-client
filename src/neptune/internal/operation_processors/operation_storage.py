@@ -19,23 +19,23 @@ import os
 import shutil
 from pathlib import Path
 
+UPLOAD_DIRECTORY_NAME: str = "upload_path"
+
 
 class OperationStorage:
-    UPLOAD_PATH: str = "upload_path"
+    def __init__(self, data_path: Path) -> None:
+        self._upload_path = (data_path / UPLOAD_DIRECTORY_NAME).resolve(strict=False)
 
-    def __init__(self, data_path: Path):
-        self._data_path = data_path.resolve()
-
-        # initialize directory
-        os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
+        os.makedirs(self._upload_path, exist_ok=True)
 
     @property
     def data_path(self) -> Path:
-        return self._data_path
+        # TODO: remove this property
+        return Path()
 
     @property
     def upload_path(self) -> Path:
-        return self.data_path / "upload_path"
+        return self._upload_path
 
-    def cleanup(self) -> None:
-        shutil.rmtree(self.data_path, ignore_errors=True)
+    def clean(self) -> None:
+        shutil.rmtree(self.upload_path, ignore_errors=True)

@@ -78,7 +78,7 @@ class SyncOperationProcessor(OperationProcessor):
 
     def _remove_local_files(self) -> None:
         self._metadata_file.clean()
-        self._operation_storage.cleanup()
+        self._operation_storage.clean()
 
     def close(self) -> None:
         self._metadata_file.close()
