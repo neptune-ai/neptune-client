@@ -29,6 +29,7 @@ from neptune.cli.path_option import path_option
 from neptune.cli.status import StatusRunner
 from neptune.cli.sync import SyncRunner
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.core.components.queue.disk_queue import DiskQueue  # noqa: F401
 from neptune.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
     ProjectNotFound,
@@ -41,7 +42,6 @@ from neptune.internal.backends.api_model import (  # noqa: F401
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
 from neptune.internal.credentials import Credentials
-from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.operation import Operation  # noqa: F401
 

@@ -355,6 +355,7 @@ module = [
     "neptune.internal.websockets.websocket_signals_background_job",
     "neptune.internal.websockets.websockets_factory",
     "neptune.legacy",
+    "neptune.core.components.queue.disk_queue",
     "neptune.legacy.api_exceptions",
     "neptune.legacy.backend",
     "neptune.legacy.checkpoint",

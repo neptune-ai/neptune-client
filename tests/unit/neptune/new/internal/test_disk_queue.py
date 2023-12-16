@@ -23,7 +23,7 @@ from tempfile import TemporaryDirectory
 from typing import Optional
 from unittest.mock import patch
 
-from neptune.internal.disk_queue import (
+from neptune.core.components.queue.disk_queue import (
     DiskQueue,
     QueueElement,
 )
