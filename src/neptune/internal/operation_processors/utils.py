@@ -16,13 +16,18 @@
 __all__ = ["common_metadata"]
 
 import datetime
+import os
 import platform
 import sys
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    Optional,
 )
+
+from neptune.constants import NEPTUNE_DATA_DIRECTORY
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
@@ -46,3 +51,14 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "neptuneClientVersion": get_neptune_version(),
         "createdAt": datetime.datetime.utcnow().isoformat(),
     }
+
+
+def get_container_dir(
+    type_dir: str, container_id: "UniqueId", container_type: "ContainerType", process_path: Optional[str] = None
+) -> Path:
+    neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
+    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
+    if process_path:
+        container_dir /= Path(process_path)
+
+    return container_dir
