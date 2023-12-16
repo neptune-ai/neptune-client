@@ -47,6 +47,7 @@ from neptune.constants import (
     OFFLINE_DIRECTORY,
     OFFLINE_NAME_PREFIX,
 )
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
 from neptune.exceptions import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.internal.backends.api_model import (
@@ -60,7 +61,6 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.logger import logger
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
