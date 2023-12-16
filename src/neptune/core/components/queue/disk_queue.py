@@ -34,9 +34,9 @@ from typing import (
 )
 
 from neptune.core.components.abstract import WithResources
+from neptune.core.components.queue.json_file_splitter import JsonFileSplitter
+from neptune.core.components.queue.sync_offset_file import SyncOffsetFile
 from neptune.exceptions import MalformedOperation
-from neptune.internal.utils.json_file_splitter import JsonFileSplitter
-from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
 T = TypeVar("T")
 Timestamp = float

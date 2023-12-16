@@ -356,6 +356,8 @@ module = [
     "neptune.internal.websockets.websockets_factory",
     "neptune.legacy",
     "neptune.core.components.queue.disk_queue",
+    "neptune.core.components.queue.json_file_splitter",
+    "neptune.core.components.queue.sync_offset_file",
     "neptune.legacy.api_exceptions",
     "neptune.legacy.backend",
     "neptune.legacy.checkpoint",

@@ -24,10 +24,10 @@ from neptune.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.core.components.queue.disk_queue import DiskQueue
+from neptune.core.components.queue.sync_offset_file import SyncOffsetFile
 from neptune.exceptions import MetadataContainerNotFound
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
-from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 from tests.unit.neptune.new.utils.api_experiments_factory import (
     api_metadata_container,
     api_run,
