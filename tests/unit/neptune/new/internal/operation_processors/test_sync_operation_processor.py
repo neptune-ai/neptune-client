@@ -70,7 +70,7 @@ def test_cleanup(metadata_file_mock, operation_storage_mock):
 
     # then
     operation_storage.cleanup.assert_called()
-    metadata_file.cleanup.assert_called()
+    metadata_file.clean.assert_called()
 
 
 @patch("neptune.internal.operation_processors.sync_operation_processor.OperationStorage")

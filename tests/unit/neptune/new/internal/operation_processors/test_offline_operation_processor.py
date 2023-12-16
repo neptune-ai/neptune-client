@@ -76,7 +76,7 @@ def test_cleanup(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # then
     operation_storage.cleanup_if_empty.assert_not_called()
     disk_queue.cleanup_if_empty.assert_not_called()
-    metadata_file.cleanup.assert_not_called()
+    metadata_file.clean.assert_not_called()
 
 
 @patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")

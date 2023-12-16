@@ -21,7 +21,7 @@ from mock import (
     patch,
 )
 
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.metadata_file import MetadataFile
 
 sample_content = """
 {
@@ -97,7 +97,7 @@ def test_cleaning(remove, makedirs):
     # when
     with MetadataFile(data_path=data_path) as metadata:
         # when
-        metadata.cleanup()
+        metadata.clean()
 
         # then
         makedirs.assert_called_with(data_path, exist_ok=True)

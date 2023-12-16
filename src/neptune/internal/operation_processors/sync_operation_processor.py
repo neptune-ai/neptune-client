@@ -23,7 +23,7 @@ from typing import (
 )
 
 from neptune.constants import SYNC_DIRECTORY
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.metadata_file import MetadataFile
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -77,7 +77,7 @@ class SyncOperationProcessor(OperationProcessor):
             self._remove_local_files()
 
     def _remove_local_files(self) -> None:
-        self._metadata_file.cleanup()
+        self._metadata_file.clean()
         self._operation_storage.cleanup()
 
     def close(self) -> None:

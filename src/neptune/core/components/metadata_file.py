@@ -18,24 +18,30 @@ __all__ = ["MetadataFile"]
 import json
 import os
 from pathlib import Path
-from types import TracebackType
 from typing import (
     Any,
     Dict,
     Optional,
-    Type,
 )
 
+from neptune.core.components.abstract import WithResources
 
-class MetadataFile:
-    METADATA_FILE: str = "metadata.json"
+METADATA_FILENAME: str = "metadata.json"
 
-    def __init__(self, data_path: Path, metadata: Optional[Dict[str, Any]] = None):
-        # initialize directory
-        os.makedirs(data_path, exist_ok=True)
 
-        self._metadata_path: Path = (data_path / MetadataFile.METADATA_FILE).resolve(strict=False)
-        self._data: Dict[str, Any] = self._read_or_default()
+def read_or_default(metadata_path: Path) -> Dict[str, Any]:
+    if metadata_path.exists():
+        with open(metadata_path, "r") as handler:
+            data: Dict[str, Any] = json.load(handler)
+            return data
+
+    return dict()
+
+
+class MetadataFile(WithResources):
+    def __init__(self, data_path: Path, metadata: Optional[Dict[str, Any]] = None) -> None:
+        self._metadata_path: Path = (data_path / METADATA_FILENAME).resolve(strict=False)
+        self._data: Dict[str, Any] = read_or_default(self._metadata_path)
 
         if metadata:
             for key, value in metadata.items():
@@ -52,30 +58,8 @@ class MetadataFile:
         with open(self._metadata_path, "w") as handler:
             json.dump(self._data, handler, indent=2)
 
-    def _read_or_default(self) -> Dict[str, Any]:
-        if self._metadata_path.exists():
-            with open(self._metadata_path, "r") as handler:
-                data: Dict[str, Any] = json.load(handler)
-                return data
-
-        return dict()
-
-    def close(self) -> None:
-        self.flush()
-
-    def cleanup(self) -> None:
+    def clean(self) -> None:
         try:
             os.remove(self._metadata_path)
         except OSError:
             pass
-
-    def __enter__(self) -> "MetadataFile":
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Type[Optional[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.close()
