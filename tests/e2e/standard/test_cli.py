@@ -164,7 +164,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor._queue._data_path
                 container_path_parent = container_path.parent
                 container_sys_id = container._sys_id
 
@@ -172,7 +172,7 @@ class TestSync(BaseE2ETest):
                 container_type=container_type, project=environment.project, mode="offline"
             ) as container:
                 container[key] = fake.unique.word()
-                offline_container_path = container._op_processor._queue._dir_path
+                offline_container_path = container._op_processor._queue._data_path
                 offline_container_id = container._id
 
             assert os.path.exists(container_path)
@@ -206,7 +206,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor._queue._data_path
                 container_sys_id = container._sys_id
 
             assert os.path.exists(container_path)
@@ -233,7 +233,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor._queue._data_path
 
             assert os.path.exists(container_path)
 

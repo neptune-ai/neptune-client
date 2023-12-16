@@ -33,6 +33,7 @@ from typing import (
     TypeVar,
 )
 
+from neptune.core.components.abstract import WithResources
 from neptune.exceptions import MalformedOperation
 from neptune.internal.utils.files import should_clean_internal_data
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
@@ -52,20 +53,20 @@ class QueueElement(Generic[T]):
     at: Optional[Timestamp] = None
 
 
-class DiskQueue(Generic[T]):
+class DiskQueue(WithResources, Generic[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
     DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
 
     def __init__(
         self,
-        dir_path: Path,
+        data_path: Path,
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
         max_batch_size_bytes: int = None,
     ):
-        self._dir_path = dir_path.resolve()
+        self._data_path = data_path.resolve(strict=False)
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
@@ -73,13 +74,8 @@ class DiskQueue(Generic[T]):
             os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
         )
 
-        try:
-            os.makedirs(self._dir_path)
-        except FileExistsError:
-            pass
-
-        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version", default=0)
-        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version", default=0)
+        self._last_ack_file = SyncOffsetFile(self._data_path / "last_ack_version", default=0)
+        self._last_put_file = SyncOffsetFile(self._data_path / "last_put_version", default=0)
 
         (
             self._read_file_version,
@@ -173,20 +169,18 @@ class DiskQueue(Generic[T]):
 
     def close(self):
         self._reader.close()
-        self._writer.close()
-        self._last_ack_file.close()
-        self._last_put_file.close()
+        self.flush()
+
+    def clean(self) -> None:
+        # TODO: This should only remove created files, not the whole directory
+        shutil.rmtree(self._data_path, ignore_errors=True)
 
     def cleanup_if_empty(self) -> None:
         """
         Remove underlying files if queue is empty
         """
         if self.is_empty():
-            self._remove_data()
-
-    def _remove_data(self):
-        path = self._dir_path
-        shutil.rmtree(path, ignore_errors=True)
+            self.clean()
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         with self._empty_cond:
@@ -221,13 +215,13 @@ class DiskQueue(Generic[T]):
         return self._last_put_file.read_local() - self._last_ack_file.read_local()
 
     def _get_log_file(self, index: int) -> str:
-        return "{}/data-{}.log".format(self._dir_path, index)
+        return "{}/data-{}.log".format(self._data_path, index)
 
     def _get_all_log_file_versions(self):
-        log_files = glob("{}/data-*.log".format(self._dir_path))
+        log_files = glob("{}/data-*.log".format(self._data_path))
         if not log_files:
             return 1, 1
-        return sorted([int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files])
+        return sorted([int(file[len(str(self._data_path)) + 6 : -4]) for file in log_files])
 
     def _get_first_and_last_log_file_version(self) -> (int, int):
         log_versions = self._get_all_log_file_versions()
@@ -243,14 +237,14 @@ class DiskQueue(Generic[T]):
     def _serialize(self, obj: T, version: int, at: Optional[Timestamp] = None) -> dict:
         return {"obj": self._to_dict(obj), "version": version, "at": at}
 
+    def __enter__(self):
+        # TODO: Remove this method
+        return self
+
     def _deserialize(self, data: dict) -> Tuple[T, int, Optional[Timestamp]]:
         return self._from_dict(data["obj"]), data["version"], data.get("at")
 
-    def __enter__(self):
-        return self
-
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.flush()
         self.close()
         if should_clean_internal_data():
             self.cleanup_if_empty()

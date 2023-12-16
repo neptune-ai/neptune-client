@@ -108,7 +108,7 @@ class SyncRunner(AbstractBackendRunner):
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
         with DiskQueue(
-            dir_path=execution_path,
+            data_path=execution_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=threading.RLock(),

@@ -55,7 +55,7 @@ def execute_operations(container_id, container_type, operations, operation_stora
 def _prepare_disk_queue(*, exp_path, last_ack_version):
     exp_path.mkdir(parents=True)
     queue = DiskQueue(
-        dir_path=exp_path,
+        data_path=exp_path,
         to_dict=lambda x: x,
         from_dict=lambda x: x,
         lock=threading.RLock(),

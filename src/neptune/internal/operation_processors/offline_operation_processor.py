@@ -54,7 +54,7 @@ class OfflineOperationProcessor(OperationProcessor):
         self._operation_storage = OperationStorage(data_path=data_path)
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
-        self._queue = DiskQueue(dir_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
+        self._queue = DiskQueue(data_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
 
     @staticmethod
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":

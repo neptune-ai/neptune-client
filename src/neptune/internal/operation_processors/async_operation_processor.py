@@ -94,7 +94,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
+            data_path=self._operation_storage.data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=lock,
