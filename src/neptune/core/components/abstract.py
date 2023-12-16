@@ -42,9 +42,8 @@ class AutoCloseable(ABC):
 
 
 class WithResources(AutoCloseable, ABC):
-    @abstractmethod
     def flush(self) -> None:
-        ...
+        pass
 
     def close(self) -> None:
         self.flush()

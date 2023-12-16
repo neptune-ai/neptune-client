@@ -19,10 +19,12 @@ import os
 import shutil
 from pathlib import Path
 
+from neptune.core.components.abstract import WithResources
+
 UPLOAD_DIRECTORY_NAME: str = "upload_path"
 
 
-class OperationStorage:
+class OperationStorage(WithResources):
     def __init__(self, data_path: Path) -> None:
         self._upload_path = (data_path / UPLOAD_DIRECTORY_NAME).resolve(strict=False)
 
