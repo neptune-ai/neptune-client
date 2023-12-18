@@ -73,7 +73,7 @@ jobs:
     needs: [ build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -91,7 +91,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -109,12 +109,12 @@ jobs:
     needs: [ build-neptune-client, build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -140,7 +140,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -161,7 +161,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -185,7 +185,7 @@ jobs:
     needs: [ build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -216,7 +216,7 @@ jobs:
       - test-uninstall-0-16-install-neptune
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist/
@@ -245,7 +245,7 @@ jobs:
       - test-uninstall-0-16-install-neptune
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist/
