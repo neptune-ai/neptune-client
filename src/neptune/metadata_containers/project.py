@@ -196,6 +196,7 @@ class Project(MetadataContainer):
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
+        ascending: bool = False,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -231,6 +232,8 @@ class Project(MetadataContainer):
             sort_by: Name of the column to sort the results by.
                 Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
+            ascending: Whether to sort runs in the ascending order of the sorting column values.
+                Default: False - descending order.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -281,6 +284,7 @@ class Project(MetadataContainer):
         verify_type("trashed", trashed, (bool, type(None)))
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -294,6 +298,7 @@ class Project(MetadataContainer):
             columns=columns,
             limit=limit,
             sort_by=sort_by,
+            ascending=ascending,
         )
 
     def fetch_models_table(
@@ -303,6 +308,7 @@ class Project(MetadataContainer):
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
+        ascending: bool = False,
     ) -> Table:
         """Retrieve models stored in the project.
 
@@ -321,6 +327,8 @@ class Project(MetadataContainer):
             sort_by: Name of the column to sort the results by.
                 Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
+            ascending: Whether to sort models in the ascending order of the sorting column values.
+                Default: False - descending order.
 
         Returns:
             `Table` object containing `Model` objects.
@@ -354,6 +362,7 @@ class Project(MetadataContainer):
         """
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -372,4 +381,5 @@ class Project(MetadataContainer):
             columns=columns,
             limit=limit,
             sort_by=sort_by,
+            ascending=ascending,
         )
