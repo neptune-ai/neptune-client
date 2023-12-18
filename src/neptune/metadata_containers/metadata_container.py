@@ -661,6 +661,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         columns: Optional[Iterable[str]],
         limit: Optional[int],
         sort_by: str,
+        ascending: bool,
     ) -> Table:
         if columns is not None:
             # always return entries with 'sys/id' and the column chosen for sorting when filter applied
@@ -675,6 +676,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             columns=columns,
             limit=limit,
             sort_by=sort_by,
+            ascending=ascending,
         )
 
         leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries

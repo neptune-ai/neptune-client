@@ -1051,6 +1051,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
+        ascending: bool = False,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1074,6 +1075,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attributes_filter=attributes_filter,
                 step_size=step_size,
                 sort_by=sort_by,
+                ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
             )
         except HTTPNotFound:
