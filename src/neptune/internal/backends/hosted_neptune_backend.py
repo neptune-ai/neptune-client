@@ -1032,7 +1032,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
         params = {
             "projectIdentifier": project_id,
-            "search": f"/^{column}$/",  # exact regex match
+            "search": column,
             "type": types,
             "params": {},
             **DEFAULT_REQUEST_KWARGS,
