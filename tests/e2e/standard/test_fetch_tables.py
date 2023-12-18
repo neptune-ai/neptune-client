@@ -67,7 +67,7 @@ class TestFetchTable(BaseE2ETest):
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
-        versions_table_gen = container.fetch_model_versions_table()
+        versions_table_gen = container.fetch_model_versions_table(ascending=True)
         for te1, te2 in zip(list(versions_table_gen), versions_table):
             assert te1._id == te2._id
             assert te1._container_type == te2._container_type
@@ -193,7 +193,7 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(30)
 
         # when
-        runs = project.fetch_runs_table(sort_by="sys/creation_time").to_pandas()
+        runs = project.fetch_runs_table(sort_by="sys/creation_time", ascending=True).to_pandas()
 
         # then
         # runs are correctly sorted by creation time -> run1 was first
@@ -201,7 +201,7 @@ class TestFetchTable(BaseE2ETest):
         assert runs["sys/custom_run_id"].dropna().to_list() == ["run1", "run2"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="metrics/accuracy").to_pandas()
+        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=True).to_pandas()
 
         # then
         # run2 has lower accuracy
@@ -209,7 +209,7 @@ class TestFetchTable(BaseE2ETest):
         assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="some_val").to_pandas()
+        runs = project.fetch_runs_table(sort_by="some_val", ascending=True).to_pandas()
 
         # then
         # run2 has a "lower" "some_val" field value
