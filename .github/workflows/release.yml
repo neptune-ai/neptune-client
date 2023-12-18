@@ -37,7 +37,7 @@ jobs:
       - name: Build package
         run: poetry build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: neptune-package
           path: dist/
@@ -64,7 +64,7 @@ jobs:
           cp .github/neptune_client_pyproject.toml pyproject.toml
           poetry build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: neptune-client-package
           path: dist/
