@@ -110,8 +110,8 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
-    @patch("neptune.internal.operation_processors.operation_storage.os.listdir", new=lambda path: [])
-    @patch("neptune.internal.metadata_file.open", mock_open())
+    @patch("neptune.core.components.operation_storage.os.listdir", new=lambda path: [])
+    @patch("neptune.core.components.metadata_file.open", mock_open())
     def test_entrypoint(self):
         with init_run(mode="debug") as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
@@ -200,8 +200,8 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         "neptune.internal.utils.os.path.abspath",
         new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
-    @patch("neptune.internal.operation_processors.operation_storage.os.listdir", new=lambda path: [])
-    @patch("neptune.internal.metadata_file.open", mock_open())
+    @patch("neptune.core.components.operation_storage.os.listdir", new=lambda path: [])
+    @patch("neptune.core.components.metadata_file.open", mock_open())
     def test_entrypoint_without_common_root(self):
         with init_run(mode="debug", source_files=["../*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")

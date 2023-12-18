@@ -21,7 +21,7 @@ from mock import (
     patch,
 )
 
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.metadata_file import MetadataFile
 
 sample_content = """
 {
