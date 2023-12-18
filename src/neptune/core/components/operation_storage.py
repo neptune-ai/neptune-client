@@ -18,12 +18,8 @@ __all__ = ["OperationStorage"]
 import os
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from neptune.internal.utils.files import remove_parent_folder_if_allowed
-
-if TYPE_CHECKING:
-    pass
 
 
 class OperationStorage:
