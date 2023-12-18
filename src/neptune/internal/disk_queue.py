@@ -33,13 +33,13 @@ from typing import (
     TypeVar,
 )
 
+from neptune.core.components.queue.json_file_splitter import JsonFileSplitter
 from neptune.core.components.queue.sync_offset_file import SyncOffsetFile
 from neptune.exceptions import MalformedOperation
 from neptune.internal.utils.files import (
     remove_parent_folder_if_allowed,
     should_clean_internal_data,
 )
-from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 
 T = TypeVar("T")
 Timestamp = float
