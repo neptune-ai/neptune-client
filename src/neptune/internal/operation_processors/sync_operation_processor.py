@@ -23,7 +23,7 @@ from typing import (
 )
 
 from neptune.constants import SYNC_DIRECTORY
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.metadata_file import MetadataFile
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
