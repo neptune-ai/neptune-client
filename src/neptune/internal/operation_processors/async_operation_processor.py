@@ -102,7 +102,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
         self._queue = DiskQueue(
-            data_path=self._operation_storage.data_path,
+            data_path=self._data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=lock,

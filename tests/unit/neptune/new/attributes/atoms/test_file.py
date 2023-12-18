@@ -181,7 +181,7 @@ class TestFile(TestAttributeBase):
 
     def test_clean_files_on_close(self):
         with self._exp() as run:
-            data_path = run._op_processor._operation_storage.data_path
+            data_path = run._op_processor._data_path
 
             assert os.path.exists(data_path)
 

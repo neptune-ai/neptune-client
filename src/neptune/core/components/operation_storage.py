@@ -27,13 +27,7 @@ UPLOAD_DIRECTORY_NAME: str = "upload_path"
 class OperationStorage(Resource):
     def __init__(self, data_path: Path) -> None:
         self._upload_path = (data_path / UPLOAD_DIRECTORY_NAME).resolve(strict=False)
-
         os.makedirs(self._upload_path, exist_ok=True)
-
-    @property
-    def data_path(self) -> Path:
-        # TODO: remove this property
-        return Path()
 
     @property
     def upload_path(self) -> Path:
