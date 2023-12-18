@@ -21,15 +21,15 @@ from pathlib import Path
 
 from neptune.internal.utils.files import remove_parent_folder_if_allowed
 
+UPLOAD_PATH: str = "upload_path"
+
 
 class OperationStorage:
-    UPLOAD_PATH: str = "upload_path"
-
     def __init__(self, data_path: Path):
         self._data_path = data_path.resolve()
 
         # initialize directory
-        os.makedirs(data_path / OperationStorage.UPLOAD_PATH, exist_ok=True)
+        os.makedirs(data_path / UPLOAD_PATH, exist_ok=True)
 
     @property
     def data_path(self) -> Path:
