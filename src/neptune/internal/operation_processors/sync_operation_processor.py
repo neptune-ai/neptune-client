@@ -16,13 +16,14 @@
 __all__ = ("SyncOperationProcessor",)
 
 import os
-from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     Optional,
+    Tuple,
 )
 
 from neptune.constants import SYNC_DIRECTORY
+from neptune.core.components.abstract import WithResources
 from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -33,32 +34,40 @@ from neptune.internal.operation_processors.utils import (
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
+    from neptune.core.components.abstract import Resource
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
     from neptune.internal.operation import Operation
 
 
-class SyncOperationProcessor(OperationProcessor):
+class SyncOperationProcessor(WithResources, OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", backend: "NeptuneBackend"):
         self._container_id: "UniqueId" = container_id
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
 
-        data_path = self._init_data_path(container_id, container_type)
-        self._metadata_file = MetadataFile(
-            data_path=data_path,
-            metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
+        self._data_path = get_container_dir(
+            mode_dir=SYNC_DIRECTORY,
+            container_id=container_id,
+            container_type=container_type
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        os.makedirs(self._data_path, exist_ok=True)
 
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(SYNC_DIRECTORY, container_id, container_type, process_path)
+        # Resources
+        self._metadata_file = MetadataFile(
+            data_path=self._data_path,
+            metadata=common_metadata(
+                mode="sync",
+                container_id=container_id,
+                container_type=container_type
+            ),
+        )
+        self._operation_storage = OperationStorage(data_path=self._data_path)
+
+    @property
+    def resources(self) -> Tuple["Resource", ...]:
+        return self._metadata_file, self._operation_storage
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
@@ -72,11 +81,11 @@ class SyncOperationProcessor(OperationProcessor):
             raise errors[0]
 
     def stop(self, seconds: Optional[float] = None) -> None:
-        self._remove_local_files()
+        self.clean()
 
-    def _remove_local_files(self) -> None:
-        self._metadata_file.clean()
-        self._operation_storage.clean()
-
-    def close(self) -> None:
-        self._metadata_file.close()
+    def clean(self) -> None:
+        super().clean()
+        try:
+            os.rmdir(self._data_path)
+        except OSError:
+            pass

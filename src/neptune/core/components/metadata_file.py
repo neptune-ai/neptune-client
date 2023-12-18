@@ -24,7 +24,7 @@ from typing import (
     Optional,
 )
 
-from neptune.core.components.abstract import WithResources
+from neptune.core.components.abstract import Resource
 
 METADATA_FILENAME: str = "metadata.json"
 
@@ -38,7 +38,7 @@ def read_or_default(metadata_path: Path) -> Dict[str, Any]:
     return dict()
 
 
-class MetadataFile(WithResources):
+class MetadataFile(Resource):
     def __init__(self, data_path: Path, metadata: Optional[Dict[str, Any]] = None) -> None:
         self._metadata_path: Path = (data_path / METADATA_FILENAME).resolve(strict=False)
         self._data: Dict[str, Any] = read_or_default(self._metadata_path)

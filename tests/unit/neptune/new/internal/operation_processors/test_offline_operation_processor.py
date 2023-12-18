@@ -74,8 +74,8 @@ def test_cleanup(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     processor.stop()
 
     # then
-    operation_storage.cleanup_if_empty.assert_not_called()
-    disk_queue.cleanup_if_empty.assert_not_called()
+    operation_storage.clean.assert_not_called()
+    disk_queue.clean.assert_not_called()
     metadata_file.clean.assert_not_called()
 
 

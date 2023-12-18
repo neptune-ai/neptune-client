@@ -15,14 +15,18 @@
 #
 __all__ = ["SyncOffsetFile"]
 
+import os
 from pathlib import Path
 from typing import IO
 
+from neptune.core.components.abstract import Resource
 
-class SyncOffsetFile:
+
+class SyncOffsetFile(Resource):
     def __init__(self, path: Path, default: int = 0):
+        self._path = path
         mode = "r+" if path.exists() else "w+"
-        self._file: IO = open(path, mode)
+        self._file: IO = open(self._path, mode)
         self._default: int = default
         self._last: int = self.read()
 
@@ -48,3 +52,10 @@ class SyncOffsetFile:
 
     def close(self) -> None:
         self._file.close()
+
+    def clean(self) -> None:
+        self._file.close()
+        try:
+            os.remove(self._path)
+        except OSError:
+            pass

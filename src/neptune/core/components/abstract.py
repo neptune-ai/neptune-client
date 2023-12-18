@@ -20,7 +20,7 @@ from abc import (
 from types import TracebackType
 from typing import (
     Optional,
-    Type,
+    Type, Tuple,
 )
 
 
@@ -41,13 +41,33 @@ class AutoCloseable(ABC):
         self.close()
 
 
-class WithResources(AutoCloseable, ABC):
+class Resource(AutoCloseable, ABC):
     def flush(self) -> None:
         pass
-
-    def close(self) -> None:
-        self.flush()
 
     @abstractmethod
     def clean(self) -> None:
         ...
+
+    def close(self) -> None:
+        self.flush()
+
+
+class WithResources(Resource, ABC):
+    @property
+    @abstractmethod
+    def resources(self) -> Tuple["Resource", ...]:
+        ...
+
+    def flush(self) -> None:
+        for resource in self.resources:
+            resource.flush()
+
+    def close(self) -> None:
+        self.flush()
+        for resource in self.resources:
+            resource.close()
+
+    def clean(self) -> None:
+        for resource in self.resources:
+            resource.clean()
