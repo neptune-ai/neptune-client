@@ -80,8 +80,8 @@ class DiskQueue(WithResources, Generic[T]):
             os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(DEFAULT_MAX_BATCH_SIZE_BYTES)
         )
 
-        self._last_ack_file = SyncOffsetFile(self._data_path / "last_ack_version")
-        self._last_put_file = SyncOffsetFile(self._data_path / "last_put_version")
+        self._last_ack_file = SyncOffsetFile(self._data_path / "last_ack_version", default=0)
+        self._last_put_file = SyncOffsetFile(self._data_path / "last_put_version", default=0)
 
         (
             self._read_file_version,

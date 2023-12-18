@@ -188,4 +188,3 @@ class TestFile(TestAttributeBase):
             run.stop()
 
             assert not os.path.exists(data_path)  # exec folder
-            assert not os.path.exists(data_path.parent)  # run folder

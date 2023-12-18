@@ -19,7 +19,7 @@ import time
 import unittest
 from abc import abstractmethod
 from io import StringIO
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from neptune.exceptions import (
     MetadataInconsistency,
@@ -47,13 +47,18 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
-    def test_offline_mode(self):
+    @patch("neptune.internal.operation_processors.utils.random")
+    @patch("neptune.internal.operation_processors.utils.os.getpid")
+    def test_offline_mode(self, random_mock, getpid_mock):
+        random_mock.choice.return_value = "test"
+        getpid_mock.return_value = 1234
+
         with self.call_init(mode="offline") as exp:
             exp["some/variable"] = 13
             with self.assertRaises(NeptuneOfflineModeFetchException):
                 exp["some/variable"].fetch()
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}"
+            exp_dir = f"{exp.container_type.value}__{exp._id}__1234__test"
             self.assertIn(exp_dir, os.listdir(".neptune/offline"))
             self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
 
