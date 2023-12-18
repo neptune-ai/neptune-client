@@ -28,11 +28,11 @@ from neptune.core.components.metadata_file import MetadataFile
 from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
+from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
     get_container_dir,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
