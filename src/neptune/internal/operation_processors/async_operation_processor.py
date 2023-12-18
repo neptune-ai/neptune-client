@@ -39,11 +39,11 @@ from neptune.common.warnings import (
     warn_once,
 )
 from neptune.constants import ASYNC_DIRECTORY
+from neptune.core.components.metadata_file import MetadataFile
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
-from neptune.core.components.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
