@@ -48,6 +48,7 @@ from neptune.constants import (
     OFFLINE_NAME_PREFIX,
 )
 from neptune.core.components.operation_storage import OperationStorage
+from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
 from neptune.exceptions import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.internal.backends.api_model import (
@@ -55,7 +56,6 @@ from neptune.internal.backends.api_model import (
     Project,
 )
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
@@ -114,11 +114,11 @@ class SyncRunner(AbstractBackendRunner):
             lock=threading.RLock(),
         ) as disk_queue:
             while True:
-                batch = disk_queue.get_batch(1000)
-                if not batch:
+                raw_batch = disk_queue.get_batch(1000)
+                if not raw_batch:
                     break
-                version = batch[-1].ver
-                batch = [element.obj for element in batch]
+                version = raw_batch[-1].ver
+                batch = [element.obj for element in raw_batch]
 
                 start_time = time.monotonic()
                 expected_count = len(batch)

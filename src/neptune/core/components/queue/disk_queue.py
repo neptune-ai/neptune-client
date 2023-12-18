@@ -24,13 +24,16 @@ from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
 from time import time
+from types import TracebackType
 from typing import (
     Callable,
     Generic,
     List,
     Optional,
     Tuple,
+    Type,
     TypeVar,
+    Union,
 )
 
 from neptune.core.components.queue.json_file_splitter import JsonFileSplitter
@@ -47,6 +50,9 @@ Timestamp = float
 _logger = logging.getLogger(__name__)
 
 
+DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
+
+
 @dataclass
 class QueueElement(Generic[T]):
     obj: T
@@ -55,10 +61,8 @@ class QueueElement(Generic[T]):
     at: Optional[Timestamp] = None
 
 
+# NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 class DiskQueue(Generic[T]):
-    # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
-    DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
-
     def __init__(
         self,
         dir_path: Path,
@@ -66,14 +70,14 @@ class DiskQueue(Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
-        max_batch_size_bytes: int = None,
-    ):
+        max_batch_size_bytes: Optional[int] = None,
+    ) -> None:
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
         self._max_batch_size_bytes = max_batch_size_bytes or int(
-            os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
+            os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(DEFAULT_MAX_BATCH_SIZE_BYTES)
         )
 
         try:
@@ -169,12 +173,12 @@ class DiskQueue(Generic[T]):
             ret.append(next_obj)
         return ret
 
-    def flush(self):
+    def flush(self) -> None:
         self._writer.flush()
         self._last_ack_file.flush()
         self._last_put_file.flush()
 
-    def close(self):
+    def close(self) -> None:
         self._reader.close()
         self._writer.close()
         self._last_ack_file.close()
@@ -187,7 +191,7 @@ class DiskQueue(Generic[T]):
         if self.is_empty():
             self._remove_data()
 
-    def _remove_data(self):
+    def _remove_data(self) -> None:
         path = self._dir_path
         shutil.rmtree(path, ignore_errors=True)
         remove_parent_folder_if_allowed(path)
@@ -227,13 +231,13 @@ class DiskQueue(Generic[T]):
     def _get_log_file(self, index: int) -> str:
         return "{}/data-{}.log".format(self._dir_path, index)
 
-    def _get_all_log_file_versions(self):
+    def _get_all_log_file_versions(self) -> Union[Tuple[int, int], List[int]]:
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
         return sorted([int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files])
 
-    def _get_first_and_last_log_file_version(self) -> (int, int):
+    def _get_first_and_last_log_file_version(self) -> Tuple[int, int]:
         log_versions = self._get_all_log_file_versions()
         return min(log_versions), max(log_versions)
 
@@ -250,10 +254,15 @@ class DiskQueue(Generic[T]):
     def _deserialize(self, data: dict) -> Tuple[T, int, Optional[Timestamp]]:
         return self._from_dict(data["obj"]), data["version"], data.get("at")
 
-    def __enter__(self):
+    def __enter__(self) -> "DiskQueue[T]":
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: Type[Optional[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
         self.flush()
         self.close()
         if should_clean_internal_data():

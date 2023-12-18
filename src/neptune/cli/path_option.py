@@ -23,6 +23,7 @@ import click
 
 from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
+from neptune.core.components.queue.disk_queue import DiskQueue  # noqa: F401
 from neptune.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
     ProjectNotFound,
@@ -33,7 +34,6 @@ from neptune.internal.backends.api_model import (  # noqa: F401
     Project,
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
-from neptune.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.internal.operation import Operation  # noqa: F401
 
 

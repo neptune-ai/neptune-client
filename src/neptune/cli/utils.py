@@ -42,6 +42,7 @@ from typing import (
 
 from neptune.common.exceptions import NeptuneException
 from neptune.constants import OFFLINE_DIRECTORY
+from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.exceptions import (
     MetadataContainerNotFound,
@@ -53,7 +54,6 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
