@@ -261,6 +261,7 @@ class Model(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
+        ascending: bool = False,
     ) -> Table:
         """Retrieve all versions of the given model.
 
@@ -275,6 +276,8 @@ class Model(MetadataContainer):
             sort_by: Name of the column to sort the results by.
                 Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
+            ascending: Whether to sort model versions in the ascending order of the sorting column values.
+                Default: False - descending order.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
@@ -309,6 +312,7 @@ class Model(MetadataContainer):
         """
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -335,4 +339,5 @@ class Model(MetadataContainer):
             columns=columns,
             limit=limit,
             sort_by=sort_by,
+            ascending=ascending,
         )

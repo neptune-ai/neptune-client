@@ -67,7 +67,7 @@ class TestFetchTable(BaseE2ETest):
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
-        versions_table_gen = container.fetch_model_versions_table()
+        versions_table_gen = container.fetch_model_versions_table(ascending=True)
         for te1, te2 in zip(list(versions_table_gen), versions_table):
             assert te1._id == te2._id
             assert te1._container_type == te2._container_type
@@ -180,7 +180,8 @@ class TestFetchTable(BaseE2ETest):
         assert tag in runs["sys/tags"].values
         assert random_val in runs["some_random_val"].values
 
-    def test_fetch_runs_table_sorting(self, environment, project):
+    @pytest.mark.parametrize("ascending", [True, False])
+    def test_fetch_runs_table_sorting(self, environment, project, ascending):
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
             run["metrics/accuracy"] = 0.95
@@ -193,33 +194,49 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(30)
 
         # when
-        runs = project.fetch_runs_table(sort_by="sys/creation_time").to_pandas()
+        runs = project.fetch_runs_table(sort_by="sys/creation_time", ascending=ascending).to_pandas()
 
         # then
         # runs are correctly sorted by creation time -> run1 was first
         assert not runs.empty
-        assert runs["sys/custom_run_id"].dropna().to_list() == ["run1", "run2"]
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        if ascending:
+            assert run_list == ["run1", "run2"]
+        else:
+            assert run_list == ["run2", "run1"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="metrics/accuracy").to_pandas()
+        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=ascending).to_pandas()
 
         # then
-        # run2 has lower accuracy
         assert not runs.empty
-        assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+
+        if ascending:
+            assert run_list == ["run2", "run1"]
+        else:
+            assert run_list == ["run1", "run2"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="some_val").to_pandas()
+        runs = project.fetch_runs_table(sort_by="some_val", ascending=ascending).to_pandas()
 
         # then
-        # run2 has a "lower" "some_val" field value
         assert not runs.empty
-        assert runs["sys/custom_run_id"].dropna().to_list() == ["run2", "run1"]
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
 
+        if ascending:
+            assert run_list == ["run2", "run1"]
+        else:
+            assert run_list == ["run1", "run2"]
+
+    def test_fetch_runs_table_non_atomic_type(self, environment, project):
         # test if now it fails when we add a non-atomic type to that field
 
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run3") as run:
+            run["metrics/accuracy"] = 0.9
+
+        with neptune.init_run(project=environment.project, custom_run_id="run4") as run:
             for i in range(5):
                 run["metrics/accuracy"].log(0.95)
 

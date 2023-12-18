@@ -1032,7 +1032,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
         params = {
             "projectIdentifier": project_id,
-            "search": f"/^{column}$/",  # exact regex match
+            "search": column,
             "type": types,
             "params": {},
             **DEFAULT_REQUEST_KWARGS,
@@ -1051,6 +1051,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
+        ascending: bool = False,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1074,6 +1075,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attributes_filter=attributes_filter,
                 step_size=step_size,
                 sort_by=sort_by,
+                ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
             )
         except HTTPNotFound:
