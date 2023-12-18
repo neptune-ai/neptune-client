@@ -106,7 +106,6 @@ class DiskQueue(WithResources, Generic[T]):
         _json = json.dumps(self._serialize(obj=obj, version=version, at=time()))
         if self._file_size + len(_json) > self._max_file_size:
             old_writer = self._writer
-            # TODO: Track new resource
             self._writer = open(self._get_log_file(version), "a")
             old_writer.flush()
             old_writer.close()
@@ -138,6 +137,12 @@ class DiskQueue(WithResources, Generic[T]):
                         top_element.ver,
                     )
                 return top_element
+
+    def close(self) -> None:
+        super().close()
+        self._writer.flush()
+        self._writer.close()
+        self._reader.close()
 
     def _get(self) -> Optional[QueueElement[T]]:
         _json, size = self._reader.get_with_size()
@@ -188,7 +193,6 @@ class DiskQueue(WithResources, Generic[T]):
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
                 filename = self._get_log_file(log_versions[i])
-                # TODO: Untrack resource
                 try:
                     os.remove(filename)
                 except FileNotFoundError:
