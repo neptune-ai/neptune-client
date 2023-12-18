@@ -551,6 +551,10 @@ def test__get_column_type_from_entries():
         {"entries": [DTO(type="float"), DTO(type="int")], "result": AttributeType.FLOAT.value},
         {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="datetime")], "result": AttributeType.STRING.value},
         {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="string")], "result": AttributeType.STRING.value},
+        {
+            "entries": [DTO(type="float"), DTO(type="int"), DTO(type="string", name="test_column_different")],
+            "result": AttributeType.FLOAT.value,
+        },
     ]
 
     # then
