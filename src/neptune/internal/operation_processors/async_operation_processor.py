@@ -17,7 +17,6 @@ __all__ = ("AsyncOperationProcessor",)
 
 import os
 import threading
-from datetime import datetime
 from pathlib import Path
 from queue import Queue
 from time import (
@@ -88,7 +87,7 @@ class AsyncOperationProcessor(OperationProcessor):
         should_print_logs: bool = True,
     ):
         self._should_print_logs: bool = should_print_logs
-        self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
+        self._data_path = data_path if data_path else get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
 
         self._metadata_file = MetadataFile(
             data_path=self._data_path,
@@ -115,12 +114,6 @@ class AsyncOperationProcessor(OperationProcessor):
 
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
-        now = datetime.now()
-        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:

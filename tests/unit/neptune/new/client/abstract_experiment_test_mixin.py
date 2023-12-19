@@ -51,11 +51,12 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
-    @patch("neptune.internal.operation_processors.offline_operation_processor.os.getpid")
-    @patch("neptune.internal.operation_processors.offline_operation_processor.datetime")
+    @patch("neptune.internal.operation_processors.utils.os.getpid")
+    @patch("neptune.internal.operation_processors.utils.datetime")
     def test_offline_mode(self, datetime_mock, getpid_mock):
         current_time = datetime(2021, 1, 1, 12, 34, 56, 123456)
         datetime_mock.now.return_value = current_time
+        datetime_mock.utcnow.return_value = current_time
         getpid_mock.return_value = 1234
 
         with self.call_init(mode="offline") as exp:
