@@ -80,7 +80,8 @@ def test__to_leaderboard_entry():
 
 
 @patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__single_pagination(get_single_page):
+@patch("neptune.api.searching_entries.fetch_data", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__single_pagination(fetch_data, get_single_page):
     # given
     get_single_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
@@ -103,7 +104,8 @@ def test__iter_over_pages__single_pagination(get_single_page):
 
 
 @patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__multiple_search_after(get_single_page):
+@patch("neptune.api.searching_entries.fetch_data", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__multiple_search_after(fetch_data, get_single_page):
     # given
     get_single_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
@@ -126,7 +128,8 @@ def test__iter_over_pages__multiple_search_after(get_single_page):
 
 
 @patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__empty(get_single_page):
+@patch("neptune.api.searching_entries.fetch_data", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__empty(fetch_data, get_single_page):
     # given
     get_single_page.side_effect = [[]]
 
@@ -141,7 +144,8 @@ def test__iter_over_pages__empty(get_single_page):
 
 
 @patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__max_server_offset(get_single_page):
+@patch("neptune.api.searching_entries.fetch_data", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__max_server_offset(fetch_data, get_single_page):
     # given
     get_single_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),

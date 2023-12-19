@@ -57,7 +57,7 @@ if TYPE_CHECKING:
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
 
-def get_single_page(
+def fetch_data(
     *,
     client: "SwaggerClientWrapper",
     project_id: "UniqueId",
@@ -70,7 +70,7 @@ def get_single_page(
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
-) -> List[Any]:
+) -> Any:
     normalized_query = query or NQLEmptyQuery()
     if sort_by and searching_after:
         sort_by_as_nql = NQLQueryAttribute(
@@ -117,10 +117,39 @@ def get_single_page(
 
     http_client = client.swagger_spec.http_client
 
-    result = (
+    return (
         http_client.request(request_params, operation=None, request_config=request_config)
         .response()
         .incoming_response.json()
+    )
+
+
+def get_single_page(
+    *,
+    client: "SwaggerClientWrapper",
+    project_id: "UniqueId",
+    attributes_filter: Dict[str, Any],
+    limit: int,
+    offset: int,
+    sort_by: Optional[str] = None,
+    sort_by_column_type: Optional[str] = None,
+    ascending: bool = False,
+    types: Optional[Iterable[str]] = None,
+    query: Optional["NQLQuery"] = None,
+    searching_after: Optional[str] = None,
+) -> List[Any]:
+    result = fetch_data(
+        client=client,
+        project_id=project_id,
+        attributes_filter=attributes_filter,
+        limit=limit,
+        offset=offset,
+        sort_by=sort_by,
+        sort_by_column_type=sort_by_column_type,
+        ascending=ascending,
+        types=types,
+        query=query,
+        searching_after=searching_after,
     )
 
     return list(map(to_leaderboard_entry, result.get("entries", [])))
@@ -158,33 +187,39 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    bar = which_progress_bar(progress_bar)(description="Fetching table...")
+    total = fetch_data(
+        limit=0,
+        offset=0,
+        **kwargs,
+    ).get("matchingItemCount", 0)
 
-    while True:
-        if last_page:
-            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+    progress_bar = progress_bar if step_size >= total else None
+    with which_progress_bar(progress_bar)(description="Fetching table...") as bar:
+        while True:
+            if last_page:
+                page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
 
-            if not page_attribute:
-                raise ValueError(f"Cannot find attribute {sort_by} in last page")
+                if not page_attribute:
+                    raise ValueError(f"Cannot find attribute {sort_by} in last page")
 
-            searching_after = page_attribute.properties["value"]
+                searching_after = page_attribute.properties["value"]
 
-        for offset in range(0, max_offset, step_size):
-            page = get_single_page(
-                limit=min(step_size, max_offset - offset),
-                offset=offset,
-                sort_by=sort_by,
-                sort_by_column_type=sort_by_column_type,
-                searching_after=searching_after,
-                ascending=ascending,
-                **kwargs,
-            )
+            for offset in range(0, max_offset, step_size):
+                page = get_single_page(
+                    limit=min(step_size, max_offset - offset),
+                    offset=offset,
+                    sort_by=sort_by,
+                    sort_by_column_type=sort_by_column_type,
+                    searching_after=searching_after,
+                    ascending=ascending,
+                    **kwargs,
+                )
 
-            if not page:
-                return
+                if not page:
+                    return
 
-            bar.update(by=step_size)
+                bar.update(by=step_size, total=total)
 
-            yield from page
+                yield from page
 
-            last_page = page
+                last_page = page
