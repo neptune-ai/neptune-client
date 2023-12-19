@@ -173,12 +173,12 @@ class TqdmNotebookProgressBar(ProgressBarCallback):
 
 
 class IPythonProgressBar(ProgressBarCallback):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, description: Optional[str] = None, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         from IPython.display import display  # type: ignore[import]
         from ipywidgets import IntProgress  # type: ignore[import]
 
-        self._progress_bar = IntProgress(**kwargs)
+        self._progress_bar = IntProgress(description=description, **kwargs)
         display(self._progress_bar)
 
     def __exit__(
