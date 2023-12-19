@@ -29,6 +29,7 @@ from neptune.internal import operation
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
+    _check_if_tqdm_installed,
     build_operation_url,
     which_progress_bar,
 )
@@ -211,3 +212,13 @@ class TestWhichProgressBar(unittest.TestCase):
         assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
 
         assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+
+@patch.dict("sys.modules", {"tqdm": None})
+def test_check_if_tqdm_installed_not_installed():
+    assert not _check_if_tqdm_installed()
+
+
+@patch.dict("sys.modules", {"tqdm": {}})
+def test_check_if_tqdm_installed_installed():
+    assert _check_if_tqdm_installed()
