@@ -15,9 +15,10 @@
 #
 import unittest
 import uuid
-from unittest.mock import Mock
-
-import mock
+from unittest.mock import (
+    Mock,
+    patch,
+)
 
 from neptune.attributes import (
     Integer,
@@ -167,9 +168,9 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
 
 
 class TestWhichProgressBar(unittest.TestCase):
-    @mock.patch("neptune.internal.backends.utils._check_if_tqdm_installed")
-    @mock.patch("neptune.internal.backends.utils.in_interactive", return_value=True)
-    @mock.patch("neptune.internal.backends.utils.in_notebook", return_value=True)
+    @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+    @patch("neptune.internal.backends.utils.in_interactive", return_value=True)
+    @patch("neptune.internal.backends.utils.in_notebook", return_value=True)
     def test_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
         mock_tqdm_installed.return_value = True
 
@@ -189,9 +190,9 @@ class TestWhichProgressBar(unittest.TestCase):
 
         assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
 
-    @mock.patch("neptune.internal.backends.utils._check_if_tqdm_installed")
-    @mock.patch("neptune.internal.backends.utils.in_interactive", return_value=False)
-    @mock.patch("neptune.internal.backends.utils.in_notebook", return_value=False)
+    @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+    @patch("neptune.internal.backends.utils.in_interactive", return_value=False)
+    @patch("neptune.internal.backends.utils.in_notebook", return_value=False)
     def test_not_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
         mock_tqdm_installed.return_value = True
 
