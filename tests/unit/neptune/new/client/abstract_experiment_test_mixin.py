@@ -18,7 +18,6 @@ import os
 import time
 import unittest
 from abc import abstractmethod
-from datetime import datetime
 from io import StringIO
 from unittest.mock import (
     Mock,
@@ -51,12 +50,10 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
+    @patch("neptune.internal.operation_processors.utils.random_key")
     @patch("neptune.internal.operation_processors.utils.os.getpid")
-    @patch("neptune.internal.operation_processors.utils.datetime")
-    def test_offline_mode(self, datetime_mock, getpid_mock):
-        current_time = datetime(2021, 1, 1, 12, 34, 56, 123456)
-        datetime_mock.now.return_value = current_time
-        datetime_mock.utcnow.return_value = current_time
+    def test_offline_mode(self, getpid_mock, random_mock):
+        random_mock.return_value = "test"
         getpid_mock.return_value = 1234
 
         with self.call_init(mode="offline") as exp:
@@ -64,12 +61,10 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneOfflineModeFetchException):
                 exp["some/variable"].fetch()
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}"
-            process_path = f"exec-{current_time.timestamp()}-{current_time.strftime('%Y-%m-%d_%H.%M.%S.%f')}-1234"
+            exp_dir = f"{exp.container_type.value}__{exp._id}__1234__test"
 
             self.assertIn(exp_dir, os.listdir(".neptune/offline"))
-            self.assertIn(process_path, os.listdir(f".neptune/offline/{exp_dir}"))
-            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}/{process_path}"))
+            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
 
     def test_sync_mode(self):
         with self.call_init(mode="sync") as exp:
@@ -80,22 +75,25 @@ class AbstractExperimentTestMixin:
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
-        with self.call_init(mode="async", flush_period=0.5) as exp:
-            exp["some/variable"] = 13
-            exp["copied/variable"] = exp["some/variable"]
-            with self.assertRaises(MetadataInconsistency):
-                exp["some/variable"].fetch()
-            exp.wait()
-            self.assertEqual(13, exp["some/variable"].fetch())
-            self.assertEqual(13, exp["copied/variable"].fetch())
+        with (
+            patch("neptune.internal.operation_processors.utils.random_key") as random_mock,
+            patch("neptune.internal.operation_processors.utils.os.getpid") as getpid_mock,
+        ):
+            random_mock.return_value = "test"
+            getpid_mock.return_value = 1234
 
-            exp_dir = f"{exp.container_type.value}__{exp._id}"
-            self.assertIn(exp_dir, os.listdir(".neptune/async"))
-            execution_dir = os.listdir(f".neptune/async/{exp_dir}")[0]
-            self.assertIn(
-                "data-1.log",
-                os.listdir(f".neptune/async/{exp_dir}/{execution_dir}"),
-            )
+            with self.call_init(mode="async", flush_period=0.5) as exp:
+                exp["some/variable"] = 13
+                exp["copied/variable"] = exp["some/variable"]
+                with self.assertRaises(MetadataInconsistency):
+                    exp["some/variable"].fetch()
+                exp.wait()
+                self.assertEqual(13, exp["some/variable"].fetch())
+                self.assertEqual(13, exp["copied/variable"].fetch())
+
+                exp_dir = f"{exp.container_type.value}__{exp._id}__1234__test"
+                self.assertIn(exp_dir, os.listdir(".neptune/async"))
+                self.assertIn("data-1.log", os.listdir(f".neptune/async/{exp_dir}"))
 
     def test_async_mode_wait_on_dead(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
@@ -148,14 +146,13 @@ class AbstractExperimentTestMixin:
 
     def test_clean_data_on_stop(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
-            container_path = exp._op_processor._queue._dir_path
+            container_path = exp._op_processor._queue._data_path
 
             assert os.path.exists(container_path)
 
             exp.stop()
 
             assert not os.path.exists(container_path)
-            assert not os.path.exists(container_path.parent)
 
     @abstractmethod
     def test_read_only_mode(self):

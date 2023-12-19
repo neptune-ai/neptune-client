@@ -19,17 +19,17 @@ import os
 import shutil
 from pathlib import Path
 
-from neptune.internal.utils.files import remove_parent_folder_if_allowed
+from neptune.core.components.abstract import Resource
 
 UPLOAD_PATH: str = "upload_path"
 
 
-class OperationStorage:
+class OperationStorage(Resource):
     def __init__(self, data_path: Path):
-        self._data_path = data_path.resolve()
+        self._data_path = data_path
 
-        # initialize directory
-        os.makedirs(data_path / UPLOAD_PATH, exist_ok=True)
+        # initialize upload directory
+        os.makedirs(self.upload_path, exist_ok=True)
 
     @property
     def data_path(self) -> Path:
@@ -37,8 +37,7 @@ class OperationStorage:
 
     @property
     def upload_path(self) -> Path:
-        return self.data_path / "upload_path"
+        return self._data_path / UPLOAD_PATH
 
     def cleanup(self) -> None:
-        shutil.rmtree(self.data_path, ignore_errors=True)
-        remove_parent_folder_if_allowed(self.data_path)
+        shutil.rmtree(self.upload_path, ignore_errors=True)

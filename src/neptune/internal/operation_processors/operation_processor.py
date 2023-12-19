@@ -16,6 +16,7 @@
 __all__ = ("OperationProcessor",)
 
 import abc
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -33,6 +34,10 @@ class OperationProcessor(abc.ABC):
 
     @property
     def operation_storage(self) -> "OperationStorage":
+        raise NotImplementedError()
+
+    @property
+    def data_path(self) -> Path:
         raise NotImplementedError()
 
     def start(self) -> None:

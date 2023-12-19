@@ -55,7 +55,7 @@ def execute_operations(container_id, container_type, operations, operation_stora
 def _prepare_disk_queue(*, exp_path, last_ack_version):
     exp_path.mkdir(parents=True)
     queue = DiskQueue(
-        dir_path=exp_path,
+        data_path=exp_path,
         to_dict=lambda x: x,
         from_dict=lambda x: x,
         lock=threading.RLock(),
@@ -67,6 +67,26 @@ def _prepare_disk_queue(*, exp_path, last_ack_version):
     SyncOffsetFile(exp_path / "last_put_version").write(3)
     if last_ack_version is not None:
         SyncOffsetFile(exp_path / "last_ack_version").write(last_ack_version)
+
+
+def prepare_v2_container(
+    *,
+    container_type: ContainerType,
+    path: Path,
+    pid: int,
+    key: str,
+    last_ack_version: Optional[int],
+    trashed: Optional[bool] = False,
+) -> ApiExperiment:
+    container = api_metadata_container(container_type, trashed=trashed)
+
+    exec_path = f"{container_type.create_dir_name(container.id)}__{pid}__{key}"
+    directory = OFFLINE_DIRECTORY if last_ack_version is None else ASYNC_DIRECTORY
+    experiment_path = path / directory / exec_path
+
+    _prepare_disk_queue(exp_path=experiment_path, last_ack_version=last_ack_version)
+
+    return container
 
 
 def prepare_v1_container(

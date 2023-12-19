@@ -32,9 +32,9 @@ from neptune.core.components.queue.disk_queue import (
 
 
 def test_put():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -51,9 +51,9 @@ def test_put():
 
 
 def test_multiple_files():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -75,13 +75,13 @@ def test_multiple_files():
             # and
             assert queue._read_file_version > 90
             assert queue._write_file_version > 90
-            assert len(glob(dir_path + "/data-*.log")) > 10
+            assert len(glob(data_path + "/data-*.log")) > 10
 
 
 def test_get_batch():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -103,9 +103,9 @@ def test_get_batch():
 
 
 def test_batch_limit():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -126,9 +126,9 @@ def test_batch_limit():
 
 
 def test_resuming_queue():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -152,15 +152,15 @@ def test_resuming_queue():
             assert queue._write_file_version > 450
 
             # and
-            data_files = glob(dir_path + "/data-*.log")
-            data_files_versions = [int(file[len(dir_path + "/data-") : -len(".log")]) for file in data_files]
+            data_files = glob(data_path + "/data-*.log")
+            data_files_versions = [int(file[len(data_path + "/data-") : -len(".log")]) for file in data_files]
 
             assert len(data_files) > 10
             assert 1 == len([ver for ver in data_files_versions if ver <= version_to_ack])
 
         # Resume queue
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -172,9 +172,9 @@ def test_resuming_queue():
 
 
 def test_ack():
-    with TemporaryDirectory() as dir_path:
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -195,11 +195,10 @@ def test_ack():
             assert get_queue_element(Obj(4, "4"), 5, 1234 + 4) == queue.get()
 
 
-@patch("shutil.rmtree")
-def test_cleaning_up(rmtree):
-    with TemporaryDirectory() as dir_path:
+def test_cleaning_up():
+    with TemporaryDirectory() as data_path:
         with DiskQueue[Obj](
-            dir_path=Path(dir_path),
+            data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
             lock=threading.RLock(),
@@ -220,10 +219,10 @@ def test_cleaning_up(rmtree):
             assert queue.is_empty()
 
             # when
-            queue.cleanup_if_empty()
+            queue.cleanup()
 
             # then
-            assert rmtree.assert_called_once_with(Path(dir_path).resolve(), ignore_errors=True) is None
+            assert list(Path(data_path).glob("*")) == []
 
 
 @dataclass

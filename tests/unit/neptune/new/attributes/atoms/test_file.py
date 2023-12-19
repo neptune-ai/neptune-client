@@ -36,10 +36,6 @@ from neptune.attributes.file_set import (
     FileSetVal,
 )
 from neptune.common.utils import IS_WINDOWS
-from neptune.envs import (
-    NEPTUNE_CLEAN_INTERNAL_DATA,
-    NEPTUNE_DISABLE_PARENT_DIR_DELETION,
-)
 from neptune.internal.operation import (
     UploadFile,
     UploadFileSet,
@@ -184,35 +180,10 @@ class TestFile(TestAttributeBase):
 
     def test_clean_files_on_close(self):
         with self._exp() as run:
-            data_path = run._op_processor._operation_storage.data_path
+            data_path = run._op_processor.data_path
 
             assert os.path.exists(data_path)
 
             run.stop()
 
             assert not os.path.exists(data_path)  # exec folder
-            assert not os.path.exists(data_path.parent)  # run folder
-
-    @patch.dict(os.environ, {NEPTUNE_DISABLE_PARENT_DIR_DELETION: "True"})
-    def test_clean_files_on_close_when_parent_dir_cleanup_disabled(self):
-        with self._exp() as run:
-            data_path = run._op_processor._operation_storage.data_path
-
-            assert os.path.exists(data_path)
-
-            run.stop()
-
-            assert not os.path.exists(data_path)  # exec folder
-            assert os.path.exists(data_path.parent)  # run folder
-
-    @patch.dict(os.environ, {NEPTUNE_CLEAN_INTERNAL_DATA: "False"})
-    def test_clean_files_on_close_when_internal_cleanup_disabled(self):
-        with self._exp() as run:
-            data_path = run._op_processor._operation_storage.data_path
-
-            assert os.path.exists(data_path)
-
-            run.stop()
-
-            assert os.path.exists(data_path)  # exec folder
-            assert os.path.exists(data_path.parent)  # run folder

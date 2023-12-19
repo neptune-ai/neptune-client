@@ -21,6 +21,7 @@ from json import (
     JSONDecodeError,
     JSONDecoder,
 )
+from pathlib import Path
 from types import TracebackType
 from typing import (
     IO,
@@ -29,6 +30,7 @@ from typing import (
     Optional,
     Tuple,
     Type,
+    Union,
 )
 
 
@@ -36,7 +38,7 @@ class JsonFileSplitter:
     BUFFER_SIZE = 64 * 1024
     MAX_PART_READ = 8 * 1024
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: Union[str, Path]):
         self._file: IO = open(file_path, "r")
         self._decoder: JSONDecoder = JSONDecoder(strict=False)
         self._part_buffer: StringIO = StringIO()

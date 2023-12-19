@@ -17,6 +17,8 @@ __all__ = ["common_metadata", "get_container_dir"]
 
 import os
 import platform
+import random
+import string
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -33,6 +35,9 @@ if TYPE_CHECKING:
     from neptune.internal.id_formats import UniqueId
 
 
+RANDOM_KEY_LENGTH = 8
+
+
 def get_neptune_version() -> str:
     from neptune.version import __version__ as neptune_version
 
@@ -44,7 +49,7 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "mode": mode,
         "containerId": container_id,
         "containerType": container_type,
-        "structureVersion": 2,
+        "structureVersion": 3,
         "os": platform.platform(),
         "pythonVersion": sys.version,
         "neptuneClientVersion": get_neptune_version(),
@@ -54,6 +59,10 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
 
 def get_container_dir(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
     neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
-    exec_path = f"exec-{datetime.now().timestamp()}-{datetime.now().strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+    container_dir = f"{container_type.value}__{container_id}__{os.getpid()}__{random_key(RANDOM_KEY_LENGTH)}"
+    return neptune_data_dir / type_dir / container_dir
 
-    return neptune_data_dir / type_dir / container_type.create_dir_name(container_id) / exec_path
+
+def random_key(length: int) -> str:
+    characters = string.ascii_lowercase + string.digits
+    return "".join(random.choice(characters) for _ in range(length))
