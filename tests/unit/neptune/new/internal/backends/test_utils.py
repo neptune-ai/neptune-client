@@ -17,6 +17,8 @@ import unittest
 import uuid
 from unittest.mock import Mock
 
+import mock
+
 from neptune.attributes import (
     Integer,
     String,
@@ -27,8 +29,16 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     build_operation_url,
+    which_progress_bar,
 )
 from neptune.internal.container_type import ContainerType
+from neptune.progress_bar import (
+    ClickProgressBar,
+    IPythonProgressBar,
+    NullProgressBar,
+    TqdmNotebookProgressBar,
+    TqdmProgressBar,
+)
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
@@ -154,3 +164,49 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         self.assertEqual(operations[1:], batch.operations)
         self.assertEqual([backend.get_int_attribute.side_effect], batch.errors)
         self.assertEqual(1, batch.dropped_operations_count)
+
+
+class TestWhichProgressBar(unittest.TestCase):
+    @mock.patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+    @mock.patch("neptune.internal.backends.utils.in_interactive", return_value=True)
+    @mock.patch("neptune.internal.backends.utils.in_notebook", return_value=True)
+    def test_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
+        mock_tqdm_installed.return_value = True
+
+        assert which_progress_bar(None) == TqdmNotebookProgressBar
+        assert which_progress_bar(True) == TqdmNotebookProgressBar
+        assert which_progress_bar(False) == NullProgressBar
+        assert which_progress_bar(ClickProgressBar) == ClickProgressBar
+
+        mock_tqdm_installed.return_value = False
+        assert which_progress_bar(None) == IPythonProgressBar
+        assert which_progress_bar(True) == IPythonProgressBar
+        assert which_progress_bar(False) == NullProgressBar
+        assert which_progress_bar(ClickProgressBar) == ClickProgressBar
+
+        # short-circuit evaluation - depends on the order in the 'or' statement
+        assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+        assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+    @mock.patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+    @mock.patch("neptune.internal.backends.utils.in_interactive", return_value=False)
+    @mock.patch("neptune.internal.backends.utils.in_notebook", return_value=False)
+    def test_not_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
+        mock_tqdm_installed.return_value = True
+
+        assert which_progress_bar(None) == TqdmProgressBar
+        assert which_progress_bar(True) == TqdmProgressBar
+        assert which_progress_bar(False) == NullProgressBar
+        assert which_progress_bar(ClickProgressBar) == ClickProgressBar
+
+        mock_tqdm_installed.return_value = False
+        assert which_progress_bar(None) == ClickProgressBar
+        assert which_progress_bar(True) == ClickProgressBar
+        assert which_progress_bar(False) == NullProgressBar
+        assert which_progress_bar(ClickProgressBar) == ClickProgressBar
+
+        # short-circuit evaluation - depends on the order in the 'or' statement
+        assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+        assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
