@@ -26,6 +26,7 @@ __all__ = [
     "ssl_verify",
     "parse_validation_errors",
     "ExecuteOperationsBatchingManager",
+    "which_progress_bar",
 ]
 
 import dataclasses
@@ -292,20 +293,25 @@ class ExecuteOperationsBatchingManager:
         return result
 
 
+def _check_if_tqdm_installed() -> bool:
+    try:
+        import tqdm  # noqa: F401
+
+        return True
+    except ImportError:  # tqdm not installed
+        return False
+
+
 def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> Type[ProgressBarCallback]:
-    if issubclass(progress_bar, ProgressBarCallback):  # return whatever the user gave us
+    if isinstance(progress_bar, type) and issubclass(
+        progress_bar, ProgressBarCallback
+    ):  # return whatever the user gave us
         return progress_bar
 
     if progress_bar or progress_bar is None:  # auto-detect which one to use
         interactive = in_interactive() or in_notebook()
-        try:
-            import tqdm
 
-            _ = tqdm
-
-            tqdm_available = True
-        except ImportError:  # tqdm not installed
-            tqdm_available = False
+        tqdm_available = _check_if_tqdm_installed()
 
         if interactive:
             return TqdmNotebookProgressBar if tqdm_available else IPythonProgressBar

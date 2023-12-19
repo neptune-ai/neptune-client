@@ -19,15 +19,12 @@ __all__ = [
     "TqdmNotebookProgressBar",
     "TqdmProgressBar",
     "ClickProgressBar",
-    "ProgressProgressBar",
-    "ProgressProgressSpinner",
     "IPythonProgressBar",
     "NullProgressBar",
 ]
 
 import abc
 import contextlib
-import sys
 from types import TracebackType
 from typing import (
     Any,
@@ -35,10 +32,6 @@ from typing import (
     Optional,
     Type,
 )
-
-from typing_extensions import Literal
-
-SPINNER_TYPE = Optional[Literal["moon", "pie", "line", "pixel"]]
 
 GENERIC_FUNC_TYPE = Callable[[Any], Any]
 
@@ -59,14 +52,17 @@ def _handle_import_error(dependency: str) -> Callable[[GENERIC_FUNC_TYPE], GENER
 
 
 class ProgressBarCallback(contextlib.AbstractContextManager):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        ...
+
     @abc.abstractmethod
     def update(self, *, by: int, total: Optional[int] = None) -> None:
         ...
 
 
 class NullProgressBar(ProgressBarCallback):
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, description: Optional[str] = None, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
 
     def __exit__(
         self,
@@ -83,8 +79,14 @@ class NullProgressBar(ProgressBarCallback):
 class TqdmProgressBar(ProgressBarCallback):
     @_handle_import_error(dependency="tqdm")
     def __init__(
-        self, *, description: Optional[str] = None, unit: Optional[str] = None, unit_scale: bool = False, **kwargs: Any
+        self,
+        *args: Any,
+        description: Optional[str] = None,
+        unit: Optional[str] = None,
+        unit_scale: bool = False,
+        **kwargs: Any,
     ) -> None:
+        super().__init__(*args, **kwargs)
         from tqdm import tqdm
 
         unit = unit if unit else ""
@@ -111,7 +113,8 @@ class TqdmProgressBar(ProgressBarCallback):
 
 class ClickProgressBar(ProgressBarCallback):
     @_handle_import_error(dependency="click")
-    def __init__(self, *, description: Optional[str] = None, **_: Any) -> None:
+    def __init__(self, *args: Any, description: Optional[str] = None, **_: Any) -> None:
+        super().__init__(*args, **_)
         from click import progressbar
 
         self._progress_bar = progressbar(iterable=None, length=1, label=description)
@@ -137,8 +140,14 @@ class ClickProgressBar(ProgressBarCallback):
 class TqdmNotebookProgressBar(ProgressBarCallback):
     @_handle_import_error(dependency="tqdm")
     def __init__(
-        self, *, description: Optional[str] = None, unit: Optional[str] = None, unit_scale: bool = False, **kwargs: Any
+        self,
+        *args: Any,
+        description: Optional[str] = None,
+        unit: Optional[str] = None,
+        unit_scale: bool = False,
+        **kwargs: Any,
     ) -> None:
+        super().__init__(*args, **kwargs)
         from tqdm.notebook import tqdm
 
         unit = unit if unit else ""
@@ -163,85 +172,9 @@ class TqdmNotebookProgressBar(ProgressBarCallback):
         self._progress_bar.update(by)
 
 
-class ProgressProgressBar(ProgressBarCallback):
-    @_handle_import_error(dependency="progress")
-    def __init__(self, *, description: Optional[str] = None, **kwargs: Any) -> None:
-        self._description = description
-        from progress.bar import Bar  # type: ignore[import]
-
-        self._progress_bar = Bar(message=description, **kwargs)
-
-    def __enter__(self) -> "ProgressProgressBar":
-        self._progress_bar.__enter__()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
-        self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
-        sys.stdout.write("\r                       \r")
-
-    def update(self, *, by: int, total: Optional[int] = None) -> None:
-        if total is None:
-            return
-
-        self._progress_bar.max = total
-        self._progress_bar.index += by
-        self._progress_bar.update()
-
-
-class ProgressProgressSpinner(ProgressBarCallback):
-    @_handle_import_error(dependency="progress")
-    def __init__(self, *, description: Optional[str] = None, spinner_type: SPINNER_TYPE = None, **kwargs: Any) -> None:
-        self._description = description.strip() if description else ""
-        self._get_progress_bar(spinner_type=spinner_type, **kwargs)
-
-    def _get_progress_bar(self, spinner_type: SPINNER_TYPE, **kwargs: Any) -> None:
-        if spinner_type is None:
-            from progress.spinner import Spinner  # type: ignore[import]
-
-            self._progress_bar = Spinner(**kwargs)
-        elif spinner_type == "moon":
-            from progress.spinner import MoonSpinner
-
-            self._progress_bar = MoonSpinner(**kwargs)
-        elif spinner_type == "pie":
-            from progress.spinner import PieSpinner
-
-            self._progress_bar = PieSpinner(**kwargs)
-        elif spinner_type == "pixel":
-            from progress.spinner import PixelSpinner
-
-            self._progress_bar = PixelSpinner(**kwargs)
-        else:
-            raise ValueError(f"Unsupported spinner type '{spinner_type}")
-
-    def __enter__(self) -> "ProgressProgressSpinner":
-        self._progress_bar.__enter__()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
-        self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
-        sys.stdout.write("\r                       \r")
-
-    def update(self, *, by: int, total: Optional[int] = None) -> None:
-        self._progress_bar.message = (
-            f"{self._description} - {self._progress_bar.index} " if self._description else f"{self._progress_bar.index}"
-        )
-        self._progress_bar.index += by
-        self._progress_bar.update()
-
-
 class IPythonProgressBar(ProgressBarCallback):
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         from IPython.display import display  # type: ignore[import]
         from ipywidgets import IntProgress  # type: ignore[import]
 
@@ -257,5 +190,6 @@ class IPythonProgressBar(ProgressBarCallback):
         pass
 
     def update(self, *, by: int, total: Optional[int] = None) -> None:
-        self._progress_bar.max = total
+        if total is not None:
+            self._progress_bar.max = total
         self._progress_bar.value += by

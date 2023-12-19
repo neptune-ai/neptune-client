@@ -21,6 +21,8 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Type,
+    Union,
 )
 
 from neptune.attributes.constants import SYSTEM_NAME_ATTRIBUTE_PATH
@@ -56,6 +58,7 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.progress_bar import ProgressBarCallback
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
@@ -262,6 +265,7 @@ class Model(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ) -> Table:
         """Retrieve all versions of the given model.
 
@@ -313,6 +317,7 @@ class Model(MetadataContainer):
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -340,4 +345,5 @@ class Model(MetadataContainer):
             limit=limit,
             sort_by=sort_by,
             ascending=ascending,
+            progress_bar=progress_bar,
         )

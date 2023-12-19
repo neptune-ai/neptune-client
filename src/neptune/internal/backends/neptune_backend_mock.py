@@ -114,6 +114,7 @@ from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
+from neptune.progress_bar import ProgressBarCallback
 from neptune.types import (
     Boolean,
     Integer,
@@ -546,6 +547,7 @@ class NeptuneBackendMock(NeptuneBackend):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
