@@ -45,6 +45,9 @@ if TYPE_CHECKING:
     from neptune.internal.id_formats import UniqueId
 
 
+serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
         data_path = self._init_data_path(container_id, container_type)
@@ -54,8 +57,6 @@ class OfflineOperationProcessor(OperationProcessor):
             metadata=common_metadata(mode="offline", container_id=container_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=data_path)
-
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(dir_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
 
     @staticmethod

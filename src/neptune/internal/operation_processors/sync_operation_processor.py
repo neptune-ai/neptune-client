@@ -48,12 +48,13 @@ class SyncOperationProcessor(OperationProcessor):
         self._container_type: "ContainerType" = container_type
         self._backend: "NeptuneBackend" = backend
 
-        data_path = self._init_data_path(container_id, container_type)
+        self._data_path = self._init_data_path(container_id, container_type)
+
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
 
     @staticmethod
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":

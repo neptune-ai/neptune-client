@@ -68,6 +68,9 @@ if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
 
 
+serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+
 class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30.0
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = float(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
@@ -86,13 +89,12 @@ class AsyncOperationProcessor(OperationProcessor):
     ):
         self._should_print_logs: bool = should_print_logs
         self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
+
         self._metadata_file = MetadataFile(
             data_path=self._data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
-
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
             dir_path=self._operation_storage.data_path,
             to_dict=serializer,
