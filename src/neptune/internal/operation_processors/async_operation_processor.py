@@ -115,6 +115,10 @@ class AsyncOperationProcessor(OperationProcessor):
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
 
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
+
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         if not self._accepts_operations:

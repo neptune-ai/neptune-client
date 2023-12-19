@@ -52,6 +52,10 @@ class SyncOperationProcessor(OperationProcessor):
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
 
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
+
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
         _, errors = self._backend.execute_operations(

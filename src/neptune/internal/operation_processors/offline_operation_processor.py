@@ -55,6 +55,10 @@ class OfflineOperationProcessor(OperationProcessor):
         self._operation_storage = OperationStorage(data_path=self._data_path)
         self._queue = DiskQueue(dir_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
 
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
+
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
