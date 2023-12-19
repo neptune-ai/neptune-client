@@ -53,11 +53,7 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
 
 
 def get_container_dir(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
-    neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
-    now = datetime.now()
-    process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
-    if process_path:
-        container_dir /= Path(process_path)
+    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
+    exec_path = f"exec-{datetime.now().timestamp()}-{datetime.now().strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
 
-    return container_dir
+    return neptune_data_dir / type_dir / container_type.create_dir_name(container_id) / exec_path
