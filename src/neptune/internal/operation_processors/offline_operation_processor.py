@@ -15,8 +15,7 @@
 #
 __all__ = ("OfflineOperationProcessor",)
 
-import os
-from datetime import datetime
+import threading
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -38,31 +37,27 @@ from neptune.internal.operation_processors.utils import (
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
-    import threading
-    from pathlib import Path
-
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
 
 
+serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+
 class OfflineOperationProcessor(OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
-        data_path = self._init_data_path(container_id, container_type)
+        self._data_path = get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
 
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="offline", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
+        self._queue = DiskQueue(dir_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
 
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
-        self._queue = DiskQueue(dir_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
-
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        now = datetime.now()
-        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type, process_path)
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:

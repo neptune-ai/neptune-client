@@ -13,18 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["common_metadata"]
+__all__ = ["common_metadata", "get_container_dir"]
 
-import datetime
 import os
 import platform
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
-    Optional,
 )
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
@@ -49,16 +48,12 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "os": platform.platform(),
         "pythonVersion": sys.version,
         "neptuneClientVersion": get_neptune_version(),
-        "createdAt": datetime.datetime.utcnow().isoformat(),
+        "createdAt": datetime.utcnow().isoformat(),
     }
 
 
-def get_container_dir(
-    type_dir: str, container_id: "UniqueId", container_type: "ContainerType", process_path: Optional[str] = None
-) -> Path:
-    neptune_data_dir = os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY)
-    container_dir = Path(f"{neptune_data_dir}/{type_dir}/{container_type.create_dir_name(container_id)}")
-    if process_path:
-        container_dir /= Path(process_path)
+def get_container_dir(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
+    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
+    exec_path = f"exec-{datetime.now().timestamp()}-{datetime.now().strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
 
-    return container_dir
+    return neptune_data_dir / type_dir / container_type.create_dir_name(container_id) / exec_path

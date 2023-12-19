@@ -18,11 +18,11 @@ __all__ = ("OperationProcessor",)
 import abc
 from typing import (
     TYPE_CHECKING,
-    List,
     Optional,
 )
 
 if TYPE_CHECKING:
+    from neptune.core.components.operation_storage import OperationStorage
     from neptune.internal.operation import Operation
 
 
@@ -30,6 +30,10 @@ class OperationProcessor(abc.ABC):
     @abc.abstractmethod
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
         ...
+
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        raise NotImplementedError()
 
     def start(self) -> None:
         pass
@@ -51,7 +55,3 @@ class OperationProcessor(abc.ABC):
 
     def close(self) -> None:
         pass
-
-    # TODO: remove this method
-    def _get_operation_processor(self, path: List[str]) -> "OperationProcessor":
-        return self
