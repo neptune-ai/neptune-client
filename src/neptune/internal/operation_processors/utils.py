@@ -45,7 +45,7 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "mode": mode,
         "containerId": container_id,
         "containerType": container_type,
-        "structureVersion": 1,
+        "structureVersion": 2,
         "os": platform.platform(),
         "pythonVersion": sys.version,
         "neptuneClientVersion": get_neptune_version(),

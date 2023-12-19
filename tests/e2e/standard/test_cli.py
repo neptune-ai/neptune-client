@@ -173,6 +173,7 @@ class TestSync(BaseE2ETest):
             ) as container:
                 container[key] = fake.unique.word()
                 offline_container_path = container._op_processor._queue._dir_path
+                offline_container_path_parent = offline_container_path.parent
                 offline_container_id = container._id
 
             assert os.path.exists(container_path)
@@ -193,7 +194,7 @@ class TestSync(BaseE2ETest):
                 f"- offline/run__{offline_container_id}",
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
-                f"Deleted: {offline_container_path}",
+                f"Deleted: {offline_container_path_parent}",
                 f"Deleted: {container_path_parent}",
             ]
 

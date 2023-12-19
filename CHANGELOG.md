@@ -14,6 +14,7 @@
 - Stringify `Handler` paths ([#1623](https://github.com/neptune-ai/neptune-client/pull/1623))
 - Added processor id to `ProcessorStopSignalData` ([#1625](https://github.com/neptune-ai/neptune-client/pull/1625))
 - Use the same logger instance for logging ([#1611](https://github.com/neptune-ai/neptune-client/pull/1611))
+- Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 
 
 ## 1.8.6
