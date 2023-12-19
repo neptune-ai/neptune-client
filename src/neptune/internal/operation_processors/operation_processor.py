@@ -31,6 +31,10 @@ class OperationProcessor(abc.ABC):
     def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
         ...
 
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        raise NotImplementedError()
+
     def start(self) -> None:
         pass
 
@@ -51,7 +55,3 @@ class OperationProcessor(abc.ABC):
 
     def close(self) -> None:
         pass
-
-    @property
-    def operation_storage(self) -> "OperationStorage":
-        raise NotImplementedError()
