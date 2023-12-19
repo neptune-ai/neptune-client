@@ -18,8 +18,12 @@ import os
 import time
 import unittest
 from abc import abstractmethod
+from datetime import datetime
 from io import StringIO
-from unittest.mock import Mock
+from unittest.mock import (
+    Mock,
+    patch,
+)
 
 from neptune.exceptions import (
     MetadataInconsistency,
@@ -47,15 +51,24 @@ class AbstractExperimentTestMixin:
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
-    def test_offline_mode(self):
+    @patch("neptune.internal.operation_processors.offline_operation_processor.os.getpid")
+    @patch("neptune.internal.operation_processors.offline_operation_processor.datetime")
+    def test_offline_mode(self, datetime_mock, getpid_mock):
+        current_time = datetime(2021, 1, 1, 12, 34, 56, 123456)
+        datetime_mock.now.return_value = current_time
+        getpid_mock.return_value = 1234
+
         with self.call_init(mode="offline") as exp:
             exp["some/variable"] = 13
             with self.assertRaises(NeptuneOfflineModeFetchException):
                 exp["some/variable"].fetch()
 
             exp_dir = f"{exp.container_type.value}__{exp._id}"
+            process_path = f"exec-{current_time.timestamp()}-{current_time.strftime('%Y-%m-%d_%H.%M.%S.%f')}-1234"
+
             self.assertIn(exp_dir, os.listdir(".neptune/offline"))
-            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
+            self.assertIn(process_path, os.listdir(f".neptune/offline/{exp_dir}"))
+            self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}/{process_path}"))
 
     def test_sync_mode(self):
         with self.call_init(mode="sync") as exp:

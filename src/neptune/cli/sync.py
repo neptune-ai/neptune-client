@@ -200,9 +200,12 @@ class SyncRunner(AbstractBackendRunner):
         # create async directory for run
         (base_path / ASYNC_DIRECTORY / online_dir).mkdir(parents=True)
         # mv offline directory inside async one
-        (base_path / OFFLINE_DIRECTORY / offline_dir).rename(
-            base_path / ASYNC_DIRECTORY / online_dir / "exec-0-offline"
-        )
+        if len(list((base_path / OFFLINE_DIRECTORY / offline_dir).glob("data-*"))) > 0:
+            (base_path / OFFLINE_DIRECTORY / offline_dir).rename(
+                base_path / ASYNC_DIRECTORY / online_dir / "exec-0-offline"
+            )
+        else:
+            (base_path / OFFLINE_DIRECTORY / offline_dir).rename(base_path / ASYNC_DIRECTORY / online_dir)
 
     def register_offline_containers(
         self, base_path: Path, project: Project, offline_dirs: Iterable[str]

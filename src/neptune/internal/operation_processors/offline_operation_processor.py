@@ -15,6 +15,8 @@
 #
 __all__ = ("OfflineOperationProcessor",)
 
+import os
+from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -58,7 +60,9 @@ class OfflineOperationProcessor(OperationProcessor):
 
     @staticmethod
     def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+        now = datetime.now()
+        process_path = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
+        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type, process_path)
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
