@@ -264,7 +264,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if self._consumer.is_running():
             self._consumer.disable_sleep()
             self._consumer.wake_up()
-            self._wait_for_queue_empty(initial_queue_size=self._queue.size(), seconds=seconds)
+            self._wait_for_queue_empty(initial_queue_size=self._queue.size(), seconds=seconds, msg_queue=msg_queue)
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
