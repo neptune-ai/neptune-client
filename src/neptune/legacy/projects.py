@@ -15,13 +15,11 @@
 #
 
 import atexit
-import logging
 import os
 import os.path
 import threading
 from platform import node as get_hostname
 
-import click
 import pandas as pd
 import six
 
@@ -31,6 +29,7 @@ from neptune.common.utils import (
     get_git_info,
     map_keys,
 )
+from neptune.internal.utils.logger import logger as _logger
 from neptune.legacy.envs import (
     NOTEBOOK_ID_ENV_NAME,
     NOTEBOOK_PATH_ENV_NAME,
@@ -41,8 +40,6 @@ from neptune.legacy.internal.abort import DefaultAbortImpl
 from neptune.legacy.internal.notebooks.notebooks import create_checkpoint
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.source_code import get_source_code_to_upload
-
-_logger = logging.getLogger(__name__)
 
 
 class Project(object):
@@ -460,7 +457,7 @@ class Project(object):
 
         self._push_new_experiment(experiment)
 
-        click.echo(self._get_experiment_link(experiment))
+        _logger.info(self._get_experiment_link(experiment))
 
         return experiment
 
