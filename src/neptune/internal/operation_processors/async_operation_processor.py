@@ -162,14 +162,21 @@ class AsyncOperationProcessor(OperationProcessor):
     def _check_queue_size(self) -> bool:
         return self._queue.size() > self._batch_size / 2
 
-    def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]) -> None:
+    def _wait_for_queue_empty(
+        self,
+        initial_queue_size: int,
+        seconds: Optional[float],
+        msg_queue: Optional[Queue] = None,
+    ) -> None:
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
 
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
-                if self._should_print_logs:
+                if msg_queue is not None:
+                    msg_queue.put(None)
+                else:
                     logger.warning(
                         "We have been experiencing connection interruptions during your run."
                         " Neptune client will now try to resume connection and sync data for the next"
@@ -179,12 +186,17 @@ class AsyncOperationProcessor(OperationProcessor):
                         max_reconnect_wait_time,
                     )
             else:
-                if self._should_print_logs:
+                if msg_queue is not None:
+                    msg_queue.put(initial_queue_size)
+                else:
                     logger.warning(
-                        "Waiting for the remaining %s operations to synchronize with Neptune."
+                        "Waiting for the remaining %s operations to synchronize with Neptune. (%s)"
                         " Do not kill this process.",
                         initial_queue_size,
                     )
+        else:
+            if msg_queue is not None:
+                msg_queue.put(0)
 
         while True:
             if seconds is None:
@@ -242,8 +254,11 @@ class AsyncOperationProcessor(OperationProcessor):
                     size_remaining,
                     already_synced_proc,
                 )
+            else:
+                if msg_queue:
+                    msg_queue.put(size_remaining)
 
-    def stop(self, seconds: Optional[float] = None) -> None:
+    def stop(self, seconds: Optional[float] = None, msg_queue: Optional[Queue] = None) -> None:
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
