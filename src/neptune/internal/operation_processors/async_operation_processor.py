@@ -167,82 +167,81 @@ class AsyncOperationProcessor(OperationProcessor):
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
 
-        if not self._should_print_logs:
-            try:
-                logger.disabled = True
-                if initial_queue_size > 0:
-                    if self._consumer.last_backoff_time > 0:
-                        logger.warning(
-                            "We have been experiencing connection interruptions during your run."
-                            " Neptune client will now try to resume connection and sync data for the next"
-                            " %s seconds."
-                            " You can also kill this process and synchronize your data manually later"
-                            " using `neptune sync` command.",
-                            max_reconnect_wait_time,
-                        )
-                    else:
-                        logger.warning(
-                            "Waiting for the remaining %s operations to synchronize with Neptune."
-                            "Do not kill this "
-                            "process.",
-                            initial_queue_size,
-                        )
-
-                while True:
-                    if seconds is None:
-                        if self._consumer.last_backoff_time == 0:
-                            # reset `waiting_start` on successful action
-                            waiting_start = monotonic()
-                        wait_time = self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
-                    else:
-                        wait_time = max(
-                            min(
-                                seconds - time_elapsed,
-                                self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS,
-                            ),
-                            0.0,
-                        )
-                    self._queue.wait_for_empty(wait_time)
-                    size_remaining = self._queue.size()
-                    already_synced = initial_queue_size - size_remaining
-                    already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
-                    if size_remaining == 0:
-                        logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
-                        return
-
-                    time_elapsed = monotonic() - waiting_start
-                    if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
-                        logger.warning(
-                            "Failed to reconnect with Neptune in %s seconds."
-                            " You have %s operations saved on disk that can be manually synced"
-                            " using `neptune sync` command.",
-                            max_reconnect_wait_time,
-                            size_remaining,
-                        )
-                        return
-
-                    if seconds is not None and wait_time == 0:
-                        logger.warning(
-                            "Failed to sync all operations in %s seconds."
-                            " You have %s operations saved on disk that can be manually synced"
-                            " using `neptune sync` command.",
-                            seconds,
-                            size_remaining,
-                        )
-                        return
-
-                    if not self._consumer.is_running():
-                        exception = NeptuneSynchronizationAlreadyStoppedException()
-                        logger.warning(str(exception))
-                        return
-
+        if initial_queue_size > 0:
+            if self._consumer.last_backoff_time > 0:
+                if self._should_print_logs:
                     logger.warning(
-                        "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait.",
-                        size_remaining,
-                        already_synced_proc,
+                        "We have been experiencing connection interruptions during your run."
+                        " Neptune client will now try to resume connection and sync data for the next"
+                        " %s seconds."
+                        " You can also kill this process and synchronize your data manually later"
+                        " using `neptune sync` command.",
+                        max_reconnect_wait_time,
                     )
-            finally:
-                logger.disabled = False
+            else:
+                if self._should_print_logs:
+                    logger.warning(
+                        "Waiting for the remaining %s operations to synchronize with Neptune."
+                        " Do not kill this process.",
+                        initial_queue_size,
+                    )
+
+        while True:
+            if seconds is None:
+                if self._consumer.last_backoff_time == 0:
+                    # reset `waiting_start` on successful action
+                    waiting_start = monotonic()
+                wait_time = self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
+            else:
+                wait_time = max(
+                    min(
+                        seconds - time_elapsed,
+                        self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS,
+                    ),
+                    0.0,
+                )
+            self._queue.wait_for_empty(wait_time)
+            size_remaining = self._queue.size()
+            already_synced = initial_queue_size - size_remaining
+            already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
+            if size_remaining == 0:
+                if self._should_print_logs:
+                    logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
+                return
+
+            time_elapsed = monotonic() - waiting_start
+            if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
+                if self._should_print_logs:
+                    logger.warning(
+                        "Failed to reconnect with Neptune in %s seconds."
+                        " You have %s operations saved on disk that can be manually synced"
+                        " using `neptune sync` command.",
+                        max_reconnect_wait_time,
+                        size_remaining,
+                    )
+                return
+
+            if seconds is not None and wait_time == 0:
+                if self._should_print_logs:
+                    logger.warning(
+                        "Failed to sync all operations in %s seconds."
+                        " You have %s operations saved on disk that can be manually synced"
+                        " using `neptune sync` command.",
+                        seconds,
+                        size_remaining,
+                    )
+                return
+
+            if not self._consumer.is_running():
+                exception = NeptuneSynchronizationAlreadyStoppedException()
+                logger.warning(str(exception))
+                return
+            if self._should_print_logs:
+                logger.warning(
+                    "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait.",
+                    size_remaining,
+                    already_synced_proc,
+                )
 
     def stop(self, seconds: Optional[float] = None) -> None:
         ts = time()
