@@ -36,7 +36,7 @@ class DependencyTrackingStrategy(ABC):
 class InferDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
         dependencies = []
-        dists = list(sorted(distributions(), key=lambda d: d.metadata["Name"]))
+        dists = list(distributions())
 
         for dist in dists:
             name, version = dist.metadata["Name"], dist.metadata["Version"]
