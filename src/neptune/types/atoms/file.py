@@ -174,12 +174,12 @@ class File(Atom):
     def as_image(image) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
-        This way you can upload `Matplotlib` figures, `PIL` images, `NumPy` arrays, as static images.
+        This way you can upload `Matplotlib` figures, `Seaborn` figures, `PIL` images, `NumPy` arrays, as static images.
 
         Args:
             image: Image-like object to be converted.
-                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images
-                and `Matplotlib` figures.
+                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images,
+                `Matplotlib` figures and `Seaborn` figures.
 
         Returns:
             ``File``: value object with converted image
@@ -214,12 +214,12 @@ class File(Atom):
     def as_html(chart) -> "File":
         """Converts an object to an HTML File value object.
 
-        This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts
+        This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts
         or upload directly `Pandas` `DataFrame` objects to explore them in Neptune UI.
 
         Args:
             chart: An object to be converted.
-                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts,
+                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts,
                 and `Pandas` `DataFrame` objects.
 
         Returns:
