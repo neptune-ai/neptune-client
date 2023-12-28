@@ -45,6 +45,7 @@ altair = { version = "*", optional = true }
 bokeh = { version = "*", optional = true }
 freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
+seaborn = { version = "*", optional = true }
 mock = { version = "*", optional = true }
 moto = { version = "*", extras = [ "s3" ], optional = true }
 munch = { version = "*", optional = true }
