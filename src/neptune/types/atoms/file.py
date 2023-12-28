@@ -43,6 +43,7 @@ from neptune.internal.utils.images import (
     is_pandas_dataframe,
     is_pil_image,
     is_plotly_figure,
+    is_seaborn_figure,
 )
 from neptune.types.atoms.atom import Atom
 
@@ -307,15 +308,16 @@ class File(Atom):
             or is_bokeh_figure(value)
             or is_numpy_array(value)
             or is_pandas_dataframe(value)
+            or is_seaborn_figure(value)
             or isinstance(value, File)
         )
 
     @staticmethod
     def is_convertable_to_image(value):
-        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure)
+        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure, is_seaborn_figure)
         return any(predicate(value) for predicate in convertable_to_img_predicates)
 
     @staticmethod
     def is_convertable_to_html(value):
-        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure)
+        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure, is_seaborn_figure)
         return any(predicate(value) for predicate in convertable_to_html_predicates)

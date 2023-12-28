@@ -17,6 +17,7 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
+import seaborn as sns
 from bokeh import (
     models,
     palettes,
@@ -122,3 +123,11 @@ def generate_plotly_figure():
     plotly_fig = px.histogram(df, x="total_bill", y="tip", color="sex", marginal="rug", hover_data=df.columns)
 
     return plotly_fig
+
+
+def generate_seaborn_figure():
+    sample_size = 30
+    x = np.random.rand(sample_size) * 2 * np.pi
+    data = {"x": x, "y": np.sin(x), "c": np.random.randint(0, 2, sample_size), "arch": x > np.pi}
+    seaborn_fig = sns.relplot(data, x="x", y="y", hue="c", col="arch")
+    return seaborn_fig

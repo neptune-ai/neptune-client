@@ -24,7 +24,7 @@ __all__ = [
     "is_altair_chart",
     "is_bokeh_figure",
     "is_pandas_dataframe",
-    "is_seaborn_axisgrid",
+    "is_seaborn_figure",
 ]
 
 import base64
@@ -102,7 +102,7 @@ def _image_to_bytes(image) -> bytes:
     elif _is_tensorflow_tensor(image):
         return _get_numpy_as_image(image.numpy())
 
-    elif is_seaborn_axisgrid(image):
+    elif is_seaborn_figure(image):
         return _get_figure_image_data(image.figure)
 
     raise TypeError("image is {}".format(type(image)))
@@ -137,7 +137,7 @@ def _to_html(chart) -> str:
     elif is_bokeh_figure(chart):
         return _export_bokeh_figure(chart)
 
-    elif is_seaborn_axisgrid(chart):
+    elif is_seaborn_figure(chart):
         return _export_seaborn_figure(chart)
 
     else:
@@ -284,7 +284,7 @@ def is_bokeh_figure(chart):
     return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__.lower() == "figure"
 
 
-def is_seaborn_axisgrid(chart):
+def is_seaborn_figure(chart):
     return chart.__class__.__module__.startswith("seaborn.axisgrid") and chart.__class__.__name__ in [
         "FacetGrid",
         "PairGrid",
