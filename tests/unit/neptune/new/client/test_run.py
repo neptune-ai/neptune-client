@@ -17,7 +17,9 @@ import itertools
 import os
 import unittest
 
+from faker import Faker
 from mock import (
+    Mock,
     mock_open,
     patch,
 )
@@ -43,11 +45,13 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.utils.limits import _CUSTOM_RUN_ID_LENGTH
 from neptune.types import GitRef
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_run
 
 AN_API_RUN = api_run()
+fake = Faker()
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
@@ -289,3 +293,12 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 capture_hardware_metrics=chm,
             ) as run:
                 assert run.exists("monitoring")
+
+    @patch("neptune.metadata_containers.metadata_container.get_backend")
+    def test_max_length_custom_run_id(self, get_backend_mock):
+        get_backend_mock.return_value = Mock(wraps=NeptuneBackendMock())
+
+        custom_run_id = "".join(fake.random_letters(_CUSTOM_RUN_ID_LENGTH))
+        with init_run(custom_run_id=custom_run_id) as exp:
+            _, kwargs = exp._backend.create_run.call_args
+            assert kwargs["custom_run_id"] == custom_run_id
