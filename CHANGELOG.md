@@ -2,7 +2,7 @@
 
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
-- Not coercing output of `importlib.metadata.Distributions` to `list()` ([#1612](https://github.com/neptune-ai/neptune-client/pull/1612))
+- Handle `None` values in distribution sorting in `InferDependeciesStrategy` ([#1612](https://github.com/neptune-ai/neptune-client/pull/1612))
 
 ### Changes
 - Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
