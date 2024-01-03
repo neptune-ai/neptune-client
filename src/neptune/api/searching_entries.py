@@ -47,7 +47,7 @@ from neptune.internal.backends.nql import (
 )
 from neptune.internal.backends.utils import which_progress_bar
 from neptune.internal.init.parameters import MAX_SERVER_OFFSET
-from neptune.progress_bar import ProgressBarCallback
+from neptune.typing import ProgressBarCallback
 
 if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper

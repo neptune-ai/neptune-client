@@ -13,10 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
+__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback", "ProgressBarCallback"]
+
+import abc
+import contextlib
+from typing import (
+    Any,
+    Optional,
+)
 
 from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,
     SupportsNamespaces,
 )
+
+
+class ProgressBarCallback(contextlib.AbstractContextManager):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        ...
+
+    @abc.abstractmethod
+    def update(self, *, by: int, total: Optional[int] = None) -> None:
+        ...
