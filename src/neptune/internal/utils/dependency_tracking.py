@@ -16,9 +16,12 @@ from typing import (
 )
 
 if sys.version_info >= (3, 8):
-    from importlib.metadata import distributions
+    from importlib.metadata import (
+        Distribution,
+        distributions,
+    )
 else:
-    from importlib_metadata import distributions
+    from importlib_metadata import Distribution, distributions
 
 from neptune.internal.utils.logger import logger
 from neptune.types import File
@@ -36,11 +39,16 @@ class DependencyTrackingStrategy(ABC):
 class InferDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
         dependencies = []
-        dists = list(distributions())
+
+        def sorting_key_func(d: Distribution) -> str:
+            _name = d.metadata["Name"]
+            return _name.lower() if isinstance(_name, str) else ""
+
+        dists = sorted(distributions(), key=sorting_key_func)
 
         for dist in dists:
-            name, version = dist.metadata["Name"], dist.metadata["Version"]
-            dependencies.append(f"{name}=={version}")
+            if dist.metadata["Name"]:
+                dependencies.append(f'{dist.metadata["Name"]}=={dist.metadata["Version"]}')
 
         dependencies_str = "\n".join(dependencies)
 
