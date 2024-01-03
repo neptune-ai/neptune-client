@@ -175,22 +175,21 @@ class AsyncOperationProcessor(OperationProcessor):
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
                 if msg_queue is not None:
-                    msg_queue.put(None)
-                else:
-                    logger.warning(
-                        "We have been experiencing connection interruptions during your run."
-                        " Neptune client will now try to resume connection and sync data for the next"
-                        " %s seconds."
-                        " You can also kill this process and synchronize your data manually later"
-                        " using `neptune sync` command.",
-                        max_reconnect_wait_time,
-                    )
+                    msg_queue.put(None)  # to block message queue from logging anything
+                logger.warning(
+                    "We have been experiencing connection interruptions during your run."
+                    " Neptune client will now try to resume connection and sync data for the next"
+                    " %s seconds."
+                    " You can also kill this process and synchronize your data manually later"
+                    " using `neptune sync` command.",
+                    max_reconnect_wait_time,
+                )
             else:
                 if msg_queue is not None:
                     msg_queue.put(initial_queue_size)
                 else:
                     logger.warning(
-                        "Waiting for the remaining %s operations to synchronize with Neptune. (%s)"
+                        "Waiting for the remaining %s operations to synchronize with Neptune."
                         " Do not kill this process.",
                         initial_queue_size,
                     )
