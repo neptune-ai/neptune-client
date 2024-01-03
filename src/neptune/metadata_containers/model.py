@@ -58,8 +58,8 @@ from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
-from neptune.progress_bar import ProgressBarCallback
 from neptune.types.mode import Mode
+from neptune.typing import ProgressBarCallback
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob

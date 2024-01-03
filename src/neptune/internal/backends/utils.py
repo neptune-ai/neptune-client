@@ -86,11 +86,11 @@ from neptune.internal.utils.runningmode import (
     in_interactive,
     in_notebook,
 )
-from neptune.progress_bar import (
+from neptune.typing import ProgressBarCallback
+from neptune.utils import (
     ClickProgressBar,
     IPythonProgressBar,
     NullProgressBar,
-    ProgressBarCallback,
     TqdmNotebookProgressBar,
     TqdmProgressBar,
 )

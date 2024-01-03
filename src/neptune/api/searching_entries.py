@@ -194,7 +194,7 @@ def iter_over_pages(
     ).get("matchingItemCount", 0)
 
     progress_bar = progress_bar if step_size >= total else None
-    with which_progress_bar(progress_bar)(description="Fetching table...") as bar:
+    with _construct_progress_bar(progress_bar) as bar:
         while True:
             if last_page:
                 page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
@@ -223,3 +223,8 @@ def iter_over_pages(
                 yield from page
 
                 last_page = page
+
+
+def _construct_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> ProgressBarCallback:
+    progress_bar_type = which_progress_bar(progress_bar)
+    return progress_bar_type(description="Fetching table...")

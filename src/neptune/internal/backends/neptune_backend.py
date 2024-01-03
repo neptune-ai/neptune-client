@@ -60,7 +60,7 @@ from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.progress_bar import ProgressBarCallback
+from neptune.typing import ProgressBarCallback
 
 
 class NeptuneBackend:

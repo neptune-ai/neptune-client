@@ -144,7 +144,7 @@ from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
-from neptune.progress_bar import ProgressBarCallback
+from neptune.typing import ProgressBarCallback
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:

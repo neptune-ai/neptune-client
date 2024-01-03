@@ -34,7 +34,7 @@ from neptune.internal.backends.utils import (
     which_progress_bar,
 )
 from neptune.internal.container_type import ContainerType
-from neptune.progress_bar import (
+from neptune.utils import (
     ClickProgressBar,
     IPythonProgressBar,
     NullProgressBar,

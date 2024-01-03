@@ -17,18 +17,18 @@ from unittest.mock import patch
 
 import pytest
 
-from neptune.progress_bar import (
+from neptune.internal.utils import handle_import_error
+from neptune.utils import (
     ClickProgressBar,
     IPythonProgressBar,
     TqdmNotebookProgressBar,
     TqdmProgressBar,
-    _handle_import_error,
 )
 
 
 @patch.dict("sys.modules", {"click": None})
 def test_handle_import_error():
-    @_handle_import_error(dependency="click")
+    @handle_import_error(dependency="click")
     def func(x):
         import click  # noqa: F401
 
@@ -38,7 +38,7 @@ def test_handle_import_error():
             str(exc_info.value) == "Required dependency for progress bar not found. Run 'pip install some_dependency'."
         )
 
-    @_handle_import_error(dependency="urllib3")
+    @handle_import_error(dependency="urllib3")
     def func(x):
         import urllib3  # noqa: F401
 

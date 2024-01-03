@@ -114,7 +114,6 @@ from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
-from neptune.progress_bar import ProgressBarCallback
 from neptune.types import (
     Boolean,
     Integer,
@@ -133,6 +132,7 @@ from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 from neptune.types.value_visitor import ValueVisitor
+from neptune.typing import ProgressBarCallback
 
 Val = TypeVar("Val", bound=Value)
 
