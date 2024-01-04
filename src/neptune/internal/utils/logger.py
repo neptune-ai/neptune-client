@@ -39,10 +39,17 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-logger = logging.getLogger(LOGGER_NAME)
+class CommonPrefixLogger(logging.Logger):
+    def __init__(self, name: str) -> None:
+        logging.Logger.__init__(self, f"{LOGGER_NAME}:{name}")
+        self.propagate = False
+        self.setLevel(level=logging.DEBUG)
+        stdout_handler = GrabbableStdoutHandler()
+        stdout_handler.setFormatter(logging.Formatter("%(name)s %(message)s"))
+        self.addHandler(stdout_handler)
 
-logger.propagate = False
-logger.setLevel(level=logging.DEBUG)
-stdout_handler = GrabbableStdoutHandler()
-stdout_handler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(stdout_handler)
+
+logging.setLoggerClass(CommonPrefixLogger)
+
+
+logger = logging.getLogger(LOGGER_NAME)

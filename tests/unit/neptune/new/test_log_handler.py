@@ -16,6 +16,8 @@
 import logging
 import os
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 
 from mock import patch
 
@@ -28,6 +30,10 @@ from neptune.envs import (
     PROJECT_ENV_NAME,
 )
 from neptune.integrations.python_logger import NeptuneHandler
+from neptune.internal.utils.logger import (
+    LOGGER_NAME,
+    CommonPrefixLogger,
+)
 
 
 @patch("neptune.metadata_containers.run.generate_hash", lambda *vals, length: "some_hash")
@@ -135,3 +141,23 @@ class TestLogHandler(unittest.TestCase):
 
             log_entries = list(exp["monitoring"]["some_hash"]["python_logger"].fetch_values().value)
             self.assertListEqual(log_entries, ["error message", "test message", "error message"])
+
+    def test_logger_default_handler_stdout_format(self):
+        # given
+        local_logger_name = "local-logger"
+        logger = logging.getLogger(local_logger_name)
+        stream = StringIO()
+
+        # when
+        with redirect_stdout(stream):
+            logger.info("message")
+
+        # then
+        self.assertEqual(stream.getvalue(), f"{LOGGER_NAME}:{local_logger_name} message\n")
+
+    def test_logger_is_correct_instance(self):
+        # given
+        logger = logging.getLogger("local-logger")
+
+        # then
+        assert isinstance(logger, CommonPrefixLogger)
