@@ -187,6 +187,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
                     self._client_config.min_compatible_version, self.client_lib_version
                 )
             )
+            logger.error(styled_msg)
             raise UnsupportedClientVersion(
                 self.client_lib_version,
                 self._client_config.min_compatible_version,
