@@ -26,6 +26,7 @@ import matplotlib
 import numpy
 import pandas
 import plotly.express as px
+import seaborn as sns
 from bokeh.plotting import figure
 from matplotlib import pyplot
 from matplotlib.figure import Figure
@@ -148,6 +149,13 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
+    def test_get_image_content_from_seaborn_figure(self):
+        # given
+        grid = sns.relplot(numpy.random.randn(6, 4))
+
+        # then
+        self.assertEqual(get_image_content(grid), self._encode_figure(grid))
+
     def test_get_html_from_matplotlib_figure(self):
         # given
         fig = pyplot.figure()
@@ -248,6 +256,16 @@ class TestImage(unittest.TestCase):
         self.assertTrue(
             result.startswith('<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">')
         )
+
+    def test_get_html_from_seaborn(self):
+        # given
+        grid = sns.relplot(numpy.random.randn(6, 4))
+
+        # when
+        result = get_html_content(grid)
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" /></head>'))
 
     @staticmethod
     def _encode_pil_image(image: Image) -> bytes:

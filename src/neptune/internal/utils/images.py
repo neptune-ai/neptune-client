@@ -24,6 +24,7 @@ __all__ = [
     "is_altair_chart",
     "is_bokeh_figure",
     "is_pandas_dataframe",
+    "is_seaborn_figure",
 ]
 
 import base64
@@ -44,6 +45,7 @@ from neptune.exceptions import PlotlyIncompatibilityException
 from neptune.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
+SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
 
 try:
     from numpy import array as numpy_array
@@ -101,6 +103,9 @@ def _image_to_bytes(image) -> bytes:
     elif _is_tensorflow_tensor(image):
         return _get_numpy_as_image(image.numpy())
 
+    elif is_seaborn_figure(image):
+        return _get_figure_image_data(image.figure)
+
     raise TypeError("image is {}".format(type(image)))
 
 
@@ -133,8 +138,11 @@ def _to_html(chart) -> str:
     elif is_bokeh_figure(chart):
         return _export_bokeh_figure(chart)
 
+    elif is_seaborn_figure(chart):
+        return _export_seaborn_figure(chart)
+
     else:
-        raise ValueError("Currently supported are matplotlib, plotly, altair, and bokeh figures")
+        raise ValueError("Currently supported are matplotlib, plotly, altair, bokeh and seaborn figures")
 
 
 def _matplotlib_to_plotly(chart):
@@ -277,6 +285,12 @@ def is_bokeh_figure(chart):
     return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__.lower() == "figure"
 
 
+def is_seaborn_figure(chart):
+    return (
+        chart.__class__.__module__.startswith("seaborn.axisgrid") and chart.__class__.__name__ in SEABORN_GRID_CLASSES
+    )
+
+
 def is_pandas_dataframe(table):
     return isinstance(table, DataFrame)
 
@@ -316,3 +330,7 @@ def _export_pickle(obj):
     pickle.dump(obj, buffer)
     buffer.seek(0)
     return buffer.getvalue()
+
+
+def _export_seaborn_figure(chart):
+    return _export_plotly_figure(_matplotlib_to_plotly(chart.figure))

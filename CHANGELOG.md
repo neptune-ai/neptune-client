@@ -1,4 +1,7 @@
-## [UNRELEASED] 1.8.7
+## [UNRELEASED] neptune 1.9.0
+
+### Features
+- Add support for seaborn figures ([#1613](https://github.com/neptune-ai/neptune-client/pull/1613))
 
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
