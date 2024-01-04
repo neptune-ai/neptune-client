@@ -45,6 +45,7 @@ from neptune.exceptions import PlotlyIncompatibilityException
 from neptune.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
+SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
 
 try:
     from numpy import array as numpy_array
@@ -285,13 +286,9 @@ def is_bokeh_figure(chart):
 
 
 def is_seaborn_figure(chart):
-    return chart.__class__.__module__.startswith("seaborn.axisgrid") and chart.__class__.__name__ in [
-        "FacetGrid",
-        "PairGrid",
-        "JointGrid",
-        "pairplot",
-        "jointplot",
-    ]
+    return (
+        chart.__class__.__module__.startswith("seaborn.axisgrid") and chart.__class__.__name__ in SEABORN_GRID_CLASSES
+    )
 
 
 def is_pandas_dataframe(table):

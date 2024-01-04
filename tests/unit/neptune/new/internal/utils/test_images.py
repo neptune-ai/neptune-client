@@ -150,8 +150,10 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
     def test_get_image_content_from_seaborn_figure(self):
+        # given
         grid = sns.relplot(numpy.random.randn(6, 4))
 
+        # then
         self.assertEqual(get_image_content(grid), self._encode_figure(grid))
 
     def test_get_html_from_matplotlib_figure(self):
@@ -256,10 +258,13 @@ class TestImage(unittest.TestCase):
         )
 
     def test_get_html_from_seaborn(self):
+        # given
         grid = sns.relplot(numpy.random.randn(6, 4))
 
+        # when
         result = get_html_content(grid)
 
+        # then
         self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" /></head>'))
 
     @staticmethod

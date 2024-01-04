@@ -129,5 +129,5 @@ def generate_seaborn_figure():
     sample_size = 30
     x = np.random.rand(sample_size) * 2 * np.pi
     data = {"x": x, "y": np.sin(x), "c": np.random.randint(0, 2, sample_size), "arch": x > np.pi}
-    seaborn_fig = sns.relplot(data, x="x", y="y", hue="c", col="arch")
+    seaborn_fig = sns.relplot(data=data, x="x", y="y", hue="c", col="arch")
     return seaborn_fig
