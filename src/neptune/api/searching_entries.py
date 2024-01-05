@@ -57,7 +57,7 @@ if TYPE_CHECKING:
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
 
-def fetch_data(
+def get_single_page(
     *,
     client: "SwaggerClientWrapper",
     project_id: "UniqueId",
@@ -124,35 +124,35 @@ def fetch_data(
     )
 
 
-def get_single_page(
-    *,
-    client: "SwaggerClientWrapper",
-    project_id: "UniqueId",
-    attributes_filter: Dict[str, Any],
-    limit: int,
-    offset: int,
-    sort_by: Optional[str] = None,
-    sort_by_column_type: Optional[str] = None,
-    ascending: bool = False,
-    types: Optional[Iterable[str]] = None,
-    query: Optional["NQLQuery"] = None,
-    searching_after: Optional[str] = None,
-) -> List[Any]:
-    result = fetch_data(
-        client=client,
-        project_id=project_id,
-        attributes_filter=attributes_filter,
-        limit=limit,
-        offset=offset,
-        sort_by=sort_by,
-        sort_by_column_type=sort_by_column_type,
-        ascending=ascending,
-        types=types,
-        query=query,
-        searching_after=searching_after,
-    )
-
-    return list(map(to_leaderboard_entry, result.get("entries", [])))
+# def get_single_page(
+#     *,
+#     client: "SwaggerClientWrapper",
+#     project_id: "UniqueId",
+#     attributes_filter: Dict[str, Any],
+#     limit: int,
+#     offset: int,
+#     sort_by: Optional[str] = None,
+#     sort_by_column_type: Optional[str] = None,
+#     ascending: bool = False,
+#     types: Optional[Iterable[str]] = None,
+#     query: Optional["NQLQuery"] = None,
+#     searching_after: Optional[str] = None,
+# ) -> List[Any]:
+#     result = fetch_data(
+#         client=client,
+#         project_id=project_id,
+#         attributes_filter=attributes_filter,
+#         limit=limit,
+#         offset=offset,
+#         sort_by=sort_by,
+#         sort_by_column_type=sort_by_column_type,
+#         ascending=ascending,
+#         types=types,
+#         query=query,
+#         searching_after=searching_after,
+#     )
+#
+#     return list(map(to_leaderboard_entry, result.get("entries", [])))
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
@@ -187,13 +187,15 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    total = fetch_data(
+    total = get_single_page(
         limit=0,
         offset=0,
         **kwargs,
     ).get("matchingItemCount", 0)
 
     progress_bar = progress_bar if step_size >= total else None
+    extracted_records = 0
+
     with _construct_progress_bar(progress_bar) as bar:
         while True:
             if last_page:
@@ -205,7 +207,7 @@ def iter_over_pages(
                 searching_after = page_attribute.properties["value"]
 
             for offset in range(0, max_offset, step_size):
-                page = get_single_page(
+                result = get_single_page(
                     limit=min(step_size, max_offset - offset),
                     offset=offset,
                     sort_by=sort_by,
@@ -215,8 +217,18 @@ def iter_over_pages(
                     **kwargs,
                 )
 
+                page = _entries_from_page(result)
+
                 if not page:
                     return
+
+                extracted_records += len(page)
+                if extracted_records >= max_offset:  # new 10k page started
+                    overflow = extracted_records - max_offset  # how much was 'overshot' in the last iteration
+
+                    subtotal = result.get("matchingItemCount", 0)
+                    total += subtotal + overflow
+                    extracted_records = 0  # reset extracted_records
 
                 bar.update(by=step_size, total=total)
 
@@ -228,3 +240,7 @@ def iter_over_pages(
 def _construct_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> ProgressBarCallback:
     progress_bar_type = which_progress_bar(progress_bar)
     return progress_bar_type(description="Fetching table...")
+
+
+def _entries_from_page(single_page: Dict[str, Any]) -> List[LeaderboardEntry]:
+    return list(map(to_leaderboard_entry, single_page.get("entries", [])))
