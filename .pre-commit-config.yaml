@@ -19,7 +19,8 @@ repos:
     rev: v1.3.1
     hooks:
       - id: insert-license
-        files: ^src/neptune/new/.*\.py$
+        files: ^src/neptune/.*\.py$
+        exclude: ^src/neptune/(new|legacy)/[^/]+$
         args: ["--license-filepath", ".github/license_header.txt"]
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
