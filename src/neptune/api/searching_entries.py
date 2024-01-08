@@ -124,37 +124,6 @@ def get_single_page(
     )
 
 
-# def get_single_page(
-#     *,
-#     client: "SwaggerClientWrapper",
-#     project_id: "UniqueId",
-#     attributes_filter: Dict[str, Any],
-#     limit: int,
-#     offset: int,
-#     sort_by: Optional[str] = None,
-#     sort_by_column_type: Optional[str] = None,
-#     ascending: bool = False,
-#     types: Optional[Iterable[str]] = None,
-#     query: Optional["NQLQuery"] = None,
-#     searching_after: Optional[str] = None,
-# ) -> List[Any]:
-#     result = fetch_data(
-#         client=client,
-#         project_id=project_id,
-#         attributes_filter=attributes_filter,
-#         limit=limit,
-#         offset=offset,
-#         sort_by=sort_by,
-#         sort_by_column_type=sort_by_column_type,
-#         ascending=ascending,
-#         types=types,
-#         query=query,
-#         searching_after=searching_after,
-#     )
-#
-#     return list(map(to_leaderboard_entry, result.get("entries", [])))
-
-
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
         id=entry["experimentId"],
