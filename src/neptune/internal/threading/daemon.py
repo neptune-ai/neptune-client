@@ -18,10 +18,12 @@ __all__ = ["Daemon"]
 import abc
 import functools
 import threading
+import logging
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
-from neptune.internal.utils.logger import logger
+
+logger = logging.getLogger(__name__)
 
 
 class Daemon(threading.Thread):

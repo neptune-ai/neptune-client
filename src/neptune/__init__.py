@@ -101,6 +101,9 @@ __all__ = [
     "__version__",
 ]
 
+from neptune.internal.utils.logger import set_up_logging
+# setup logging before loggers get initialized
+set_up_logging()
 
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
@@ -116,6 +119,7 @@ from neptune.version import __version__
 # Apply patches of external libraries
 apply_patches()
 load_extensions()
+
 
 init_run = Run
 init_model = Model

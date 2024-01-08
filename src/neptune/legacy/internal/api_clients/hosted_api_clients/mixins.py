@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import socket
 
 import click
@@ -21,7 +22,6 @@ from bravado_core.formatter import SwaggerFormat
 from packaging import version
 from six.moves import urllib
 
-from neptune.internal.utils.logger import logger
 from neptune.legacy.exceptions import (
     CannotResolveHostname,
     DeprecatedApiToken,
@@ -32,6 +32,8 @@ from neptune.legacy.internal.api_clients.client_config import (
     MultipartConfig,
 )
 from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
+
+_logger = logging.getLogger(__name__)
 
 uuid_format = SwaggerFormat(
     format="uuid",
@@ -75,7 +77,7 @@ class HostedNeptuneMixin:
             styled_msg = click.style(
                 "ERROR: This client version is not supported by your Neptune instance. Please contant Neptune support."
             )
-            logger.error(styled_msg)
+            _logger.error(styled_msg)
             raise UnsupportedClientVersion(self.client_lib_version, None, "0.4.111")
 
         multipart_upload_config_obj = getattr(config, "multiPartUpload", None)

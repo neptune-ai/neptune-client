@@ -42,9 +42,8 @@ from packaging import version
 from pandas import DataFrame
 
 from neptune.exceptions import PlotlyIncompatibilityException
-from neptune.internal.utils.logger import logger
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
 
 try:

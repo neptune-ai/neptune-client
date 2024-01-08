@@ -31,6 +31,7 @@ __all__ = [
 import dataclasses
 import logging
 import os
+import logging
 import socket
 from functools import (
     lru_cache,
@@ -78,7 +79,6 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils import replace_patch_version
-from neptune.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 

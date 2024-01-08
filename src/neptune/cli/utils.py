@@ -59,7 +59,8 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.utils.logger import logger
+
+logger = logging.getLogger(__name__)
 
 
 def get_metadata_container(

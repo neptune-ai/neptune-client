@@ -16,6 +16,7 @@
 __all__ = ["FileSeries"]
 
 import time
+import logging
 from itertools import cycle
 from typing import (
     TYPE_CHECKING,
@@ -27,13 +28,13 @@ from typing import (
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
-from neptune.internal.utils.logger import logger
 from neptune.types import File
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
 
+logger = logging.getLogger(__name__)
 Ret = TypeVar("Ret")
 
 

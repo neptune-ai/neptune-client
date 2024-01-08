@@ -15,6 +15,7 @@
 #
 __all__ = ["StringSeries"]
 
+import logging
 from typing import (
     TYPE_CHECKING,
     Iterable,
@@ -31,7 +32,6 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils import is_collection
-from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
@@ -42,6 +42,8 @@ if TYPE_CHECKING:
 Val = StringSeriesVal
 Data = str
 LogOperation = LogStrings
+
+logger = logging.getLogger(__name__)
 
 
 class StringSeries(

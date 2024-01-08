@@ -16,6 +16,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+import itertools
 
 from neptune.cli.status import StatusRunner
 from neptune.cli.utils import get_qualified_name
@@ -53,13 +54,14 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
 
     # then
     captured = capsys.readouterr()
-    assert captured.out.splitlines() == [
+    expected_out_lines = [
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
         "",
         "Please run with the `neptune sync --help` to see example commands.",
     ]
-
+    for captured, expected in itertools.zip_longest(captured.out.splitlines(), expected_out_lines):
+        assert captured.endswith(expected)
 
 def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     # given
@@ -77,8 +79,13 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
 
     # then
     captured = capsys.readouterr()
+    expected_out_lines = [
+        "Unsynchronized offline objects:",
+        "- offline/run__{}".format(offline_run.id)
+    ]
     assert captured.err == ""
-    assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
+    for captured, expected in zip(captured.out.splitlines()[:2], expected_out_lines):
+        assert captured.endswith(expected)
 
 
 def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
@@ -100,12 +107,14 @@ def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runne
 
     # then
     captured = capsys.readouterr()
-    assert captured.out.splitlines() == [
+    expected_out_lines = [
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)} (Trashed)",
         "",
         "Please run with the `neptune sync --help` to see example commands.",
     ]
+    for captured, expected in itertools.zip_longest(captured.out.splitlines(), expected_out_lines):
+        assert captured.endswith(expected)
 
 
 def test_list_runs_when_no_run(tmp_path, capsys, status_runner):

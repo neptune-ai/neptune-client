@@ -20,6 +20,7 @@ import atexit
 import itertools
 import os
 import threading
+import logging
 import time
 import traceback
 from contextlib import AbstractContextManager
@@ -84,7 +85,6 @@ from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
 )
-from neptune.internal.utils.logger import logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
@@ -99,6 +99,8 @@ from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
+
+logger = logging.getLogger(__name__)
 
 
 def ensure_not_stopped(fun):

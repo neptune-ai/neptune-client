@@ -22,6 +22,7 @@ __all__ = [
 
 import os
 import sys
+import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -39,11 +40,12 @@ if sys.version_info >= (3, 8):
 else:
     from importlib_metadata import Distribution, distributions
 
-from neptune.internal.utils.logger import logger
 from neptune.types import File
 
 if TYPE_CHECKING:
     from neptune import Run
+
+logger = logging.getLogger(__name__)
 
 
 class DependencyTrackingStrategy(ABC):

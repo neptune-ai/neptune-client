@@ -35,13 +35,12 @@ from neptune.common.websockets.reconnecting_websocket import ReconnectingWebsock
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils import process_killer
-from neptune.internal.utils.logger import logger
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
 
-_logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class WebsocketSignalsBackgroundJob(BackgroundJob):

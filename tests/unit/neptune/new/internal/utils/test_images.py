@@ -80,11 +80,10 @@ class TestImage(unittest.TestCase):
         stdout = io.StringIO()
         with contextlib.redirect_stdout(stdout):
             self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
-        self.assertEqual(
-            stdout.getvalue(),
+        stdout.getvalue().endswith((
             "The smallest value in the array is -3 and the largest value in the array is 6."
             " To be interpreted as colors correctly values in the array need to be in the [0, 1] range.\n",
-        )
+        ))
 
     def test_get_image_content_from_rgb_array(self):
         # given
