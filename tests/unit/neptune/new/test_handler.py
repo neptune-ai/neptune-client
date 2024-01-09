@@ -44,7 +44,6 @@ from neptune.attributes.atoms.integer import Integer
 from neptune.attributes.atoms.string import String
 from neptune.attributes.series import FileSeries
 from neptune.attributes.sets.string_set import StringSet
-from neptune.internal.utils.logger import NEPTUNE_LOGGER_NAME
 from neptune.common.warnings import (
     NeptuneUnsupportedType,
     warned_once,

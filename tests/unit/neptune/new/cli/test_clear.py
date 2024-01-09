@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import itertools
 import os
 from unittest.mock import MagicMock
 
@@ -70,7 +69,7 @@ def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, conta
 
     # and
     captured = capsys.readouterr()
-    expected_out_lines = [
+    assert captured.out.splitlines() == [
         "",
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
@@ -80,8 +79,6 @@ def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, conta
         f"Deleted: {tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id)}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
     ]
-    for captured, expected in itertools.zip_longest(captured.out.splitlines(), expected_out_lines):
-        assert captured.endswith(expected)
 
 
 @pytest.mark.parametrize("container_type", list(ContainerType))
@@ -107,18 +104,12 @@ def test_clean_deleted_containers(tmp_path, mocker, capsys, backend, clear_runne
 
     # and
     captured = capsys.readouterr()
-    expected_out_lines = [
+    assert set(captured.out.splitlines()) == {
         f"Can't fetch ContainerType.{container_type.name} {synced_container.id}. Skipping.",
         f"Can't fetch ContainerType.{container_type.name} {unsynced_container.id}. Skipping.",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
-    ]
-
-    # sort lines that will be compared by their postfix so we get consistent test execution (prefix might change)
-    captured_out_lines = sorted(captured.out.splitlines(), key=lambda x: x[::-1])
-    expected_out_lines = sorted(expected_out_lines, key=lambda x: x[::-1])
-    for captured, expected in itertools.zip_longest(captured_out_lines, expected_out_lines):
-        assert captured.endswith(expected)
+    }
 
 
 def test_clean_sync_directory(tmp_path, clear_runner):
