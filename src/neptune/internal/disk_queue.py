@@ -16,7 +16,6 @@
 __all__ = ["QueueElement", "DiskQueue"]
 
 import json
-from neptune.internal.utils.logger import get_logger
 import os
 import shutil
 import threading
@@ -39,6 +38,7 @@ from neptune.internal.utils.files import (
     should_clean_internal_data,
 )
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 
 T = TypeVar("T")

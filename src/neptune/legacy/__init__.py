@@ -48,11 +48,11 @@ __all__ = [
 ]
 
 
-from neptune.internal.utils.logger import get_logger
 import os
 import threading
 
 from neptune.common.utils import assure_project_qualified_name
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy import (
     constants,
     envs,

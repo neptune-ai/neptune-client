@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 import socket
 
 import click
@@ -22,6 +21,7 @@ from bravado_core.formatter import SwaggerFormat
 from packaging import version
 from six.moves import urllib
 
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.exceptions import (
     CannotResolveHostname,
     DeprecatedApiToken,

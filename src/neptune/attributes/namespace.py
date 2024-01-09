@@ -16,7 +16,6 @@
 __all__ = ["Namespace", "NamespaceBuilder"]
 
 import argparse
-from neptune.internal.utils.logger import get_logger
 from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
@@ -37,6 +36,7 @@ from neptune.internal.utils.generic_attribute_mapper import (
     NoValue,
     atomic_attribute_types_map,
 )
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import (
     parse_path,
     path_to_str,

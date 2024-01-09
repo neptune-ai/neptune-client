@@ -31,7 +31,6 @@
 #
 __all__ = ["StringifyValue", "extract_if_stringify_value"]
 
-from neptune.internal.utils.logger import get_logger
 import math
 from typing import Any
 
@@ -39,6 +38,7 @@ from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
 )
+from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 

@@ -15,7 +15,6 @@
 #
 
 import json
-from neptune.internal.utils.logger import get_logger
 import math
 import os
 import re
@@ -69,6 +68,7 @@ from neptune.internal.utils import (
     base64_encode,
 )
 from neptune.internal.utils import paths as alpha_path_utils
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import parse_path
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,

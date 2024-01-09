@@ -20,7 +20,6 @@ __all__ = [
     "FileDependenciesStrategy",
 ]
 
-from neptune.internal.utils.logger import get_logger
 import os
 import sys
 from abc import (
@@ -31,6 +30,8 @@ from typing import (
     TYPE_CHECKING,
     Union,
 )
+
+from neptune.internal.utils.logger import get_logger
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import (

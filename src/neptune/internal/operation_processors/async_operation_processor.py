@@ -15,7 +15,6 @@
 #
 __all__ = ("AsyncOperationProcessor",)
 
-from neptune.internal.utils.logger import get_logger
 import os
 import threading
 from datetime import datetime
@@ -61,6 +60,7 @@ from neptune.internal.signals_processing.utils import (
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.files import should_clean_internal_data
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

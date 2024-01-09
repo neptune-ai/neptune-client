@@ -16,7 +16,6 @@
 
 import functools
 import glob as globlib
-from neptune.internal.utils.logger import get_logger
 import math
 import os
 import re
@@ -37,6 +36,7 @@ from neptune.common.exceptions import (
 )
 from neptune.common.git_info import GitInfo
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.internal.utils.logger import get_logger
 
 _logger = get_logger()
 

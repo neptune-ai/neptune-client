@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 import os
 import platform
 import sys
@@ -31,6 +30,7 @@ from neptune.common.utils import (
     update_session_proxies,
 )
 from neptune.internal.backends.hosted_client import NeptuneResponseAdapter
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,

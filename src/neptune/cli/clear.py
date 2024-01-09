@@ -16,7 +16,6 @@
 
 __all__ = ["ClearRunner"]
 
-from neptune.internal.utils.logger import get_logger
 import shutil
 from pathlib import Path
 from typing import (
@@ -32,6 +31,7 @@ from neptune.cli.container_manager import ContainersManager
 from neptune.cli.status import StatusRunner
 from neptune.cli.utils import get_offline_dirs
 from neptune.constants import SYNC_DIRECTORY
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ApiExperiment

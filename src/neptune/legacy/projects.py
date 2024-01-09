@@ -15,7 +15,6 @@
 #
 
 import atexit
-from neptune.internal.utils.logger import get_logger
 import os
 import os.path
 import threading
@@ -30,6 +29,7 @@ from neptune.common.utils import (
     get_git_info,
     map_keys,
 )
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.envs import (
     NOTEBOOK_ID_ENV_NAME,
     NOTEBOOK_PATH_ENV_NAME,

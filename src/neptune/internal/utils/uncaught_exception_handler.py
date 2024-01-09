@@ -15,7 +15,6 @@
 #
 __all__ = ["instance"]
 
-from neptune.internal.utils.logger import get_logger
 import sys
 import threading
 import traceback
@@ -26,6 +25,8 @@ from typing import (
     Callable,
     List,
 )
+
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     pass

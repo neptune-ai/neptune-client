@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 import threading
 import time
 from collections import namedtuple
@@ -25,6 +24,7 @@ from queue import (
 
 from bravado.exception import HTTPUnprocessableEntity
 
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.exceptions import NeptuneException
 from neptune.legacy.internal.channels.channels import (
     ChannelIdWithValues,

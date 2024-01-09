@@ -16,9 +16,9 @@
 
 import base64
 import json
-from neptune.internal.utils.logger import get_logger
 import os
 
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy import envs
 from neptune.legacy.api_exceptions import InvalidApiKey
 from neptune.legacy.constants import (

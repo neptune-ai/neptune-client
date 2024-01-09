@@ -23,7 +23,6 @@ __all__ = [
 import collections
 import enum
 import json
-from neptune.internal.utils.logger import get_logger
 import os
 import time
 from io import BytesIO
@@ -86,6 +85,7 @@ from neptune.internal.utils import (
     get_absolute_paths,
     get_common_root,
 )
+from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB

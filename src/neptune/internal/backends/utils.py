@@ -29,7 +29,6 @@ __all__ = [
 ]
 
 import dataclasses
-from neptune.internal.utils.logger import get_logger
 import os
 import socket
 from functools import (
@@ -78,6 +77,7 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils import replace_patch_version
+from neptune.internal.utils.logger import get_logger
 
 _logger = get_logger()
 

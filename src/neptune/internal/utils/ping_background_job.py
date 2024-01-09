@@ -15,7 +15,6 @@
 #
 __all__ = ["PingBackgroundJob"]
 
-from neptune.internal.utils.logger import get_logger
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -23,6 +22,7 @@ from typing import (
 
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer

@@ -15,7 +15,6 @@
 #
 __all__ = ["Table"]
 
-from neptune.internal.utils.logger import get_logger
 from datetime import datetime
 from typing import (
     Any,
@@ -33,6 +32,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import (
     join_paths,
     parse_path,

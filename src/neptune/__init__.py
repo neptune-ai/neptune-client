@@ -101,10 +101,10 @@ __all__ = [
     "__version__",
 ]
 
-from neptune.internal.utils.logger import set_up_logging
 from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.internal.extensions import load_extensions
+from neptune.internal.utils.logger import set_up_logging
 from neptune.metadata_containers import (
     Model,
     ModelVersion,

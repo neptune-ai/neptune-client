@@ -16,7 +16,6 @@
 __all__ = ["GPUMonitor"]
 
 from neptune.internal.utils.logger import get_logger
-
 from neptune.vendor.pynvml import (
     NVMLError,
     nvmlDeviceGetCount,

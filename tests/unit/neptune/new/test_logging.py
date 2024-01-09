@@ -3,11 +3,14 @@ from typing import Optional
 
 import pytest
 
-from neptune.internal.utils.logger import get_logger, NEPTUNE_LOGGER_NAME
+from neptune.internal.utils.logger import (
+    NEPTUNE_LOGGER_NAME,
+    get_logger,
+)
 
 
 @contextmanager
-def assert_out(capsys: pytest.CaptureFixture, out_msg: str = '', err_msg: str = ''):
+def assert_out(capsys: pytest.CaptureFixture, out_msg: str = "", err_msg: str = ""):
     _ = capsys.readouterr()
     yield
     captured = capsys.readouterr()

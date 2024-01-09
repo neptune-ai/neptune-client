@@ -19,7 +19,6 @@ __all__ = [
     "track_uncommitted_changes",
 ]
 
-from neptune.internal.utils.logger import get_logger
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
@@ -34,6 +33,7 @@ from neptune.attributes.constants import (
     DIFF_HEAD_INDEX_PATH,
     UPSTREAM_INDEX_DIFF,
 )
+from neptune.internal.utils.logger import get_logger
 from neptune.types import File
 from neptune.types.atoms.git_ref import (
     GitRef,

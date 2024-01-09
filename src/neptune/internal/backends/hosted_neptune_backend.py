@@ -16,7 +16,6 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
-from neptune.internal.utils.logger import get_logger
 import os
 import re
 import typing
@@ -136,6 +135,7 @@ from neptune.internal.operation_processors.operation_storage import OperationSto
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound

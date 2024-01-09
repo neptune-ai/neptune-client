@@ -15,12 +15,12 @@
 #
 __all__ = ["String"]
 
-from neptune.internal.utils.logger import get_logger
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignString
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.types.atoms.string import String as StringVal
 

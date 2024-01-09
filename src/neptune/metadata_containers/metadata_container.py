@@ -18,7 +18,6 @@ __all__ = ["MetadataContainer"]
 import abc
 import atexit
 import itertools
-from neptune.internal.utils.logger import get_logger
 import os
 import threading
 import time
@@ -85,6 +84,7 @@ from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
 )
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor

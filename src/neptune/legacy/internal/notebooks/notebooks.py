@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 import threading
 
 from neptune.common.utils import is_ipython
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.internal.notebooks.comm import send_checkpoint_created
 
 _logger = get_logger()

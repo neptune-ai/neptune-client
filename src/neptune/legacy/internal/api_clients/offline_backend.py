@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 from io import StringIO
 
 from neptune.common.utils import NoopObject
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.backend import (
     BackendApiClient,
     LeaderboardApiClient,

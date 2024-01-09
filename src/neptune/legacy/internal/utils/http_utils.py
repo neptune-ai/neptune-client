@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 from functools import wraps
 from http.client import (
     NOT_FOUND,
@@ -22,6 +21,7 @@ from http.client import (
 
 from requests.exceptions import HTTPError
 
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,
     StorageLimitReached,

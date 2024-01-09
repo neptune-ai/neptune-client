@@ -15,15 +15,14 @@
 #
 __all__ = ["Namespace"]
 
-from neptune.internal.utils.logger import get_logger
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     TypeVar,
 )
 
-from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.paths import parse_path
 from neptune.types.value import Value
 
 if TYPE_CHECKING:

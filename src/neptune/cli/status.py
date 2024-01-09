@@ -16,7 +16,6 @@
 
 __all__ = ["StatusRunner"]
 
-from neptune.internal.utils.logger import get_logger
 import sys
 import textwrap
 from pathlib import Path
@@ -34,6 +33,7 @@ from neptune.cli.utils import (
 from neptune.constants import OFFLINE_NAME_PREFIX
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.api_model import ApiExperiment
+from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 

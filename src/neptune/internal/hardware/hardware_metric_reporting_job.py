@@ -15,7 +15,6 @@
 #
 __all__ = ["HardwareMetricReportingJob"]
 
-from neptune.internal.utils.logger import get_logger
 import os
 import time
 from itertools import groupby
@@ -36,6 +35,7 @@ from neptune.common.utils import in_docker
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.internal.threading.daemon import Daemon
+from neptune.internal.utils.logger import get_logger
 from neptune.types.series import FloatSeries
 
 if TYPE_CHECKING:

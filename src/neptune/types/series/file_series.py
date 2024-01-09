@@ -15,7 +15,6 @@
 #
 __all__ = ["FileSeries"]
 
-from neptune.internal.utils.logger import get_logger
 import time
 from itertools import cycle
 from typing import (
@@ -28,6 +27,7 @@ from typing import (
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
+from neptune.internal.utils.logger import get_logger
 from neptune.types import File
 from neptune.types.series.series import Series
 

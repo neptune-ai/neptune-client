@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from neptune.internal.utils.logger import get_logger
 from collections import OrderedDict
 
 from neptune.common.utils import assure_project_qualified_name
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.projects import Project

@@ -24,7 +24,6 @@ __all__ = [
     "split_dir_name",
 ]
 
-from neptune.internal.utils.logger import get_logger
 import os
 import textwrap
 import threading
@@ -59,6 +58,7 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
+from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 

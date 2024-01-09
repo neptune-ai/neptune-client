@@ -15,11 +15,11 @@
 #
 __all__ = ["remove_parent_folder_if_allowed", "should_clean_internal_data"]
 
-from neptune.internal.utils.logger import get_logger
 import os
 from pathlib import Path
 
 from neptune.envs import NEPTUNE_DISABLE_PARENT_DIR_DELETION
+from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 

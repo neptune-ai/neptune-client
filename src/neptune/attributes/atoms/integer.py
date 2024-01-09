@@ -15,7 +15,6 @@
 #
 __all__ = ["Integer"]
 
-from neptune.internal.utils.logger import get_logger
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
@@ -25,6 +24,7 @@ from neptune.constants import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import AssignInt
+from neptune.internal.utils.logger import get_logger
 from neptune.types.atoms.integer import Integer as IntegerVal
 
 if typing.TYPE_CHECKING:

@@ -38,7 +38,6 @@ __all__ = [
 ]
 
 import base64
-from neptune.internal.utils.logger import get_logger
 import os
 from glob import glob
 from io import IOBase
@@ -53,6 +52,7 @@ from typing import (
 )
 
 from neptune.internal.types.stringify_value import StringifyValue
+from neptune.internal.utils.logger import get_logger
 
 T = TypeVar("T")
 

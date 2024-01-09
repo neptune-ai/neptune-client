@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.logger import get_logger
 import os
 import sys
 import time
@@ -27,6 +26,7 @@ from neptune.common.utils import (
     is_ipython,
     is_notebook,
 )
+from neptune.internal.utils.logger import get_logger
 from neptune.legacy.internal.abort import (
     CustomAbortImpl,
     DefaultAbortImpl,

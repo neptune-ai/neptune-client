@@ -33,7 +33,6 @@ __all__ = [
     "trash_objects",
 ]
 
-from neptune.internal.utils.logger import get_logger
 import os
 from typing import (
     Dict,
@@ -71,6 +70,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.iteration import get_batches
+from neptune.internal.utils.logger import get_logger
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
