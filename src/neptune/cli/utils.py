@@ -24,7 +24,7 @@ __all__ = [
     "split_dir_name",
 ]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import textwrap
 import threading
@@ -60,7 +60,7 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def get_metadata_container(

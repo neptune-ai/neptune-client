@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import time
 
 import requests
@@ -41,7 +41,7 @@ from neptune.legacy.api_exceptions import (
     Unauthorized,
 )
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 def legacy_with_api_exceptions_handler(func):

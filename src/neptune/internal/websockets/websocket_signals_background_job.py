@@ -16,7 +16,7 @@
 __all__ = ["WebsocketSignalsBackgroundJob"]
 
 import json
-import logging
+from neptune.internal.utils.logger import get_logger
 import threading
 from json.decoder import JSONDecodeError
 from typing import (
@@ -40,7 +40,7 @@ from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class WebsocketSignalsBackgroundJob(BackgroundJob):

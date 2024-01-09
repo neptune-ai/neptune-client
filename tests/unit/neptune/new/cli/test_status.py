@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import itertools
 from unittest.mock import MagicMock
 
 import pytest
-import itertools
 
 from neptune.cli.status import StatusRunner
 from neptune.cli.utils import get_qualified_name
@@ -63,6 +63,7 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
     for captured, expected in itertools.zip_longest(captured.out.splitlines(), expected_out_lines):
         assert captured.endswith(expected)
 
+
 def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     # given
     offline_run = prepare_v1_container(
@@ -79,10 +80,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
 
     # then
     captured = capsys.readouterr()
-    expected_out_lines = [
-        "Unsynchronized offline objects:",
-        "- offline/run__{}".format(offline_run.id)
-    ]
+    expected_out_lines = ["Unsynchronized offline objects:", "- offline/run__{}".format(offline_run.id)]
     assert captured.err == ""
     for captured, expected in itertools.zip_longest(captured.out.splitlines()[:2], expected_out_lines):
         assert captured.endswith(expected)

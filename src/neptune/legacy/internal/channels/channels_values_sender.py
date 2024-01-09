@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 import threading
 import time
 from collections import namedtuple
@@ -34,7 +34,7 @@ from neptune.legacy.internal.channels.channels import (
 )
 from neptune.legacy.internal.threads.neptune_thread import NeptuneThread
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class ChannelsValuesSender(object):

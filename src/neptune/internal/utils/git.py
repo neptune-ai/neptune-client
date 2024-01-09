@@ -19,7 +19,7 @@ __all__ = [
     "track_uncommitted_changes",
 ]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import warnings
 from dataclasses import dataclass
 from datetime import datetime
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
     from neptune import Run
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 @dataclass

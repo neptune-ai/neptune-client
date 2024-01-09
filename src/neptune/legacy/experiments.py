@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import base64
-import logging
+from neptune.internal.utils.logger import get_logger
 import traceback
 
 import pandas as pd
@@ -46,7 +46,7 @@ from neptune.legacy.internal.execution.execution_context import ExecutionContext
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.image import get_image_content
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class Experiment(LegacyExperiment):

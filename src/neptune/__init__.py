@@ -102,6 +102,7 @@ __all__ = [
 ]
 
 from neptune.internal.utils.logger import set_up_logging
+
 # setup logging before loggers get initialized
 set_up_logging()
 

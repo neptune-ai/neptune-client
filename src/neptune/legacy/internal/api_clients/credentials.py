@@ -16,7 +16,7 @@
 
 import base64
 import json
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 
 from neptune.legacy import envs
@@ -27,7 +27,7 @@ from neptune.legacy.constants import (
 )
 from neptune.legacy.exceptions import NeptuneMissingApiTokenException
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class Credentials(object):

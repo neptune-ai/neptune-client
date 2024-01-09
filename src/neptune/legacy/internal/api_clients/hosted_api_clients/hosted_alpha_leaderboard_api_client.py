@@ -15,7 +15,7 @@
 #
 
 import json
-import logging
+from neptune.internal.utils.logger import get_logger
 import math
 import os
 import re
@@ -112,7 +112,7 @@ from neptune.legacy.model import (
 )
 from neptune.legacy.notebook import Notebook
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 LegacyExperiment = namedtuple(
     "LegacyExperiment",

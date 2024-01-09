@@ -15,7 +15,7 @@
 #
 __all__ = ["String"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
@@ -28,7 +28,7 @@ if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.metadata_containers import MetadataContainer
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class String(CopiableAtom):

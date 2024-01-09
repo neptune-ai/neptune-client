@@ -29,9 +29,8 @@ __all__ = [
 ]
 
 import dataclasses
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
-import logging
 import socket
 from functools import (
     lru_cache,
@@ -80,7 +79,7 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

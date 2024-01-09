@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import logging
+from neptune.internal.utils.logger import get_logger
 
 from neptune.vendor.pynvml import (
     NVMLError,
@@ -25,7 +25,7 @@ from neptune.vendor.pynvml import (
     nvmlInit,
 )
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class GPUMonitor(object):

@@ -1,40 +1,50 @@
-import logging
-import pytest
-from neptune.internal.utils.logger import LOGGER_NAME, ROOT_LOGGER_NAME, CommonPrefixLogger
 from contextlib import contextmanager
+from typing import Optional
+
+import pytest
+
+from neptune.internal.utils.logger import get_logger, NEPTUNE_LOGGER_NAME
 
 
 @contextmanager
-def assert_stdout(capsys: pytest.CaptureFixture, msg: str):
+def assert_out(capsys: pytest.CaptureFixture, out_msg: str = '', err_msg: str = ''):
     _ = capsys.readouterr()
     yield
     captured = capsys.readouterr()
-    assert msg in captured.out
+    assert out_msg in captured.out
+    assert err_msg in captured.err
 
 
-def test_logger_default_handler_stdout_format(capsys: pytest.CaptureFixture):
+def test_interal_logger_default_handler_stdout_format(capsys: pytest.CaptureFixture):
     # given
-    local_logger_name = 'local-logger'
-    logger = logging.getLogger(local_logger_name)
+    logger = get_logger()
 
     # then
-    expected_log_output = f"{LOGGER_NAME}:{local_logger_name} message\n"
-    with assert_stdout(capsys, expected_log_output):
+    expected_log_std_out = "message\n"
+    with assert_out(capsys, expected_log_std_out):
         logger.info("message")
 
-def test_logger_is_correct_instance():
+    assert logger.name == NEPTUNE_LOGGER_NAME
+
+
+def test_internal_logger_loglevels(capsys: pytest.CaptureFixture):
     # given
-    logger = logging.getLogger("local-logger")
+    logger = get_logger()
 
     # then
-    assert isinstance(logger, CommonPrefixLogger)
-    assert logger.name == "local-logger"
+    msg = "message"
+    expected_log_std_out = f"{msg}\n"
+    with assert_out(capsys, expected_log_std_out):
+        logger.debug("message")
 
+    with assert_out(capsys, expected_log_std_out):
+        logger.info("message")
 
-def test_root_logger_is_correct_instance():
-    # given
-    logger = logging.getLogger()
+    with assert_out(capsys, expected_log_std_out):
+        logger.warning("message")
 
-    # then
-    assert isinstance(logger, CommonPrefixLogger)
-    assert logger.name == ROOT_LOGGER_NAME
+    with assert_out(capsys, expected_log_std_out):
+        logger.error("message")
+
+    with assert_out(capsys, expected_log_std_out):
+        logger.critical("message")

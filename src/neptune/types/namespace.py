@@ -15,7 +15,7 @@
 #
 __all__ = ["Namespace"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
@@ -23,12 +23,13 @@ from typing import (
 )
 
 from neptune.internal.utils.paths import parse_path
+from neptune.internal.utils.logger import get_logger
 from neptune.types.value import Value
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 Ret = TypeVar("Ret")
 
 

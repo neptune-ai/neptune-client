@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["set_up_logging", "LOGGER_NAME", "CommonPrefixLogger"]
+__all__ = ["set_up_logging", "get_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
 import sys
 
-LOGGER_NAME = "neptune-client"
-ROOT_LOGGER_NAME = "root"
-LOG_FORMAT = f"{LOGGER_NAME}:%(name)s %(message)s"
+NEPTUNE_LOGGER_NAME = "neptune-client"
+LOG_FORMAT = "%(message)s"
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -41,33 +40,17 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-class CommonPrefixLogger(logging.Logger):
-    def __init__(self, name: str) -> None:
-        logging.Logger.__init__(self, name)
-        self.propagate = False
-        self.setLevel(level=logging.DEBUG)
-
-        # add stdout handler
-        stdout_handler = GrabbableStdoutHandler()
-        stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
-        self.addHandler(stdout_handler)
+def get_logger():
+    return logging.getLogger(NEPTUNE_LOGGER_NAME)
 
 
 def set_up_logging():
-    logging.setLoggerClass(CommonPrefixLogger)
+    # setup neptune logger so that logging.getLogger(NEPTUNE_LOGGER_NAME)
+    # returns configured logger
+    neptune_logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
+    neptune_logger.propagate = False
+    neptune_logger.setLevel(logging.DEBUG)
 
-    # create new logger dict with CommonPrefixLogger instances
-    new_logger_dict = {}
-    for name, logger in logging.Logger.manager.loggerDict.items():
-        if isinstance(logger, logging.PlaceHolder):
-            new_logger_dict[name] = logging.PlaceHolder(CommonPrefixLogger(name))
-        elif isinstance(logger, logging.Logger):
-            new_logger_dict[name] = CommonPrefixLogger(name)
-
-    # set root logger to CommonPrefixLogger instance so that
-    # logging.getLogger() returns CommonPrefixLogger instance
-    logging.root = CommonPrefixLogger(ROOT_LOGGER_NAME)
-    logging.Logger.root = logging.root
-    logging.Logger.root.setLevel(logging.WARNING)
-    logging.Logger.manager = logging.Manager(logging.root)
-    logging.Logger.manager.loggerDict = new_logger_dict
+    stdout_handler = GrabbableStdoutHandler()
+    stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    neptune_logger.addHandler(stdout_handler)

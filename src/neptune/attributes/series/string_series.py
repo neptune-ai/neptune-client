@@ -15,7 +15,7 @@
 #
 __all__ = ["StringSeries"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 from typing import (
     TYPE_CHECKING,
     Iterable,
@@ -43,7 +43,7 @@ Val = StringSeriesVal
 Data = str
 LogOperation = LogStrings
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class StringSeries(

@@ -15,8 +15,8 @@
 #
 __all__ = ["Namespace", "NamespaceBuilder"]
 
-import logging
 import argparse
+from neptune.internal.utils.logger import get_logger
 from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
@@ -46,7 +46,7 @@ from neptune.types.namespace import Namespace as NamespaceVal
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 RunStructure = ContainerStructure  # backwards compatibility
 
 

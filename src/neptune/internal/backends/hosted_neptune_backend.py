@@ -16,7 +16,7 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import re
 import typing
@@ -147,7 +147,7 @@ if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ClientConfig
 
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class HostedNeptuneBackend(NeptuneBackend):

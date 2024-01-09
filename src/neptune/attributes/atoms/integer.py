@@ -15,7 +15,7 @@
 #
 __all__ = ["Integer"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import typing
 
 from neptune.attributes.atoms.copiable_atom import CopiableAtom
@@ -30,7 +30,7 @@ from neptune.types.atoms.integer import Integer as IntegerVal
 if typing.TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class Integer(CopiableAtom):

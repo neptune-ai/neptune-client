@@ -16,7 +16,7 @@
 
 import functools
 import glob as globlib
-import logging
+from neptune.internal.utils.logger import get_logger
 import math
 import os
 import re
@@ -38,7 +38,7 @@ from neptune.common.exceptions import (
 from neptune.common.git_info import GitInfo
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"

@@ -16,9 +16,9 @@
 
 __all__ = ["StatusRunner"]
 
+from neptune.internal.utils.logger import get_logger
 import sys
 import textwrap
-import logging
 from pathlib import Path
 from typing import (
     Optional,
@@ -35,7 +35,7 @@ from neptune.constants import OFFLINE_NAME_PREFIX
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.api_model import ApiExperiment
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 offline_run_explainer = """
 Runs that execute offline are not created on the server and are not assigned to projects;

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 from io import StringIO
 
 from neptune.common.utils import NoopObject
@@ -22,7 +22,7 @@ from neptune.legacy.backend import (
     LeaderboardApiClient,
 )
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class OfflineBackendApiClient(BackendApiClient):

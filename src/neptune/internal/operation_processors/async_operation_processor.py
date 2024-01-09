@@ -15,9 +15,9 @@
 #
 __all__ = ("AsyncOperationProcessor",)
 
+from neptune.internal.utils.logger import get_logger
 import os
 import threading
-import logging
 from datetime import datetime
 from pathlib import Path
 from queue import Queue
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from neptune.internal.operation_processors.operation_logger import ProcessorStopSignal
     from neptune.internal.signals_processing.signals import Signal
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class AsyncOperationProcessor(OperationProcessor):

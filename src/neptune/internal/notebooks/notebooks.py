@@ -15,14 +15,14 @@
 #
 __all__ = ["create_checkpoint"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import threading
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.notebooks.comm import send_checkpoint_created
 from neptune.internal.utils import is_ipython
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 _checkpoints_lock = threading.Lock()
 _checkpoints = dict()

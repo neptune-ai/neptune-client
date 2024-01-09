@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 import threading
 
 from neptune.common.utils import is_ipython
 from neptune.legacy.internal.notebooks.comm import send_checkpoint_created
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 _checkpoints_lock = threading.Lock()
 _checkpoints = dict()

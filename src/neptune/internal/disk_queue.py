@@ -16,7 +16,7 @@
 __all__ = ["QueueElement", "DiskQueue"]
 
 import json
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import shutil
 import threading
@@ -44,7 +44,7 @@ from neptune.internal.utils.sync_offset_file import SyncOffsetFile
 T = TypeVar("T")
 Timestamp = float
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 @dataclass

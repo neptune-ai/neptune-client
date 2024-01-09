@@ -15,7 +15,7 @@
 #
 __all__ = ["HardwareMetricReportingJob"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import time
 from itertools import groupby
@@ -41,7 +41,7 @@ from neptune.types.series import FloatSeries
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class HardwareMetricReportingJob(BackgroundJob):

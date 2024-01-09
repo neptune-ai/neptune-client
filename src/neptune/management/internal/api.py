@@ -33,8 +33,8 @@ __all__ = [
     "trash_objects",
 ]
 
+from neptune.internal.utils.logger import get_logger
 import os
-import logging
 from typing import (
     Dict,
     Iterable,
@@ -100,7 +100,7 @@ from neptune.management.internal.utils import (
     normalize_project_name,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 TRASH_BATCH_SIZE = 100
 
 

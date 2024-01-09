@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 import time
 
 from bravado.exception import HTTPError
@@ -21,7 +21,7 @@ from bravado.exception import HTTPError
 from neptune.legacy.exceptions import NeptuneException
 from neptune.legacy.internal.threads.neptune_thread import NeptuneThread
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class HardwareMetricReportingThread(NeptuneThread):

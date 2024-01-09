@@ -15,7 +15,7 @@
 #
 __all__ = ["project_name_lookup"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 from typing import Optional
 
@@ -26,7 +26,7 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import verify_type
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 def project_name_lookup(backend: NeptuneBackend, name: Optional[QualifiedName] = None) -> Project:

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import platform
 import sys
@@ -48,7 +48,7 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import Hosted
 from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 from neptune.legacy.projects import Project
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):

@@ -15,7 +15,7 @@
 #
 
 import atexit
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import os.path
 import threading
@@ -41,7 +41,7 @@ from neptune.legacy.internal.notebooks.notebooks import create_checkpoint
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.source_code import get_source_code_to_upload
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class Project(object):

@@ -31,16 +31,16 @@
 #
 __all__ = ["StringifyValue", "extract_if_stringify_value"]
 
+from neptune.internal.utils.logger import get_logger
 import math
 from typing import Any
-import logging
 
 from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def is_unsupported_float(value) -> bool:

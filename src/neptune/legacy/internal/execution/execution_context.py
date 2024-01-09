@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import sys
 import time
@@ -41,7 +41,7 @@ from neptune.legacy.internal.threads.aborting_thread import AbortingThread
 from neptune.legacy.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.legacy.internal.threads.ping_thread import PingThread
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class ExecutionContext(object):

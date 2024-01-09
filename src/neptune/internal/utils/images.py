@@ -29,7 +29,7 @@ __all__ = [
 
 import base64
 import io
-import logging
+from neptune.internal.utils.logger import get_logger
 import pickle
 import warnings
 from io import (
@@ -43,7 +43,7 @@ from pandas import DataFrame
 
 from neptune.exceptions import PlotlyIncompatibilityException
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
 
 try:

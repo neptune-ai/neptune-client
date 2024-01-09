@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
+from neptune.internal.utils.logger import get_logger
 from functools import wraps
 from http.client import (
     NOT_FOUND,
@@ -28,7 +28,7 @@ from neptune.legacy.api_exceptions import (
 )
 from neptune.legacy.exceptions import NeptuneException
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 def extract_response_field(response, field_name):

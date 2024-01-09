@@ -23,7 +23,7 @@ __all__ = [
 import collections
 import enum
 import json
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import time
 from io import BytesIO
@@ -87,7 +87,7 @@ from neptune.internal.utils import (
     get_common_root,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
 

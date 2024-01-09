@@ -20,9 +20,9 @@ __all__ = [
     "FileDependenciesStrategy",
 ]
 
+from neptune.internal.utils.logger import get_logger
 import os
 import sys
-import logging
 from abc import (
     ABC,
     abstractmethod,
@@ -45,7 +45,7 @@ from neptune.types import File
 if TYPE_CHECKING:
     from neptune import Run
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class DependencyTrackingStrategy(ABC):

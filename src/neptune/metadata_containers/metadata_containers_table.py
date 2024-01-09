@@ -15,7 +15,7 @@
 #
 __all__ = ["Table"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 from datetime import datetime
 from typing import (
     Any,
@@ -39,7 +39,7 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.utils.run_state import RunState
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class TableEntry:

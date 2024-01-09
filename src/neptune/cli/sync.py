@@ -16,11 +16,10 @@
 
 __all__ = ["SyncRunner"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 import os
 import threading
 import time
-import logging
 from pathlib import Path
 from typing import (
     Any,
@@ -63,7 +62,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 

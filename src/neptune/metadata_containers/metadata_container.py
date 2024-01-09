@@ -18,9 +18,9 @@ __all__ = ["MetadataContainer"]
 import abc
 import atexit
 import itertools
+from neptune.internal.utils.logger import get_logger
 import os
 import threading
-import logging
 import time
 import traceback
 from contextlib import AbstractContextManager
@@ -100,7 +100,7 @@ from neptune.utils import stop_synchronization_callback
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def ensure_not_stopped(fun):

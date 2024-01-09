@@ -15,9 +15,9 @@
 #
 __all__ = ["send_checkpoint_created"]
 
-import logging
+from neptune.internal.utils.logger import get_logger
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class MessageType(object):

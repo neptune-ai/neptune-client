@@ -16,7 +16,6 @@
 """Utility functions to support ML metadata logging with neptune.ai."""
 __all__ = ["stringify_unsupported", "stop_synchronization_callback"]
 
-import logging
 from typing import (
     Any,
     Mapping,
@@ -26,9 +25,10 @@ from typing import (
 
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
+from neptune.internal.utils.logger import get_logger
 from neptune.typing import NeptuneObject
 
-logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
