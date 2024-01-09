@@ -23,7 +23,6 @@ from neptune.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.internal.utils.logger import _FORMAT, LOGGER_NAME
 from neptune.exceptions import MetadataContainerNotFound
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType

@@ -84,7 +84,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
         "- offline/run__{}".format(offline_run.id)
     ]
     assert captured.err == ""
-    for captured, expected in zip(captured.out.splitlines()[:2], expected_out_lines):
+    for captured, expected in itertools.zip_longest(captured.out.splitlines()[:2], expected_out_lines):
         assert captured.endswith(expected)
 
 

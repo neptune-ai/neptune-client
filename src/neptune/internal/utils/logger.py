@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["set_up_logging"]
+__all__ = ["set_up_logging", "LOGGER_NAME", "CommonPrefixLogger"]
 
 import logging
 import sys
 
 LOGGER_NAME = "neptune-client"
-_FORMAT = "{name} {message}"
+ROOT_LOGGER_NAME = "root"
+_FORMAT = f"{LOGGER_NAME}:%(name)s %(message)s"
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -42,20 +43,20 @@ class GrabbableStdoutHandler(logging.StreamHandler):
 
 class CommonPrefixLogger(logging.Logger):
     def __init__(self, name: str) -> None:
-        logging.Logger.__init__(self, f"{LOGGER_NAME}:{name}")
+        logging.Logger.__init__(self, name)
         self.propagate = False
         self.setLevel(level=logging.DEBUG)
 
         # add stdout handler
         stdout_handler = GrabbableStdoutHandler()
-        stdout_handler.setFormatter(logging.Formatter(_FORMAT, style='{'))
+        stdout_handler.setFormatter(logging.Formatter(_FORMAT))
         self.addHandler(stdout_handler)
 
 
 def set_up_logging():
     logging.setLoggerClass(CommonPrefixLogger)
 
-    # clean already created loggers which are not CommonPrefixLogger
+    # create new logger dict with CommonPrefixLogger instances
     new_logger_dict = {}
     for name, logger in logging.Logger.manager.loggerDict.items():
         if isinstance(logger, logging.PlaceHolder):
@@ -63,4 +64,10 @@ def set_up_logging():
         elif isinstance(logger, logging.Logger):
             new_logger_dict[name] = CommonPrefixLogger(name)
 
+    # set root logger to CommonPrefixLogger instance so that
+    # logging.getLogger() returns CommonPrefixLogger instance
+    logging.root = CommonPrefixLogger(ROOT_LOGGER_NAME)
+    logging.Logger.root = logging.root
+    logging.Logger.root.setLevel(logging.WARNING)
+    logging.Logger.manager = logging.Manager(logging.root)
     logging.Logger.manager.loggerDict = new_logger_dict
