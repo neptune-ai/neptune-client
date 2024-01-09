@@ -48,11 +48,11 @@ __all__ = [
 ]
 
 
+import logging
 import os
 import threading
 
 from neptune.common.utils import assure_project_qualified_name
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy import (
     constants,
     envs,
@@ -72,7 +72,7 @@ project = None
 
 __lock = threading.RLock()
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 """Access Neptune as an anonymous user.
 You can pass this value as api_token during init() call, either by an environment variable or passing it directly

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import threading
 import time
 from collections import namedtuple
@@ -24,7 +25,6 @@ from queue import (
 
 from bravado.exception import HTTPUnprocessableEntity
 
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy.exceptions import NeptuneException
 from neptune.legacy.internal.channels.channels import (
     ChannelIdWithValues,
@@ -34,7 +34,7 @@ from neptune.legacy.internal.channels.channels import (
 )
 from neptune.legacy.internal.threads.neptune_thread import NeptuneThread
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 
 class ChannelsValuesSender(object):

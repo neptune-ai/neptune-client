@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import os
 import sys
 import time
@@ -26,7 +27,6 @@ from neptune.common.utils import (
     is_ipython,
     is_notebook,
 )
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy.internal.abort import (
     CustomAbortImpl,
     DefaultAbortImpl,
@@ -41,7 +41,7 @@ from neptune.legacy.internal.threads.aborting_thread import AbortingThread
 from neptune.legacy.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.legacy.internal.threads.ping_thread import PingThread
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 
 class ExecutionContext(object):

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 import time
 
 import requests
@@ -32,7 +33,6 @@ from bravado.exception import (
 from urllib3.exceptions import NewConnectionError
 
 from neptune.common.backends.utils import get_retry_from_headers_or_default
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy.api_exceptions import (
     ConnectionLost,
     Forbidden,
@@ -41,7 +41,7 @@ from neptune.legacy.api_exceptions import (
     Unauthorized,
 )
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 
 def legacy_with_api_exceptions_handler(func):

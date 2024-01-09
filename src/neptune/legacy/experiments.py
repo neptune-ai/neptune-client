@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import base64
+import logging
 import traceback
 
 import pandas as pd
@@ -26,7 +27,6 @@ from neptune.common.utils import (
     is_float,
     is_nan_or_inf,
 )
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy.api_exceptions import (
     ChannelDoesNotExist,
     ExperimentAlreadyFinished,
@@ -46,7 +46,7 @@ from neptune.legacy.internal.execution.execution_context import ExecutionContext
 from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.image import get_image_content
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 
 class Experiment(LegacyExperiment):

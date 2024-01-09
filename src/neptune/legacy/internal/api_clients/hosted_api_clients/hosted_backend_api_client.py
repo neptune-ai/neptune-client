@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import os
 import platform
 import sys
@@ -30,7 +31,6 @@ from neptune.common.utils import (
     update_session_proxies,
 )
 from neptune.internal.backends.hosted_client import NeptuneResponseAdapter
-from neptune.internal.utils.logger import get_logger
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,
@@ -48,7 +48,7 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import Hosted
 from neptune.legacy.internal.api_clients.hosted_api_clients.utils import legacy_with_api_exceptions_handler
 from neptune.legacy.projects import Project
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
@@ -148,7 +148,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
             warning = response.metadata.headers.get("X-Server-Warning")
             if warning:
-                _logger.warning(click.style("{warning}{content}{end}".format(content=warning, **STYLES)))
+                click.echo("{warning}{content}{end}".format(content=warning, **STYLES))
             project = response.result
 
             return Project(
@@ -184,33 +184,33 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
         parsed_version = version.parse(self.client_lib_version)
 
         if self._client_config.min_compatible_version and self._client_config.min_compatible_version > parsed_version:
-            styled_msg = click.style(
+            click.echo(
                 "ERROR: Minimal supported client version is {} (installed: {}). Please upgrade neptune-client".format(
                     self._client_config.min_compatible_version, self.client_lib_version
-                )
+                ),
+                sys.stderr,
             )
-            _logger.error(styled_msg)
             raise UnsupportedClientVersion(
                 self.client_lib_version,
                 self._client_config.min_compatible_version,
                 self._client_config.max_compatible_version,
             )
         if self._client_config.max_compatible_version and self._client_config.max_compatible_version < parsed_version:
-            styled_msg = click.style(
+            click.echo(
                 "ERROR: Maximal supported client version is {} (installed: {}). Please downgrade neptune-client".format(
                     self._client_config.max_compatible_version, self.client_lib_version
-                )
+                ),
+                sys.stderr,
             )
-            _logger.error(styled_msg)
             raise UnsupportedClientVersion(
                 self.client_lib_version,
                 self._client_config.min_compatible_version,
                 self._client_config.max_compatible_version,
             )
         if self._client_config.min_recommended_version and self._client_config.min_recommended_version > parsed_version:
-            styled_msg = click.style(
+            click.echo(
                 "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
                     self._client_config.min_recommended_version, self.client_lib_version
-                )
+                ),
+                sys.stderr,
             )
-            _logger.warning(styled_msg)

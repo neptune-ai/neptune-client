@@ -15,6 +15,7 @@
 #
 
 import json
+import logging
 import math
 import os
 import re
@@ -68,7 +69,6 @@ from neptune.internal.utils import (
     base64_encode,
 )
 from neptune.internal.utils import paths as alpha_path_utils
-from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import parse_path
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,
@@ -112,7 +112,7 @@ from neptune.legacy.model import (
 )
 from neptune.legacy.notebook import Notebook
 
-_logger = get_logger()
+_logger = logging.getLogger(__name__)
 
 LegacyExperiment = namedtuple(
     "LegacyExperiment",
