@@ -20,7 +20,7 @@ import sys
 
 LOGGER_NAME = "neptune-client"
 ROOT_LOGGER_NAME = "root"
-_FORMAT = f"{LOGGER_NAME}:%(name)s %(message)s"
+LOG_FORMAT = f"{LOGGER_NAME}:%(name)s %(message)s"
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -49,7 +49,7 @@ class CommonPrefixLogger(logging.Logger):
 
         # add stdout handler
         stdout_handler = GrabbableStdoutHandler()
-        stdout_handler.setFormatter(logging.Formatter(_FORMAT))
+        stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
         self.addHandler(stdout_handler)
 
 
