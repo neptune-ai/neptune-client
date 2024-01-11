@@ -66,7 +66,7 @@ class QueueSignal:
 
 
 class OperationLogger:
-    def __init__(self, signal_queue: Optional[Queue], logger: logging.Logger) -> None:
+    def __init__(self, signal_queue: Optional["Queue[QueueSignal]"], logger: logging.Logger) -> None:
         self._signal_queue = signal_queue
         self._logger = logger
 
