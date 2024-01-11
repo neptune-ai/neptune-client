@@ -45,10 +45,7 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_logger import (
-    OperationLogger,
-    QueueSignal,
-)
+from neptune.internal.operation_processors.operation_logger import OperationLogger
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -170,7 +167,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self,
         initial_queue_size: int,
         seconds: Optional[float],
-        signal_queue: Optional[Queue[QueueSignal]] = None,
+        signal_queue: Optional[Queue] = None,
     ) -> None:
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
@@ -226,7 +223,7 @@ class AsyncOperationProcessor(OperationProcessor):
             if self._should_print_logs:
                 op_logger.log_still_waiting(size_remaining=size_remaining, already_synced_proc=already_synced_proc)
 
-    def stop(self, seconds: Optional[float] = None, signal_queue: Optional[Queue[QueueSignal]] = None) -> None:
+    def stop(self, seconds: Optional[float] = None, signal_queue: Optional[Queue] = None) -> None:
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
