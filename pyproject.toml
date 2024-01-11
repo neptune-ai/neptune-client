@@ -118,17 +118,19 @@ dev = [
     "mock",
     "moto",
     "munch",
+    "mypy",
     "plotly",
     "pre-commit",
     "pytest",
+    "pytest-cov",
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
-    "pytest-cov",
+    "seaborn",
     "tensorflow",
     "torch",
     "vega_datasets",
-    "mypy",
+
 ]
 e2e = [
     # Integrations
