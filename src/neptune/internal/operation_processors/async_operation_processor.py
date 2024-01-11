@@ -45,6 +45,10 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
+from neptune.internal.operation_processors.operation_logger import (
+    OperationLogger,
+    QueueSignal,
+)
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -166,36 +170,17 @@ class AsyncOperationProcessor(OperationProcessor):
         self,
         initial_queue_size: int,
         seconds: Optional[float],
-        msg_queue: Optional[Queue] = None,
+        signal_queue: Optional[Queue[QueueSignal]] = None,
     ) -> None:
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
+        op_logger = OperationLogger(signal_queue=signal_queue, logger=logger)
 
-        if initial_queue_size > 0:
-            if self._consumer.last_backoff_time > 0:
-                if msg_queue is not None:
-                    msg_queue.put(None)  # to block message queue from logging anything
-                logger.warning(
-                    "We have been experiencing connection interruptions during your run."
-                    " Neptune client will now try to resume connection and sync data for the next"
-                    " %s seconds."
-                    " You can also kill this process and synchronize your data manually later"
-                    " using `neptune sync` command.",
-                    max_reconnect_wait_time,
-                )
-            else:
-                if msg_queue is not None:
-                    msg_queue.put(initial_queue_size)
-                else:
-                    logger.warning(
-                        "Waiting for the remaining %s operations to synchronize with Neptune."
-                        " Do not kill this process.",
-                        initial_queue_size,
-                    )
+        if initial_queue_size > 0 and self._consumer.last_backoff_time > 0:
+            op_logger.log_connection_interruption(max_reconnect_wait_time)
         else:
-            if msg_queue is not None:
-                msg_queue.put(0)
+            op_logger.log_remaining_operations(size_remaining=initial_queue_size)
 
         while True:
             if seconds is None:
@@ -217,30 +202,21 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
                 if self._should_print_logs:
-                    logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
+                    op_logger.log_success(ops_synced=initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
             if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
                 if self._should_print_logs:
-                    logger.warning(
-                        "Failed to reconnect with Neptune in %s seconds."
-                        " You have %s operations saved on disk that can be manually synced"
-                        " using `neptune sync` command.",
-                        max_reconnect_wait_time,
-                        size_remaining,
+                    op_logger.log_reconnect_failure(
+                        max_reconnect_wait_time=max_reconnect_wait_time,
+                        size_remaining=size_remaining,
                     )
                 return
 
             if seconds is not None and wait_time == 0:
                 if self._should_print_logs:
-                    logger.warning(
-                        "Failed to sync all operations in %s seconds."
-                        " You have %s operations saved on disk that can be manually synced"
-                        " using `neptune sync` command.",
-                        seconds,
-                        size_remaining,
-                    )
+                    op_logger.log_sync_failure(seconds=seconds, size_remaining=size_remaining)
                 return
 
             if not self._consumer.is_running():
@@ -248,22 +224,19 @@ class AsyncOperationProcessor(OperationProcessor):
                 logger.warning(str(exception))
                 return
             if self._should_print_logs:
-                logger.warning(
-                    "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait.",
-                    size_remaining,
-                    already_synced_proc,
-                )
-            else:
-                if msg_queue:
-                    msg_queue.put(size_remaining)
+                op_logger.log_still_waiting(size_remaining=size_remaining, already_synced_proc=already_synced_proc)
 
-    def stop(self, seconds: Optional[float] = None, msg_queue: Optional[Queue] = None) -> None:
+    def stop(self, seconds: Optional[float] = None, signal_queue: Optional[Queue[QueueSignal]] = None) -> None:
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
             self._consumer.disable_sleep()
             self._consumer.wake_up()
-            self._wait_for_queue_empty(initial_queue_size=self._queue.size(), seconds=seconds, msg_queue=msg_queue)
+            self._wait_for_queue_empty(
+                initial_queue_size=self._queue.size(),
+                seconds=seconds,
+                signal_queue=signal_queue,
+            )
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
