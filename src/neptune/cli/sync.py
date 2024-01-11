@@ -186,7 +186,7 @@ class SyncRunner(AbstractBackendRunner):
             logger.warning(
                 "Exception occurred while trying to create a run" " on the Neptune server. Please try again later",
             )
-            logging.exception(e)
+            logger.exception(e)
             return None
 
     @staticmethod

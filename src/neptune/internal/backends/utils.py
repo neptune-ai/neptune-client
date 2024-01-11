@@ -79,7 +79,7 @@ from neptune.internal.operation import (
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import get_logger
 
-_logger = get_logger()
+logger = get_logger()
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

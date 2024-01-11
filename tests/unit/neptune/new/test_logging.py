@@ -1,5 +1,4 @@
 from contextlib import contextmanager
-from typing import Optional
 
 import pytest
 

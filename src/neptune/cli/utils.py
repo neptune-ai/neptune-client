@@ -75,7 +75,7 @@ def get_metadata_container(
         logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
         logger.warning("Exception while fetching %s %s. Skipping.", public_container_type, container_id)
-        logging.exception(e)
+        logger.exception(e)
 
     return None
 
