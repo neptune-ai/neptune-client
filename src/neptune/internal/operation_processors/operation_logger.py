@@ -38,7 +38,7 @@ CONNECTION_INTERRUPTED_MSG = (
 )
 
 WAITING_FOR_OPERATIONS_MSG = (
-    "Waiting for the remaining %S operations to synchronize with Neptune." " Do not kill this process."
+    "Waiting for the remaining %s operations to synchronize with Neptune." " Do not kill this process."
 )
 
 SUCCESS_MSG = "All %s operations synced, thanks for waiting!"
