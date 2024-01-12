@@ -16,6 +16,8 @@
 __all__ = [
     "ProcessorStopSignal",
     "OperationLogger",
+    "SignalData",
+    "SignalType",
 ]
 
 import logging
