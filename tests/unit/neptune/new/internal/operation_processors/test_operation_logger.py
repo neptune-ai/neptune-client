@@ -93,12 +93,12 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
     def test_log_sync_failure(self):
         self.logger.log_sync_failure(10, 20)
 
-        self.logger._logger.warning.assert_called_once_with(SYNC_FAILURE_MSG, 10, 20)
+        self.logger._logger.warning.assert_not_called()
 
     def test_log_reconnect_failure(self):
         self.logger.log_reconnect_failure(10, 20)
 
-        self.logger._logger.warning.assert_called_once_with(RECONNECT_FAILURE_MSG, 10, 20)
+        self.logger._logger.warning.assert_not_called()
 
     def test_log_still_waiting(self):
         self.logger.log_still_waiting(10, 10, 20)

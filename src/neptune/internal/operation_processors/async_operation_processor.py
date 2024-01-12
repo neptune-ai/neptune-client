@@ -173,7 +173,7 @@ class AsyncOperationProcessor(OperationProcessor):
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
-        op_logger = OperationLogger(signal_queue=signal_queue, logger=logger)
+        op_logger = OperationLogger(signal_queue=signal_queue, logger=logger, should_print_logs=self._should_print_logs)
 
         if initial_queue_size > 0 and self._consumer.last_backoff_time > 0:
             op_logger.log_connection_interruption(max_reconnect_wait_time)
@@ -199,22 +199,20 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
-                if self._should_print_logs:
-                    op_logger.log_success(ops_synced=initial_queue_size)
+                op_logger.log_success(ops_synced=initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
             if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
-                if self._should_print_logs:
-                    op_logger.log_reconnect_failure(
-                        max_reconnect_wait_time=max_reconnect_wait_time,
-                        size_remaining=size_remaining,
-                    )
+
+                op_logger.log_reconnect_failure(
+                    max_reconnect_wait_time=max_reconnect_wait_time,
+                    size_remaining=size_remaining,
+                )
                 return
 
             if seconds is not None and wait_time == 0:
-                if self._should_print_logs:
-                    op_logger.log_sync_failure(seconds=seconds, size_remaining=size_remaining)
+                op_logger.log_sync_failure(seconds=seconds, size_remaining=size_remaining)
                 return
 
             if not self._consumer.is_running():

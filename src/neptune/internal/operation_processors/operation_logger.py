@@ -67,9 +67,12 @@ class QueueSignal:
 
 
 class OperationLogger:
-    def __init__(self, signal_queue: Optional["Queue[QueueSignal]"], logger: logging.Logger) -> None:
+    def __init__(
+        self, signal_queue: Optional["Queue[QueueSignal]"], logger: logging.Logger, should_print_logs: bool = True
+    ) -> None:
         self._signal_queue = signal_queue
         self._logger = logger
+        self._should_print_logs = should_print_logs
 
     def log_connection_interruption(self, max_reconnect_wait_time: float) -> None:
         if self._signal_queue is not None:
@@ -94,21 +97,30 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(QueueSignal(already_synced=ops_synced, should_block_logging=True))
         else:
-            self._logger.info(SUCCESS_MSG, ops_synced)
+            if self._should_print_logs:
+                self._logger.info(SUCCESS_MSG, ops_synced)
 
     def log_sync_failure(self, seconds: float, size_remaining: int) -> None:
-        self._logger.warning(
-            SYNC_FAILURE_MSG,
-            seconds,
-            size_remaining,
-        )
+        if self._signal_queue is not None:
+            self._signal_queue.put(QueueSignal(should_block_logging=True))
+        else:
+            if self._should_print_logs:
+                self._logger.warning(
+                    SYNC_FAILURE_MSG,
+                    seconds,
+                    size_remaining,
+                )
 
     def log_reconnect_failure(self, max_reconnect_wait_time: float, size_remaining: int) -> None:
-        self._logger.warning(
-            RECONNECT_FAILURE_MSG,
-            max_reconnect_wait_time,
-            size_remaining,
-        )
+        if self._signal_queue is not None:
+            self._signal_queue.put(QueueSignal(should_block_logging=True))
+        else:
+            if self._should_print_logs:
+                self._logger.warning(
+                    RECONNECT_FAILURE_MSG,
+                    max_reconnect_wait_time,
+                    size_remaining,
+                )
 
     def log_still_waiting(self, size_remaining: int, already_synced: int, already_synced_proc: float) -> None:
         if self._signal_queue is not None:
