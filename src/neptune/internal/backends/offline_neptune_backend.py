@@ -29,6 +29,7 @@ from neptune.internal.backends.api_model import (
     FloatAttribute,
     FloatSeriesAttribute,
     FloatSeriesValues,
+    GitRefAttribute,
     ImageSeriesValues,
     IntAttribute,
     StringAttribute,
@@ -71,6 +72,11 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_git_ref_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> GitRefAttribute:
         raise NeptuneOfflineModeFetchException
 
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:

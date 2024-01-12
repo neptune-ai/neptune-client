@@ -40,6 +40,7 @@ __all__ = [
     "FloatSeriesAttribute",
     "StringSeriesAttribute",
     "StringSetAttribute",
+    "GitRefAttribute",
 ]
 
 from dataclasses import dataclass
@@ -104,6 +105,7 @@ class OptionalFeatures:
     ARTIFACTS_HASH_EXCLUDE_METADATA = "artifacts_hash_exclude_metadata"
     ARTIFACTS_EXCLUDE_DIRECTORY_FILES = "artifact_exclude_directory_files"
     MULTIPART_UPLOAD = "multipart_upload"
+    GIT_REF = "gitref_enabled"
 
 
 @dataclass(frozen=True)
@@ -307,3 +309,15 @@ class StringSeriesAttribute:
 @dataclass
 class StringSetAttribute:
     values: Set[str]
+
+
+@dataclass
+class GitRefAttribute:
+    commitId: str
+    commitAuthor: str
+    commitDate: str
+    branch: str
+    tag: Optional[str]
+    remoteUrl: str
+    url: str
+    pass
