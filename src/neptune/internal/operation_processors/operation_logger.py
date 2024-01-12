@@ -91,7 +91,10 @@ class OperationLogger:
                 )
 
     def log_success(self, ops_synced: int) -> None:
-        self._logger.info(SUCCESS_MSG, ops_synced)
+        if self._signal_queue is not None:
+            self._signal_queue.put(QueueSignal(already_synced=ops_synced, should_block_logging=True))
+        else:
+            self._logger.info(SUCCESS_MSG, ops_synced)
 
     def log_sync_failure(self, seconds: float, size_remaining: int) -> None:
         self._logger.warning(

@@ -64,7 +64,7 @@ class TestOperationLoggerNoQueue(unittest.TestCase):
         self.logger._logger.warning.assert_called_once_with(RECONNECT_FAILURE_MSG, 10, 20)
 
     def test_log_still_waiting(self):
-        self.logger.log_still_waiting(10, 20)
+        self.logger.log_still_waiting(10, 10, 20)
 
         self.logger._logger.warning.assert_called_once_with(STILL_WAITING_MSG, 10, 20)
 
@@ -88,7 +88,7 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
     def test_log_success(self):
         self.logger.log_success(10)
 
-        self.logger._logger.info.assert_called_once_with(SUCCESS_MSG, 10)
+        self.logger._logger.info.assert_not_called()
 
     def test_log_sync_failure(self):
         self.logger.log_sync_failure(10, 20)
@@ -101,7 +101,9 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
         self.logger._logger.warning.assert_called_once_with(RECONNECT_FAILURE_MSG, 10, 20)
 
     def test_log_still_waiting(self):
-        self.logger.log_still_waiting(10, 20)
+        self.logger.log_still_waiting(10, 10, 20)
 
         self.logger._logger.warning.assert_not_called()
-        self.logger._signal_queue.put.assert_called_once_with(QueueSignal(size_remaining=10, already_synced_proc=20))
+        self.logger._signal_queue.put.assert_called_once_with(
+            QueueSignal(size_remaining=10, already_synced=10, already_synced_proc=20),
+        )
