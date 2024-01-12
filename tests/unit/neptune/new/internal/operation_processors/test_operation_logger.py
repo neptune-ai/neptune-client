@@ -25,6 +25,7 @@ from neptune.internal.operation_processors.operation_logger import (
     WAITING_FOR_OPERATIONS_MSG,
     OperationLogger,
     QueueSignal,
+    SignalType,
 )
 
 
@@ -77,13 +78,17 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
         self.logger.log_connection_interruption(10)
 
         self.logger._logger.warning.assert_not_called()
-        self.logger._signal_queue.put.assert_called_once_with(QueueSignal(should_block_logging=True))
+        self.logger._signal_queue.put.assert_called_once_with(
+            QueueSignal(should_block_logging=True, signal_type=SignalType.CONNECTION_INTERRUPTED)
+        )
 
     def test_log_remaining_operations(self):
         self.logger.log_remaining_operations(10)
 
         self.logger._logger.warning.assert_not_called()
-        self.logger._signal_queue.put.assert_called_once_with(QueueSignal(size_remaining=10))
+        self.logger._signal_queue.put.assert_called_once_with(
+            QueueSignal(size_remaining=10, signal_type=SignalType.WAITING_FOR_OPERATIONS)
+        )
 
     def test_log_success(self):
         self.logger.log_success(10)
@@ -105,5 +110,7 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
 
         self.logger._logger.warning.assert_not_called()
         self.logger._signal_queue.put.assert_called_once_with(
-            QueueSignal(size_remaining=10, already_synced=10, already_synced_proc=20),
+            QueueSignal(
+                size_remaining=10, already_synced=10, already_synced_proc=20, signal_type=SignalType.STILL_WAITING
+            ),
         )

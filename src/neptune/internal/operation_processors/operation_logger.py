@@ -26,6 +26,7 @@ __all__ = [
 
 import logging
 from dataclasses import dataclass
+from enum import Enum
 from queue import Queue
 from typing import Optional
 
@@ -58,8 +59,18 @@ RECONNECT_FAILURE_MSG = (
 STILL_WAITING_MSG = "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait."
 
 
+class SignalType(Enum):
+    CONNECTION_INTERRUPTED = "CONNECTION_INTERRUPTED"
+    WAITING_FOR_OPERATIONS = "WAITING_FOR_OPERATIONS"
+    SUCCESS = "SUCCESS"
+    SYNC_FAILURE = "SYNC_FAILURE"
+    RECONNECT_FAILURE = "RECONNECT_FAILURE"
+    STILL_WAITING = "STILL_WAITING"
+
+
 @dataclass
 class QueueSignal:
+    signal_type: SignalType
     size_remaining: int = 0
     already_synced: int = 0
     already_synced_proc: float = 0.0
@@ -76,7 +87,12 @@ class OperationLogger:
 
     def log_connection_interruption(self, max_reconnect_wait_time: float) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(should_block_logging=True))
+            self._signal_queue.put(
+                QueueSignal(
+                    signal_type=SignalType.CONNECTION_INTERRUPTED,
+                    should_block_logging=True,
+                )
+            )
         else:
             self._logger.warning(
                 CONNECTION_INTERRUPTED_MSG,
@@ -85,7 +101,9 @@ class OperationLogger:
 
     def log_remaining_operations(self, size_remaining: int) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(size_remaining=size_remaining))
+            self._signal_queue.put(
+                QueueSignal(signal_type=SignalType.WAITING_FOR_OPERATIONS, size_remaining=size_remaining)
+            )
         else:
             if size_remaining:
                 self._logger.warning(
@@ -95,14 +113,16 @@ class OperationLogger:
 
     def log_success(self, ops_synced: int) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(already_synced=ops_synced, should_block_logging=True))
+            self._signal_queue.put(
+                QueueSignal(signal_type=SignalType.SUCCESS, already_synced=ops_synced, should_block_logging=True)
+            )
         else:
             if self._should_print_logs:
                 self._logger.info(SUCCESS_MSG, ops_synced)
 
     def log_sync_failure(self, seconds: float, size_remaining: int) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(should_block_logging=True))
+            self._signal_queue.put(QueueSignal(signal_type=SignalType.SYNC_FAILURE, should_block_logging=True))
         else:
             if self._should_print_logs:
                 self._logger.warning(
@@ -113,7 +133,7 @@ class OperationLogger:
 
     def log_reconnect_failure(self, max_reconnect_wait_time: float, size_remaining: int) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(should_block_logging=True))
+            self._signal_queue.put(QueueSignal(signal_type=SignalType.RECONNECT_FAILURE, should_block_logging=True))
         else:
             if self._should_print_logs:
                 self._logger.warning(
@@ -126,6 +146,7 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 QueueSignal(
+                    signal_type=SignalType.STILL_WAITING,
                     size_remaining=size_remaining,
                     already_synced=already_synced,
                     already_synced_proc=already_synced_proc,
