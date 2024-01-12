@@ -15,9 +15,9 @@
 #
 __all__ = [
     "ProcessorStopSignal",
-    "OperationLogger",
-    "SignalData",
-    "SignalType",
+    "ProcessorStopLogger",
+    "ProcessorStopSignalData",
+    "ProcessorStopSignalType",
 ]
 
 import logging
@@ -55,7 +55,7 @@ RECONNECT_FAILURE_MSG = (
 STILL_WAITING_MSG = "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait."
 
 
-class SignalType(Enum):
+class ProcessorStopSignalType(Enum):
     CONNECTION_INTERRUPTED = "CONNECTION_INTERRUPTED"
     WAITING_FOR_OPERATIONS = "WAITING_FOR_OPERATIONS"
     SUCCESS = "SUCCESS"
@@ -65,7 +65,7 @@ class SignalType(Enum):
 
 
 @dataclass
-class SignalData:
+class ProcessorStopSignalData:
     size_remaining: int = 0
     already_synced: int = 0
     already_synced_proc: float = 0.0
@@ -75,11 +75,11 @@ class SignalData:
 
 @dataclass
 class ProcessorStopSignal:
-    signal_type: SignalType
-    data: SignalData = SignalData()
+    signal_type: ProcessorStopSignalType
+    data: ProcessorStopSignalData = ProcessorStopSignalData()
 
 
-class OperationLogger:
+class ProcessorStopLogger:
     def __init__(
         self,
         signal_queue: Optional["Queue[ProcessorStopSignal]"],
@@ -94,8 +94,8 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=SignalType.CONNECTION_INTERRUPTED,
-                    data=SignalData(max_reconnect_wait_time=max_reconnect_wait_time),
+                    signal_type=ProcessorStopSignalType.CONNECTION_INTERRUPTED,
+                    data=ProcessorStopSignalData(max_reconnect_wait_time=max_reconnect_wait_time),
                 )
             )
         else:
@@ -108,8 +108,8 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=SignalType.WAITING_FOR_OPERATIONS,
-                    data=SignalData(size_remaining=size_remaining),
+                    signal_type=ProcessorStopSignalType.WAITING_FOR_OPERATIONS,
+                    data=ProcessorStopSignalData(size_remaining=size_remaining),
                 )
             )
         else:
@@ -122,7 +122,9 @@ class OperationLogger:
     def log_success(self, ops_synced: int) -> None:
         if self._signal_queue is not None:
             self._signal_queue.put(
-                ProcessorStopSignal(signal_type=SignalType.SUCCESS, data=SignalData(already_synced=ops_synced))
+                ProcessorStopSignal(
+                    signal_type=ProcessorStopSignalType.SUCCESS, data=ProcessorStopSignalData(already_synced=ops_synced)
+                )
             )
         else:
             if self._should_print_logs:
@@ -131,7 +133,9 @@ class OperationLogger:
     def log_sync_failure(self, seconds: float, size_remaining: int) -> None:
         if self._signal_queue is not None:
             self._signal_queue.put(
-                ProcessorStopSignal(signal_type=SignalType.SYNC_FAILURE, data=SignalData(seconds=seconds))
+                ProcessorStopSignal(
+                    signal_type=ProcessorStopSignalType.SYNC_FAILURE, data=ProcessorStopSignalData(seconds=seconds)
+                )
             )
         else:
             if self._should_print_logs:
@@ -145,8 +149,10 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=SignalType.RECONNECT_FAILURE,
-                    data=SignalData(max_reconnect_wait_time=max_reconnect_wait_time, size_remaining=size_remaining),
+                    signal_type=ProcessorStopSignalType.RECONNECT_FAILURE,
+                    data=ProcessorStopSignalData(
+                        max_reconnect_wait_time=max_reconnect_wait_time, size_remaining=size_remaining
+                    ),
                 )
             )
         else:
@@ -161,8 +167,8 @@ class OperationLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=SignalType.STILL_WAITING,
-                    data=SignalData(
+                    signal_type=ProcessorStopSignalType.STILL_WAITING,
+                    data=ProcessorStopSignalData(
                         size_remaining=size_remaining,
                         already_synced=already_synced,
                         already_synced_proc=already_synced_proc,

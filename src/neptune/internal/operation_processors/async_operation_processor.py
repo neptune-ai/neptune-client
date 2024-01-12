@@ -45,7 +45,7 @@ from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_logger import OperationLogger
+from neptune.internal.operation_processors.operation_logger import ProcessorStopLogger
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.operation_storage import (
     OperationStorage,
@@ -173,7 +173,9 @@ class AsyncOperationProcessor(OperationProcessor):
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
-        op_logger = OperationLogger(signal_queue=signal_queue, logger=logger, should_print_logs=self._should_print_logs)
+        op_logger = ProcessorStopLogger(
+            signal_queue=signal_queue, logger=logger, should_print_logs=self._should_print_logs
+        )
 
         if initial_queue_size > 0 and self._consumer.last_backoff_time > 0:
             op_logger.log_connection_interruption(max_reconnect_wait_time)

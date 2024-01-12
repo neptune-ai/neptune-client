@@ -23,16 +23,16 @@ from neptune.internal.operation_processors.operation_logger import (
     SUCCESS_MSG,
     SYNC_FAILURE_MSG,
     WAITING_FOR_OPERATIONS_MSG,
-    OperationLogger,
+    ProcessorStopLogger,
     ProcessorStopSignal,
-    SignalData,
-    SignalType,
+    ProcessorStopSignalData,
+    ProcessorStopSignalType,
 )
 
 
 class TestOperationLoggerNoQueue(unittest.TestCase):
     def setUp(self):
-        self.logger = OperationLogger(signal_queue=None, logger=Mock())
+        self.logger = ProcessorStopLogger(signal_queue=None, logger=Mock())
 
     def test_log_connection_interruption(self):
         self.logger.log_connection_interruption(10)
@@ -73,7 +73,7 @@ class TestOperationLoggerNoQueue(unittest.TestCase):
 
 class TestOperationLoggerWithQueue(unittest.TestCase):
     def setUp(self):
-        self.logger = OperationLogger(signal_queue=Mock(), logger=Mock())
+        self.logger = ProcessorStopLogger(signal_queue=Mock(), logger=Mock())
 
     def test_log_connection_interruption(self):
         self.logger.log_connection_interruption(10)
@@ -81,7 +81,8 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
         self.logger._logger.warning.assert_not_called()
         self.logger._signal_queue.put.assert_called_once_with(
             ProcessorStopSignal(
-                data=SignalData(max_reconnect_wait_time=10), signal_type=SignalType.CONNECTION_INTERRUPTED
+                data=ProcessorStopSignalData(max_reconnect_wait_time=10),
+                signal_type=ProcessorStopSignalType.CONNECTION_INTERRUPTED,
             )
         )
 
@@ -90,7 +91,10 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
 
         self.logger._logger.warning.assert_not_called()
         self.logger._signal_queue.put.assert_called_once_with(
-            ProcessorStopSignal(data=SignalData(size_remaining=10), signal_type=SignalType.WAITING_FOR_OPERATIONS)
+            ProcessorStopSignal(
+                data=ProcessorStopSignalData(size_remaining=10),
+                signal_type=ProcessorStopSignalType.WAITING_FOR_OPERATIONS,
+            )
         )
 
     def test_log_success(self):
@@ -114,7 +118,7 @@ class TestOperationLoggerWithQueue(unittest.TestCase):
         self.logger._logger.warning.assert_not_called()
         self.logger._signal_queue.put.assert_called_once_with(
             ProcessorStopSignal(
-                data=SignalData(size_remaining=10, already_synced=10, already_synced_proc=20),
-                signal_type=SignalType.STILL_WAITING,
+                data=ProcessorStopSignalData(size_remaining=10, already_synced=10, already_synced_proc=20),
+                signal_type=ProcessorStopSignalType.STILL_WAITING,
             ),
         )
