@@ -222,7 +222,11 @@ class AsyncOperationProcessor(OperationProcessor):
                 logger.warning(str(exception))
                 return
             if self._should_print_logs:
-                op_logger.log_still_waiting(size_remaining=size_remaining, already_synced_proc=already_synced_proc)
+                op_logger.log_still_waiting(
+                    size_remaining=size_remaining,
+                    already_synced=already_synced,
+                    already_synced_proc=already_synced_proc,
+                )
 
     def stop(self, seconds: Optional[float] = None, signal_queue: Optional["Queue[QueueSignal]"] = None) -> None:
         ts = time()

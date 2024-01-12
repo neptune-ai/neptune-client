@@ -61,6 +61,7 @@ STILL_WAITING_MSG = "Still waiting for the remaining %s operations" " (%.2f%% do
 @dataclass
 class QueueSignal:
     size_remaining: int = 0
+    already_synced: int = 0
     already_synced_proc: float = 0.0
     should_block_logging: bool = False
 
@@ -106,9 +107,15 @@ class OperationLogger:
             size_remaining,
         )
 
-    def log_still_waiting(self, size_remaining: int, already_synced_proc: float) -> None:
+    def log_still_waiting(self, size_remaining: int, already_synced: int, already_synced_proc: float) -> None:
         if self._signal_queue is not None:
-            self._signal_queue.put(QueueSignal(size_remaining=size_remaining, already_synced_proc=already_synced_proc))
+            self._signal_queue.put(
+                QueueSignal(
+                    size_remaining=size_remaining,
+                    already_synced=already_synced,
+                    already_synced_proc=already_synced_proc,
+                )
+            )
         else:
             self._logger.warning(
                 STILL_WAITING_MSG,
