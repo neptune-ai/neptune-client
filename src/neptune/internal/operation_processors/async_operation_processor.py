@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
-    from neptune.internal.operation_processors.operation_logger import QueueSignal
+    from neptune.internal.operation_processors.operation_logger import ProcessorStopSignal
     from neptune.internal.signals_processing.signals import Signal
 
 
@@ -168,7 +168,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self,
         initial_queue_size: int,
         seconds: Optional[float],
-        signal_queue: Optional["Queue[QueueSignal]"] = None,
+        signal_queue: Optional["Queue[ProcessorStopSignal]"] = None,
     ) -> None:
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
@@ -226,7 +226,9 @@ class AsyncOperationProcessor(OperationProcessor):
                     already_synced_proc=already_synced_proc,
                 )
 
-    def stop(self, seconds: Optional[float] = None, signal_queue: Optional["Queue[QueueSignal]"] = None) -> None:
+    def stop(
+        self, seconds: Optional[float] = None, signal_queue: Optional["Queue[ProcessorStopSignal]"] = None
+    ) -> None:
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
