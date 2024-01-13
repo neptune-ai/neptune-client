@@ -67,7 +67,10 @@ from requests import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.warnings import warn_once
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.exceptions import (
     CannotResolveHostname,
@@ -319,11 +322,17 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
             if tqdm_available:
                 return TqdmNotebookProgressBar
             else:
-                warn_once("To use progress bar in interactive mode, please install tqdm: pip install tqdm")
+                warn_once(
+                    "To use progress bar in interactive mode, please install tqdm: pip install tqdm",
+                    exception=NeptuneWarning,
+                )
         else:
             if tqdm_available:
                 return TqdmProgressBar
             else:
-                warn_once("To use progress bar in non-interactive mode, please install tqdm: pip install tqdm")
+                warn_once(
+                    "To use progress bar in interactive mode, please install tqdm: pip install tqdm",
+                    exception=NeptuneWarning,
+                )
 
     return NullProgressBar

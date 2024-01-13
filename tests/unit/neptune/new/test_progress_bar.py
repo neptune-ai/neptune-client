@@ -19,8 +19,6 @@ import pytest
 
 from neptune.internal.utils import handle_import_error
 from neptune.utils import (
-    ClickProgressBar,
-    IPythonProgressBar,
     TqdmNotebookProgressBar,
     TqdmProgressBar,
 )
@@ -55,17 +53,3 @@ def test_tqdm_progress_bar():
         progress_bar.update(by=10, total=100)
         assert progress_bar._progress_bar.total == 100
         assert progress_bar._progress_bar.desc == "test_description"
-
-
-def test_click_progress_bar():
-    with ClickProgressBar(description="test_description") as progress_bar:
-        progress_bar.update(by=10, total=100)
-        assert progress_bar._progress_bar.length == 100
-        assert progress_bar._progress_bar.label == "test_description"
-
-
-def test_ipython_progress_bar():
-    with IPythonProgressBar(description="test_description") as progress_bar:
-        progress_bar.update(by=10, total=100)
-        assert progress_bar._progress_bar.max == 100
-        assert progress_bar._progress_bar.description == "test_description"
