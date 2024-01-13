@@ -67,6 +67,7 @@ from requests import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
+from neptune.common.warnings import warn_once
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.exceptions import (
     CannotResolveHostname,
@@ -88,8 +89,6 @@ from neptune.internal.utils.runningmode import (
 )
 from neptune.typing import ProgressBarCallback
 from neptune.utils import (
-    ClickProgressBar,
-    IPythonProgressBar,
     NullProgressBar,
     TqdmNotebookProgressBar,
     TqdmProgressBar,
@@ -308,15 +307,23 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
     ):  # return whatever the user gave us
         return progress_bar
 
+    if not isinstance(progress_bar, bool) and progress_bar is not None:
+        raise TypeError(f"progress_bar should be None, bool or ProgressBarCallback, got {type(progress_bar).__name__}")
+
     if progress_bar or progress_bar is None:  # auto-detect which one to use
         interactive = in_interactive() or in_notebook()
 
         tqdm_available = _check_if_tqdm_installed()
 
         if interactive:
-            return TqdmNotebookProgressBar if tqdm_available else IPythonProgressBar
+            if tqdm_available:
+                return TqdmNotebookProgressBar
+            else:
+                warn_once("To use progress bar in interactive mode, please install tqdm: pip install tqdm")
         else:
-            return TqdmProgressBar if tqdm_available else ClickProgressBar
+            if tqdm_available:
+                return TqdmProgressBar
+            else:
+                warn_once("To use progress bar in non-interactive mode, please install tqdm: pip install tqdm")
 
-    if not progress_bar:
-        return NullProgressBar
+    return NullProgressBar

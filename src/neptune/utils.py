@@ -19,8 +19,6 @@ __all__ = [
     "stop_synchronization_callback",
     "TqdmNotebookProgressBar",
     "TqdmProgressBar",
-    "ClickProgressBar",
-    "IPythonProgressBar",
     "NullProgressBar",
 ]
 
@@ -141,32 +139,6 @@ class TqdmProgressBar(ProgressBarCallback):
         self._progress_bar.update(by)
 
 
-class ClickProgressBar(ProgressBarCallback):
-    @handle_import_error(dependency="click")
-    def __init__(self, *args: Any, description: Optional[str] = None, **_: Any) -> None:
-        super().__init__(*args, **_)
-        from click import progressbar
-
-        self._progress_bar = progressbar(iterable=None, length=1, label=description)
-
-    def update(self, *, by: int, total: Optional[int] = None) -> None:
-        if total:
-            self._progress_bar.length = total
-        self._progress_bar.update(by)
-
-    def __enter__(self) -> "ClickProgressBar":
-        self._progress_bar.__enter__()
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
-        self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
-
-
 class TqdmNotebookProgressBar(ProgressBarCallback):
     @handle_import_error(dependency="tqdm")
     def __init__(
@@ -200,26 +172,3 @@ class TqdmNotebookProgressBar(ProgressBarCallback):
         if total:
             self._progress_bar.total = total
         self._progress_bar.update(by)
-
-
-class IPythonProgressBar(ProgressBarCallback):
-    def __init__(self, *args: Any, description: Optional[str] = None, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-        from IPython.display import display  # type: ignore[import]
-        from ipywidgets import IntProgress  # type: ignore[import]
-
-        self._progress_bar = IntProgress(description=description, **kwargs)
-        display(self._progress_bar)
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
-    ) -> None:
-        pass
-
-    def update(self, *, by: int, total: Optional[int] = None) -> None:
-        if total is not None:
-            self._progress_bar.max = total
-        self._progress_bar.value += by
