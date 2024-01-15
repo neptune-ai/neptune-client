@@ -82,6 +82,8 @@ class SyncOperationProcessor(WithResources, OperationProcessor):
             raise errors[0]
 
     def stop(self, seconds: Optional[float] = None) -> None:
+        self.flush()
+        self.close()
         self.cleanup()
 
     def cleanup(self) -> None:

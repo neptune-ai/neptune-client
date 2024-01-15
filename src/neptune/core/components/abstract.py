@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,10 +66,14 @@ class WithResources(Resource):
     def resources(self) -> Tuple["Resource", ...]:
         ...
 
-    def cleanup(self) -> None:
+    def flush(self) -> None:
         for resource in self.resources:
-            resource.cleanup()
+            resource.flush()
 
     def close(self) -> None:
         for resource in self.resources:
             resource.close()
+
+    def cleanup(self) -> None:
+        for resource in self.resources:
+            resource.cleanup()

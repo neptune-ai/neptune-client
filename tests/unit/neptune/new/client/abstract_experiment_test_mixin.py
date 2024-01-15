@@ -146,7 +146,7 @@ class AbstractExperimentTestMixin:
 
     def test_clean_data_on_stop(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
-            container_path = exp._op_processor._queue._data_path
+            container_path = exp._op_processor.data_path
 
             assert os.path.exists(container_path)
 

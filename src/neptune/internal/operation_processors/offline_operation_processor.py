@@ -82,4 +82,5 @@ class OfflineOperationProcessor(WithResources, OperationProcessor):
         self.flush()
 
     def stop(self, seconds: Optional[float] = None) -> None:
+        self.flush()
         self.close()
