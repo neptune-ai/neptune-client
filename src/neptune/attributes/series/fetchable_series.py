@@ -18,18 +18,37 @@ __all__ = ["FetchableSeries"]
 import abc
 from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     Dict,
+    Generator,
     Generic,
     TypeVar,
     Union,
 )
+
+from tqdm import tqdm
 
 from neptune.internal.backends.api_model import (
     FloatSeriesValues,
     StringSeriesValues,
 )
 
+if TYPE_CHECKING:
+    from pandas import DataFrame
+
 Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
+
+
+def make_row(entry: Row, include_timestamp: bool) -> Dict[str, Union[str, float, datetime]]:
+    row: Dict[str, Union[str, float, datetime]] = {
+        "step": entry.step,
+        "value": entry.value,
+    }
+
+    if include_timestamp:
+        row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
+
+    return row
 
 
 class FetchableSeries(Generic[Row]):
@@ -37,28 +56,32 @@ class FetchableSeries(Generic[Row]):
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
 
-    def fetch_values(self, *, include_timestamp=True):
-        import pandas as pd
-
-        limit = 1000
-        val = self._fetch_values_from_backend(0, limit)
-        data = val.values
-        offset = limit
-
-        def make_row(entry: Row) -> Dict[str, Union[str, float, datetime]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            row["step"] = entry.step
-            row["value"] = entry.value
-            if include_timestamp:
-                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
-            return row
-
-        while offset < val.totalItemCount:
+    # Limit needs to be set to 10000 for float series, for string series it needs to be set to 5k
+    def _fetch_row_values(
+        self, limit: int = 200_000, include_timestamp: bool = True
+    ) -> Generator[Dict[str, Union[str, float, datetime]], None, None]:
+        offset = 0
+        while True:
             batch = self._fetch_values_from_backend(offset, limit)
-            data.extend(batch.values)
+            yield from map(lambda entry: make_row(entry, include_timestamp=include_timestamp), batch["values"])
             offset += limit
+            if offset > batch["totalItemCount"]:
+                break
 
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
+    def fetch_values(self, *, include_timestamp: bool = True) -> "DataFrame":
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "Fetching series values requires pandas to be installed. "
+                "Please install it with `pip install pandas`."
+            )
 
-        df = pd.DataFrame.from_dict(data=rows, orient="index")
-        return df
+        data = {
+            index: entry
+            for index, entry in enumerate(
+                tqdm(self._fetch_row_values(include_timestamp=include_timestamp), total=10_000_000)
+            )
+        }
+
+        return pd.DataFrame.from_dict(data, orient="index")

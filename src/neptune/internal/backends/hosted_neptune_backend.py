@@ -31,6 +31,8 @@ from typing import (
     Union,
 )
 
+from bravado.client import construct_request
+from bravado.config import RequestConfig
 from bravado.exception import (
     HTTPConflict,
     HTTPNotFound,
@@ -139,6 +141,7 @@ from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
+from neptune.proto import protobuf_string_series_dto_pb2
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:
@@ -957,6 +960,41 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def get_string_series_values_proto(
+        self,
+        container_id: str,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        params = {
+            "experimentId": container_id,
+            "attribute": path_to_str(path),
+            "limit": limit,
+            "offset": offset,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
+            request_config = RequestConfig(request_options, True)
+            print("tutu", request_config)
+
+            request_params = construct_request(
+                self.leaderboard_client.api.getStringSeriesValuesProto, request_options, **params
+            )
+
+            print("TU: ", request_params)
+
+            http_client = self.leaderboard_client.swagger_spec.http_client
+
+            result = http_client.request(request_params, operation=None, request_config=request_config)
+            result = protobuf_string_series_dto_pb2.ProtobufStringSeriesDto.FromString(result)
+            return result
+
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
     def get_float_series_values(
         self,
         container_id: str,
@@ -978,6 +1016,41 @@ class HostedNeptuneBackend(NeptuneBackend):
                 result.totalItemCount,
                 [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
             )
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_float_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        params = {
+            "experimentId": container_id,
+            "attribute": path_to_str(path),
+            "limit": limit,
+            "offset": offset,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
+            request_config = RequestConfig(request_options, True)
+            request_params = construct_request(
+                self.leaderboard_client.api.getFloatSeriesValuesProto, request_options, **params
+            )
+
+            http_client = self.leaderboard_client.swagger_spec.http_client
+
+            # result = self.leaderboard_client.api.getFloatSeriesValuesProto(**params).response().result
+            result = (
+                http_client.request(request_params, operation=None, request_config=request_config)
+                .response()
+                .incoming_response.json()
+            )
+            return result
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
