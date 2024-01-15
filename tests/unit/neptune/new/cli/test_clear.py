@@ -41,13 +41,8 @@ def backend_fixture():
     return MagicMock()
 
 
-@pytest.fixture(name="clear_runner")
-def status_runner_fixture(backend):
-    return ClearRunner(backend=backend)
-
-
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_clean_v2_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
+def test_clean_v2_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v2_container(
         container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, key="a1b2c3"
@@ -77,7 +72,7 @@ def test_clean_v2_containers(tmp_path, mocker, capsys, backend, clear_runner, co
     )
 
     # when
-    clear_runner.clear(tmp_path, force=True)
+    ClearRunner.clear(backend=backend, path=tmp_path, force=True)
 
     # then
     assert not os.path.exists(
@@ -104,14 +99,14 @@ def test_clean_v2_containers(tmp_path, mocker, capsys, backend, clear_runner, co
         f"- {get_qualified_name(unsynced_container)}",
         "",
         "Unsynchronized offline objects:",
-        f"- offline/{offline_container_prefix}__1236__g7h8j9",
+        f"- offline/{offline_containers.id}",
         f"Deleted: {tmp_path / OFFLINE_DIRECTORY / f'{offline_container_prefix}__1236__g7h8j9'}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / f'{unsynced_container_prefix}__1234__a1b2c3'}",
     ]
 
 
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_clean_v2_deleted_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
+def test_clean_v2_deleted_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v2_container(
         container_type=container_type, path=tmp_path, last_ack_version=1, pid=1234, key="a1b2c3"
@@ -134,7 +129,7 @@ def test_clean_v2_deleted_containers(tmp_path, mocker, capsys, backend, clear_ru
         tmp_path / ASYNC_DIRECTORY / f"{container_type.create_dir_name(synced_container.id)}__1235__d4e5f6"
     )
     # when
-    clear_runner.clear(tmp_path, force=True)
+    ClearRunner.clear(backend=backend, path=tmp_path, force=True)
 
     # then
     assert not os.path.exists(
@@ -159,7 +154,7 @@ def test_clean_v2_deleted_containers(tmp_path, mocker, capsys, backend, clear_ru
 
 
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_clean_v1_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
+def test_clean_v1_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
     synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
@@ -177,7 +172,7 @@ def test_clean_v1_containers(tmp_path, mocker, capsys, backend, clear_runner, co
     assert os.path.exists(tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id))
 
     # when
-    clear_runner.clear(tmp_path, force=True)
+    ClearRunner.clear(backend=backend, path=tmp_path, force=True)
 
     # then
     assert not os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id))
@@ -187,20 +182,22 @@ def test_clean_v1_containers(tmp_path, mocker, capsys, backend, clear_runner, co
     # and
     captured = capsys.readouterr()
     assert captured.out.splitlines() == [
+        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id) / 'exec-0'}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
         "",
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
         "",
         "Unsynchronized offline objects:",
-        f"- offline/{container_type.create_dir_name(offline_containers.id)}",
+        f"- offline/{offline_containers.id}",
         f"Deleted: {tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id)}",
+        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id) / 'exec-0'}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
     ]
 
 
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_clean_v1_deleted_containers(tmp_path, mocker, capsys, backend, clear_runner, container_type):
+def test_clean_v1_deleted_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
     synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
@@ -216,7 +213,7 @@ def test_clean_v1_deleted_containers(tmp_path, mocker, capsys, backend, clear_ru
     assert os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id))
 
     # when
-    clear_runner.clear(tmp_path, force=True)
+    ClearRunner.clear(backend=backend, path=tmp_path, force=True)
 
     # then
     assert not os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id))
@@ -227,12 +224,14 @@ def test_clean_v1_deleted_containers(tmp_path, mocker, capsys, backend, clear_ru
     assert set(captured.out.splitlines()) == {
         f"Can't fetch ContainerType.{container_type.name} {synced_container.id}. Skipping.",
         f"Can't fetch ContainerType.{container_type.name} {unsynced_container.id}. Skipping.",
+        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id) / 'exec-0'}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
+        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id) / 'exec-0'}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
     }
 
 
-def test_clean_sync_directory(tmp_path, clear_runner):
+def test_clean_sync_directory(tmp_path, backend):
     # given
     sync_directory = tmp_path / SYNC_DIRECTORY
     sync_directory.mkdir(parents=True, exist_ok=True)
@@ -240,7 +239,7 @@ def test_clean_sync_directory(tmp_path, clear_runner):
     assert os.path.exists(sync_directory)
 
     # when
-    clear_runner.clear(tmp_path)
+    ClearRunner.clear(backend=backend, path=tmp_path)
 
     # then
     assert not os.path.exists(sync_directory)

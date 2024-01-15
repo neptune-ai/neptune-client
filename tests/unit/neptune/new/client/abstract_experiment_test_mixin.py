@@ -75,25 +75,23 @@ class AbstractExperimentTestMixin:
             self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
-        with (
-            patch("neptune.internal.operation_processors.utils.random_key") as random_mock,
-            patch("neptune.internal.operation_processors.utils.os.getpid") as getpid_mock,
-        ):
-            random_mock.return_value = "test"
-            getpid_mock.return_value = 1234
+        with patch("neptune.internal.operation_processors.utils.random_key") as random_mock:
+            with patch("neptune.internal.operation_processors.utils.os.getpid") as getpid_mock:
+                random_mock.return_value = "test"
+                getpid_mock.return_value = 1234
 
-            with self.call_init(mode="async", flush_period=0.5) as exp:
-                exp["some/variable"] = 13
-                exp["copied/variable"] = exp["some/variable"]
-                with self.assertRaises(MetadataInconsistency):
-                    exp["some/variable"].fetch()
-                exp.wait()
-                self.assertEqual(13, exp["some/variable"].fetch())
-                self.assertEqual(13, exp["copied/variable"].fetch())
+                with self.call_init(mode="async", flush_period=0.5) as exp:
+                    exp["some/variable"] = 13
+                    exp["copied/variable"] = exp["some/variable"]
+                    with self.assertRaises(MetadataInconsistency):
+                        exp["some/variable"].fetch()
+                    exp.wait()
+                    self.assertEqual(13, exp["some/variable"].fetch())
+                    self.assertEqual(13, exp["copied/variable"].fetch())
 
-                exp_dir = f"{exp.container_type.value}__{exp._id}__1234__test"
-                self.assertIn(exp_dir, os.listdir(".neptune/async"))
-                self.assertIn("data-1.log", os.listdir(f".neptune/async/{exp_dir}"))
+                    exp_dir = f"{exp.container_type.value}__{exp._id}__1234__test"
+                    self.assertIn(exp_dir, os.listdir(".neptune/async"))
+                    self.assertIn("data-1.log", os.listdir(f".neptune/async/{exp_dir}"))
 
     def test_async_mode_wait_on_dead(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:

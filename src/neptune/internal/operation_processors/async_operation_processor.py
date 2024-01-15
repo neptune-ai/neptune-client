@@ -51,7 +51,7 @@ from neptune.internal.operation_processors.operation_logger import ProcessorStop
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.utils import (
     common_metadata,
-    get_container_dir,
+    get_container_full_path,
 )
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
@@ -94,7 +94,9 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
     ):
         self._should_print_logs: bool = should_print_logs
 
-        self._data_path = data_path if data_path else get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+        self._data_path = (
+            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, container_id, container_type)
+        )
 
         # Initialize directory
         self._data_path.mkdir(parents=True, exist_ok=True)

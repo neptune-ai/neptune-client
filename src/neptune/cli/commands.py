@@ -28,22 +28,8 @@ from neptune.cli.clear import ClearRunner
 from neptune.cli.path_option import path_option
 from neptune.cli.status import StatusRunner
 from neptune.cli.sync import SyncRunner
-from neptune.common.exceptions import NeptuneException  # noqa: F401
-from neptune.core.components.queue.disk_queue import DiskQueue  # noqa: F401
-from neptune.exceptions import (  # noqa: F401
-    CannotSynchronizeOfflineRunsWithoutProject,
-    ProjectNotFound,
-    RunNotFound,
-)
-from neptune.internal.backends.api_model import (  # noqa: F401
-    ApiExperiment,
-    Project,
-)
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
 from neptune.internal.credentials import Credentials
-from neptune.internal.id_formats import QualifiedName
-from neptune.internal.operation import Operation  # noqa: F401
 
 
 @click.command()
@@ -66,9 +52,9 @@ def status(path: Path) -> None:
     neptune status --path foo/bar
     """
 
-    status_runner = StatusRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
+    backend = HostedNeptuneBackend(Credentials.from_token())
 
-    status_runner.synchronization_status(path)
+    StatusRunner.status(backend=backend, path=path)
 
 
 @click.command()
@@ -142,23 +128,17 @@ def sync(
     """
 
     backend = HostedNeptuneBackend(Credentials.from_token())
-    sync_runner = SyncRunner(backend=backend)
 
     if offline_only:
         if object_names:
             raise click.BadParameter("--object and --offline-only are mutually exclusive")
 
-        if project_name is not None:
-            sync_runner.sync_all_offline_containers(base_path=path, project_name=QualifiedName(project_name))
+        SyncRunner.sync_all_offline(backend=backend, base_path=path, project_name=project_name)
 
     elif object_names:
-        sync_runner.sync_selected_containers(path, project_name, object_names)
+        SyncRunner.sync_selected(backend=backend, base_path=path, project_name=project_name, object_names=object_names)
     else:
-        sync_runner.sync_all_containers(path, project_name)
-
-    clear_runner = ClearRunner(backend=backend)
-
-    clear_runner.clear(path, clear_eventual=False)
+        SyncRunner.sync_all(backend=backend, base_path=path, project_name=project_name)
 
 
 @click.command()
@@ -180,6 +160,5 @@ def clear(path: Path) -> None:
     neptune clear --path foo/bar
     """
     backend = HostedNeptuneBackend(Credentials.from_token())
-    clear_runner = ClearRunner(backend=backend)
 
-    clear_runner.clear(path)
+    ClearRunner.clear(backend=backend, path=path)

@@ -46,8 +46,10 @@ class JsonFileSplitter:
         self._start_pos: int = 0
 
     def close(self) -> None:
-        self._file.close()
-        self._part_buffer.close()
+        if not self._file.closed:
+            self._file.close()
+        if not self._part_buffer.closed:
+            self._part_buffer.close()
 
     def get(self) -> Optional[dict]:
         return (self.get_with_size() or (None, None))[0]

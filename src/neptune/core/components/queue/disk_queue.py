@@ -27,6 +27,7 @@ from types import TracebackType
 from typing import (
     TYPE_CHECKING,
     Callable,
+    Deque,
     Generic,
     List,
     Optional,
@@ -228,7 +229,6 @@ class DiskQueue(WithResources, Generic[T]):
             resource.flush()
 
     def close(self) -> None:
-        self.flush()
         self._reader.close()
         for resource in self.resources:
             resource.close()
@@ -246,12 +246,13 @@ class DiskQueue(WithResources, Generic[T]):
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
+        self.flush()
         self.close()
         if self.is_empty():
             self.cleanup()
 
 
-def get_all_log_files(data_path: Path, extension: str) -> deque[LogFile]:
+def get_all_log_files(data_path: Path, extension: str) -> Deque[LogFile]:
     local_data_files = glob(f"{data_path}/data-*.{extension}")
 
     if not local_data_files:

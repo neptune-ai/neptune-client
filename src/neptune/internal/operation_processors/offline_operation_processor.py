@@ -35,7 +35,7 @@ from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation_processors.utils import (
     common_metadata,
-    get_container_dir,
+    get_container_full_path,
 )
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
@@ -50,7 +50,7 @@ serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
 class OfflineOperationProcessor(WithResources, OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
-        self._data_path = get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+        self._data_path = get_container_full_path(OFFLINE_DIRECTORY, container_id, container_type)
 
         # Initialize directory
         self._data_path.mkdir(parents=True, exist_ok=True)

@@ -21,20 +21,7 @@ from typing import Any
 
 import click
 
-from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.core.components.queue.disk_queue import DiskQueue  # noqa: F401
-from neptune.exceptions import (  # noqa: F401
-    CannotSynchronizeOfflineRunsWithoutProject,
-    ProjectNotFound,
-    RunNotFound,
-)
-from neptune.internal.backends.api_model import (  # noqa: F401
-    ApiExperiment,
-    Project,
-)
-from neptune.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
-from neptune.internal.operation import Operation  # noqa: F401
 
 
 def get_neptune_path(ctx: Any, param: Any, path: str) -> Path:

@@ -218,11 +218,7 @@ def test_cleaning_up():
             assert 0 == queue.size()
             assert queue.is_empty()
 
-            # when
-            queue.cleanup()
-
-            # then
-            assert list(Path(data_path).glob("*")) == []
+    assert list(Path(data_path).glob("*")) == []
 
 
 @dataclass

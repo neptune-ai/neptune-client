@@ -58,6 +58,7 @@ class LogFile(Resource):
         self._file_size += len(data) + 1
 
     def cleanup(self) -> None:
+        self.close()
         try:
             self.file_path.unlink()
         except FileNotFoundError:

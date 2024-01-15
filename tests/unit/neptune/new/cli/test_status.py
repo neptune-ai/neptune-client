@@ -35,13 +35,8 @@ def backend_fixture():
     return MagicMock()
 
 
-@pytest.fixture(name="status_runner")
-def status_runner_fixture(backend):
-    return StatusRunner(backend=backend)
-
-
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
+def test_list_v2_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v2_container(
         container_type=container_type, path=tmp_path, last_ack_version=1, pid=2501, key="a1b2c3"
@@ -58,7 +53,7 @@ def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, co
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
@@ -66,12 +61,11 @@ def test_list_v2_containers(tmp_path, mocker, capsys, backend, status_runner, co
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
         "",
-        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 
 
-def test_list_offline_v2_runs(tmp_path, mocker, capsys, status_runner):
+def test_list_offline_v2_runs(tmp_path, mocker, capsys, backend):
     # given
     offline_run = prepare_v2_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=None, pid=2501, key="a1b2c3"
@@ -81,15 +75,15 @@ def test_list_offline_v2_runs(tmp_path, mocker, capsys, status_runner):
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert f"Unsynchronized offline objects:\n- offline/run__{offline_run.id}__2501__a1b2c3" in captured.out
+    assert f"Unsynchronized offline objects:\n- offline/{offline_run.id}" in captured.out
 
 
-def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend, status_runner):
+def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend):
     # given
     unsynced_container = prepare_v2_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True, pid=2501, key="a1b2c3"
@@ -106,7 +100,7 @@ def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend, status_ru
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
@@ -119,7 +113,7 @@ def test_list_trashed_v2_containers(tmp_path, mocker, capsys, backend, status_ru
 
 
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_list_v1_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
+def test_list_v1_containers(tmp_path, mocker, capsys, backend, container_type):
     # given
     unsynced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=1)
     synced_container = prepare_v1_container(container_type=container_type, path=tmp_path, last_ack_version=3)
@@ -132,7 +126,7 @@ def test_list_v1_containers(tmp_path, mocker, capsys, backend, status_runner, co
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
@@ -144,7 +138,7 @@ def test_list_v1_containers(tmp_path, mocker, capsys, backend, status_runner, co
     ]
 
 
-def test_list_offline_v1_runs(tmp_path, mocker, capsys, status_runner):
+def test_list_offline_v1_runs(tmp_path, mocker, capsys, backend):
     # given
     offline_run = prepare_v1_container(
         container_type=ContainerType.RUN,
@@ -156,23 +150,15 @@ def test_list_offline_v1_runs(tmp_path, mocker, capsys, status_runner):
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert set(captured.out.splitlines()).issuperset(
-        set(
-            [
-                "Unsynchronized offline objects:",
-                f"- offline/run__{offline_run.id}",
-                "",
-            ]
-        )
-    )
+    assert "Unsynchronized offline objects:\n- offline/{}".format(offline_run.id) in captured.out
 
 
-def test_list_trashed_v1_containers(tmp_path, mocker, capsys, backend, status_runner):
+def test_list_trashed_v1_containers(tmp_path, mocker, capsys, backend):
     # given
     unsynced_container = prepare_v1_container(
         container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True
@@ -189,7 +175,7 @@ def test_list_trashed_v1_containers(tmp_path, mocker, capsys, backend, status_ru
     mocker.patch.object(Operation, "from_dict")
 
     # when
-    status_runner.synchronization_status(tmp_path)
+    StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
@@ -197,16 +183,15 @@ def test_list_trashed_v1_containers(tmp_path, mocker, capsys, backend, status_ru
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)} (Trashed)",
         "",
-        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 
 
-def test_list_runs_when_no_run(tmp_path, capsys, status_runner):
+def test_list_runs_when_no_run(tmp_path, capsys, backend):
     (tmp_path / "async").mkdir()
     # when
     with pytest.raises(SystemExit):
-        status_runner.synchronization_status(tmp_path)
+        StatusRunner.status(backend=backend, path=tmp_path)
 
     # then
     captured = capsys.readouterr()
