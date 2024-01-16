@@ -21,6 +21,8 @@ from unittest.mock import (
     patch,
 )
 
+import pytest
+
 from neptune.attributes import (
     Integer,
     String,
@@ -202,6 +204,9 @@ class TestWhichProgressBar(unittest.TestCase):
 
         assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
 
+        with pytest.raises(TypeError):
+            which_progress_bar(1)
+
     @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
     @patch("neptune.internal.backends.utils.in_interactive", return_value=False)
     @patch("neptune.internal.backends.utils.in_notebook", return_value=False)
@@ -223,6 +228,9 @@ class TestWhichProgressBar(unittest.TestCase):
         assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
 
         assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+        with pytest.raises(TypeError):
+            which_progress_bar(1)
 
 
 @patch.dict("sys.modules", {"tqdm": None})
