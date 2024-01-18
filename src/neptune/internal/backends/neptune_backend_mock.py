@@ -132,6 +132,7 @@ from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 from neptune.types.value_visitor import ValueVisitor
+from neptune.typing import ProgressBarCallback
 
 Val = TypeVar("Val", bound=Value)
 
@@ -546,6 +547,7 @@ class NeptuneBackendMock(NeptuneBackend):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
