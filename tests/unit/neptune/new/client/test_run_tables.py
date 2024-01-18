@@ -20,7 +20,6 @@ from typing import List
 from mock import patch
 
 from neptune import init_project
-from neptune.exceptions import NeptuneException
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.metadata_containers.metadata_containers_table import (
