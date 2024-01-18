@@ -16,6 +16,7 @@
 __all__ = [
     "replace_patch_version",
     "verify_type",
+    "verify_value",
     "is_stream",
     "is_bool",
     "is_int",
@@ -78,6 +79,11 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
 
     if isinstance(var, IOBase) and not hasattr(var, "read"):
         raise TypeError("{} is a stream, which does not implement read method".format(var_name))
+
+
+def verify_value(var_name: str, var, expected_values: Iterable[T]):
+    if var not in expected_values:
+        raise ValueError(f"{var_name} must be one of {expected_values} (was `{var}`)")
 
 
 def is_stream(var):
