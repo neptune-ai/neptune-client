@@ -43,7 +43,8 @@ from neptune.internal.init.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
-    verify_type, verify_value,
+    verify_type,
+    verify_value,
 )
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
@@ -191,7 +192,7 @@ class Project(MetadataContainer):
         self,
         *,
         id: Optional[Union[str, Iterable[str]]] = None,
-        state: Optional[Union[Literal['inactive', 'active'], Iterable[Literal['inactive", "active']]]] = None,
+        state: Optional[Union[Literal["inactive", "active"], Iterable[Literal['inactive", "active']]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
