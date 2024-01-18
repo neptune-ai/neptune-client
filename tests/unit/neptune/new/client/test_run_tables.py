@@ -53,6 +53,5 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
         for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
             with self.subTest(incorrect_state):
-                with self.assertRaises(NeptuneException) as context:
+                with self.assertRaises(ValueError):
                     self.get_table(state=incorrect_state)
-                self.assertEquals(f"Can't map RunState to API: {incorrect_state}", str(context.exception))

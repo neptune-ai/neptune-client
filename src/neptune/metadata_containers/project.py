@@ -291,7 +291,7 @@ class Project(MetadataContainer):
 
         if states is not None:
             for state in states:
-                verify_value("state", state, ("inactive", "active"))
+                verify_value("state", state.lower(), ("inactive", "active"))
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
