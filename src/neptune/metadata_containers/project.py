@@ -43,6 +43,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
+    verify_collection_type,
     verify_type,
     verify_value,
 )
@@ -192,7 +193,7 @@ class Project(MetadataContainer):
         self,
         *,
         id: Optional[Union[str, Iterable[str]]] = None,
-        state: Optional[Union[Literal["inactive", "active"], Iterable[Literal['inactive", "active']]]] = None,
+        state: Optional[Union[Literal["inactive", "active"], Iterable[Literal["inactive", "active"]]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
@@ -288,10 +289,10 @@ class Project(MetadataContainer):
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
+        verify_collection_type("state", states, str)
 
-        if states is not None:
-            for state in states:
-                verify_value("state", state.lower(), ("inactive", "active"))
+        for state in states:
+            verify_value("state", state.lower(), ("inactive", "active"))
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
