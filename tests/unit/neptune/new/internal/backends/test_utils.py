@@ -40,7 +40,6 @@ from neptune.internal.container_type import ContainerType
 from neptune.typing import ProgressBarCallback
 from neptune.utils import (
     NullProgressBar,
-    TqdmNotebookProgressBar,
     TqdmProgressBar,
 )
 
@@ -183,34 +182,7 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
 
 class TestWhichProgressBar(unittest.TestCase):
     @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
-    @patch("neptune.internal.backends.utils.in_interactive", return_value=True)
-    @patch("neptune.internal.backends.utils.in_notebook", return_value=True)
-    def test_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
-        mock_tqdm_installed.return_value = True
-
-        assert which_progress_bar(None) == TqdmNotebookProgressBar
-        assert which_progress_bar(True) == TqdmNotebookProgressBar
-        assert which_progress_bar(False) == NullProgressBar
-        assert which_progress_bar(CustomProgressBar) == CustomProgressBar
-
-        mock_tqdm_installed.return_value = False
-        assert which_progress_bar(None) == NullProgressBar
-        assert which_progress_bar(True) == NullProgressBar
-        assert which_progress_bar(False) == NullProgressBar
-        assert which_progress_bar(CustomProgressBar) == CustomProgressBar
-
-        # short-circuit evaluation - depends on the order in the 'or' statement
-        assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
-
-        assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
-
-        with pytest.raises(TypeError):
-            which_progress_bar(1)
-
-    @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
-    @patch("neptune.internal.backends.utils.in_interactive", return_value=False)
-    @patch("neptune.internal.backends.utils.in_notebook", return_value=False)
-    def test_not_interactive_tqdm(self, mock_in_notebook, mock_in_interactive, mock_tqdm_installed):
+    def test_not_interactive_tqdm(self, mock_tqdm_installed):
         mock_tqdm_installed.return_value = True
 
         assert which_progress_bar(None) == TqdmProgressBar
@@ -223,9 +195,6 @@ class TestWhichProgressBar(unittest.TestCase):
         assert which_progress_bar(True) == NullProgressBar
         assert which_progress_bar(False) == NullProgressBar
         assert which_progress_bar(CustomProgressBar) == CustomProgressBar
-
-        # short-circuit evaluation - depends on the order in the 'or' statement
-        assert mock_in_notebook.call_count == 4 or mock_in_interactive.call_count == 4  # 2 x 'None' + 2 x 'True'
 
         assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
 

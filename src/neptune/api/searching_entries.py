@@ -156,16 +156,21 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    total = get_single_page(
-        limit=0,
-        offset=0,
-        **kwargs,
-    ).get("matchingItemCount", 0)
+    total = 0
 
     progress_bar = progress_bar if step_size >= total else None
-    extracted_records = 0
 
     with _construct_progress_bar(progress_bar) as bar:
+        # beginning of the first page
+        bar.update(
+            by=0,
+            total=get_single_page(
+                limit=0,
+                offset=0,
+                **kwargs,
+            ).get("matchingItemCount", 0),
+        )
+
         while True:
             if last_page:
                 page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
@@ -186,18 +191,14 @@ def iter_over_pages(
                     **kwargs,
                 )
 
+                # fetch the item count everytime a new page is started
+                if offset == 0:
+                    total += result.get("matchingItemCount", 0)
+
                 page = _entries_from_page(result)
 
                 if not page:
                     return
-
-                extracted_records += len(page)
-                if extracted_records >= max_offset:  # new 10k page started
-                    overflow = extracted_records - max_offset  # how much was 'overshot' in the last iteration
-
-                    subtotal = result.get("matchingItemCount", 0)
-                    total += subtotal + overflow
-                    extracted_records = 0  # reset extracted_records
 
                 bar.update(by=step_size, total=total)
 

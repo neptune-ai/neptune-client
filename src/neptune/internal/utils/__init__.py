@@ -35,7 +35,6 @@ __all__ = [
     "does_paths_share_common_drive",
     "is_ipython",
     "as_list",
-    "handle_import_error",
 ]
 
 import base64
@@ -44,8 +43,6 @@ import os
 from glob import glob
 from io import IOBase
 from typing import (
-    Any,
-    Callable,
     Iterable,
     List,
     Mapping,
@@ -195,21 +192,3 @@ def as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[I
         return [value]
     verify_collection_type(name, value, str)
     return value
-
-
-GENERIC_FUNC_TYPE = Callable[[Any], Any]
-
-
-def handle_import_error(dependency: str) -> Callable[[GENERIC_FUNC_TYPE], GENERIC_FUNC_TYPE]:
-    def deco(func: GENERIC_FUNC_TYPE) -> GENERIC_FUNC_TYPE:
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            try:
-                return func(*args, **kwargs)
-            except ImportError as e:
-                raise ModuleNotFoundError(
-                    f"Required dependency for progress bar not found. Run 'pip install {dependency}'."
-                ) from e
-
-        return wrapper
-
-    return deco

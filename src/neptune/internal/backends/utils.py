@@ -86,14 +86,9 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import logger
-from neptune.internal.utils.runningmode import (
-    in_interactive,
-    in_notebook,
-)
 from neptune.typing import ProgressBarCallback
 from neptune.utils import (
     NullProgressBar,
-    TqdmNotebookProgressBar,
     TqdmProgressBar,
 )
 
@@ -313,26 +308,15 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
     if not isinstance(progress_bar, bool) and progress_bar is not None:
         raise TypeError(f"progress_bar should be None, bool or ProgressBarCallback, got {type(progress_bar).__name__}")
 
-    if progress_bar or progress_bar is None:  # auto-detect which one to use
-        interactive = in_interactive() or in_notebook()
-
+    if progress_bar or progress_bar is None:
         tqdm_available = _check_if_tqdm_installed()
 
-        if interactive:
-            if tqdm_available:
-                return TqdmNotebookProgressBar
-            else:
-                warn_once(
-                    "To use progress bar in interactive mode, please install tqdm: pip install tqdm",
-                    exception=NeptuneWarning,
-                )
-        else:
-            if tqdm_available:
-                return TqdmProgressBar
-            else:
-                warn_once(
-                    "To use progress bar in interactive mode, please install tqdm: pip install tqdm",
-                    exception=NeptuneWarning,
-                )
+        if not tqdm_available:
+            warn_once(
+                "To use the default progress bar, please install tqdm: pip install tqdm",
+                exception=NeptuneWarning,
+            )
+            return NullProgressBar
+        return TqdmProgressBar
 
     return NullProgressBar
