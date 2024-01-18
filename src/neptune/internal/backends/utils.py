@@ -26,6 +26,7 @@ __all__ = [
     "ssl_verify",
     "parse_validation_errors",
     "ExecuteOperationsBatchingManager",
+    "which_progress_bar",
 ]
 
 import dataclasses
@@ -44,6 +45,8 @@ from typing import (
     Mapping,
     Optional,
     Text,
+    Type,
+    Union,
 )
 from urllib.parse import (
     urljoin,
@@ -63,6 +66,10 @@ from requests import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.exceptions import (
     CannotResolveHostname,
@@ -78,6 +85,11 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import get_logger
+from neptune.typing import ProgressBarCallback
+from neptune.utils import (
+    NullProgressBar,
+    TqdmProgressBar,
+)
 
 logger = get_logger()
 
@@ -275,3 +287,35 @@ class ExecuteOperationsBatchingManager:
                 result.operations.append(op)
 
         return result
+
+
+def _check_if_tqdm_installed() -> bool:
+    try:
+        import tqdm  # noqa: F401
+
+        return True
+    except ImportError:  # tqdm not installed
+        return False
+
+
+def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> Type[ProgressBarCallback]:
+    if isinstance(progress_bar, type) and issubclass(
+        progress_bar, ProgressBarCallback
+    ):  # return whatever the user gave us
+        return progress_bar
+
+    if not isinstance(progress_bar, bool) and progress_bar is not None:
+        raise TypeError(f"progress_bar should be None, bool or ProgressBarCallback, got {type(progress_bar).__name__}")
+
+    if progress_bar or progress_bar is None:
+        tqdm_available = _check_if_tqdm_installed()
+
+        if not tqdm_available:
+            warn_once(
+                "To use the default progress bar, please install tqdm: pip install tqdm",
+                exception=NeptuneWarning,
+            )
+            return NullProgressBar
+        return TqdmProgressBar
+
+    return NullProgressBar

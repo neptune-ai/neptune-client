@@ -15,7 +15,13 @@
 #
 import unittest
 import uuid
-from unittest.mock import Mock
+from typing import Optional
+from unittest.mock import (
+    Mock,
+    patch,
+)
+
+import pytest
 
 from neptune.attributes import (
     Integer,
@@ -26,9 +32,27 @@ from neptune.internal import operation
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
+    _check_if_tqdm_installed,
     build_operation_url,
+    which_progress_bar,
 )
 from neptune.internal.container_type import ContainerType
+from neptune.typing import ProgressBarCallback
+from neptune.utils import (
+    NullProgressBar,
+    TqdmProgressBar,
+)
+
+
+class CustomProgressBar(ProgressBarCallback):
+    def __enter__(self):
+        ...
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        ...
+
+    def update(self, *, by: int, total: Optional[int] = None) -> None:
+        pass
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
@@ -154,3 +178,34 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         self.assertEqual(operations[1:], batch.operations)
         self.assertEqual([backend.get_int_attribute.side_effect], batch.errors)
         self.assertEqual(1, batch.dropped_operations_count)
+
+
+@patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+def test_which_progress_bar(mock_tqdm_installed):
+    mock_tqdm_installed.return_value = True
+
+    assert which_progress_bar(None) == TqdmProgressBar
+    assert which_progress_bar(True) == TqdmProgressBar
+    assert which_progress_bar(False) == NullProgressBar
+    assert which_progress_bar(CustomProgressBar) == CustomProgressBar
+
+    mock_tqdm_installed.return_value = False
+    assert which_progress_bar(None) == NullProgressBar
+    assert which_progress_bar(True) == NullProgressBar
+    assert which_progress_bar(False) == NullProgressBar
+    assert which_progress_bar(CustomProgressBar) == CustomProgressBar
+
+    assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
+
+    with pytest.raises(TypeError):
+        which_progress_bar(1)
+
+
+@patch.dict("sys.modules", {"tqdm": None})
+def test_check_if_tqdm_installed_not_installed():
+    assert not _check_if_tqdm_installed()
+
+
+@patch.dict("sys.modules", {"tqdm": {}})
+def test_check_if_tqdm_installed_installed():
+    assert _check_if_tqdm_installed()

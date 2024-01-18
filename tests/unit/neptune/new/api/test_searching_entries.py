@@ -79,10 +79,11 @@ def test__to_leaderboard_entry():
     ]
 
 
-@patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__single_pagination(get_single_page):
+@patch("neptune.api.searching_entries._entries_from_page")
+@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 9})
+def test__iter_over_pages__single_pagination(get_single_page, entries_from_page):
     # given
-    get_single_page.side_effect = [
+    entries_from_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
@@ -95,6 +96,7 @@ def test__iter_over_pages__single_pagination(get_single_page):
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
     assert get_single_page.mock_calls == [
+        call(limit=0, offset=0),  # total checking
         call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(limit=3, offset=6, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
@@ -102,10 +104,11 @@ def test__iter_over_pages__single_pagination(get_single_page):
     ]
 
 
-@patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__multiple_search_after(get_single_page):
+@patch("neptune.api.searching_entries._entries_from_page")
+@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 9})
+def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_page):
     # given
-    get_single_page.side_effect = [
+    entries_from_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
@@ -118,6 +121,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page):
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
     assert get_single_page.mock_calls == [
+        call(limit=0, offset=0),  # total checking
         call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after="f"),
@@ -125,10 +129,11 @@ def test__iter_over_pages__multiple_search_after(get_single_page):
     ]
 
 
-@patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__empty(get_single_page):
+@patch("neptune.api.searching_entries._entries_from_page")
+@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__empty(get_single_page, entries_from_page):
     # given
-    get_single_page.side_effect = [[]]
+    entries_from_page.side_effect = [[]]
 
     # when
     result = list(iter_over_pages(step_size=3))
@@ -136,14 +141,16 @@ def test__iter_over_pages__empty(get_single_page):
     # then
     assert result == []
     assert get_single_page.mock_calls == [
-        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None)
+        call(limit=0, offset=0),  # total checking
+        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
     ]
 
 
-@patch("neptune.api.searching_entries.get_single_page")
-def test__iter_over_pages__max_server_offset(get_single_page):
+@patch("neptune.api.searching_entries._entries_from_page")
+@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 1})
+def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page):
     # given
-    get_single_page.side_effect = [
+    entries_from_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e"]),
         None,
@@ -155,6 +162,7 @@ def test__iter_over_pages__max_server_offset(get_single_page):
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
     assert get_single_page.mock_calls == [
+        call(limit=0, offset=0),  # total checking
         call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(offset=3, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
         call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after="e"),
