@@ -176,11 +176,11 @@ class AsyncOperationProcessor(OperationProcessor):
         op_logger = ProcessorStopLogger(
             signal_queue=signal_queue, logger=logger, should_print_logs=self._should_print_logs
         )
-
-        if initial_queue_size > 0 and self._consumer.last_backoff_time > 0:
-            op_logger.log_connection_interruption(max_reconnect_wait_time)
-        else:
-            op_logger.log_remaining_operations(size_remaining=initial_queue_size)
+        if initial_queue_size > 0:
+            if self._consumer.last_backoff_time > 0:
+                op_logger.log_connection_interruption(max_reconnect_wait_time)
+            else:
+                op_logger.log_remaining_operations(size_remaining=initial_queue_size)
 
         while True:
             if seconds is None:
@@ -221,12 +221,12 @@ class AsyncOperationProcessor(OperationProcessor):
                 exception = NeptuneSynchronizationAlreadyStoppedException()
                 logger.warning(str(exception))
                 return
-            if self._should_print_logs:
-                op_logger.log_still_waiting(
-                    size_remaining=size_remaining,
-                    already_synced=already_synced,
-                    already_synced_proc=already_synced_proc,
-                )
+
+            op_logger.log_still_waiting(
+                size_remaining=size_remaining,
+                already_synced=already_synced,
+                already_synced_proc=already_synced_proc,
+            )
 
     def stop(
         self, seconds: Optional[float] = None, signal_queue: Optional["Queue[ProcessorStopSignal]"] = None

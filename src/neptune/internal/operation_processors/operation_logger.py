@@ -176,8 +176,9 @@ class ProcessorStopLogger:
                 )
             )
         else:
-            self._logger.warning(
-                STILL_WAITING_MSG,
-                size_remaining,
-                already_synced_proc,
-            )
+            if self._should_print_logs:
+                self._logger.warning(
+                    STILL_WAITING_MSG,
+                    size_remaining,
+                    already_synced_proc,
+                )
