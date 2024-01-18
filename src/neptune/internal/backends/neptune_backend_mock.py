@@ -455,6 +455,16 @@ class NeptuneBackendMock(NeptuneBackend):
             [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
+    def get_string_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        return self.get_string_series_values(container_id, container_type, path, offset, limit)
+
     def get_float_series_values(
         self,
         container_id: str,
@@ -468,6 +478,16 @@ class NeptuneBackendMock(NeptuneBackend):
             len(val.values),
             [FloatPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
+
+    def get_float_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        return self.get_float_series_values(container_id, container_type, path, offset, limit)
 
     def get_image_series_values(
         self,

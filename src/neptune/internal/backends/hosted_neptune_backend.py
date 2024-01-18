@@ -133,6 +133,7 @@ from neptune.internal.operation import (
     UploadFileSet,
 )
 from neptune.internal.operation_processors.operation_storage import OperationStorage
+from neptune.internal.proto import protobuf_api_series_dto_pb2
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
@@ -957,6 +958,30 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def get_string_series_values_proto(
+        self,
+        container_id: str,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        params = {
+            "experimentId": container_id,
+            "attribute": path_to_str(path),
+            "limit": limit,
+            "offset": offset,
+        }
+        try:
+            result = self.leaderboard_client.api.getStringSeriesValuesProto(**params).response().result
+            proto_obj = protobuf_api_series_dto_pb2.ProtobufStringSeriesDto.FromString(result)
+            return StringSeriesValues(
+                proto_obj.total_item_count,
+                [StringPointValue(v.timestamp_millis, v.step, v.value) for v in proto_obj.values],
+            )
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
     def get_float_series_values(
         self,
         container_id: str,
@@ -977,6 +1002,31 @@ class HostedNeptuneBackend(NeptuneBackend):
             return FloatSeriesValues(
                 result.totalItemCount,
                 [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
+            )
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    # @with_api_exceptions_handler
+    def get_float_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        params = {
+            "experimentId": container_id,
+            "attribute": path_to_str(path),
+            "limit": limit,
+            "offset": offset,
+        }
+        try:
+            result = self.leaderboard_client.api.getFloatSeriesValuesProto(**params).response().result
+            proto_obj = protobuf_api_series_dto_pb2.ProtobufFloatSeriesDto.FromString(result)
+            return FloatSeriesValues(
+                proto_obj.total_item_count,
+                [FloatPointValue(v.timestamp_millis, v.step, v.value) for v in proto_obj.values],
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))

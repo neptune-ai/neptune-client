@@ -33,7 +33,8 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
-        additional_dependencies: [ types-click ]
+        additional_dependencies: [ types-click, "types-protobuf==4.24.0.1" ]
+        # types-protobuf version pin is workaround untill https://github.com/python/mypy/issues/16767 is fixed
 exclude: |
   (?x)(
      ^tests/unit/data/|
