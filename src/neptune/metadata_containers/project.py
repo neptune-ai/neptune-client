@@ -19,6 +19,7 @@ import os
 from typing import (
     Iterable,
     Optional,
+    Type,
     Union,
 )
 
@@ -52,6 +53,7 @@ from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.metadata_containers.utils import prepare_nql_query
 from neptune.types.mode import Mode
+from neptune.typing import ProgressBarCallback
 
 
 class Project(MetadataContainer):
@@ -201,6 +203,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -289,6 +292,7 @@ class Project(MetadataContainer):
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
         verify_collection_type("state", states, str)
 
         for state in states:
@@ -307,6 +311,7 @@ class Project(MetadataContainer):
             limit=limit,
             sort_by=sort_by,
             ascending=ascending,
+            progress_bar=progress_bar,
         )
 
     def fetch_models_table(
@@ -317,6 +322,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ) -> Table:
         """Retrieve models stored in the project.
 
@@ -371,6 +377,7 @@ class Project(MetadataContainer):
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
@@ -390,4 +397,5 @@ class Project(MetadataContainer):
             limit=limit,
             sort_by=sort_by,
             ascending=ascending,
+            progress_bar=progress_bar,
         )
