@@ -43,7 +43,7 @@ class TestFetchTable(BaseE2ETest):
         # wait for the cache to fill
         time.sleep(5)
 
-        runs_table = project.fetch_runs_table(tag=[tag1, tag2]).to_rows()
+        runs_table = project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows()
         assert len(runs_table) == 1
         assert runs_table[0].get_attribute_value("sys/id") == run_id1
 
@@ -60,14 +60,14 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(5)
 
         versions_table = sorted(
-            container.fetch_model_versions_table().to_rows(),
+            container.fetch_model_versions_table(progress_bar=False).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
-        versions_table_gen = container.fetch_model_versions_table(ascending=True)
+        versions_table_gen = container.fetch_model_versions_table(ascending=True, progress_bar=False)
         for te1, te2 in zip(list(versions_table_gen), versions_table):
             assert te1._id == te2._id
             assert te1._container_type == te2._container_type
@@ -136,7 +136,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_run(project=environment.project)
 
         def get_runs_as_rows(**kwargs):
-            return project.fetch_runs_table(**kwargs).to_rows()
+            return project.fetch_runs_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_runs_as_rows)
 
@@ -145,7 +145,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_model(project=environment.project, key=a_key())
 
         def get_models_as_rows(**kwargs):
-            return project.fetch_models_table(**kwargs).to_rows()
+            return project.fetch_models_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_models_as_rows)
 
@@ -157,7 +157,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_model_version(model=model_sys_id, project=environment.project)
 
         def get_model_versions_as_rows(**kwargs):
-            return container.fetch_model_versions_table(**kwargs).to_rows()
+            return container.fetch_model_versions_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
 
@@ -168,14 +168,14 @@ class TestFetchTable(BaseE2ETest):
             run["some_random_val"] = random_val
 
             time.sleep(30)
-            runs = project.fetch_runs_table(state="active").to_pandas()
+            runs = project.fetch_runs_table(state="active", progress_bar=False).to_pandas()
             assert not runs.empty
             assert tag in runs["sys/tags"].values
             assert random_val in runs["some_random_val"].values
 
         time.sleep(30)
 
-        runs = project.fetch_runs_table(state="inactive").to_pandas()
+        runs = project.fetch_runs_table(state="inactive", progress_bar=False).to_pandas()
         assert not runs.empty
         assert tag in runs["sys/tags"].values
         assert random_val in runs["some_random_val"].values
@@ -194,7 +194,9 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(30)
 
         # when
-        runs = project.fetch_runs_table(sort_by="sys/creation_time", ascending=ascending).to_pandas()
+        runs = project.fetch_runs_table(
+            sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+        ).to_pandas()
 
         # then
         # runs are correctly sorted by creation time -> run1 was first
@@ -206,7 +208,7 @@ class TestFetchTable(BaseE2ETest):
             assert run_list == ["run2", "run1"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=ascending).to_pandas()
+        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=ascending, progress_bar=False).to_pandas()
 
         # then
         assert not runs.empty
@@ -218,7 +220,7 @@ class TestFetchTable(BaseE2ETest):
             assert run_list == ["run1", "run2"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="some_val", ascending=ascending).to_pandas()
+        runs = project.fetch_runs_table(sort_by="some_val", ascending=ascending, progress_bar=False).to_pandas()
 
         # then
         assert not runs.empty
@@ -244,4 +246,4 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         with pytest.raises(ValueError):
-            project.fetch_runs_table(sort_by="metrics/accuracy")
+            project.fetch_runs_table(sort_by="metrics/accuracy", progress_bar=False)

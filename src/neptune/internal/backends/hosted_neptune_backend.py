@@ -144,6 +144,7 @@ from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
+from neptune.typing import ProgressBarCallback
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:
@@ -1052,6 +1053,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
+        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1077,6 +1079,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sort_by=sort_by,
                 ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
+                progress_bar=progress_bar,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)

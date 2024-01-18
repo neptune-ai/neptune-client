@@ -18,25 +18,19 @@ __all__ = ["in_interactive", "in_notebook"]
 import sys
 
 
-def in_interactive():
+def in_interactive() -> bool:
     """Based on: https://stackoverflow.com/a/2356427/1565454"""
     return hasattr(sys, "ps1")
 
 
-def in_notebook():
+def in_notebook() -> bool:
     """Based on: https://stackoverflow.com/a/22424821/1565454"""
     try:
         from IPython import get_ipython
 
         ipy = get_ipython()
-        if (
-            ipy is None
-            or not hasattr(ipy, "config")
-            or not isinstance(ipy.config, dict)
-            or "IPKernelApp" not in ipy.config
-        ):
-            return False
+        return (
+            ipy is not None and hasattr(ipy, "config") and isinstance(ipy.config, dict) and "IPKernelApp" in ipy.config
+        )
     except ImportError:
         return False
-
-    return True
