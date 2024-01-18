@@ -180,26 +180,25 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         self.assertEqual(1, batch.dropped_operations_count)
 
 
-class TestWhichProgressBar(unittest.TestCase):
-    @patch("neptune.internal.backends.utils._check_if_tqdm_installed")
-    def test_not_interactive_tqdm(self, mock_tqdm_installed):
-        mock_tqdm_installed.return_value = True
+@patch("neptune.internal.backends.utils._check_if_tqdm_installed")
+def test_which_progress_bar(mock_tqdm_installed):
+    mock_tqdm_installed.return_value = True
 
-        assert which_progress_bar(None) == TqdmProgressBar
-        assert which_progress_bar(True) == TqdmProgressBar
-        assert which_progress_bar(False) == NullProgressBar
-        assert which_progress_bar(CustomProgressBar) == CustomProgressBar
+    assert which_progress_bar(None) == TqdmProgressBar
+    assert which_progress_bar(True) == TqdmProgressBar
+    assert which_progress_bar(False) == NullProgressBar
+    assert which_progress_bar(CustomProgressBar) == CustomProgressBar
 
-        mock_tqdm_installed.return_value = False
-        assert which_progress_bar(None) == NullProgressBar
-        assert which_progress_bar(True) == NullProgressBar
-        assert which_progress_bar(False) == NullProgressBar
-        assert which_progress_bar(CustomProgressBar) == CustomProgressBar
+    mock_tqdm_installed.return_value = False
+    assert which_progress_bar(None) == NullProgressBar
+    assert which_progress_bar(True) == NullProgressBar
+    assert which_progress_bar(False) == NullProgressBar
+    assert which_progress_bar(CustomProgressBar) == CustomProgressBar
 
-        assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
+    assert mock_tqdm_installed.call_count == 4  # 2 x 'None' + 2 x 'True'
 
-        with pytest.raises(TypeError):
-            which_progress_bar(1)
+    with pytest.raises(TypeError):
+        which_progress_bar(1)
 
 
 @patch.dict("sys.modules", {"tqdm": None})
