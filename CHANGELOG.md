@@ -7,6 +7,10 @@
 - Added `ascending` parameter to `fetch_*_table()` methods ([#1602](https://github.com/neptune-ai/neptune-client/pull/1602))
 
 
+### Fixes
+- Better value validation for `state` parameter of `fetch_*_table()` methods ([#1616](https://github.com/neptune-ai/neptune-client/pull/1616))
+
+
 ## neptune 1.8.6
 
 ### Fixes
