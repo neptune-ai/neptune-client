@@ -20,7 +20,6 @@ from typing import List
 from mock import patch
 
 from neptune import init_project
-from neptune.exceptions import NeptuneException
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.metadata_containers.metadata_containers_table import (
@@ -53,6 +52,5 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
         for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
             with self.subTest(incorrect_state):
-                with self.assertRaises(NeptuneException) as context:
+                with self.assertRaises(ValueError):
                     self.get_table(state=incorrect_state)
-                self.assertEquals(f"Can't map RunState to API: {incorrect_state}", str(context.exception))
