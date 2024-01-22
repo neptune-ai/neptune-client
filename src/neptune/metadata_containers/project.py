@@ -237,7 +237,7 @@ class Project(MetadataContainer):
                 If `None`, both trashed and not-trashed runs are retrieved.
             limit: How many entries to return at most (default: None - return all entries).
             sort_by: Name of the column to sort the results by.
-                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Must be a simple column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
             ascending: Whether to sort runs in the ascending order of the sorting column values.
                 Default: False - descending order.
@@ -339,7 +339,7 @@ class Project(MetadataContainer):
                 If `None` (default), all the columns of the models table are included.
             limit: How many entries to return at most (default: None - return all entries).
             sort_by: Name of the column to sort the results by.
-                Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
+                Must be a simple column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
             ascending: Whether to sort models in the ascending order of the sorting column values.
                 Default: False - descending order.

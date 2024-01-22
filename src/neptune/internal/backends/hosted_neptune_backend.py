@@ -1120,14 +1120,17 @@ def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
         if entry.name != column:  # caught by regex, but it's not this column
             continue
         if entry.type not in ATOMIC_ATTRIBUTE_TYPES:  # non-atomic type - no need to look further
-            raise ValueError(f"Column {column} used for sorting is not of atomic type.")
+            raise ValueError(
+                f"Column {column} used for sorting is not of simple type. For more, "
+                f"see https://docs.neptune.ai/api/field_types/#simple-types"
+            )
         types.add(entry.type)
 
     if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
         return AttributeType.FLOAT.value
 
     warn_once(
-        f"Column {column} contains more than one atomic data type. Sorting result might be inaccurate.",
+        f"Column {column} contains more than one simple data type. Sorting result might be inaccurate.",
         exception=NeptuneWarning,
     )
     return AttributeType.STRING.value
