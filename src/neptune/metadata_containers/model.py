@@ -274,14 +274,14 @@ class Model(MetadataContainer):
         Args:
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
-                Examples:
-                    Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
-                    Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
+                If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the column to sort the results by.
-                Must be a simple column (string, float, datetime, integer, boolean).
-            ascending: Whether to sort model versions in ascending order of the sorting column values.
+                The column must represent a simple field type (string, float, datetime, integer, or Boolean).
+            ascending: Whether to sort the entries in ascending order of the sorting column values.
+            progress_bar: Set to `False` to disable the download progress bar,
+                or pass a `ProgressBarCallback` class to use your own progress bar callback.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
@@ -290,26 +290,18 @@ class Model(MetadataContainer):
 
         Examples:
             >>> import neptune
-
-            >>> # Initialize model with the ID "CLS-FOREST"
+            ... # Initialize model with the ID "CLS-FOREST"
             ... model = neptune.init_model(with_id="CLS-FOREST")
-
-            >>> # Fetch the metadata of all model versions as a pandas DataFrame
+            ... # Fetch the metadata of all the model's versions as a pandas DataFrame
             ... model_versions_df = model.fetch_model_versions_table().to_pandas()
 
-            >>> # Fetch the metadata of all model versions as a pandas DataFrame,
-            ... # including only the fields "params/lr" and "val/loss" as columns:
-            ... model_versions = model.fetch_model_versions_table(columns=["params/lr", "val/loss"])
-            ... model_versions_df = model_versions.to_pandas()
+            >>> # Include only the fields "params/lr" and "val/loss" as columns:
+            ... model_versions_df = model.fetch_model_versions_table(columns=["params/lr", "val/loss"]).to_pandas()
 
-            >>> # Sort model versions by size
-            ... model_versions_df = model_versions_df.sort_values(by="sys/size")
-
-            >>> # Sort model versions by creation time
-            ... model_versions_df = model_versions_df.sort_values(by="sys/creation_time", ascending=False)
-
-            >>> # Extract the last model version ID
-            ... last_model_version_id = model_versions_df["sys/id"].values[0]
+            >>> # Sort model versions by size (space they take up in Neptune)
+            ... model_versions_df = model.fetch_model_versions_table(sort_by="sys/size").to_pandas()
+            ... # Extract the ID of the largest model version object
+            ... largest_model_version_id = model_versions_df["sys/id"].values[0]
 
         See also the API referene:
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
