@@ -278,7 +278,7 @@ class Model(MetadataContainer):
                     Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
                     Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
-            limit: How many entries to return at most (default: None - return all entries).
+            limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the column to sort the results by.
                 Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
