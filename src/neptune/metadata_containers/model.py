@@ -282,8 +282,7 @@ class Model(MetadataContainer):
             sort_by: Name of the column to sort the results by.
                 Must be an atomic column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
                 Default: 'sys/creation_time.
-            ascending: Whether to sort model versions in the ascending order of the sorting column values.
-                Default: False - descending order.
+            ascending: Whether to sort model versions in ascending order of the sorting column values.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
