@@ -235,11 +235,10 @@ class Project(MetadataContainer):
                 If `True`, only trashed runs are retrieved.
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
-            limit: How many entries to return at most (default: None - return all entries).
+            limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the column to sort the results by.
                 Must be a simple column (string, float, datetime, integer, boolean).
-            ascending: Whether to sort runs in the ascending order of the sorting column values.
-                Default: False - descending order.
+            ascending: Whether to sort model versions in ascending order of the sorting column values.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -336,11 +335,10 @@ class Project(MetadataContainer):
                     Fields: `["datasets/test", "info/size"]` - these fields are included as columns.
                     Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the models table are included.
-            limit: How many entries to return at most (default: None - return all entries).
+            limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the column to sort the results by.
                 Must be a simple column (string, float, datetime, integer, boolean).
-            ascending: Whether to sort models in the ascending order of the sorting column values.
-                Default: False - descending order.
+            ascending: Whether to sort model versions in ascending order of the sorting column values.
 
         Returns:
             `Table` object containing `Model` objects.
