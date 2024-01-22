@@ -280,8 +280,7 @@ class Model(MetadataContainer):
                 If `None` (default), all the columns of the model versions table are included.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the column to sort the results by.
-                Must be a simple column (string, float, datetime, integer, boolean), otherwise raises `ValueError`.
-                Default: 'sys/creation_time.
+                Must be a simple column (string, float, datetime, integer, boolean).
             ascending: Whether to sort model versions in ascending order of the sorting column values.
 
         Returns:
