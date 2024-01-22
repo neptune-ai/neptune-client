@@ -30,15 +30,17 @@ from neptune.metadata_containers.abstract import (
 
 
 class ProgressBarCallback(contextlib.AbstractContextManager):
-    """
-    Abstract base class for progress bar callbacks.
+    """Abstract base class for progress bar callbacks.
 
-    You can use this class to implement your own progress bar callback that will be invoked in `fetch_*_table` methods.
+    You can use this class to implement your own progress bar callback that will be invoked in table fetching methods:
+
+    - `fetch_runs_table()`
+    - `fetch_models_table()`
+    - `fetch_model_versions_table()`
 
     Example using `click`:
         >>> from typing import Any, Optional, Type
         >>> from types import TracebackType
-        >>> from neptune import init_project
         >>> from neptune.typing import ProgressBarCallback
         >>> class ClickProgressBar(ProgressBarCallback):
         ...     def __init__(self, *, description: Optional[str] = None, **_: Any) -> None:
@@ -63,12 +65,13 @@ class ProgressBarCallback(contextlib.AbstractContextManager):
         ...         exc_tb: Optional[TracebackType],
         ...     ) -> None:
         ...         self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
+        >>> from neptune import init_project
         >>> with init_project() as project:
         ...     project.fetch_runs_table(progress_bar=ClickProgressBar)
         ...     project.fetch_models_table(progress_bar=ClickProgressBar)
 
-        IMPORTANT: Remember to pass a type, not an instance to the `progress_bar` argument,
-        i.e. `ClickProgressBar`, not `ClickProgressBar()`.
+        IMPORTANT: Pass a type, not an instance to the `progress_bar` argument.
+        That is, `ClickProgressBar`, not `ClickProgressBar()`.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
