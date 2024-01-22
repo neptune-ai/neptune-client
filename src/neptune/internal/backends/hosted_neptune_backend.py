@@ -1121,7 +1121,7 @@ def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
             continue
         if entry.type not in ATOMIC_ATTRIBUTE_TYPES:  # non-atomic type - no need to look further
             raise ValueError(
-                f"Column {column} used for sorting is not of simple type. For more, "
+                f"Column {column} used for sorting is a complex type. For more, "
                 f"see https://docs.neptune.ai/api/field_types/#simple-types"
             )
         types.add(entry.type)
