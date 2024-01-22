@@ -18,6 +18,7 @@ import io
 import os
 import sys
 import unittest
+from importlib.util import find_spec
 from typing import Optional
 from uuid import uuid4
 
@@ -138,6 +139,7 @@ class TestImage(unittest.TestCase):
         # and make sure that original image's size was preserved
         self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
 
+    @unittest.skipIf(find_spec("tensorflow") is None, "Tensorflow is not installed")
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf
 
