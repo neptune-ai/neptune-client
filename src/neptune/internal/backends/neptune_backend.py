@@ -157,6 +157,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ):
         pass
 
@@ -167,6 +168,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ):
         pass
 

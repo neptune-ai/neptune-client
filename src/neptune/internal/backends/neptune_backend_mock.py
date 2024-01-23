@@ -332,6 +332,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ):
         run = self._get_container(container_id, container_type)
         value: File = run.get(path)
@@ -351,6 +352,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
     ):
         run = self._get_container(container_id, container_type)
         source_file_set_value: FileSet = run.get(path)

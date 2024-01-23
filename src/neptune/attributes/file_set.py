@@ -20,6 +20,7 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Type,
     Union,
 )
 
@@ -34,6 +35,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.types.file_set import FileSet as FileSetVal
+from neptune.typing import ProgressBarCallback
 
 
 class FileSet(Attribute):
@@ -67,9 +69,13 @@ class FileSet(Attribute):
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
             self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=reset), wait=wait)
 
-    def download(self, destination: Optional[str] = None) -> None:
+    def download(
+        self,
+        destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+    ) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file_set(self._container_id, self._container_type, self._path, destination)
+        self._backend.download_file_set(self._container_id, self._container_type, self._path, destination, progress_bar)
 
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
         path = path or ""

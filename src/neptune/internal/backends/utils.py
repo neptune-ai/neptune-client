@@ -27,6 +27,7 @@ __all__ = [
     "parse_validation_errors",
     "ExecuteOperationsBatchingManager",
     "which_progress_bar",
+    "construct_progress_bar",
 ]
 
 import dataclasses
@@ -320,3 +321,11 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
         return TqdmProgressBar
 
     return NullProgressBar
+
+
+def construct_progress_bar(
+    progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]],
+    description: str,
+) -> ProgressBarCallback:
+    progress_bar_type = which_progress_bar(progress_bar)
+    return progress_bar_type(description=description)

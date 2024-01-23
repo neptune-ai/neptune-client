@@ -730,6 +730,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
     ):
         try:
             download_file_attribute(
@@ -737,6 +738,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 container_id=container_id,
                 attribute=path_to_str(path),
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:
@@ -750,6 +752,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
     ):
         download_request = self._get_file_set_download_request(container_id, container_type, path)
         try:
@@ -757,6 +760,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 swagger_client=self.leaderboard_client,
                 download_id=download_request.id,
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:

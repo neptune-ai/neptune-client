@@ -45,7 +45,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
-from neptune.internal.backends.utils import which_progress_bar
+from neptune.internal.backends.utils import construct_progress_bar
 from neptune.internal.init.parameters import MAX_SERVER_OFFSET
 from neptune.typing import ProgressBarCallback
 
@@ -160,7 +160,7 @@ def iter_over_pages(
 
     progress_bar = progress_bar if step_size >= total else None
 
-    with _construct_progress_bar(progress_bar) as bar:
+    with construct_progress_bar(progress_bar, "Fetching table...") as bar:
         # beginning of the first page
         bar.update(
             by=0,
@@ -205,11 +205,6 @@ def iter_over_pages(
                 yield from page
 
                 last_page = page
-
-
-def _construct_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> ProgressBarCallback:
-    progress_bar_type = which_progress_bar(progress_bar)
-    return progress_bar_type(description="Fetching table...")
 
 
 def _entries_from_page(single_page: Dict[str, Any]) -> List[LeaderboardEntry]:
