@@ -24,6 +24,8 @@ class BackendTestMixin:
         min_recommended=None,
         min_compatible=None,
         max_compatible=None,
+        float_series_proto_enabled=False,
+        string_series_proto_enabled=False,
     ):
         py_lib_versions = type("py_lib_versions", (object,), {})()
         setattr(py_lib_versions, "minRecommendedVersion", min_recommended)
@@ -47,6 +49,10 @@ class BackendTestMixin:
         setattr(client_config, "multiPartUpload", multipart_upload)
         setattr(client_config, "apiUrl", "ui.neptune.ai")
         setattr(client_config, "applicationUrl", "ui.neptune.ai")
+        protobuf_api_config_obj = type("ProtobufApiConfigDTO", (object,), {})()
+        setattr(protobuf_api_config_obj, "floatSeriesEnabled", float_series_proto_enabled)
+        setattr(protobuf_api_config_obj, "stringSeriesEnabled", string_series_proto_enabled)
+        setattr(client_config, "protobufApi", protobuf_api_config_obj)
 
         swagger_client = MagicMock()
         swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config

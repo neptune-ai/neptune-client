@@ -441,7 +441,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return value
         raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
 
-    def get_string_series_values(
+    def get_string_series_values_json(
         self,
         container_id: str,
         container_type: ContainerType,
@@ -454,6 +454,26 @@ class NeptuneBackendMock(NeptuneBackend):
             len(val.values),
             [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
+
+    def get_string_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        return self.get_string_series_values_json(container_id, container_type, path, offset, limit)
+
+    def get_string_series_values(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        return self.get_string_series_values_json(container_id, container_type, path, offset, limit)
 
     def get_float_series_values(
         self,
@@ -468,6 +488,26 @@ class NeptuneBackendMock(NeptuneBackend):
             len(val.values),
             [FloatPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
+
+    def get_float_series_values_json(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        return self.get_float_series_values(container_id, container_type, path, offset, limit)
+
+    def get_float_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        return self.get_float_series_values(container_id, container_type, path, offset, limit)
 
     def get_image_series_values(
         self,
