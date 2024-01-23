@@ -234,8 +234,8 @@ class Project(MetadataContainer):
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
             limit: How many entries to return at most. If `None`, all entries are returned.
-            sort_by: Name of the column to sort the results by.
-                The column must represent a simple field type (string, float, datetime, integer, or Boolean).
+            sort_by: Name of the field to sort the results by.
+                The field must represent a simple type (string, float, datetime, integer, or Boolean).
             ascending: Whether to sort the entries in ascending order of the sorting column values.
             progress_bar: Set to `False` to disable the download progress bar,
                 or pass a `ProgressBarCallback` class to use your own progress bar callback.
@@ -340,8 +340,8 @@ class Project(MetadataContainer):
                 If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None`, all the columns of the models table are included.
             limit: How many entries to return at most. If `None`, all entries are returned.
-            sort_by: Name of the column to sort the results by.
-                The column must represent a simple field type (string, float, datetime, integer, or Boolean).
+            sort_by: Name of the field to sort the results by.
+                The field must represent a simple type (string, float, datetime, integer, or Boolean).
             ascending: Whether to sort the entries in ascending order of the sorting column values.
             progress_bar: Set to `False` to disable the download progress bar,
                 or pass a `ProgressBarCallback` class to use your own progress bar callback.
