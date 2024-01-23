@@ -958,7 +958,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_series_values_proto(
+    def _get_string_series_values_proto(
         self,
         container_id: str,
         path: List[str],
@@ -1006,8 +1006,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
-    # @with_api_exceptions_handler
-    def get_float_series_values_proto(
+    @with_api_exceptions_handler
+    def _get_float_series_values_proto(
         self,
         container_id: str,
         container_type: ContainerType,

@@ -218,7 +218,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 # then
         self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
 
-    def abstract_test_get_string_series_values(self, get_string_series_values_impl):
+    def test_get_string_series_values(self):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
@@ -252,7 +252,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = get_string_series_values_impl(container_id, container_type, path=["x"], limit=100, offset=0)
+                ret = self.backend.get_string_series_values(
+                    container_id, container_type, path=["x"], limit=100, offset=0
+                )
 
                 # then
                 self.assertEqual(
@@ -268,13 +270,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     ret,
                 )
 
-    def test_get_string_series_values(self):
-        return self.abstract_test_get_string_series_values(self.backend.get_string_series_values)
-
-    def test_get_string_series_values_proto(self):
-        return self.abstract_test_get_string_series_values(self.backend.get_string_series_values_proto)
-
-    def abstract_test_get_float_series_values(self, get_float_series_values_impl):
+    def test_get_float_series_values(self):
         # given
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
@@ -308,7 +304,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = get_float_series_values_impl(container_id, container_type, path=["x"], limit=100, offset=0)
+                ret = self.backend.get_float_series_values(
+                    container_id, container_type, path=["x"], limit=100, offset=0
+                )
 
                 # then
                 self.assertEqual(
@@ -323,12 +321,6 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     ),
                     ret,
                 )
-
-    def test_get_float_series_values(self):
-        return self.abstract_test_get_float_series_values(self.backend.get_float_series_values)
-
-    def test_get_float_series_values_proto(self):
-        return self.abstract_test_get_float_series_values(self.backend.get_float_series_values_proto)
 
     def test_get_float_attribute_wrong_type(self):
         # given

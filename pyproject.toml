@@ -215,7 +215,7 @@ max-line-length = 120
 extend-ignore = "E203"
 exclude = [
     # protobuf compiler output
-    "src/neptune/internal/proto/protobuf_api_series_dto_pb2.py"
+    "src/neptune/internal/proto"
     ]
 
 [tool.mypy]
