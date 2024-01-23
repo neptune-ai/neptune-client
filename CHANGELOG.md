@@ -10,6 +10,7 @@
 ### Changes
 - Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
 - Flag added for cleaning internal data ([#1589](https://github.com/neptune-ai/neptune-client/pull/1589))
+- Support fetching series values using protobuf ([#1619](https://github.com/neptune-ai/neptune-client/pull/1619))
 
 ## 1.8.6
 
