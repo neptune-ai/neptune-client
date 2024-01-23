@@ -205,6 +205,7 @@ class AbstractTablesTestMixin:
             container_type=self.expected_container_type,
             path=["file"],
             destination="some_directory",
+            progress_bar=None,
         )
 
         table_entry["file/set"].download("some_directory")
@@ -213,6 +214,7 @@ class AbstractTablesTestMixin:
             container_type=self.expected_container_type,
             path=["file", "set"],
             destination="some_directory",
+            progress_bar=None,
         )
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")

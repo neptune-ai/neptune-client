@@ -62,7 +62,7 @@ class Artifact(Atom):
             artifact_hash,
         )
 
-    def download(self, destination: str = None):
+    def download(self, destination: str = None, **kwargs):
         self._check_feature()
         for file_definition in self.fetch_files_list():
             driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)
