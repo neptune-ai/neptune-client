@@ -700,3 +700,47 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # then
         with pytest.raises(FileSetNotFound):
             backend.list_fileset_files(["mock"], "mock", ".")
+
+    def test_get_string_series_values_right_implementation(self, swagger_client_factory):
+        for string_series_proto_enabled in [True, False]:
+            with self.subTest(msg=f"string_series_proto_enabled={string_series_proto_enabled}"):
+                self.setUp()  # clear all LRU storage
+
+                # given
+                self._get_swagger_client_mock(
+                    swagger_client_factory, string_series_proto_enabled=string_series_proto_enabled
+                )
+                backend = HostedNeptuneBackend(credentials)
+                backend._get_string_series_values_proto = Mock()
+                backend._get_string_series_values_json = Mock()
+                backend.get_string_series_values(
+                    container_id="mock", container_type=ContainerType.RUN, path=["mock"], offset=0, limit=1
+                )
+
+                # then
+                if string_series_proto_enabled:
+                    backend._get_string_series_values_proto.assert_called_once()
+                else:
+                    backend._get_string_series_values_json.assert_called_once()
+
+    def test_get_float_series_values_right_implementation(self, swagger_client_factory):
+        for float_series_proto_enabled in [True, False]:
+            with self.subTest(msg=f"float_series_proto_enabled={float_series_proto_enabled}"):
+                self.setUp()  # clear all LRU storage
+
+                # given
+                self._get_swagger_client_mock(
+                    swagger_client_factory, float_series_proto_enabled=float_series_proto_enabled
+                )
+                backend = HostedNeptuneBackend(credentials)
+                backend._get_float_series_values_proto = Mock()
+                backend._get_float_series_values_json = Mock()
+                backend.get_float_series_values(
+                    container_id="mock", container_type=ContainerType.RUN, path=["mock"], offset=0, limit=1
+                )
+
+                # then
+                if float_series_proto_enabled:
+                    backend._get_float_series_values_proto.assert_called_once()
+                else:
+                    backend._get_float_series_values_json.assert_called_once()

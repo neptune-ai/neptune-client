@@ -126,12 +126,19 @@ class VersionInfo:
 
 
 @dataclass(frozen=True)
+class ProtobufApiConfigDTO:
+    floatSeriesEnabled: bool
+    stringSeriesEnabled: bool
+
+
+@dataclass(frozen=True)
 class ClientConfig:
     api_url: str
     display_url: str
     _missing_features: FrozenSet[str]
     version_info: VersionInfo
     multipart_config: MultipartConfig
+    proto_support_config: ProtobufApiConfigDTO
 
     def has_feature(self, feature_name: str) -> bool:
         return feature_name not in self._missing_features
@@ -173,12 +180,18 @@ class ClientConfig:
             missing_features.append(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
             missing_features.append(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
 
+        protobuf_api_config_obj = getattr(config, "protobufApi", None)
+        float_series_enabled = getattr(protobuf_api_config_obj, "floatSeriesEnabled", False)
+        string_series_enabled = getattr(protobuf_api_config_obj, "stringSeriesEnabled", False)
+        proto_dto_conf = ProtobufApiConfigDTO(float_series_enabled, string_series_enabled)
+
         return ClientConfig(
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
             _missing_features=frozenset(missing_features),
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
+            proto_support_config=proto_dto_conf,
         )
 
 
