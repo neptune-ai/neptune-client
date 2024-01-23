@@ -933,7 +933,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_series_values(
+    def get_string_series_values_json(
         self,
         container_id: str,
         container_type: ContainerType,
@@ -961,6 +961,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_string_series_values_proto(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -981,8 +982,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
+    def get_string_series_values(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        if self._client_config.proto_support_config.stringSeriesEnabled:
+            return self.get_string_series_values_proto(container_id, container_type, path, offset, limit)
+        else:
+            return self.get_string_series_values_json(container_id, container_type, path, offset, limit)
+
     @with_api_exceptions_handler
-    def get_float_series_values(
+    def get_float_series_values_json(
         self,
         container_id: str,
         container_type: ContainerType,
@@ -1006,7 +1020,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
-    # @with_api_exceptions_handler
+    @with_api_exceptions_handler
     def get_float_series_values_proto(
         self,
         container_id: str,
@@ -1030,6 +1044,19 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
+
+    def get_float_series_values(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        if self._client_config.proto_support_config.floatSeriesEnabled:
+            return self.get_float_series_values_proto(container_id, container_type, path, offset, limit)
+        else:
+            return self.get_float_series_values_json(container_id, container_type, path, offset, limit)
 
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(

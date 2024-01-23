@@ -269,10 +269,13 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
     def test_get_string_series_values(self):
-        return self.abstract_test_get_string_series_values(self.backend.get_string_series_values)
+        return self.abstract_test_get_string_series_values(self.backend.get_string_series_values_json)
 
     def test_get_string_series_values_proto(self):
         return self.abstract_test_get_string_series_values(self.backend.get_string_series_values_proto)
+
+    def test_get_string_series_values_json(self):
+        return self.abstract_test_get_string_series_values(self.backend.get_string_series_values)
 
     def abstract_test_get_float_series_values(self, get_float_series_values_impl):
         # given
@@ -324,11 +327,14 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     ret,
                 )
 
-    def test_get_float_series_values(self):
-        return self.abstract_test_get_float_series_values(self.backend.get_float_series_values)
+    def test_get_float_series_values_json(self):
+        return self.abstract_test_get_float_series_values(self.backend.get_float_series_values_json)
 
     def test_get_float_series_values_proto(self):
         return self.abstract_test_get_float_series_values(self.backend.get_float_series_values_proto)
+
+    def test_get_float_series_values(self):
+        return self.abstract_test_get_float_series_values(self.backend.get_float_series_values)
 
     def test_get_float_attribute_wrong_type(self):
         # given

@@ -111,6 +111,16 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     ) -> StringSeriesValues:
         raise NeptuneOfflineModeFetchException
 
+    def get_string_series_values_json(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> StringSeriesValues:
+        raise NeptuneOfflineModeFetchException
+
     def get_float_series_values(
         self,
         container_id: str,
@@ -122,6 +132,16 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_values_proto(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
+    ) -> FloatSeriesValues:
+        raise NeptuneOfflineModeFetchException
+
+    def get_float_series_values_json(
         self,
         container_id: str,
         container_type: ContainerType,
