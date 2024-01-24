@@ -23,7 +23,6 @@ from typing import (
     Generator,
     List,
     Optional,
-    Type,
     Union,
 )
 
@@ -40,7 +39,7 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.utils.run_state import RunState
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +107,7 @@ class TableEntry:
         self,
         path: str,
         destination: Optional[str],
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ):
         for attr in self._attributes:
             if attr.path == path:
@@ -129,7 +128,7 @@ class TableEntry:
         self,
         path: str,
         destination: Optional[str],
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ):
         for attr in self._attributes:
             if attr.path == path:

@@ -33,7 +33,6 @@ from typing import (
     List,
     Optional,
     Set,
-    Type,
     Union,
 )
 from urllib.parse import urlencode
@@ -87,7 +86,7 @@ from neptune.internal.utils import (
     get_common_root,
 )
 from neptune.internal.utils.logger import logger
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
@@ -423,7 +422,7 @@ def download_file_attribute(
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
-    progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+    progress_bar: ProgressBarType = None,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -442,7 +441,7 @@ def download_file_set_attribute(
     swagger_client: SwaggerClientWrapper,
     download_id: str,
     destination: Optional[str] = None,
-    progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+    progress_bar: ProgressBarType = None,
 ):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -468,7 +467,7 @@ def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
 def _store_response_as_file(
     response: Response,
     destination: Optional[str] = None,
-    progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+    progress_bar: ProgressBarType = None,
 ) -> None:
     if destination is None:
         target_file = _get_content_disposition_filename(response)

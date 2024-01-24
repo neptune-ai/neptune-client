@@ -144,7 +144,7 @@ from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:
@@ -730,7 +730,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
-        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ):
         try:
             download_file_attribute(
@@ -752,7 +752,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
-        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ):
         download_request = self._get_file_set_download_request(container_id, container_type, path)
         try:
@@ -1057,7 +1057,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, typing.Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 

@@ -26,7 +26,6 @@ from typing import (
     List,
     NewType,
     Optional,
-    Type,
     Union,
 )
 
@@ -67,7 +66,7 @@ from neptune.metadata_containers.abstract import SupportsNamespaces
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
@@ -600,7 +599,7 @@ class Handler(SupportsNamespaces):
     def download(
         self,
         destination: str = None,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
 

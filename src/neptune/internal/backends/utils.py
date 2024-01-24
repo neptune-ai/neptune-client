@@ -48,7 +48,6 @@ from typing import (
     Optional,
     Text,
     Type,
-    Union,
 )
 from urllib.parse import (
     urljoin,
@@ -87,7 +86,10 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import logger
-from neptune.typing import ProgressBarCallback
+from neptune.typing import (
+    ProgressBarCallback,
+    ProgressBarType,
+)
 from neptune.utils import (
     NullProgressBar,
     TqdmProgressBar,
@@ -300,7 +302,7 @@ def _check_if_tqdm_installed() -> bool:
         return False
 
 
-def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]]) -> Type[ProgressBarCallback]:
+def which_progress_bar(progress_bar: ProgressBarType) -> Type[ProgressBarCallback]:
     if isinstance(progress_bar, type) and issubclass(
         progress_bar, ProgressBarCallback
     ):  # return whatever the user gave us
@@ -324,7 +326,7 @@ def which_progress_bar(progress_bar: Optional[Union[bool, Type[ProgressBarCallba
 
 
 def construct_progress_bar(
-    progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]],
+    progress_bar: ProgressBarType,
     description: str,
 ) -> ProgressBarCallback:
     progress_bar_type = which_progress_bar(progress_bar)

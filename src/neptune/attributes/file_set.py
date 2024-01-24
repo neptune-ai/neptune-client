@@ -20,7 +20,6 @@ from typing import (
     Iterable,
     List,
     Optional,
-    Type,
     Union,
 )
 
@@ -35,7 +34,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.types.file_set import FileSet as FileSetVal
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 
 class FileSet(Attribute):
@@ -72,7 +71,7 @@ class FileSet(Attribute):
     def download(
         self,
         destination: Optional[str] = None,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ) -> None:
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file_set(self._container_id, self._container_type, self._path, destination, progress_bar)

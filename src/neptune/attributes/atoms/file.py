@@ -15,17 +15,13 @@
 #
 __all__ = ["File"]
 
-from typing import (
-    Optional,
-    Type,
-    Union,
-)
+from typing import Optional
 
 from neptune.attributes.atoms.atom import Atom
 from neptune.internal.operation import UploadFile
 from neptune.internal.utils import verify_type
 from neptune.types.atoms.file import File as FileVal
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 
 class File(Atom):
@@ -47,7 +43,7 @@ class File(Atom):
     def download(
         self,
         destination: Optional[str] = None,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: ProgressBarType = None,
     ) -> None:
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file(self._container_id, self._container_type, self._path, destination, progress_bar)
