@@ -709,6 +709,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: ProgressBarType,
     ):
         try:
             download_image_series_element(
@@ -717,6 +718,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attribute=path_to_str(path),
                 index=index,
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:

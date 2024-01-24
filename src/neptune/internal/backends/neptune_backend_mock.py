@@ -490,6 +490,7 @@ class NeptuneBackendMock(NeptuneBackend):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: ProgressBarType,
     ):
         """Non relevant for backend"""
 

@@ -393,6 +393,7 @@ def download_image_series_element(
     attribute: str,
     index: int,
     destination: str,
+    progress_bar: ProgressBarType,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -414,6 +415,7 @@ def download_image_series_element(
             destination,
             "{}.{}".format(index, response.headers["content-type"].split("/")[-1]),
         ),
+        progress_bar=progress_bar,
     )
 
 

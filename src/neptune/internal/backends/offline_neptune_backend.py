@@ -38,6 +38,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
+from neptune.typing import ProgressBarType
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
@@ -128,6 +129,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: ProgressBarType,
     ):
         raise NeptuneOfflineModeFetchException
 

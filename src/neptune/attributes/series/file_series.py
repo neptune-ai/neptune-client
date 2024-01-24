@@ -45,6 +45,7 @@ from neptune.internal.utils import base64_encode
 from neptune.internal.utils.limits import image_size_exceeds_limit_for_logging
 from neptune.types import File
 from neptune.types.series.file_series import FileSeries as FileSeriesVal
+from neptune.typing import ProgressBarType
 
 Val = FileSeriesVal
 Data = File
@@ -95,14 +96,14 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
 
         return base64_encode(file_content)
 
-    def download(self, destination: Optional[str]):
+    def download(self, destination: Optional[str], progress_bar: ProgressBarType = None):
         target_dir = self._get_destination(destination)
         item_count = self._backend.get_image_series_values(
             self._container_id, self._container_type, self._path, 0, 1
         ).totalItemCount
         for i in range(0, item_count):
             self._backend.download_file_series_by_index(
-                self._container_id, self._container_type, self._path, i, target_dir
+                self._container_id, self._container_type, self._path, i, target_dir, progress_bar
             )
 
     def download_last(self, destination: Optional[str]):
@@ -117,6 +118,7 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
                 self._path,
                 item_count - 1,
                 target_dir,
+                progress_bar=None,
             )
         else:
             raise ValueError("Unable to download last file - series is empty")
