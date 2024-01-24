@@ -617,6 +617,11 @@ class Handler(SupportsNamespaces):
                 composed from field name and extension (if present).
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
+            progress_bar: (bool or Type of progress bar, optional): progress bar to be used while downloading assets.
+                If `None` or `True` the default tqdm-based progress bar will be used.
+                If `False` no progress bar will be used.
+                If a type of progress bar is passed, it will be used instead of the default one.
+                Defaults to `None`.
 
         For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
