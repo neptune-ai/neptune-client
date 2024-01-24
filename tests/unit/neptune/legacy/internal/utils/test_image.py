@@ -16,6 +16,7 @@
 import os
 import sys
 import unittest
+from importlib.util import find_spec
 from uuid import uuid4
 
 import matplotlib
@@ -125,6 +126,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
+    @unittest.skipIf(find_spec("tensorflow") is None, "Tensorflow is not installed")
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf
 
