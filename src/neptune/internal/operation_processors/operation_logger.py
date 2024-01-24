@@ -21,7 +21,10 @@ __all__ = [
 ]
 
 import logging
-from dataclasses import dataclass
+from dataclasses import (
+    dataclass,
+    field,
+)
 from enum import Enum
 from queue import Queue
 from typing import Optional
@@ -76,7 +79,7 @@ class ProcessorStopSignalData:
 @dataclass
 class ProcessorStopSignal:
     signal_type: ProcessorStopSignalType
-    data: ProcessorStopSignalData = ProcessorStopSignalData()
+    data: ProcessorStopSignalData = field(default_factory=ProcessorStopSignalData)
 
 
 class ProcessorStopLogger:
