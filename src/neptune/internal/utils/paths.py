@@ -31,4 +31,4 @@ def path_to_str(path: List[str]) -> str:
 
 
 def join_paths(*paths: str) -> str:
-    return "/".join(_remove_empty_paths(list(paths)))
+    return "/".join(_remove_empty_paths([str(path) for path in paths]))

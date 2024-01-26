@@ -101,7 +101,7 @@ class Handler(SupportsNamespaces):
     def __init__(self, container: "MetadataContainer", path: str):
         super().__init__()
         self._container = container
-        self._path = path
+        self._path = str(path)
 
     def __repr__(self):
         attr = self._container.get_attribute(self._path)
