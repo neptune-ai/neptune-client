@@ -152,6 +152,30 @@ class TestBaseAssign:
             exp.wait()
             assert ns["some/value"].fetch() == 3
 
+    def test_stringify_path(self):
+        with init_run(mode="debug", flush_period=0.5) as exp:
+            exp[None] = 5
+            exp[0] = 5
+            exp[5] = 5
+
+            exp["ns"][None] = 7
+            exp["ns"][0] = 7
+            exp["ns"][5] = 7
+
+            exp.wait()
+
+            assert exp[None].fetch() == 5
+            assert exp[0].fetch() == 5
+            assert exp[5].fetch() == 5
+
+            assert exp.exists("ns/None")
+            assert exp.exists("ns/0")
+            assert exp.exists("ns/5")
+
+            assert exp["ns"][None].fetch() == 7
+            assert exp["ns"][0].fetch() == 7
+            assert exp["ns"][5].fetch() == 7
+
 
 class TestUpload:
     @classmethod
