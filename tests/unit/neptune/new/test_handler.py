@@ -720,12 +720,16 @@ class TestOtherBehaviour:
                 "metadata": {"name": "Trol", "age": 376},
                 "toys": StringSeriesVal(["cudgel", "hat"]),
                 "nested": {"nested": {"deep_secret": FloatSeriesVal([13, 15])}},
+                0: {"some_data": 345},
+                None: {"some_data": 345},
             }
             assert exp["params/x"].fetch() == 5
             assert exp["params/metadata/name"].fetch() == "Trol"
             assert exp["params/metadata/age"].fetch() == 376
             assert exp["params/toys"].fetch_last() == "hat"
             assert exp["params/nested/nested/deep_secret"].fetch_last() == 15
+            assert exp["params/0/some_data"].fetch() == 345
+            assert exp["params/None/some_data"].fetch() == 345
 
     def test_convertable_to_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
