@@ -128,7 +128,7 @@ def detect_async_dir(dir_name: str) -> Tuple[ContainerType, UniqueId, StructureV
         return ContainerType.RUN, UniqueId(dir_name), StructureVersion.LEGACY
     elif len(parts) == 2:
         return ContainerType(parts[0]), UniqueId(parts[1]), StructureVersion.CHILD_EXECUTION_DIRECTORIES
-    elif len(parts) == 4:
+    elif len(parts) == 4 or len(parts) == 5:
         return ContainerType(parts[0]), UniqueId(parts[1]), StructureVersion.DIRECT_DIRECTORY
     else:
         raise ValueError(f"Wrong dir format: {dir_name}")

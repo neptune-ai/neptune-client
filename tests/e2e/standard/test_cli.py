@@ -64,9 +64,6 @@ class TestCli(BaseE2ETest):
 
             # manually add operations to queue
             queue_dir = list(Path("./.neptune/async/").glob(f"{container_type}__{container_id}__*"))[0]
-            # TODO: Fix partitions
-            if list(queue_dir.glob("partition-*")):
-                queue_dir = list(queue_dir.glob("partition-*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
             with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
