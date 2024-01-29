@@ -69,6 +69,7 @@ class ProcessorStopSignalType(Enum):
 
 @dataclass
 class ProcessorStopSignalData:
+    processor_id: int = 0
     size_remaining: int = 0
     already_synced: int = 0
     already_synced_proc: float = 0.0
@@ -85,10 +86,12 @@ class ProcessorStopSignal:
 class ProcessorStopLogger:
     def __init__(
         self,
+        processor_id: int,
         signal_queue: Optional["Queue[ProcessorStopSignal]"],
         logger: logging.Logger,
         should_print_logs: bool = True,
     ) -> None:
+        self._id = processor_id
         self._signal_queue = signal_queue
         self._logger = logger
         self._should_print_logs = should_print_logs
@@ -98,7 +101,9 @@ class ProcessorStopLogger:
             self._signal_queue.put(
                 ProcessorStopSignal(
                     signal_type=ProcessorStopSignalType.CONNECTION_INTERRUPTED,
-                    data=ProcessorStopSignalData(max_reconnect_wait_time=max_reconnect_wait_time),
+                    data=ProcessorStopSignalData(
+                        processor_id=self._id, max_reconnect_wait_time=max_reconnect_wait_time
+                    ),
                 )
             )
         else:
@@ -112,7 +117,7 @@ class ProcessorStopLogger:
             self._signal_queue.put(
                 ProcessorStopSignal(
                     signal_type=ProcessorStopSignalType.WAITING_FOR_OPERATIONS,
-                    data=ProcessorStopSignalData(size_remaining=size_remaining),
+                    data=ProcessorStopSignalData(processor_id=self._id, size_remaining=size_remaining),
                 )
             )
         else:
@@ -126,7 +131,8 @@ class ProcessorStopLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=ProcessorStopSignalType.SUCCESS, data=ProcessorStopSignalData(already_synced=ops_synced)
+                    signal_type=ProcessorStopSignalType.SUCCESS,
+                    data=ProcessorStopSignalData(processor_id=self._id, already_synced=ops_synced),
                 )
             )
         else:
@@ -137,7 +143,8 @@ class ProcessorStopLogger:
         if self._signal_queue is not None:
             self._signal_queue.put(
                 ProcessorStopSignal(
-                    signal_type=ProcessorStopSignalType.SYNC_FAILURE, data=ProcessorStopSignalData(seconds=seconds)
+                    signal_type=ProcessorStopSignalType.SYNC_FAILURE,
+                    data=ProcessorStopSignalData(processor_id=self._id, seconds=seconds),
                 )
             )
         else:
@@ -154,7 +161,9 @@ class ProcessorStopLogger:
                 ProcessorStopSignal(
                     signal_type=ProcessorStopSignalType.RECONNECT_FAILURE,
                     data=ProcessorStopSignalData(
-                        max_reconnect_wait_time=max_reconnect_wait_time, size_remaining=size_remaining
+                        processor_id=self._id,
+                        max_reconnect_wait_time=max_reconnect_wait_time,
+                        size_remaining=size_remaining,
                     ),
                 )
             )
@@ -172,6 +181,7 @@ class ProcessorStopLogger:
                 ProcessorStopSignal(
                     signal_type=ProcessorStopSignalType.STILL_WAITING,
                     data=ProcessorStopSignalData(
+                        processor_id=self._id,
                         size_remaining=size_remaining,
                         already_synced=already_synced,
                         already_synced_proc=already_synced_proc,
