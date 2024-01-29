@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["set_up_logging", "get_logger", "NEPTUNE_LOGGER_NAME"]
+__all__ = ["get_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
 import sys
 
-NEPTUNE_LOGGER_NAME = "neptune-client"
-LOG_FORMAT = "%(message)s"
+NEPTUNE_LOGGER_NAME = "neptune"
+LOG_FORMAT = "[%(name)s][%(levelname)s] %(message)s"
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -44,7 +44,7 @@ def get_logger():
     return logging.getLogger(NEPTUNE_LOGGER_NAME)
 
 
-def set_up_logging():
+def _set_up_logging():
     # setup neptune logger so that logging.getLogger(NEPTUNE_LOGGER_NAME)
     # returns configured logger
     neptune_logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
@@ -54,3 +54,6 @@ def set_up_logging():
     stdout_handler = GrabbableStdoutHandler()
     stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
     neptune_logger.addHandler(stdout_handler)
+
+
+_set_up_logging()

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+from functools import partial
 from unittest.mock import MagicMock
 
 import pytest
@@ -31,6 +32,7 @@ from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
     prepare_v1_container,
 )
+from tests.unit.neptune.new.utils.logging import format_log
 
 
 @pytest.fixture(name="backend")
@@ -67,17 +69,20 @@ def test_clean_containers(tmp_path, mocker, capsys, backend, clear_runner, conta
     assert not os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id))
     assert not os.path.exists(tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id))
 
+    # when
+    _log = partial(format_log, "INFO")
+
     # and
     captured = capsys.readouterr()
     assert captured.out.splitlines() == [
-        "",
-        "Unsynchronized objects:",
-        f"- {get_qualified_name(unsynced_container)}",
-        "",
-        "Unsynchronized offline objects:",
-        f"- offline/{container_type.create_dir_name(offline_containers.id)}",
-        f"Deleted: {tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id)}",
-        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
+        _log(""),
+        _log("Unsynchronized objects:"),
+        _log(f"- {get_qualified_name(unsynced_container)}"),
+        _log(""),
+        _log("Unsynchronized offline objects:"),
+        _log(f"- offline/{container_type.create_dir_name(offline_containers.id)}"),
+        _log(f"Deleted: {tmp_path / OFFLINE_DIRECTORY / container_type.create_dir_name(offline_containers.id)}"),
+        _log(f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}"),
     ]
 
 
@@ -102,13 +107,17 @@ def test_clean_deleted_containers(tmp_path, mocker, capsys, backend, clear_runne
     assert not os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id))
     assert not os.path.exists(tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id))
 
+    # when
+    _log_info = partial(format_log, "INFO")
+    _log_warn = partial(format_log, "WARNING")
+
     # and
     captured = capsys.readouterr()
     assert set(captured.out.splitlines()) == {
-        f"Can't fetch ContainerType.{container_type.name} {synced_container.id}. Skipping.",
-        f"Can't fetch ContainerType.{container_type.name} {unsynced_container.id}. Skipping.",
-        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
-        f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
+        _log_warn(f"Can't fetch ContainerType.{container_type.name} {synced_container.id}. Skipping."),
+        _log_warn(f"Can't fetch ContainerType.{container_type.name} {unsynced_container.id}. Skipping."),
+        _log_info(f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}"),
+        _log_info(f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}"),
     }
 
 

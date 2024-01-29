@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from functools import partial
 from unittest.mock import MagicMock
 
 import pytest
@@ -25,6 +26,7 @@ from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
     prepare_v1_container,
 )
+from tests.unit.neptune.new.utils.logging import format_log
 
 
 @pytest.fixture(name="backend")
@@ -50,13 +52,15 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
 
     # when
     status_runner.synchronization_status(tmp_path)
+    _log = partial(format_log, "INFO")
 
     # then
     captured = capsys.readouterr()
     assert captured.out.splitlines() == [
-        "Unsynchronized objects:",
-        f"- {get_qualified_name(unsynced_container)}",
-        "",
+        _log("Unsynchronized objects:"),
+        _log(f"- {get_qualified_name(unsynced_container)}"),
+        _log(""),
+        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 
@@ -74,11 +78,20 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
 
     # when
     status_runner.synchronization_status(tmp_path)
+    _log = partial(format_log, "INFO")
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
+    assert set(captured.out.splitlines()).issuperset(
+        set(
+            [
+                _log("Unsynchronized offline objects:"),
+                _log(f"- offline/run__{offline_run.id}"),
+                _log(""),
+            ]
+        )
+    )
 
 
 def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
@@ -97,13 +110,15 @@ def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runne
 
     # when
     status_runner.synchronization_status(tmp_path)
+    _log = partial(format_log, "INFO")
 
     # then
     captured = capsys.readouterr()
     assert captured.out.splitlines() == [
-        "Unsynchronized objects:",
-        f"- {get_qualified_name(unsynced_container)} (Trashed)",
-        "",
+        _log("Unsynchronized objects:"),
+        _log(f"- {get_qualified_name(unsynced_container)} (Trashed)"),
+        _log(""),
+        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 
@@ -113,8 +128,9 @@ def test_list_runs_when_no_run(tmp_path, capsys, status_runner):
     # when
     with pytest.raises(SystemExit):
         status_runner.synchronization_status(tmp_path)
+    _log = partial(format_log, "INFO")
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert "There are no Neptune objects" in captured.out
+    assert _log("There are no Neptune objects") in captured.out
