@@ -452,8 +452,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._op_processor.stop(sec_left)
 
         if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
-            logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self.get_url().rstrip("/") + "/metadata")
+            metadata_url = self.get_url().rstrip("/") + "/metadata"
+            logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
         self._backend.close()
 
         with self._forking_cond:
@@ -645,7 +645,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            logger.info(self.get_url())
+            logger.info(f"Neptune initialized. Monitor the logging in the app: {self.get_url()}")
 
         self.start()
 
