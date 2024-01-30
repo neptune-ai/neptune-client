@@ -47,11 +47,11 @@ freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
 seaborn = { version = "*", optional = true }
 mock = { version = "*", optional = true }
-moto = { version = "*", extras = [ "s3" ], optional = true }
+moto = { version = "<5.0.0", extras = [ "s3" ], optional = true }
 munch = { version = "*", optional = true }
 plotly = { version = "*", optional = true }
 pre-commit = { version = "*", optional = true }
-pytest = { version = "*", optional = true }
+pytest = { version = "<8.0.0", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
