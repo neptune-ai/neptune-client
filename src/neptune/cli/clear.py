@@ -31,11 +31,13 @@ from neptune.cli.container_manager import ContainersManager
 from neptune.cli.status import StatusRunner
 from neptune.cli.utils import get_offline_dirs
 from neptune.constants import SYNC_DIRECTORY
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ApiExperiment
     from neptune.internal.id_formats import UniqueId
+
+logger = get_logger(with_prefix=False)
 
 
 class ClearRunner(AbstractBackendRunner):

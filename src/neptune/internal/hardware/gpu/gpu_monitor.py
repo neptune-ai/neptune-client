@@ -15,8 +15,7 @@
 #
 __all__ = ["GPUMonitor"]
 
-import logging
-
+from neptune.internal.utils.logger import get_logger
 from neptune.vendor.pynvml import (
     NVMLError,
     nvmlDeviceGetCount,
@@ -26,7 +25,7 @@ from neptune.vendor.pynvml import (
     nvmlInit,
 )
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class GPUMonitor(object):

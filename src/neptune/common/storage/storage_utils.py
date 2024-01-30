@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import io
-import logging
 import os
 import stat
 import time
@@ -35,7 +34,9 @@ from typing import (
 
 import six
 
-_logger = logging.getLogger(__name__)
+from neptune.internal.utils.logger import get_logger
+
+_logger = get_logger()
 
 
 @dataclass

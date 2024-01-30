@@ -42,7 +42,7 @@ class TestOperationLoggerNoQueue(unittest.TestCase):
     def test_log_remaining_operations(self):
         self.logger.log_remaining_operations(10)
 
-        self.logger._logger.warning.assert_called_once_with(WAITING_FOR_OPERATIONS_MSG, 10)
+        self.logger._logger.info.assert_called_once_with(WAITING_FOR_OPERATIONS_MSG, 10)
 
         self.logger._logger.warning.reset_mock()
 

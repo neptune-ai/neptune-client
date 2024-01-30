@@ -16,7 +16,6 @@
 
 __all__ = ["SyncRunner"]
 
-import logging
 import os
 import threading
 import time
@@ -61,8 +60,9 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 
+logger = get_logger(with_prefix=False)
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
@@ -186,7 +186,7 @@ class SyncRunner(AbstractBackendRunner):
             logger.warning(
                 "Exception occurred while trying to create a run" " on the Neptune server. Please try again later",
             )
-            logging.exception(e)
+            logger.exception(e)
             return None
 
     @staticmethod

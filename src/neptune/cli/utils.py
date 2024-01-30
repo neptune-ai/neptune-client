@@ -24,7 +24,6 @@ __all__ = [
     "split_dir_name",
 ]
 
-import logging
 import os
 import textwrap
 import threading
@@ -59,7 +58,9 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+
+logger = get_logger(with_prefix=False)
 
 
 def get_metadata_container(
@@ -74,7 +75,7 @@ def get_metadata_container(
         logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
         logger.warning("Exception while fetching %s %s. Skipping.", public_container_type, container_id)
-        logging.exception(e)
+        logger.exception(e)
 
     return None
 

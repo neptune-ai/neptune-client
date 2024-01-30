@@ -31,6 +31,8 @@ from typing import (
     Union,
 )
 
+from neptune.internal.utils.logger import get_logger
+
 if sys.version_info >= (3, 8):
     from importlib.metadata import (
         Distribution,
@@ -39,11 +41,12 @@ if sys.version_info >= (3, 8):
 else:
     from importlib_metadata import Distribution, distributions
 
-from neptune.internal.utils.logger import logger
 from neptune.types import File
 
 if TYPE_CHECKING:
     from neptune import Run
+
+logger = get_logger()
 
 
 class DependencyTrackingStrategy(ABC):

@@ -57,6 +57,7 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
         "",
+        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 
@@ -78,7 +79,15 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
+    assert set(captured.out.splitlines()).issuperset(
+        set(
+            [
+                "Unsynchronized offline objects:",
+                f"- offline/run__{offline_run.id}",
+                "",
+            ]
+        )
+    )
 
 
 def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
@@ -104,6 +113,7 @@ def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runne
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)} (Trashed)",
         "",
+        # this one without formatting as it got splitted by new line
         "Please run with the `neptune sync --help` to see example commands.",
     ]
 

@@ -16,7 +16,6 @@
 __all__ = ["with_api_exceptions_handler", "get_retry_from_headers_or_default"]
 
 import itertools
-import logging
 import os
 import time
 
@@ -47,8 +46,9 @@ from neptune.common.exceptions import (
     NeptuneInvalidApiTokenException,
     Unauthorized,
 )
+from neptune.internal.utils.logger import get_logger
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 MAX_RETRY_TIME = 30
 MAX_RETRY_MULTIPLIER = 10

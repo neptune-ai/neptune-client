@@ -19,7 +19,9 @@ import os
 from pathlib import Path
 
 from neptune.envs import NEPTUNE_DISABLE_PARENT_DIR_DELETION
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+
+logger = get_logger()
 
 
 def remove_parent_folder_if_allowed(path: Path) -> None:

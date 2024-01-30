@@ -60,7 +60,7 @@ from neptune.internal.signals_processing.utils import (
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.files import should_clean_internal_data
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -68,6 +68,8 @@ if TYPE_CHECKING:
     from neptune.internal.id_formats import UniqueId
     from neptune.internal.operation_processors.operation_logger import ProcessorStopSignal
     from neptune.internal.signals_processing.signals import Signal
+
+logger = get_logger()
 
 
 class AsyncOperationProcessor(OperationProcessor):
