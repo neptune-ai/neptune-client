@@ -645,7 +645,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            logger.info(f"Neptune initialized. Monitor the logging in the app: {self.get_url()}")
+            logger.info(f"Neptune initialized. Open in the app: {self.get_url()}")
 
         self.start()
 
