@@ -174,7 +174,10 @@ class AsyncOperationProcessor(OperationProcessor):
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
         op_logger = ProcessorStopLogger(
-            signal_queue=signal_queue, logger=logger, should_print_logs=self._should_print_logs
+            processor_id=id(self),
+            signal_queue=signal_queue,
+            logger=logger,
+            should_print_logs=self._should_print_logs,
         )
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:

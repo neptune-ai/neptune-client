@@ -12,6 +12,7 @@
 - Flag added for cleaning internal data ([#1589](https://github.com/neptune-ai/neptune-client/pull/1589))
 - Handle logging in the `AsyncOperationProcessor` with `OperationLogger` and signal queue ([#1610](https://github.com/neptune-ai/neptune-client/pull/1610))
 - Stringify `Handler` paths ([#1623](https://github.com/neptune-ai/neptune-client/pull/1623))
+- Added processor id to `ProcessorStopSignalData` ([#1625](https://github.com/neptune-ai/neptune-client/pull/1625))
 
 
 ## 1.8.6

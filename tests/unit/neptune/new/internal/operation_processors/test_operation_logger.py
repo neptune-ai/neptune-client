@@ -32,7 +32,7 @@ from neptune.internal.operation_processors.operation_logger import (
 
 class TestOperationLoggerNoQueue(unittest.TestCase):
     def setUp(self):
-        self.logger = ProcessorStopLogger(signal_queue=None, logger=Mock())
+        self.logger = ProcessorStopLogger(processor_id=0, signal_queue=None, logger=Mock())
 
     def test_log_connection_interruption(self):
         self.logger.log_connection_interruption(10)
@@ -73,7 +73,7 @@ class TestOperationLoggerNoQueue(unittest.TestCase):
 
 class TestOperationLoggerWithQueue(unittest.TestCase):
     def setUp(self):
-        self.logger = ProcessorStopLogger(signal_queue=Mock(), logger=Mock())
+        self.logger = ProcessorStopLogger(processor_id=0, signal_queue=Mock(), logger=Mock())
 
     def test_log_connection_interruption(self):
         self.logger.log_connection_interruption(10)
