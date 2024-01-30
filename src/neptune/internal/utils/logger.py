@@ -19,7 +19,9 @@ import logging
 import sys
 
 NEPTUNE_LOGGER_NAME = "neptune"
+NEPTUNE_NO_PREFIX_LOGGER_NAME = "neptune_no_prefix"
 LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
+NO_PREFIX_FORMAT = "%(message)s"
 
 
 class CustomFormatter(logging.Formatter):
@@ -47,8 +49,10 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger():
-    return logging.getLogger(NEPTUNE_LOGGER_NAME)
+def get_logger(with_prefix: bool = True):
+    if with_prefix:
+        return logging.getLogger(NEPTUNE_LOGGER_NAME)
+    return logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
 
 
 def _set_up_logging():
@@ -63,4 +67,15 @@ def _set_up_logging():
     neptune_logger.addHandler(stdout_handler)
 
 
+def _set_up_no_prefix_logging():
+    neptune_logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+    neptune_logger.propagate = False
+    neptune_logger.setLevel(logging.DEBUG)
+
+    stdout_handler = GrabbableStdoutHandler()
+    stdout_handler.setFormatter(logging.Formatter(NO_PREFIX_FORMAT))
+    neptune_logger.addHandler(stdout_handler)
+
+
 _set_up_logging()
+_set_up_no_prefix_logging()

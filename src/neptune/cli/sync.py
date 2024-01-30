@@ -62,7 +62,7 @@ from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(with_prefix=False)
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 

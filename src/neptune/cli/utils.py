@@ -60,7 +60,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation import Operation
 from neptune.internal.utils.logger import get_logger
 
-logger = get_logger()
+logger = get_logger(with_prefix=False)
 
 
 def get_metadata_container(

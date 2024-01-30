@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ApiExperiment
     from neptune.internal.id_formats import UniqueId
 
-logger = get_logger()
+logger = get_logger(with_prefix=False)
 
 
 class ClearRunner(AbstractBackendRunner):
