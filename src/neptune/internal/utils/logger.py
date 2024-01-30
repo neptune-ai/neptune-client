@@ -19,7 +19,14 @@ import logging
 import sys
 
 NEPTUNE_LOGGER_NAME = "neptune"
-LOG_FORMAT = "[%(name)s][%(levelname)s] %(message)s"
+LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
+
+
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        record.levelname = record.levelname.lower().ljust(len("warning"))
+        formatter = logging.Formatter(LOG_FORMAT)
+        return formatter.format(record)
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -52,7 +59,7 @@ def _set_up_logging():
     neptune_logger.setLevel(logging.DEBUG)
 
     stdout_handler = GrabbableStdoutHandler()
-    stdout_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+    stdout_handler.setFormatter(CustomFormatter())
     neptune_logger.addHandler(stdout_handler)
 
 

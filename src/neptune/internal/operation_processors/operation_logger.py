@@ -122,7 +122,7 @@ class ProcessorStopLogger:
             )
         else:
             if size_remaining:
-                self._logger.warning(
+                self._logger.info(
                     WAITING_FOR_OPERATIONS_MSG,
                     size_remaining,
                 )

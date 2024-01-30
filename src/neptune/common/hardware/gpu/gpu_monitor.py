@@ -69,6 +69,8 @@ class GPUMonitor(object):
                     "/logging-experiment"
                     "-data.html#hardware-consumption "
                 )
-                _logger.warning(warning, e)
+                from neptune.common.warnings import warn_once
+
+                warn_once(message=warning, exception=e)
                 GPUMonitor.nvml_error_printed = True
             return default
