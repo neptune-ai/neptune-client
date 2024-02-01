@@ -19,6 +19,32 @@ from enum import Enum
 
 
 class StructureVersion(Enum):
+    # -------------------------------------------------
+    # .neptune/
+    #     async/
+    #         <uuid>/
+    #            exec-<num><timestamp>/
+    #               container_type
+    #               data-1.log
+    #               ...
+    # -------------------------------------------------
     LEGACY = 1
+
+    # -------------------------------------------------
+    # .neptune/
+    #     async/
+    #         run__<uuid>/
+    #            exec-<timestamp>-<date>-<pid>/
+    #               data-1.log
+    #               ...
+    # -------------------------------------------------
     CHILD_EXECUTION_DIRECTORIES = 2
+
+    # -------------------------------------------------
+    # .neptune/
+    #     async/
+    #         run__<uuid>__<pid>__<random_key>/
+    #             data-1.log
+    #             ...
+    # -------------------------------------------------
     DIRECT_DIRECTORY = 3
