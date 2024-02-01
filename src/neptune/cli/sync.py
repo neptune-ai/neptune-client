@@ -35,7 +35,7 @@ from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
     from neptune.cli.containers import (
@@ -43,6 +43,9 @@ if TYPE_CHECKING:
         OfflineContainer,
     )
     from neptune.internal.backends.neptune_backend import NeptuneBackend
+
+
+logger = get_logger(with_prefix=False)
 
 
 class SyncRunner:

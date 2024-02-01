@@ -49,7 +49,7 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.utils import get_container_dir
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.metadata_containers.structure_version import StructureVersion
 
 if TYPE_CHECKING:
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
+logger = get_logger(with_prefix=False)
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
