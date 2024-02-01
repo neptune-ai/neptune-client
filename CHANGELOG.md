@@ -19,7 +19,6 @@
 - Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 
 
-
 ## 1.8.6
 
 ### Fixes
