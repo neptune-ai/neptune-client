@@ -25,13 +25,15 @@ from neptune.constants import (
     OFFLINE_DIRECTORY,
     SYNC_DIRECTORY,
 )
+from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import Operation
-from tests.e2e.base import AVAILABLE_CONTAINERS
 from tests.unit.neptune.new.cli.utils import (
     generate_get_metadata_container,
     prepare_v1_container,
     prepare_v2_container,
 )
+
+AVAILABLE_CONTAINERS = [ContainerType.RUN, ContainerType.MODEL_VERSION, ContainerType.MODEL, ContainerType.PROJECT]
 
 
 @pytest.fixture(name="backend")
