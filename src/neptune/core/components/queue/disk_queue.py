@@ -224,18 +224,9 @@ class DiskQueue(WithResources, Generic[T]):
     def _deserialize(self, data: dict) -> Tuple[T, int, Optional[Timestamp]]:
         return self._from_dict(data["obj"]), data["version"], data.get("at")
 
-    def flush(self) -> None:
-        for resource in self.resources:
-            resource.flush()
-
     def close(self) -> None:
         self._reader.close()
-        for resource in self.resources:
-            resource.close()
-
-    def cleanup(self) -> None:
-        for resource in self.resources:
-            resource.cleanup()
+        super().close()
 
     def __enter__(self) -> "DiskQueue[T]":
         return self
