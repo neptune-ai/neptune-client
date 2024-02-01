@@ -38,6 +38,7 @@ from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
 )
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
@@ -106,7 +107,6 @@ from neptune.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_decode

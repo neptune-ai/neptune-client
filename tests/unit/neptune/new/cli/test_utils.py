@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,33 +13,56 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 
-import os
-from unittest.mock import MagicMock
-
-import pytest
-
-from neptune.cli.utils import get_project
-from neptune.exceptions import ProjectNotFound
+from neptune.cli.utils import detect_async_dir
+from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import UniqueId
+from neptune.metadata_containers.structure_version import StructureVersion
 
 
-@pytest.fixture(name="backend")
-def backend_fixture():
-    return MagicMock()
-
-
-def test_get_project_no_name_set(mocker, backend):
+def test__split_dir_name():
     # given
-    mocker.patch.object(os, "getenv")
-    os.getenv.return_value = None
+    random_id = UniqueId(str(uuid.uuid4()))
 
-    # expect
-    assert get_project(None, backend=backend) is None
-
-
-def test_get_project_project_not_found(backend):
-    # given
-    backend.get_project.side_effect = ProjectNotFound("foo")
-
-    # expect
-    assert get_project("foo", backend=backend) is None
+    assert detect_async_dir(f"{random_id}") == (ContainerType.RUN, random_id, StructureVersion.LEGACY)
+    assert detect_async_dir(f"run__{random_id}") == (
+        ContainerType.RUN,
+        random_id,
+        StructureVersion.CHILD_EXECUTION_DIRECTORIES,
+    )
+    assert detect_async_dir(f"model__{random_id}") == (
+        ContainerType.MODEL,
+        random_id,
+        StructureVersion.CHILD_EXECUTION_DIRECTORIES,
+    )
+    assert detect_async_dir(f"project__{random_id}") == (
+        ContainerType.PROJECT,
+        random_id,
+        StructureVersion.CHILD_EXECUTION_DIRECTORIES,
+    )
+    assert detect_async_dir(f"model_version__{random_id}") == (
+        ContainerType.MODEL_VERSION,
+        random_id,
+        StructureVersion.CHILD_EXECUTION_DIRECTORIES,
+    )
+    assert detect_async_dir(f"run__{random_id}__1234__abcdefgh") == (
+        ContainerType.RUN,
+        random_id,
+        StructureVersion.DIRECT_DIRECTORY,
+    )
+    assert detect_async_dir(f"project__{random_id}__1234__abcdefgh") == (
+        ContainerType.PROJECT,
+        random_id,
+        StructureVersion.DIRECT_DIRECTORY,
+    )
+    assert detect_async_dir(f"model__{random_id}__1234__abcdefgh") == (
+        ContainerType.MODEL,
+        random_id,
+        StructureVersion.DIRECT_DIRECTORY,
+    )
+    assert detect_async_dir(f"model_version__{random_id}__1234__abcdefgh") == (
+        ContainerType.MODEL_VERSION,
+        random_id,
+        StructureVersion.DIRECT_DIRECTORY,
+    )

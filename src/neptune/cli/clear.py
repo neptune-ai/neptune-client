@@ -20,88 +20,72 @@ import shutil
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
-    List,
     Sequence,
 )
 
 import click
 
-from neptune.cli.abstract_backend_runner import AbstractBackendRunner
-from neptune.cli.container_manager import ContainersManager
+from neptune.cli.collect import collect_containers
 from neptune.cli.status import StatusRunner
-from neptune.cli.utils import get_offline_dirs
 from neptune.constants import SYNC_DIRECTORY
 from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from neptune.internal.backends.api_model import ApiExperiment
-    from neptune.internal.id_formats import UniqueId
+    from neptune.cli.containers import (
+        AsyncContainer,
+        Container,
+        OfflineContainer,
+    )
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 logger = get_logger(with_prefix=False)
 
 
-class ClearRunner(AbstractBackendRunner):
-    def clear(self, path: Path, force: bool = False, clear_eventual: bool = True) -> None:
-        container_manager = ContainersManager(self._backend, path)
-        synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(path)
+class ClearRunner:
+    @staticmethod
+    def clear(*, backend: "NeptuneBackend", path: Path, force: bool = False, clear_eventual: bool = True) -> None:
+        containers = collect_containers(path=path, backend=backend)
 
-        ClearRunner.remove_containers(not_found)
+        remove_sync_containers(path=path)
+        remove_containers(containers=containers.not_found_containers)
+        remove_containers(
+            containers=filter_containers(a=containers.synced_containers, b=containers.not_found_containers)
+        )
 
-        ClearRunner.remove_sync_containers(path)
-
-        ClearRunner.remove_synced_data(container_manager=container_manager, synced_containers=synced_containers)
-
-        offline_containers = get_offline_dirs(path)
-        if clear_eventual and (offline_containers or unsynced_containers):
-            self.log_junk_metadata(offline_containers, unsynced_containers)
+        if clear_eventual and (containers.offline_containers or containers.unsynced_containers):
+            log_junk_metadata(
+                offline_containers=containers.offline_containers, unsynced_containers=containers.unsynced_containers
+            )
 
             if force or click.confirm("\nDo you want to delete the listed metadata?"):
-                self.remove_data(container_manager, offline_containers, unsynced_containers)
+                remove_containers(containers=containers.offline_containers)
+                remove_containers(containers=containers.unsynced_containers)
 
-    @staticmethod
-    def remove_sync_containers(path: Path) -> None:
-        """
-        Function can remove SYNC_DIRECTORY safely, Neptune client only stores files to upload in this location.
-        """
-        shutil.rmtree(path / SYNC_DIRECTORY, ignore_errors=True)
 
-    @staticmethod
-    def log_junk_metadata(
-        offline_containers: Sequence["UniqueId"], unsynced_containers: Sequence["ApiExperiment"]
-    ) -> None:
-        if unsynced_containers:
-            logger.info("")
-            StatusRunner.log_unsync_objects(unsynced_containers=unsynced_containers)
-        if offline_containers:
-            logger.info("")
-            StatusRunner.log_offline_objects(offline_dirs=offline_containers, info=False)
+def filter_containers(*, a: Sequence["Container"], b: Sequence["Container"]) -> Sequence["Container"]:
+    b_ids = {container.container_id for container in b}
+    return [container for container in a if container.container_id not in b_ids]
 
-    @staticmethod
-    def remove_data(
-        container_manager: ContainersManager,
-        offline_containers: Sequence["UniqueId"],
-        unsynced_containers: Sequence["ApiExperiment"],
-    ) -> None:
 
-        offline_containers_paths = [container_manager.resolve_offline_container_dir(x) for x in offline_containers]
-        unsynced_containers_paths = [
-            container_manager.resolve_async_path(container) for container in unsynced_containers
-        ]
+def remove_sync_containers(*, path: Path) -> None:
+    """
+    Function can remove SYNC_DIRECTORY safely, Neptune client only stores files to upload in this location.
+    """
+    shutil.rmtree(path / SYNC_DIRECTORY, ignore_errors=True)
 
-        ClearRunner.remove_containers(offline_containers_paths)
-        ClearRunner.remove_containers(unsynced_containers_paths)
 
-    @staticmethod
-    def remove_synced_data(container_manager: ContainersManager, synced_containers: Sequence["ApiExperiment"]) -> None:
-        synced_containers_paths = [container_manager.resolve_async_path(container) for container in synced_containers]
-        ClearRunner.remove_containers(synced_containers_paths)
+def log_junk_metadata(
+    *, offline_containers: Sequence["OfflineContainer"], unsynced_containers: Sequence["AsyncContainer"]
+) -> None:
+    if unsynced_containers:
+        logger.info("")
+        StatusRunner.log_unsync_objects(unsynced_containers=unsynced_containers)
 
-    @staticmethod
-    def remove_containers(paths: List[Path]) -> None:
-        for path in paths:
-            if path.exists():
-                try:
-                    shutil.rmtree(path)
-                    logger.info(f"Deleted: {path}")
-                except OSError:
-                    logger.warn(f"Cannot remove directory: {path}")
+    if offline_containers:
+        logger.info("")
+        StatusRunner.log_offline_objects(offline_containers=offline_containers, info=False)
+
+
+def remove_containers(*, containers: Sequence["Container"]) -> None:
+    for container in containers:
+        container.clear()

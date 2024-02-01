@@ -17,7 +17,6 @@ __all__ = ("AsyncOperationProcessor",)
 
 import os
 import threading
-from datetime import datetime
 from pathlib import Path
 from queue import Queue
 from time import (
@@ -31,6 +30,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Tuple,
 )
 
 from neptune.common.exceptions import NeptuneException
@@ -39,19 +39,20 @@ from neptune.common.warnings import (
     warn_once,
 )
 from neptune.constants import ASYNC_DIRECTORY
+from neptune.core.components.abstract import WithResources
+from neptune.core.components.metadata_file import MetadataFile
+from neptune.core.components.operation_storage import OperationStorage
+from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
-from neptune.internal.metadata_file import MetadataFile
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_logger import ProcessorStopLogger
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
+    get_container_full_path,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
     signal_batch_processed,
@@ -59,10 +60,10 @@ from neptune.internal.signals_processing.utils import (
 )
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
-from neptune.internal.utils.files import should_clean_internal_data
 from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
+    from neptune.core.components.abstract import Resource
     from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
@@ -72,7 +73,10 @@ if TYPE_CHECKING:
 logger = get_logger()
 
 
-class AsyncOperationProcessor(OperationProcessor):
+serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+
+class AsyncOperationProcessor(WithResources, OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30.0
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = float(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
 
@@ -89,16 +93,21 @@ class AsyncOperationProcessor(OperationProcessor):
         should_print_logs: bool = True,
     ):
         self._should_print_logs: bool = should_print_logs
-        self._data_path = data_path if data_path else self._init_data_path(container_id, container_type)
+
+        self._data_path = (
+            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, container_id, container_type)
+        )
+
+        # Initialize directory
+        self._data_path.mkdir(parents=True, exist_ok=True)
+
         self._metadata_file = MetadataFile(
             data_path=self._data_path,
             metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
-
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
         self._queue = DiskQueue(
-            dir_path=self._operation_storage.data_path,
+            data_path=self._data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,
             lock=lock,
@@ -118,11 +127,17 @@ class AsyncOperationProcessor(OperationProcessor):
         # Caller is responsible for taking this lock
         self._waiting_cond = threading.Condition(lock=lock)
 
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> Path:
-        now = datetime.now()
-        path_suffix = f"exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}-{os.getpid()}"
-        return get_container_dir(ASYNC_DIRECTORY, container_id, container_type, path_suffix)
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
+
+    @property
+    def data_path(self) -> Path:
+        return self._data_path
+
+    @property
+    def resources(self) -> Tuple["Resource", ...]:
+        return self._metadata_file, self._operation_storage, self._queue
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
@@ -142,13 +157,10 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def pause(self) -> None:
         self._consumer.pause()
-        self._queue.flush()
+        self.flush()
 
     def resume(self) -> None:
         self._consumer.resume()
-
-    def flush(self) -> None:
-        self._queue.flush()
 
     def wait(self) -> None:
         self.flush()
@@ -237,7 +249,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self, seconds: Optional[float] = None, signal_queue: Optional["Queue[ProcessorStopSignal]"] = None
     ) -> None:
         ts = time()
-        self._queue.flush()
+        self.flush()
         if self._consumer.is_running():
             self._consumer.disable_sleep()
             self._consumer.wake_up()
@@ -254,15 +266,19 @@ class AsyncOperationProcessor(OperationProcessor):
         self.close()
 
         # Remove local files
-        if should_clean_internal_data() and self._queue.is_empty():
-            # TODO: Will be refactored
-            self._metadata_file.cleanup()
-            self._queue.cleanup_if_empty()
+        if self._queue.is_empty():
+            self.cleanup()
+
+    def cleanup(self) -> None:
+        super().cleanup()
+        try:
+            self._data_path.rmdir()
+        except OSError:
+            pass
 
     def close(self) -> None:
         self._accepts_operations = False
-        self._queue.close()
-        self._metadata_file.close()
+        super().close()
 
     class ConsumerThread(Daemon):
         def __init__(

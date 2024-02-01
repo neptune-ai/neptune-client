@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,16 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-__all__ = ["AbstractBackendRunner"]
-
-import abc
-
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-
-
-class AbstractBackendRunner(abc.ABC):
-    _backend: NeptuneBackend
-
-    def __init__(self, backend: NeptuneBackend):
-        self._backend = backend

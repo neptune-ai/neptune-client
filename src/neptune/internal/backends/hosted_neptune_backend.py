@@ -46,6 +46,7 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -131,7 +132,6 @@ from neptune.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo

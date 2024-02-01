@@ -15,64 +15,72 @@
 #
 __all__ = ("OfflineOperationProcessor",)
 
+import threading
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     Optional,
+    Tuple,
 )
 
 from neptune.constants import OFFLINE_DIRECTORY
-from neptune.internal.disk_queue import DiskQueue
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.abstract import WithResources
+from neptune.core.components.metadata_file import MetadataFile
+from neptune.core.components.operation_storage import OperationStorage
+from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation_processors.operation_storage import (
-    OperationStorage,
-    get_container_dir,
+from neptune.internal.operation_processors.utils import (
+    common_metadata,
+    get_container_full_path,
 )
-from neptune.internal.operation_processors.utils import common_metadata
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
-    import threading
-    from pathlib import Path
-
+    from neptune.core.components.abstract import Resource
     from neptune.internal.container_type import ContainerType
     from neptune.internal.id_formats import UniqueId
 
 
-class OfflineOperationProcessor(OperationProcessor):
+serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
+
+
+class OfflineOperationProcessor(WithResources, OperationProcessor):
     def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
-        data_path = self._init_data_path(container_id, container_type)
+        self._data_path = get_container_full_path(OFFLINE_DIRECTORY, container_id, container_type)
+
+        # Initialize directory
+        self._data_path.mkdir(parents=True, exist_ok=True)
 
         self._metadata_file = MetadataFile(
-            data_path=data_path,
+            data_path=self._data_path,
             metadata=common_metadata(mode="offline", container_id=container_id, container_type=container_type),
         )
-        self._operation_storage = OperationStorage(data_path=data_path)
+        self._operation_storage = OperationStorage(data_path=self._data_path)
+        self._queue = DiskQueue(data_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
 
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
-        self._queue = DiskQueue(dir_path=data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
+    @property
+    def operation_storage(self) -> "OperationStorage":
+        return self._operation_storage
 
-    @staticmethod
-    def _init_data_path(container_id: "UniqueId", container_type: "ContainerType") -> "Path":
-        return get_container_dir(OFFLINE_DIRECTORY, container_id, container_type)
+    @property
+    def data_path(self) -> Path:
+        return self._data_path
+
+    @property
+    def resources(self) -> Tuple["Resource", ...]:
+        return self._metadata_file, self._operation_storage, self._queue
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._queue.put(op)
 
-    def flush(self) -> None:
-        self._queue.flush()
-
     def wait(self) -> None:
         self.flush()
 
     def stop(self, seconds: Optional[float] = None) -> None:
+        self.flush()
         self.close()
-
-    def close(self) -> None:
-        self._queue.close()
-        self._metadata_file.close()

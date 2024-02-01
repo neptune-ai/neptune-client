@@ -6,6 +6,7 @@
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
 - Handle `None` values in distribution sorting in `InferDependeciesStrategy` ([#1612](https://github.com/neptune-ai/neptune-client/pull/1612))
+- Fixed race conditions with cleaning internal files ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 
 ### Changes
 - Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
@@ -14,6 +15,8 @@
 - Stringify `Handler` paths ([#1623](https://github.com/neptune-ai/neptune-client/pull/1623))
 - Added processor id to `ProcessorStopSignalData` ([#1625](https://github.com/neptune-ai/neptune-client/pull/1625))
 - Use the same logger instance for logging ([#1611](https://github.com/neptune-ai/neptune-client/pull/1611))
+- Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 
 
 ## 1.8.6

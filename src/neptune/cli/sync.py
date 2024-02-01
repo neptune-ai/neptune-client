@@ -16,258 +16,139 @@
 
 __all__ = ["SyncRunner"]
 
-import os
-import threading
-import time
 from pathlib import Path
 from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
+    TYPE_CHECKING,
     List,
     Optional,
     Sequence,
 )
 
-from neptune.cli.abstract_backend_runner import AbstractBackendRunner
+from neptune.cli.collect import collect_containers
 from neptune.cli.utils import (
     get_metadata_container,
-    get_offline_dirs,
     get_project,
-    get_qualified_name,
-    is_container_synced_and_remove_junk,
-    iterate_containers,
-    split_dir_name,
 )
-from neptune.common.exceptions import NeptuneConnectionLostException
-from neptune.constants import (
-    ASYNC_DIRECTORY,
-    OFFLINE_DIRECTORY,
-    OFFLINE_NAME_PREFIX,
-)
-from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
+from neptune.constants import OFFLINE_NAME_PREFIX
 from neptune.exceptions import CannotSynchronizeOfflineRunsWithoutProject
-from neptune.internal.backends.api_model import (
-    ApiExperiment,
-    Project,
-)
-from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
-from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.logger import get_logger
 
+if TYPE_CHECKING:
+    from neptune.cli.containers import (
+        AsyncContainer,
+        OfflineContainer,
+    )
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
+
+
 logger = get_logger(with_prefix=False)
-retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
-class SyncRunner(AbstractBackendRunner):
-    def sync_container(self, container_path: Path, experiment: ApiExperiment) -> None:
-        qualified_container_name = get_qualified_name(experiment)
-        logger.info("Synchronising %s", qualified_container_name)
-        for execution_path in container_path.iterdir():
-            self.sync_execution(
-                execution_path=execution_path,
-                container_id=experiment.id,
-                container_type=experiment.type,
-            )
-        logger.info("Synchronization of %s %s completed.", experiment.type.value, qualified_container_name)
+class SyncRunner:
+    @staticmethod
+    def sync_all_offline(*, backend: "NeptuneBackend", base_path: Path, project_name: Optional["str"]) -> None:
+        containers = collect_containers(path=base_path, backend=backend)
 
-    def sync_execution(
-        self,
-        execution_path: Path,
-        container_id: UniqueId,
-        container_type: ContainerType,
-    ) -> None:
-        if list(execution_path.glob("partition-*")):
-            for partition_path in execution_path.iterdir():
-                self.sync_single_execution(
-                    execution_path=partition_path,
-                    container_id=container_id,
-                    container_type=container_type,
-                )
-        else:
-            self.sync_single_execution(
-                execution_path=execution_path,
-                container_id=container_id,
-                container_type=container_type,
-            )
+        project = get_project(project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend)
+        if not project:
+            raise CannotSynchronizeOfflineRunsWithoutProject
 
-    def sync_single_execution(
-        self,
-        execution_path: Path,
-        container_id: UniqueId,
-        container_type: ContainerType,
-    ) -> None:
-        operation_storage = OperationStorage(execution_path)
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
-
-        with DiskQueue(
-            dir_path=execution_path,
-            to_dict=serializer,
-            from_dict=Operation.from_dict,
-            lock=threading.RLock(),
-        ) as disk_queue:
-            while True:
-                batch = disk_queue.get_batch(1000)
-                if not batch:
-                    break
-                version = batch[-1].ver
-                batch = [element.obj for element in batch]
-
-                start_time = time.monotonic()
-                expected_count = len(batch)
-                version_to_ack = version - expected_count
-                while True:
-                    try:
-                        processed_count, _ = self._backend.execute_operations(
-                            container_id=container_id,
-                            container_type=container_type,
-                            operations=batch,
-                            operation_storage=operation_storage,
-                        )
-                        version_to_ack += processed_count
-                        batch = batch[processed_count:]
-                        disk_queue.ack(version)
-                        if version_to_ack == version:
-                            break
-                    except NeptuneConnectionLostException as ex:
-                        if time.monotonic() - start_time > retries_timeout:
-                            raise ex
-                        logger.warning(
-                            "Experiencing connection interruptions."
-                            " Will try to reestablish communication with Neptune."
-                            " Internal exception was: %s",
-                            ex.cause.__class__.__name__,
-                        )
-
-    def sync_all_registered_containers(self, base_path: Path) -> None:
-        async_path = base_path / ASYNC_DIRECTORY
-        for container_type, unique_id, path in iterate_containers(async_path):
-            if not is_container_synced_and_remove_junk(path):
-                container = get_metadata_container(
-                    backend=self._backend,
-                    container_id=unique_id,
-                    container_type=container_type,
-                )
-                if container:
-                    self.sync_container(container_path=path, experiment=container)
-
-    def sync_selected_registered_containers(
-        self, base_path: Path, qualified_container_names: Sequence[QualifiedName]
-    ) -> None:
-        for name in qualified_container_names:
-            container = get_metadata_container(
-                backend=self._backend,
-                container_id=name,
-            )
-            if container:
-                container_path = base_path / ASYNC_DIRECTORY / f"{container.type.create_dir_name(container.id)}"
-                container_path_deprecated = base_path / ASYNC_DIRECTORY / f"{container.id}"
-                if container_path.exists():
-                    self.sync_container(container_path=container_path, experiment=container)
-                elif container_path_deprecated.exists():
-                    self.sync_container(container_path=container_path_deprecated, experiment=container)
-                else:
-                    logger.warning("Warning: Run '%s' does not exist in location %s", name, base_path)
-
-    def _register_offline_container(self, project: Project, container_type: ContainerType) -> Optional[ApiExperiment]:
-        try:
-            if container_type == ContainerType.RUN:
-                return self._backend.create_run(project.id)
-            else:
-                raise ValueError("Only runs are supported in offline mode")
-        except Exception as e:
-            logger.warning(
-                "Exception occurred while trying to create a run" " on the Neptune server. Please try again later",
-            )
-            logger.exception(e)
-            return None
+        for container in containers.offline_containers:
+            container.sync(base_path=base_path, backend=backend, project=project)
 
     @staticmethod
-    def _move_offline_container(
-        base_path: Path,
-        offline_dir: str,
-        server_id: UniqueId,
-        server_type: ContainerType,
-    ) -> None:
-        online_dir = server_type.create_dir_name(container_id=server_id)
-        # create async directory for run
-        (base_path / ASYNC_DIRECTORY / online_dir).mkdir(parents=True)
-        # mv offline directory inside async one
-        (base_path / OFFLINE_DIRECTORY / offline_dir).rename(
-            base_path / ASYNC_DIRECTORY / online_dir / "exec-0-offline"
-        )
+    def sync_all(*, backend: "NeptuneBackend", base_path: Path, project_name: Optional[str]) -> None:
+        containers = collect_containers(path=base_path, backend=backend)
 
-    def register_offline_containers(
-        self, base_path: Path, project: Project, offline_dirs: Iterable[str]
-    ) -> List[ApiExperiment]:
-        result = []
-        for offline_dir in offline_dirs:
-            offline_path = base_path / OFFLINE_DIRECTORY / offline_dir
-            if offline_path.is_dir():
-                container_type, _ = split_dir_name(dir_name=offline_dir)
-                container = self._register_offline_container(project, container_type=container_type)
-                if container:
-                    self._move_offline_container(
-                        base_path=base_path,
-                        offline_dir=offline_dir,
-                        server_id=container.id,
-                        server_type=container.type,
-                    )
-                    logger.info("Offline container %s registered as %s", offline_dir, get_qualified_name(container))
-                    result.append(container)
-            else:
-                logger.warning("Offline container %s not found on disk.", offline_dir)
-        return result
+        if containers.unsynced_containers:
+            for container in containers.unsynced_containers:
+                container.sync(base_path=base_path, backend=backend, project=None)
 
-    def sync_offline_containers(
-        self,
-        base_path: Path,
-        project_name: Optional[QualifiedName],
-        offline_dirs: Sequence[UniqueId],
-    ) -> None:
-        if offline_dirs:
-            project = get_project(project_name, backend=self._backend)
+        if containers.offline_containers:
+            project = get_project(
+                project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend
+            )
             if not project:
                 raise CannotSynchronizeOfflineRunsWithoutProject
-            registered_containers = self.register_offline_containers(base_path, project, offline_dirs)
-            offline_containers_names = [get_qualified_name(exp) for exp in registered_containers]
-            self.sync_selected_registered_containers(base_path, offline_containers_names)
 
-    def sync_all_offline_containers(self, base_path: Path, project_name: Optional[QualifiedName]) -> None:
-        offline_dirs = get_offline_dirs(base_path)
-        self.sync_offline_containers(base_path, project_name, offline_dirs)
+            for container in containers.offline_containers:
+                container.sync(base_path=base_path, backend=backend, project=project)
 
-    def sync_selected_containers(
-        self,
-        base_path: Path,
-        project_name: Optional[str],
-        container_names: Sequence[str],
+    @staticmethod
+    def sync_selected(
+        *, backend: "NeptuneBackend", base_path: Path, project_name: Optional[str], object_names: Sequence[str]
     ) -> None:
-        non_offline_container_names = [
-            QualifiedName(name) for name in container_names if not name.startswith(OFFLINE_NAME_PREFIX)
-        ]
-        self.sync_selected_registered_containers(base_path, non_offline_container_names)
+        containers = collect_containers(path=base_path, backend=backend)
+        async_selected = [QualifiedName(name) for name in object_names if not name.startswith(OFFLINE_NAME_PREFIX)]
 
-        offline_dirs = [
-            UniqueId(name[len(OFFLINE_NAME_PREFIX) :])
-            for name in container_names
-            if name.startswith(OFFLINE_NAME_PREFIX)
-        ]
-        self.sync_offline_containers(
-            base_path=base_path,
-            project_name=QualifiedName(project_name) if project_name is not None else None,
-            offline_dirs=offline_dirs,
-        )
+        if async_selected:
+            sync_selected_async(
+                backend=backend,
+                base_path=base_path,
+                container_names=async_selected,
+                containers=containers.async_containers,
+            )
 
-    def sync_all_containers(self, base_path: Path, project_name: Optional[str]) -> None:
-        self.sync_all_registered_containers(base_path)
-        self.sync_all_offline_containers(
-            base_path=base_path, project_name=QualifiedName(project_name) if project_name is not None else None
+        offline_selected = [
+            UniqueId(name[len(OFFLINE_NAME_PREFIX) :]) for name in object_names if name.startswith(OFFLINE_NAME_PREFIX)
+        ]
+        if offline_selected:
+            sync_selected_offline(
+                backend=backend,
+                base_path=base_path,
+                container_names=offline_selected,
+                containers=containers.offline_containers,
+                project_name=project_name,
+            )
+
+
+def sync_selected_async(
+    *,
+    backend: "NeptuneBackend",
+    base_path: Path,
+    container_names: List["QualifiedName"],
+    containers: List["AsyncContainer"],
+) -> None:
+    async_containers_ids = set()
+    for container_name in container_names:
+        experiment = get_metadata_container(
+            backend=backend,
+            container_id=container_name,
         )
+        if experiment:
+            async_containers_ids.add(experiment.id)
+        else:
+            logger.error(f"Container {container_name} not found")
+
+    selected_async_containers = list(filter(lambda x: x.container_id in async_containers_ids, containers))
+
+    for container in selected_async_containers:
+        container.sync(base_path=base_path, backend=backend, project=None)
+
+
+def sync_selected_offline(
+    *,
+    backend: "NeptuneBackend",
+    base_path: Path,
+    container_names: List["UniqueId"],
+    containers: List["OfflineContainer"],
+    project_name: Optional[str],
+) -> None:
+    project = get_project(project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend)
+    if not project:
+        raise CannotSynchronizeOfflineRunsWithoutProject
+
+    selected_offline_containers: List["OfflineContainer"] = []
+    for container_id in container_names:
+        found_container = list(filter(lambda x: x.container_id == container_id, containers))
+        if found_container:
+            selected_offline_containers.append(found_container[0])
+        else:
+            logger.warning("Offline container %s not found on disk.", container_id)
+
+    for container in selected_offline_containers:
+        container.sync(base_path=base_path, backend=backend, project=project)
