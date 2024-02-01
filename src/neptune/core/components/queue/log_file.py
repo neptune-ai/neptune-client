@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 from pathlib import Path
 
 from neptune.core.components.abstract import Resource
+from neptune.internal.utils.logger import get_logger
 
-_logger = logging.getLogger(__name__)
+logger = get_logger()
 
 
 class LogFile(Resource):
@@ -64,7 +64,7 @@ class LogFile(Resource):
         except FileNotFoundError:
             pass
         except Exception:
-            _logger.exception("Cannot remove queue file %s", self.file_name)
+            logger.exception("Cannot remove queue file %s", self.file_name)
 
     def flush(self) -> None:
         if not self._writer.closed:
