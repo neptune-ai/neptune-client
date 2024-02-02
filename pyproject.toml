@@ -51,7 +51,7 @@ moto = { version = "<5.0.0", extras = [ "s3" ], optional = true }
 munch = { version = "*", optional = true }
 plotly = { version = "*", optional = true }
 pre-commit = { version = "*", optional = true }
-pytest = { version = "<8.0.0", optional = true }
+pytest = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
