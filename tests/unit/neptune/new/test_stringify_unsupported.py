@@ -89,6 +89,7 @@ def assert_unsupported_warning():
 
 @contextmanager
 def assert_no_warnings():
+    # https://stackoverflow.com/questions/45671803/how-to-use-pytest-to-assert-no-warning-is-raised
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         yield
