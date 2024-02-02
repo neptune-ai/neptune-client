@@ -42,6 +42,7 @@ from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -75,7 +76,10 @@ from neptune.internal.init.parameters import (
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
 )
-from neptune.internal.operation import DeleteAttribute
+from neptune.internal.operation import (
+    DeleteAttribute,
+    Operation,
+)
 from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
@@ -110,6 +114,57 @@ def ensure_not_stopped(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+class LazyEvaluatedOperationProcessor(OperationProcessor):
+    def __init__(self, *args, **kwargs) -> None:
+        self._args = args
+        self._kwargs = kwargs
+        self._op_processor = None
+
+    def _evaluate(self) -> None:
+        if self._op_processor is None:
+            self._op_processor = get_operation_processor(*self._args, **self._kwargs)
+            self._op_processor.start()
+
+    def operation_storage(self) -> "OperationStorage":
+        self._evaluate()
+        return self._op_processor.operation_storage()
+
+    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
+        self._evaluate()
+        self._op_processor.enqueue_operation(op, wait=wait)
+
+    def start(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.start()
+
+    def pause(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.pause()
+
+    def resume(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.resume()
+
+    def flush(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.flush()
+
+    def wait(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.wait()
+
+    def stop(self, seconds: Optional[float] = None) -> None:
+        if self._op_processor is not None:
+            self._op_processor.stop(seconds=seconds)
+
+    def close(self) -> None:
+        if self._op_processor is not None:
+            self._op_processor.close()
+
+    def evaluated(self) -> bool:
+        return self._op_processor is not None
 
 
 class MetadataContainer(AbstractContextManager, NeptuneObject):
@@ -231,10 +286,11 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
+        print("Forked!")
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
             self._signals_queue = Queue()
-            self._op_processor = get_operation_processor(
+            self._op_processor = LazyEvaluatedOperationProcessor(
                 mode=self._mode,
                 container_id=self._id,
                 container_type=self.container_type,
@@ -257,7 +313,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     )
                 )
             self._bg_job = BackgroundJobList(jobs)
-
             self._op_processor.start()
 
         with self._forking_cond:
@@ -442,19 +497,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._forking_cond.wait_for(lambda: not self._forking_state)
             self._state = ContainerState.STOPPING
 
-        ts = time.time()
-        logger.info("Shutting down background jobs, please wait a moment...")
-        self._bg_job.stop()
-        self._bg_job.join(seconds)
-        logger.info("Done!")
+        if self._op_processor.evaluated():
+            ts = time.time()
+            logger.info("Shutting down background jobs, please wait a moment...")
+            self._bg_job.stop()
+            self._bg_job.join(seconds)
+            logger.info("Done!")
 
-        sec_left = None if seconds is None else seconds - (time.time() - ts)
-        self._op_processor.stop(sec_left)
+            sec_left = None if seconds is None else seconds - (time.time() - ts)
+            self._op_processor.stop(sec_left)
 
-        if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
-            metadata_url = self.get_url().rstrip("/") + "/metadata"
-            logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
-        self._backend.close()
+            if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
+                metadata_url = self.get_url().rstrip("/") + "/metadata"
+                logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
+            self._backend.close()
+        else:
+            self._bg_job.stop()
 
         with self._forking_cond:
             self._state = ContainerState.STOPPED
@@ -652,6 +710,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         uncaught_exception_handler.activate()
 
     def _shutdown_hook(self):
+        print("Shutting down")
         self.stop()
 
     def _fetch_entries(self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]) -> Table:

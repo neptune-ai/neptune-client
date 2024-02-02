@@ -55,3 +55,6 @@ class OperationProcessor(abc.ABC):
 
     def close(self) -> None:
         pass
+
+    def evaluated(self) -> bool:
+        return True
