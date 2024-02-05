@@ -21,8 +21,6 @@ from typing import (
     Iterable,
     List,
     Optional,
-    Type,
-    Union,
 )
 
 from typing_extensions import Literal
@@ -61,7 +59,10 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
-from neptune.typing import ProgressBarCallback
+from neptune.typing import (
+    ProgressBarCallback,
+    ProgressBarType,
+)
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
@@ -267,7 +268,7 @@ class Model(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve all versions of the given model.
 

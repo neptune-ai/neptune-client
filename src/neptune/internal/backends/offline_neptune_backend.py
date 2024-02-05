@@ -15,7 +15,10 @@
 #
 __all__ = ["OfflineNeptuneBackend"]
 
-from typing import List
+from typing import (
+    List,
+    Optional,
+)
 
 from neptune.api.dtos import FileEntry
 from neptune.exceptions import NeptuneOfflineModeFetchException
@@ -38,6 +41,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
+from neptune.typing import ProgressBarType
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
@@ -128,6 +132,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: Optional[ProgressBarType],
     ):
         raise NeptuneOfflineModeFetchException
 

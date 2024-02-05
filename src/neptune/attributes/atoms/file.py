@@ -21,6 +21,7 @@ from neptune.attributes.atoms.atom import Atom
 from neptune.internal.operation import UploadFile
 from neptune.internal.utils import verify_type
 from neptune.types.atoms.file import File as FileVal
+from neptune.typing import ProgressBarType
 
 
 class File(Atom):
@@ -39,9 +40,13 @@ class File(Atom):
     def upload(self, value, *, wait: bool = False) -> None:
         self.assign(FileVal.create_from(value), wait=wait)
 
-    def download(self, destination: Optional[str] = None) -> None:
+    def download(
+        self,
+        destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file(self._container_id, self._container_type, self._path, destination)
+        self._backend.download_file(self._container_id, self._container_type, self._path, destination, progress_bar)
 
     def fetch_extension(self) -> str:
         val = self._backend.get_file_attribute(self._container_id, self._container_type, self._path)

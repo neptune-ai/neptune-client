@@ -19,7 +19,6 @@ import os
 from typing import (
     Iterable,
     Optional,
-    Type,
     Union,
 )
 
@@ -53,7 +52,10 @@ from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.metadata_containers.utils import prepare_nql_query
 from neptune.types.mode import Mode
-from neptune.typing import ProgressBarCallback
+from neptune.typing import (
+    ProgressBarCallback,
+    ProgressBarType,
+)
 
 
 class Project(MetadataContainer):
@@ -203,7 +205,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -326,7 +328,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve models stored in the project.
 
