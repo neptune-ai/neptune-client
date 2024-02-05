@@ -25,6 +25,7 @@ import enum
 import json
 import os
 import time
+from contextlib import ExitStack
 from io import BytesIO
 from typing import (
     AnyStr,
@@ -479,13 +480,16 @@ def _store_response_as_file(
         target_file = destination
 
     total_size = int(response.headers.get("content-length", 0))
-    with construct_progress_bar(progress_bar, "Fetching fileset...") as bar:
-        with response:
-            with open(target_file, "wb") as f:
-                for chunk in response.iter_content(chunk_size=1024 * 1024):
-                    if chunk:
-                        f.write(chunk)
-                        bar.update(by=len(chunk), total=total_size)
+    # TODO: update syntax once py3.10 becomes min supported version (with (x(), y(), z()): ...)
+    with ExitStack() as stack:
+        bar = stack.enter_context(construct_progress_bar(progress_bar, "Fetching file..."))
+        response = stack.enter_context(response)
+        file_stream = stack.enter_context(open(target_file, "wb"))
+
+        for chunk in response.iter_content(chunk_size=1024 * 1024):
+            if chunk:
+                file_stream.write(chunk)
+                bar.update(by=len(chunk), total=total_size)
 
 
 def _get_content_disposition_filename(response: Response) -> str:
