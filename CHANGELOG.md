@@ -7,6 +7,7 @@
 - Added `sort_by` parameter to `fetch_*_table()` methods ([#1595](https://github.com/neptune-ai/neptune-client/pull/1595))
 - Added `ascending` parameter to `fetch_*_table()` methods ([#1602](https://github.com/neptune-ai/neptune-client/pull/1602))
 - Added `progress_bar` parameter to `fetch_*_table()` methods ([#1599](https://github.com/neptune-ai/neptune-client/pull/1599))
+- Added `progress_bar` parameter to `download()` method of the `Handler` class ([#1620](https://github.com/neptune-ai/neptune-client/pull/1620))
 
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))

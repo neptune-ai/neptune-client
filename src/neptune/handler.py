@@ -66,6 +66,7 @@ from neptune.metadata_containers.abstract import SupportsNamespaces
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
+from neptune.typing import ProgressBarType
 from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
@@ -595,7 +596,11 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
     @check_protected_paths
-    def download(self, destination: str = None) -> None:
+    def download(
+        self,
+        destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
 
         Available for the following field types:
@@ -612,11 +617,16 @@ class Handler(SupportsNamespaces):
                 composed from field name and extension (if present).
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
+            progress_bar: (bool or Type of progress bar, optional): progress bar to be used while downloading assets.
+                If `None` or `True` the default tqdm-based progress bar will be used.
+                If `False` no progress bar will be used.
+                If a type of progress bar is passed, it will be used instead of the default one.
+                Defaults to `None`.
 
         For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
-        return self._pass_call_to_attr(function_name="download", destination=destination)
+        return self._pass_call_to_attr(function_name="download", destination=destination, progress_bar=progress_bar)
 
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored files to the working directory or to the specified destination.

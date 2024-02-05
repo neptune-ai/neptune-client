@@ -22,7 +22,6 @@ from typing import (
     List,
     Optional,
     Tuple,
-    Type,
     Union,
 )
 
@@ -60,7 +59,7 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation import Operation
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 
 class NeptuneBackend:
@@ -157,6 +156,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         pass
 
@@ -167,6 +167,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         pass
 
@@ -234,6 +235,7 @@ class NeptuneBackend:
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: Optional[ProgressBarType],
     ):
         pass
 
@@ -309,7 +311,7 @@ class NeptuneBackend:
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 

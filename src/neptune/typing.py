@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback", "ProgressBarCallback"]
+__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback", "ProgressBarCallback", "ProgressBarType"]
 
 import abc
 import contextlib
 from typing import (
     Any,
     Optional,
+    Type,
+    Union,
 )
+
+from typing_extensions import TypeAlias
 
 from neptune.metadata_containers.abstract import (
     NeptuneObject,
@@ -80,3 +84,6 @@ class ProgressBarCallback(contextlib.AbstractContextManager):
     @abc.abstractmethod
     def update(self, *, by: int, total: Optional[int] = None) -> None:
         ...
+
+
+ProgressBarType: TypeAlias = Union[bool, Type[ProgressBarCallback]]

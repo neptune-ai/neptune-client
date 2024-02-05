@@ -39,6 +39,7 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.utils.run_state import RunState
+from neptune.typing import ProgressBarType
 
 logger = get_logger()
 
@@ -102,7 +103,12 @@ class TableEntry:
                 return None
         raise ValueError("Could not find {} attribute".format(path))
 
-    def download_file_attribute(self, path: str, destination: Optional[str]):
+    def download_file_attribute(
+        self,
+        path: str,
+        destination: Optional[str],
+        progress_bar: Optional[ProgressBarType] = None,
+    ):
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -112,12 +118,18 @@ class TableEntry:
                         container_type=self._container_type,
                         path=parse_path(path),
                         destination=destination,
+                        progress_bar=progress_bar,
                     )
                     return
                 raise MetadataInconsistency("Cannot download file from attribute of type {}".format(_type))
         raise ValueError("Could not find {} attribute".format(path))
 
-    def download_file_set_attribute(self, path: str, destination: Optional[str]):
+    def download_file_set_attribute(
+        self,
+        path: str,
+        destination: Optional[str],
+        progress_bar: Optional[ProgressBarType] = None,
+    ):
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -127,6 +139,7 @@ class TableEntry:
                         container_type=self._container_type,
                         path=parse_path(path),
                         destination=destination,
+                        progress_bar=progress_bar,
                     )
                     return
                 raise MetadataInconsistency("Cannot download ZIP archive from attribute of type {}".format(_type))

@@ -132,7 +132,7 @@ from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 from neptune.types.value_visitor import ValueVisitor
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 
 Val = TypeVar("Val", bound=Value)
 
@@ -332,6 +332,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         run = self._get_container(container_id, container_type)
         value: File = run.get(path)
@@ -351,6 +352,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         run = self._get_container(container_id, container_type)
         source_file_set_value: FileSet = run.get(path)
@@ -488,6 +490,7 @@ class NeptuneBackendMock(NeptuneBackend):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: Optional[ProgressBarType],
     ):
         """Non relevant for backend"""
 
@@ -547,7 +550,7 @@ class NeptuneBackendMock(NeptuneBackend):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 

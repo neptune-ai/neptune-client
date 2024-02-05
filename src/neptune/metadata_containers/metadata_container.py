@@ -32,7 +32,6 @@ from typing import (
     Iterable,
     List,
     Optional,
-    Type,
     Union,
 )
 
@@ -96,7 +95,7 @@ from neptune.metadata_containers.abstract import (
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
-from neptune.typing import ProgressBarCallback
+from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
@@ -664,7 +663,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         limit: Optional[int],
         sort_by: str,
         ascending: bool,
-        progress_bar: Optional[Union[bool, Type[ProgressBarCallback]]],
+        progress_bar: Optional[ProgressBarType],
     ) -> Table:
         if columns is not None:
             # always return entries with 'sys/id' and the column chosen for sorting when filter applied
