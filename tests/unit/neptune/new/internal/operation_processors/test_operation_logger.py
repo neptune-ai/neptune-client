@@ -68,7 +68,7 @@ class TestOperationLoggerNoQueue(unittest.TestCase):
     def test_log_still_waiting(self):
         self.logger.log_still_waiting(10, 10, 20)
 
-        self.logger._logger.warning.assert_called_once_with(STILL_WAITING_MSG, 10, 20)
+        self.logger._logger.info.assert_called_once_with(STILL_WAITING_MSG, 10, 20)
 
 
 class TestOperationLoggerWithQueue(unittest.TestCase):
