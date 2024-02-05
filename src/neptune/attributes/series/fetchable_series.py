@@ -59,11 +59,12 @@ class FetchableSeries(Generic[Row]):
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
+            bar.update(by=len(data), total=val.totalItemCount)  # first fetch before the loop
             while offset < val.totalItemCount:
                 batch = self._fetch_values_from_backend(offset, limit)
                 data.extend(batch.values)
                 offset += limit
-                bar.update(by=batch.totalItemCount, total=val.totalItemCount)
+                bar.update(by=len(batch.values), total=val.totalItemCount)
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 
