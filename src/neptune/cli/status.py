@@ -62,8 +62,11 @@ class StatusRunner:
                 "\nWARNING: %s objects was skipped because they do not exist anymore.",
                 len(containers.not_found_containers),
             )
-
-        if not any([containers.synced_containers, containers.unsynced_containers, containers.offline_containers]):
+        if (
+            not containers.synced_containers
+            and not containers.unsynced_containers
+            and not containers.offline_containers
+        ):
             logger.info("There are no Neptune objects in %s", path)
             sys.exit(1)
 

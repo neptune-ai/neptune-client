@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 from abc import (
     ABC,
     abstractmethod,
@@ -27,7 +29,7 @@ from typing import (
 
 
 class AutoCloseable(ABC):
-    def __enter__(self) -> "AutoCloseable":
+    def __enter__(self) -> AutoCloseable:
         return self
 
     @abstractmethod
@@ -63,7 +65,7 @@ class Resource(AutoCloseable):
 class WithResources(Resource):
     @property
     @abstractmethod
-    def resources(self) -> Tuple["Resource", ...]:
+    def resources(self) -> Tuple[Resource, ...]:
         ...
 
     def flush(self) -> None:

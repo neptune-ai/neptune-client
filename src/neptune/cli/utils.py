@@ -92,7 +92,7 @@ def _project_not_found_message(project_name: QualifiedName) -> str:
     )
 
 
-def get_project(project_name_flag: Optional[QualifiedName], backend: NeptuneBackend) -> Optional[Project]:
+def get_project(backend: NeptuneBackend, project_name_flag: Optional[QualifiedName] = None) -> Optional[Project]:
     project_name: Optional[QualifiedName] = project_name_flag
     if project_name_flag is None:
         project_name_from_env = os.getenv(PROJECT_ENV_NAME)
