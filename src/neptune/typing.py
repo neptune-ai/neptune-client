@@ -86,4 +86,4 @@ class ProgressBarCallback(contextlib.AbstractContextManager):
         ...
 
 
-ProgressBarType: TypeAlias = Optional[Union[bool, Type[ProgressBarCallback]]]
+ProgressBarType: TypeAlias = Union[bool, Type[ProgressBarCallback]]

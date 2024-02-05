@@ -156,7 +156,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         pass
 
@@ -167,7 +167,7 @@ class NeptuneBackend:
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         pass
 
@@ -235,7 +235,7 @@ class NeptuneBackend:
         path: List[str],
         index: int,
         destination: str,
-        progress_bar: ProgressBarType,
+        progress_bar: Optional[ProgressBarType],
     ):
         pass
 
@@ -311,7 +311,7 @@ class NeptuneBackend:
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 

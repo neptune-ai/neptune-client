@@ -96,7 +96,7 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
 
         return base64_encode(file_content)
 
-    def download(self, destination: Optional[str], progress_bar: ProgressBarType = None):
+    def download(self, destination: Optional[str], progress_bar: Optional[ProgressBarType] = None):
         target_dir = self._get_destination(destination)
         item_count = self._backend.get_image_series_values(
             self._container_id, self._container_type, self._path, 0, 1

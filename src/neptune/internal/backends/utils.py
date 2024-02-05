@@ -302,7 +302,7 @@ def _check_if_tqdm_installed() -> bool:
         return False
 
 
-def which_progress_bar(progress_bar: ProgressBarType) -> Type[ProgressBarCallback]:
+def which_progress_bar(progress_bar: Optional[ProgressBarType]) -> Type[ProgressBarCallback]:
     if isinstance(progress_bar, type) and issubclass(
         progress_bar, ProgressBarCallback
     ):  # return whatever the user gave us
@@ -326,7 +326,7 @@ def which_progress_bar(progress_bar: ProgressBarType) -> Type[ProgressBarCallbac
 
 
 def construct_progress_bar(
-    progress_bar: ProgressBarType,
+    progress_bar: Optional[ProgressBarType],
     description: str,
 ) -> ProgressBarCallback:
     progress_bar_type = which_progress_bar(progress_bar)

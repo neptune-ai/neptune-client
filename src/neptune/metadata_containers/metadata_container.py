@@ -661,7 +661,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         limit: Optional[int],
         sort_by: str,
         ascending: bool,
-        progress_bar: ProgressBarType,
+        progress_bar: Optional[ProgressBarType],
     ) -> Table:
         if columns is not None:
             # always return entries with 'sys/id' and the column chosen for sorting when filter applied

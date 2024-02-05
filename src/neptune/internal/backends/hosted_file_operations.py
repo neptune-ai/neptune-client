@@ -393,7 +393,7 @@ def download_image_series_element(
     attribute: str,
     index: int,
     destination: str,
-    progress_bar: ProgressBarType,
+    progress_bar: Optional[ProgressBarType],
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -424,7 +424,7 @@ def download_file_attribute(
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
-    progress_bar: ProgressBarType = None,
+    progress_bar: Optional[ProgressBarType] = None,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -443,7 +443,7 @@ def download_file_set_attribute(
     swagger_client: SwaggerClientWrapper,
     download_id: str,
     destination: Optional[str] = None,
-    progress_bar: ProgressBarType = None,
+    progress_bar: Optional[ProgressBarType] = None,
 ):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -469,7 +469,7 @@ def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
 def _store_response_as_file(
     response: Response,
     destination: Optional[str] = None,
-    progress_bar: ProgressBarType = None,
+    progress_bar: Optional[ProgressBarType] = None,
 ) -> None:
     if destination is None:
         target_file = _get_content_disposition_filename(response)

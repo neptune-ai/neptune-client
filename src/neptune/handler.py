@@ -598,8 +598,8 @@ class Handler(SupportsNamespaces):
     @check_protected_paths
     def download(
         self,
-        destination: str = None,
-        progress_bar: ProgressBarType = None,
+        destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
 

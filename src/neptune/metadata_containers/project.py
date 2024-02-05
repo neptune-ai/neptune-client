@@ -205,7 +205,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -328,7 +328,7 @@ class Project(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve models stored in the project.
 

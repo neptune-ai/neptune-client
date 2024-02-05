@@ -268,7 +268,7 @@ class Model(MetadataContainer):
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve all versions of the given model.
 

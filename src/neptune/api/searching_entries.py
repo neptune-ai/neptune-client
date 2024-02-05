@@ -148,7 +148,7 @@ def iter_over_pages(
     max_offset: int = MAX_SERVER_OFFSET,
     sort_by_column_type: Optional[str] = None,
     ascending: bool = False,
-    progress_bar: ProgressBarType = None,
+    progress_bar: Optional[ProgressBarType] = None,
     **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None

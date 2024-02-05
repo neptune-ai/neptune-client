@@ -107,7 +107,7 @@ class TableEntry:
         self,
         path: str,
         destination: Optional[str],
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         for attr in self._attributes:
             if attr.path == path:
@@ -128,7 +128,7 @@ class TableEntry:
         self,
         path: str,
         destination: Optional[str],
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         for attr in self._attributes:
             if attr.path == path:

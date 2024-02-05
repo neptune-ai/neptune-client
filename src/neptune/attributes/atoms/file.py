@@ -43,7 +43,7 @@ class File(Atom):
     def download(
         self,
         destination: Optional[str] = None,
-        progress_bar: ProgressBarType = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> None:
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file(self._container_id, self._container_type, self._path, destination, progress_bar)
