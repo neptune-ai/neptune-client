@@ -47,11 +47,11 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.core.components.operation_storage import OperationStorage
 from neptune.common.warnings import (
     NeptuneWarning,
     warn_once,
 )
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
