@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = [
+    "DATE_FORMAT",
+    "parse_dates",
+    "prepare_nql_query",
+]
+
 from datetime import datetime
 from typing import (
     Generator,
@@ -35,6 +42,8 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.utils.run_state import RunState
+
+DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def prepare_nql_query(
@@ -124,21 +133,28 @@ def prepare_nql_query(
     return query
 
 
-def parse_dates(
-    leaderboard_entries: Generator[LeaderboardEntry, None, None]
-) -> Generator[LeaderboardEntry, None, None]:
-    for entry in leaderboard_entries:
-        parsed_attributes = []
+def parse_dates(leaderboard_entries: Iterable[LeaderboardEntry]) -> Generator[LeaderboardEntry, None, None]:
+    yield from [_parse_entry(entry) for entry in leaderboard_entries]
 
-        for attribute in entry.attributes:
-            if attribute.type == AttributeType.DATETIME:
-                attribute = AttributeWithProperties(
+
+def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
+    try:
+        return LeaderboardEntry(
+            entry.id,
+            attributes=[
+                AttributeWithProperties(
                     attribute.path,
                     attribute.type,
                     {
-                        "value": datetime.strptime(attribute.properties["value"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                        **attribute.properties,
+                        "value": datetime.strptime(attribute.properties["value"], DATE_FORMAT),
                     },
                 )
-            parsed_attributes.append(attribute)
-
-        yield LeaderboardEntry(entry.id, parsed_attributes)
+                if attribute.type == AttributeType.DATETIME
+                else attribute
+                for attribute in entry.attributes
+            ],
+        )
+    except TypeError:
+        # date is already in the right format
+        return entry

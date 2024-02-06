@@ -32,6 +32,7 @@ from neptune.metadata_containers.metadata_containers_table import (
     Table,
     TableEntry,
 )
+from neptune.metadata_containers.utils import DATE_FORMAT
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
@@ -71,7 +72,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
                     AttributeWithProperties(
                         "sys/creation_time",
                         AttributeType.DATETIME,
-                        {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime("%Y-%m-%dT%H:%M:%S.%fZ")},
+                        {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
                     )
                 ],
             )
