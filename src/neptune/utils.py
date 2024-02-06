@@ -33,7 +33,7 @@ from typing import (
 
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.runningmode import (
     in_interactive,
     in_notebook,
@@ -42,6 +42,8 @@ from neptune.typing import (
     NeptuneObject,
     ProgressBarCallback,
 )
+
+logger = get_logger()
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:

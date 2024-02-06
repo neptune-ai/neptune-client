@@ -13,12 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["logger"]
+__all__ = ["get_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
 import sys
 
-LOGGER_NAME = "neptune-client"
+NEPTUNE_LOGGER_NAME = "neptune"
+NEPTUNE_NO_PREFIX_LOGGER_NAME = "neptune_no_prefix"
+LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
+NO_PREFIX_FORMAT = "%(message)s"
+
+
+class CustomFormatter(logging.Formatter):
+    def format(self, record):
+        record.levelname = record.levelname.lower().ljust(len("warning"))
+        formatter = logging.Formatter(LOG_FORMAT)
+        return formatter.format(record)
 
 
 class GrabbableStdoutHandler(logging.StreamHandler):
@@ -39,10 +49,33 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-logger = logging.getLogger(LOGGER_NAME)
+def get_logger(with_prefix: bool = True):
+    if with_prefix:
+        return logging.getLogger(NEPTUNE_LOGGER_NAME)
+    return logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
 
-logger.propagate = False
-logger.setLevel(level=logging.DEBUG)
-stdout_handler = GrabbableStdoutHandler()
-stdout_handler.setFormatter(logging.Formatter("%(message)s"))
-logger.addHandler(stdout_handler)
+
+def _set_up_logging():
+    # setup neptune logger so that logging.getLogger(NEPTUNE_LOGGER_NAME)
+    # returns configured logger
+    neptune_logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
+    neptune_logger.propagate = False
+    neptune_logger.setLevel(logging.DEBUG)
+
+    stdout_handler = GrabbableStdoutHandler()
+    stdout_handler.setFormatter(CustomFormatter())
+    neptune_logger.addHandler(stdout_handler)
+
+
+def _set_up_no_prefix_logging():
+    neptune_logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+    neptune_logger.propagate = False
+    neptune_logger.setLevel(logging.DEBUG)
+
+    stdout_handler = GrabbableStdoutHandler()
+    stdout_handler.setFormatter(logging.Formatter(NO_PREFIX_FORMAT))
+    neptune_logger.addHandler(stdout_handler)
+
+
+_set_up_logging()
+_set_up_no_prefix_logging()

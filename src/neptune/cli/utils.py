@@ -18,13 +18,11 @@ __all__ = [
     "get_metadata_container",
     "get_project",
     "get_qualified_name",
-    "is_container_synced_and_remove_junk",
-    "get_offline_dirs",
-    "iterate_containers",
-    "split_dir_name",
+    "is_single_execution_dir_synced",
+    "detect_offline_dir",
+    "detect_async_dir",
 ]
 
-import logging
 import os
 import textwrap
 import threading
@@ -33,15 +31,13 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterator,
-    List,
     Optional,
     Tuple,
     Union,
 )
 
 from neptune.common.exceptions import NeptuneException
-from neptune.constants import OFFLINE_DIRECTORY
+from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.exceptions import (
     MetadataContainerNotFound,
@@ -53,13 +49,15 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.disk_queue import DiskQueue
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+from neptune.metadata_containers.structure_version import StructureVersion
+
+logger = get_logger(with_prefix=False)
 
 
 def get_metadata_container(
@@ -74,7 +72,7 @@ def get_metadata_container(
         logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
         logger.warning("Exception while fetching %s %s. Skipping.", public_container_type, container_id)
-        logging.exception(e)
+        logger.exception(e)
 
     return None
 
@@ -115,26 +113,7 @@ def get_qualified_name(experiment: ApiExperiment) -> QualifiedName:
     return QualifiedName(f"{experiment.workspace}/{experiment.project_name}/{experiment.sys_id}")
 
 
-def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
-    return all(_is_execution_synced_and_remove_junk(execution_path) for execution_path in experiment_path.iterdir())
-
-
-def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
-    # TODO: Refactor it
-    if list(execution_path.glob("partition-*")):
-        is_queue_empty = all(
-            _is_single_execution_synced_and_remove_junk(partition_path) for partition_path in execution_path.iterdir()
-        )
-    else:
-        return _is_single_execution_synced_and_remove_junk(execution_path)
-
-    return is_queue_empty
-
-
-def _is_single_execution_synced_and_remove_junk(execution_path: Path) -> bool:
-    """
-    The DiskQueue.close() method removes junk metadata from the disk when the queue is empty.
-    """
+def is_single_execution_dir_synced(execution_path: Path) -> bool:
     serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
     with DiskQueue(execution_path, serializer, Operation.from_dict, threading.RLock()) as disk_queue:
@@ -143,33 +122,23 @@ def _is_single_execution_synced_and_remove_junk(execution_path: Path) -> bool:
     return is_queue_empty
 
 
-def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:
+def detect_async_dir(dir_name: str) -> Tuple[ContainerType, UniqueId, StructureVersion]:
     parts = dir_name.split("__")
-    if len(parts) == 2:
-        return ContainerType(parts[0]), UniqueId(parts[1])
-    elif len(parts) == 1:
-        return ContainerType.RUN, UniqueId(dir_name)
+    if len(parts) == 1:
+        return ContainerType.RUN, UniqueId(dir_name), StructureVersion.LEGACY
+    elif len(parts) == 2:
+        return ContainerType(parts[0]), UniqueId(parts[1]), StructureVersion.CHILD_EXECUTION_DIRECTORIES
+    elif len(parts) == 4 or len(parts) == 5:
+        return ContainerType(parts[0]), UniqueId(parts[1]), StructureVersion.DIRECT_DIRECTORY
     else:
         raise ValueError(f"Wrong dir format: {dir_name}")
 
 
-def iterate_containers(
-    base_path: Path,
-) -> Iterator[Tuple[ContainerType, UniqueId, Path]]:
-    if not base_path.is_dir():
-        return
-
-    for path in base_path.iterdir():
-        container_type, unique_id = split_dir_name(dir_name=path.name)
-
-        yield container_type, unique_id, path
-
-
-def get_offline_dirs(base_path: Path) -> List[UniqueId]:
-    result = []
-    if not (base_path / OFFLINE_DIRECTORY).is_dir():
-        return []
-    for path_ in (base_path / OFFLINE_DIRECTORY).iterdir():
-        dir_name = path_.name
-        result.append(UniqueId(dir_name))
-    return result
+def detect_offline_dir(dir_name: str) -> Tuple[ContainerType, UniqueId, StructureVersion]:
+    parts = dir_name.split("__")
+    if len(parts) == 1:
+        return ContainerType.RUN, UniqueId(dir_name), StructureVersion.DIRECT_DIRECTORY
+    elif len(parts) == 2 or len(parts) == 4:
+        return ContainerType(parts[0]), UniqueId(parts[1]), StructureVersion.DIRECT_DIRECTORY
+    else:
+        raise ValueError(f"Wrong dir format: {dir_name}")

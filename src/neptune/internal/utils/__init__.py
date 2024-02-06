@@ -39,7 +39,6 @@ __all__ = [
 ]
 
 import base64
-import logging
 import os
 from glob import glob
 from io import IOBase
@@ -55,10 +54,11 @@ from typing import (
 )
 
 from neptune.internal.types.stringify_value import StringifyValue
+from neptune.internal.utils.logger import get_logger
 
 T = TypeVar("T")
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 def replace_patch_version(version: str):

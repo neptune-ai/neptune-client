@@ -16,7 +16,6 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
-import logging
 import os
 import re
 import typing
@@ -52,6 +51,7 @@ from neptune.common.warnings import (
     NeptuneWarning,
     warn_once,
 )
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -137,10 +137,10 @@ from neptune.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
@@ -153,7 +153,16 @@ if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ClientConfig
 
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
+
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+}
 
 ATOMIC_ATTRIBUTE_TYPES = {
     AttributeType.INT.value,

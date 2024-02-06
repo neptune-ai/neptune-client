@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import warnings
 from unittest.mock import (
     ANY,
     patch,
@@ -48,7 +49,9 @@ def deprecated_func_with_alternative():
 
 class TestDeprecatedParameter:
     def test_deprecated_not_used(self):
-        with pytest.warns(None):
+        # https://stackoverflow.com/questions/45671803/how-to-use-pytest-to-assert-no-warning-is-raised
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
             fun_with_deprecated_param(new_param=42)
 
     def test_deprecated_replaced(self):

@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import math
+import warnings
 from contextlib import contextmanager
 from datetime import datetime
 from typing import (
@@ -88,10 +89,10 @@ def assert_unsupported_warning():
 
 @contextmanager
 def assert_no_warnings():
-    with warns(None) as record:
+    # https://stackoverflow.com/questions/45671803/how-to-use-pytest-to-assert-no-warning-is-raised
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
         yield
-
-    assert len(record) == 0, f"Warning detected: {record[0].message}"
 
 
 @fixture

@@ -21,7 +21,7 @@ from mock import (
     patch,
 )
 
-from neptune.internal.metadata_file import MetadataFile
+from neptune.core.components.metadata_file import MetadataFile
 
 sample_content = """
 {
@@ -33,9 +33,8 @@ sample_content = """
 }""".lstrip()
 
 
-@patch("os.makedirs")
 @patch("builtins.open", new_callable=mock_open)
-def test_saving(mock_file, makedirs):
+def test_saving(mock_file):
     # given
     resolved_path = MagicMock(
         spec=Path,
@@ -54,7 +53,6 @@ def test_saving(mock_file, makedirs):
         metadata.flush()
 
         # then
-        makedirs.assert_called_with(data_path, exist_ok=True)
         mock_file.assert_called_with(resolved_path, "w")
 
         # and - concatenate all written content
@@ -63,9 +61,8 @@ def test_saving(mock_file, makedirs):
         assert written_content == sample_content
 
 
-@patch("os.makedirs")
 @patch("builtins.open", new_callable=mock_open, read_data=sample_content)
-def test_loading_existing_state(mock_file, makedirs):
+def test_loading_existing_state(mock_file):
     # given
     resolved_path = MagicMock(spec=Path, exists=lambda: True)
     file_path = MagicMock(spec=Path, resolve=lambda strict: resolved_path)
@@ -75,17 +72,15 @@ def test_loading_existing_state(mock_file, makedirs):
     with MetadataFile(data_path=data_path) as metadata:
         # then
         mock_file.assert_called_with(resolved_path, "r")
-        makedirs.assert_called_with(data_path, exist_ok=True)
 
         # and
         assert metadata["version"] == 5
         assert metadata["dependencies"] == ["a==1.0", "b==2.0"]
 
 
-@patch("os.makedirs")
 @patch("os.remove")
 @patch("builtins.open", MagicMock())
-def test_cleaning(remove, makedirs):
+def test_cleaning(remove):
     # given
     resolved_path = MagicMock(
         spec=Path,
@@ -100,13 +95,11 @@ def test_cleaning(remove, makedirs):
         metadata.cleanup()
 
         # then
-        makedirs.assert_called_with(data_path, exist_ok=True)
         remove.assert_called_with(resolved_path)
 
 
-@patch("os.makedirs")
 @patch("builtins.open", new_callable=mock_open)
-def test_initial_metadata(mock_file, makedirs):
+def test_initial_metadata(mock_file):
     # given
     resolved_path = MagicMock(
         spec=Path,
@@ -118,7 +111,6 @@ def test_initial_metadata(mock_file, makedirs):
     # when
     with MetadataFile(data_path=data_path, metadata={"version": 5, "dependencies": ["a==1.0", "b==2.0"]}):
         # then
-        makedirs.assert_called_with(data_path, exist_ok=True)
         mock_file.assert_called_with(resolved_path, "w")
 
         # and - concatenate all written content

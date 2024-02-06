@@ -38,7 +38,9 @@ from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
 )
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+
+logger = get_logger()
 
 
 def is_unsupported_float(value) -> bool:

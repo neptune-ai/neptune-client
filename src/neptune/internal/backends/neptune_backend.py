@@ -27,6 +27,7 @@ from typing import (
 
 from neptune.api.dtos import FileEntry
 from neptune.common.exceptions import NeptuneException
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
@@ -56,7 +57,6 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.typing import ProgressBarType

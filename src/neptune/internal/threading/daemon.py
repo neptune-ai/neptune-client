@@ -21,7 +21,9 @@ import threading
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+
+logger = get_logger()
 
 
 class Daemon(threading.Thread):

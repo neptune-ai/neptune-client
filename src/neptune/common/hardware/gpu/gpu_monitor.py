@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 
-import logging
-
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.vendor.pynvml import (
     NVMLError,
     nvmlDeviceGetCount,
@@ -24,8 +26,6 @@ from neptune.vendor.pynvml import (
     nvmlDeviceGetUtilizationRates,
     nvmlInit,
 )
-
-_logger = logging.getLogger(__name__)
 
 
 class GPUMonitor(object):
@@ -62,14 +62,12 @@ class GPUMonitor(object):
         try:
             nvmlInit()
             return getter()
-        except NVMLError as e:
+        except NVMLError:
             if not GPUMonitor.nvml_error_printed:
                 warning = (
                     "Info (NVML): %s. GPU usage metrics may not be reported. For more information, "
-                    "see https://docs-legacy.neptune.ai/logging-and-managing-experiment-results"
-                    "/logging-experiment"
-                    "-data.html#hardware-consumption "
+                    "see https://docs.neptune.ai/help/nvml_error/"
                 )
-                _logger.warning(warning, e)
+                warn_once(message=warning, exception=NeptuneWarning)
                 GPUMonitor.nvml_error_printed = True
             return default

@@ -20,6 +20,7 @@ from pathlib import Path
 from random import randint
 from time import time
 
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
@@ -46,7 +47,6 @@ from neptune.internal.operation import (
     LogFloats,
     LogStrings,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from tests.unit.neptune.legacy.random_utils import a_string
 
 

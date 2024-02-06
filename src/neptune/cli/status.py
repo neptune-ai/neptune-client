@@ -20,20 +20,26 @@ import sys
 import textwrap
 from pathlib import Path
 from typing import (
-    Optional,
+    TYPE_CHECKING,
     Sequence,
 )
 
-from neptune.cli.abstract_backend_runner import AbstractBackendRunner
-from neptune.cli.container_manager import ContainersManager
-from neptune.cli.utils import (
-    get_offline_dirs,
-    get_qualified_name,
+from neptune.cli.collect import collect_containers
+from neptune.cli.containers import (
+    AsyncContainer,
+    OfflineContainer,
 )
+from neptune.cli.utils import get_qualified_name
 from neptune.constants import OFFLINE_NAME_PREFIX
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
+
+logger = get_logger(with_prefix=False)
+
+if TYPE_CHECKING:
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
+
 
 offline_run_explainer = """
 Runs that execute offline are not created on the server and are not assigned to projects;
@@ -46,60 +52,53 @@ flag. Alternatively, you can set the environment variable
 )
 
 
-class StatusRunner(AbstractBackendRunner):
+class StatusRunner:
     @staticmethod
-    def list_containers(
-        base_path: Path,
-        synced_containers: Optional[Sequence[ApiExperiment]],
-        unsynced_containers: Sequence[ApiExperiment],
-        offline_dirs: Sequence[str],
-    ) -> None:
+    def status(*, backend: "NeptuneBackend", path: Path) -> None:
+        containers = collect_containers(path=path, backend=backend)
 
-        if not synced_containers and not unsynced_containers and not offline_dirs:
-            logger.info("There are no Neptune objects in %s", base_path)
+        if len(containers.not_found_containers) > 0:
+            logger.warning(
+                "\nWARNING: %s objects was skipped because they do not exist anymore.",
+                len(containers.not_found_containers),
+            )
+
+        if not any([containers.synced_containers, containers.unsynced_containers, containers.offline_containers]):
+            logger.info("There are no Neptune objects in %s", path)
             sys.exit(1)
 
-        StatusRunner.log_unsync_objects(unsynced_containers)
+        StatusRunner.log_unsync_objects(unsynced_containers=containers.unsynced_containers)
+        StatusRunner.log_offline_objects(offline_containers=containers.offline_containers)
 
-        StatusRunner.log_offline_objects(offline_dirs)
+        if not containers.unsynced_containers:
+            logger.info("\nThere are no unsynchronized objects in %s", path)
 
-        if not unsynced_containers:
-            logger.info("\nThere are no unsynchronized objects in %s", base_path)
-
-        if not synced_containers:
-            logger.info("\nThere are no synchronized objects in %s", base_path)
+        if not containers.synced_containers:
+            logger.info("\nThere are no synchronized objects in %s", path)
 
         logger.info("\nPlease run with the `neptune sync --help` to see example commands.")
 
     @staticmethod
-    def trashed(cont: ApiExperiment) -> str:
-        return " (Trashed)" if cont.trashed else ""
-
-    @staticmethod
-    def log_offline_objects(offline_dirs: Sequence[str], info: bool = True) -> None:
-        if offline_dirs:
+    def log_offline_objects(*, offline_containers: Sequence["OfflineContainer"], info: bool = True) -> None:
+        if offline_containers:
             logger.info("Unsynchronized offline objects:")
-            for container_id in offline_dirs:
-                logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{container_id}")
+            for container in offline_containers:
+                logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{container.container_id}")
+
             if info:
                 logger.info("\n%s", textwrap.fill(offline_run_explainer, width=90))
 
     @staticmethod
-    def log_unsync_objects(unsynced_containers: Sequence[ApiExperiment]) -> None:
+    def log_unsync_objects(*, unsynced_containers: Sequence["AsyncContainer"]) -> None:
         if unsynced_containers:
             logger.info("Unsynchronized objects:")
             for container in unsynced_containers:
-                logger.info("- %s%s", get_qualified_name(container), StatusRunner.trashed(container))
+                experiment = container.experiment
 
-    def synchronization_status(self, base_path: Path) -> None:
-        container_manager = ContainersManager(self._backend, base_path)
-        synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(
-            base_path
-        )
-        if len(not_found) > 0:
-            logger.warning(
-                "\nWARNING: %s objects was skipped because they do not exist anymore.",
-                len(not_found),
-            )
-        offline_dirs = get_offline_dirs(base_path)
-        self.list_containers(base_path, synced_containers, unsynced_containers, offline_dirs)
+                assert experiment is not None  # mypy fix as experiment is present for async containers
+
+                logger.info("- %s%s", get_qualified_name(experiment), trashed(experiment))
+
+
+def trashed(cont: ApiExperiment) -> str:
+    return " (Trashed)" if cont.trashed else ""

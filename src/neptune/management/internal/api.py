@@ -70,7 +70,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.iteration import get_batches
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -100,6 +100,7 @@ from neptune.management.internal.utils import (
     normalize_project_name,
 )
 
+logger = get_logger()
 TRASH_BATCH_SIZE = 100
 
 

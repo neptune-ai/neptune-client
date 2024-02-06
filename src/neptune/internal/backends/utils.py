@@ -31,7 +31,6 @@ __all__ = [
 ]
 
 import dataclasses
-import logging
 import os
 import socket
 from functools import (
@@ -85,7 +84,7 @@ from neptune.internal.operation import (
     Operation,
 )
 from neptune.internal.utils import replace_patch_version
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.typing import (
     ProgressBarCallback,
     ProgressBarType,
@@ -95,7 +94,7 @@ from neptune.utils import (
     TqdmProgressBar,
 )
 
-_logger = logging.getLogger(__name__)
+logger = get_logger()
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
