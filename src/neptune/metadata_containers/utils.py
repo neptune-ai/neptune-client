@@ -13,13 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from datetime import datetime
 from typing import (
+    Generator,
     Iterable,
     List,
     Optional,
     Union,
 )
 
+from neptune.internal.backends.api_model import (
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -115,3 +122,23 @@ def prepare_nql_query(
 
     query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
     return query
+
+
+def parse_dates(
+    leaderboard_entries: Generator[LeaderboardEntry, None, None]
+) -> Generator[LeaderboardEntry, None, None]:
+    for entry in leaderboard_entries:
+        parsed_attributes = []
+
+        for attribute in entry.attributes:
+            if attribute.type == AttributeType.DATETIME:
+                attribute = AttributeWithProperties(
+                    attribute.path,
+                    attribute.type,
+                    {
+                        "value": datetime.strptime(attribute.properties["value"], "%Y-%m-%dT%H:%M:%S.%fZ"),
+                    },
+                )
+            parsed_attributes.append(attribute)
+
+        yield LeaderboardEntry(entry.id, parsed_attributes)
