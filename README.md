@@ -64,7 +64,7 @@ run["test_accuracy"] = 0.84
 
 Add a snippet to any step of your ML pipeline once. Decide what and how you want to log. Run a million times.
 
-* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, scikit-learn, LightGBM, XGBoost, Optuna, Kedro.
+* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, fastai, PyTorch, Lightning, TensorFlow/Keras, scikit-learn, 🤗 Transformers, XGBoost, Optuna.
 
 * <a href="https://docs.neptune.ai/logging/what_you_can_log/"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
 
@@ -84,7 +84,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
 
-* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
+* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> the flexible API lets you customize the metadata logging structure however you want. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
 
 * <a href="https://docs.neptune.ai/app/custom_dashboard/"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
 
@@ -166,7 +166,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 ## Integrate with any MLOps stack
-neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, scikit-learn, XGBoost, Optuna, Kedro, 🤗 Transformers, fastai, Prophet, and more.
+neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, Lightning, TensorFlow/Keras, LightGBM, scikit-learn, XGBoost, Optuna, Kedro, 🤗 Transformers, fastai, Prophet, detectron2, Airflow, and more.
 
 #### <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
@@ -174,7 +174,7 @@ Example:
 
 ```python
 from pytorch_lightning import Trainer
-from pytorch_lightning.loggers import NeptuneLogger
+from lightning.pytorch.loggers import NeptuneLogger
 
 # Create NeptuneLogger instance
 from neptune import ANONYMOUS_API_TOKEN
