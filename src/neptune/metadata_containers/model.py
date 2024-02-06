@@ -59,6 +59,10 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.types.mode import Mode
+from neptune.typing import (
+    ProgressBarCallback,
+    ProgressBarType,
+)
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
@@ -257,16 +261,28 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
-    def fetch_model_versions_table(self, *, columns: Optional[Iterable[str]] = None) -> Table:
+    def fetch_model_versions_table(
+        self,
+        *,
+        columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
+        ascending: bool = False,
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> Table:
         """Retrieve all versions of the given model.
 
         Args:
             columns: Names of columns to include in the table, as a list of namespace or field names.
                 The Neptune ID ("sys/id") is included automatically.
-                Examples:
-                    Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
-                    Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
+                If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
+            limit: How many entries to return at most. If `None`, all entries are returned.
+            sort_by: Name of the field to sort the results by.
+                The field must represent a simple type (string, float, datetime, integer, or Boolean).
+            ascending: Whether to sort the entries in ascending order of the sorting column values.
+            progress_bar: Set to `False` to disable the download progress bar,
+                or pass a `ProgressBarCallback` class to use your own progress bar callback.
 
         Returns:
             `Table` object containing `ModelVersion` objects that match the specified criteria.
@@ -275,30 +291,29 @@ class Model(MetadataContainer):
 
         Examples:
             >>> import neptune
-
-            >>> # Initialize model with the ID "CLS-FOREST"
+            ... # Initialize model with the ID "CLS-FOREST"
             ... model = neptune.init_model(with_id="CLS-FOREST")
-
-            >>> # Fetch the metadata of all model versions as a pandas DataFrame
+            ... # Fetch the metadata of all the model's versions as a pandas DataFrame
             ... model_versions_df = model.fetch_model_versions_table().to_pandas()
 
-            >>> # Fetch the metadata of all model versions as a pandas DataFrame,
-            ... # including only the fields "params/lr" and "val/loss" as columns:
-            ... model_versions = model.fetch_model_versions_table(columns=["params/lr", "val/loss"])
-            ... model_versions_df = model_versions.to_pandas()
+            >>> # Include only the fields "params/lr" and "val/loss" as columns:
+            ... model_versions_df = model.fetch_model_versions_table(columns=["params/lr", "val/loss"]).to_pandas()
 
-            >>> # Sort model versions by size
-            ... model_versions_df = model_versions_df.sort_values(by="sys/size")
-
-            >>> # Sort model versions by creation time
-            ... model_versions_df = model_versions_df.sort_values(by="sys/creation_time", ascending=False)
-
-            >>> # Extract the last model version ID
-            ... last_model_version_id = model_versions_df["sys/id"].values[0]
+            >>> # Sort model versions by size (space they take up in Neptune)
+            ... model_versions_df = model.fetch_model_versions_table(sort_by="sys/size").to_pandas()
+            ... # Extract the ID of the largest model version object
+            ... largest_model_version_id = model_versions_df["sys/id"].values[0]
 
         See also the API referene:
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
+        verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
@@ -320,4 +335,8 @@ class Model(MetadataContainer):
                 aggregator=NQLAggregator.AND,
             ),
             columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
         )

@@ -43,7 +43,9 @@ from neptune.internal.backends.nql import (
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
+from neptune.internal.backends.utils import construct_progress_bar
 from neptune.internal.init.parameters import MAX_SERVER_OFFSET
+from neptune.typing import ProgressBarType
 
 if TYPE_CHECKING:
     from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -61,10 +63,12 @@ def get_single_page(
     limit: int,
     offset: int,
     sort_by: Optional[str] = None,
+    sort_by_column_type: Optional[str] = None,
+    ascending: bool = False,
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
-) -> List[Any]:
+) -> Any:
     normalized_query = query or NQLEmptyQuery()
     if sort_by and searching_after:
         sort_by_as_nql = NQLQueryAttribute(
@@ -82,9 +86,12 @@ def get_single_page(
     sorting = (
         {
             "sorting": {
-                "dir": "ascending",
+                "dir": "ascending" if ascending else "descending",
                 "aggregationMode": "none",
-                "sortBy": {"name": sort_by, "type": "string"},
+                "sortBy": {
+                    "name": sort_by,
+                    "type": sort_by_column_type if sort_by_column_type else AttributeType.STRING.value,
+                },
             }
         }
         if sort_by
@@ -108,13 +115,11 @@ def get_single_page(
 
     http_client = client.swagger_spec.http_client
 
-    result = (
+    return (
         http_client.request(request_params, operation=None, request_config=request_config)
         .response()
         .incoming_response.json()
     )
-
-    return list(map(to_leaderboard_entry, result.get("entries", [])))
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
@@ -141,32 +146,64 @@ def iter_over_pages(
     step_size: int,
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
+    sort_by_column_type: Optional[str] = None,
+    ascending: bool = False,
+    progress_bar: Optional[ProgressBarType] = None,
     **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None
     last_page = None
 
-    while True:
-        if last_page:
-            page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
+    total = 0
 
-            if not page_attribute:
-                raise ValueError(f"Cannot find attribute {sort_by} in last page")
+    progress_bar = progress_bar if step_size >= total else None
 
-            searching_after = page_attribute.properties["value"]
-
-        for offset in range(0, max_offset, step_size):
-            page = get_single_page(
-                limit=min(step_size, max_offset - offset),
-                offset=offset,
-                sort_by=sort_by,
-                searching_after=searching_after,
+    with construct_progress_bar(progress_bar, "Fetching table...") as bar:
+        # beginning of the first page
+        bar.update(
+            by=0,
+            total=get_single_page(
+                limit=0,
+                offset=0,
                 **kwargs,
-            )
+            ).get("matchingItemCount", 0),
+        )
 
-            if not page:
-                return
+        while True:
+            if last_page:
+                page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
 
-            yield from page
+                if not page_attribute:
+                    raise ValueError(f"Cannot find attribute {sort_by} in last page")
 
-            last_page = page
+                searching_after = page_attribute.properties["value"]
+
+            for offset in range(0, max_offset, step_size):
+                result = get_single_page(
+                    limit=min(step_size, max_offset - offset),
+                    offset=offset,
+                    sort_by=sort_by,
+                    sort_by_column_type=sort_by_column_type,
+                    searching_after=searching_after,
+                    ascending=ascending,
+                    **kwargs,
+                )
+
+                # fetch the item count everytime a new page is started
+                if offset == 0:
+                    total += result.get("matchingItemCount", 0)
+
+                page = _entries_from_page(result)
+
+                if not page:
+                    return
+
+                bar.update(by=step_size, total=total)
+
+                yield from page
+
+                last_page = page
+
+
+def _entries_from_page(single_page: Dict[str, Any]) -> List[LeaderboardEntry]:
+    return list(map(to_leaderboard_entry, single_page.get("entries", [])))
