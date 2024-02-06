@@ -164,6 +164,15 @@ ATOMIC_ATTRIBUTE_TYPES = {
     AttributeType.RUN_STATE.value,
 }
 
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+}
+
 
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
