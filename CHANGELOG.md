@@ -25,6 +25,7 @@
 - Use the same logger instance for logging ([#1611](https://github.com/neptune-ai/neptune-client/pull/1611))
 - Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 - Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Make `trash_objects()` raise `ProjectNotFound` if project does not exist ([#1636](https://github.com/neptune-ai/neptune-client/pull/1636))
 
 
 ## 1.8.6
