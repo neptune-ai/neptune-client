@@ -16,6 +16,7 @@
 import os
 import unittest
 from datetime import datetime
+from unittest import mock
 
 from neptune import (
     ANONYMOUS_API_TOKEN,
@@ -37,6 +38,7 @@ from neptune.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
+from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.metadata_containers import (
     Model,
     ModelVersion,
@@ -256,3 +258,12 @@ class TestExperiment(unittest.TestCase):
 
         with self.assertRaises(NeptuneProtectedPathException):
             del model_version["sys"]
+
+    @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
+    def test_operation_processor_lazy_init(self, mock_get_operation_processor):
+        for exp in self.get_experiments():
+            with self.subTest(msg=f"For type {exp.container_type}"):
+                mock_get_operation_processor.assert_not_called()
+                exp["key"] = "value"
+                mock_get_operation_processor.assert_called()
+                # mock_get_operation_processor.reset_mock()  # this might be needed in the future to reset the mock
