@@ -93,6 +93,7 @@ from neptune.metadata_containers.abstract import (
     NeptuneObjectCallback,
 )
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.utils import parse_dates
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.typing import ProgressBarType
@@ -682,7 +683,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             progress_bar=progress_bar,
         )
 
-        leaderboard_entries = itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
+        leaderboard_entries = parse_dates(
+            itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
+        )
 
         return Table(
             backend=self._backend,

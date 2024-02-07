@@ -15,6 +15,7 @@
 #
 import os
 import unittest
+from datetime import datetime
 
 from mock import patch
 
@@ -35,10 +36,16 @@ from neptune.exceptions import NeptuneMissingProjectNameException
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
+    AttributeWithProperties,
     IntAttribute,
+    LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.metadata_containers.utils import prepare_nql_query
+from neptune.metadata_containers.utils import (
+    DATE_FORMAT,
+    parse_dates,
+    prepare_nql_query,
+)
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
@@ -131,3 +138,49 @@ def test_prepare_nql_query():
         trashed=None,
     )
     assert len(query.items) == 0
+
+
+def test_parse_dates():
+    def entries_generator():
+        yield LeaderboardEntry(
+            id="test",
+            attributes=[
+                AttributeWithProperties(
+                    "attr1",
+                    AttributeType.DATETIME,
+                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                ),
+                AttributeWithProperties(
+                    "attr2",
+                    AttributeType.DATETIME,
+                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                ),
+            ],
+        )
+
+    parsed = list(parse_dates(entries_generator()))
+    assert parsed[0].attributes[0].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
+    assert parsed[0].attributes[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
+
+
+@patch("neptune.metadata_containers.utils.warn_once")
+def test_parse_dates_wrong_format(mock_warn_once):
+    entries = [
+        LeaderboardEntry(
+            id="test",
+            attributes=[
+                AttributeWithProperties(
+                    "attr1",
+                    AttributeType.DATETIME,
+                    {"value": "07-02-2024"},  # different format than expected
+                )
+            ],
+        )
+    ]
+
+    parsed = list(parse_dates(entries))
+    assert parsed[0].attributes[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
+    mock_warn_once.assert_called_once_with(
+        "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
+        exception=NeptuneWarning,
+    )
