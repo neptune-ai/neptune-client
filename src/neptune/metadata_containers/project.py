@@ -227,9 +227,8 @@ class Project(MetadataContainer):
             tag: A tag or list of tags applied to the run.
                 Example: `"lightGBM"` or `["pytorch", "cycleLR"]`.
                 Only runs that have all specified tags will match this criterion.
-            columns: Names of columns to include in the table, as a list of namespace or field names.
+            columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None` (default), all the columns of the runs table are included.
             trashed: Whether to retrieve trashed runs.
                 If `True`, only trashed runs are retrieved.
@@ -265,8 +264,8 @@ class Project(MetadataContainer):
             >>> # Fetch the 100 largest runs (space they take up in Neptune)
             ... runs_table_df = project.fetch_runs_table(sort_by="sys/size", limit=100).to_pandas()
 
-            >>> # Include only the field "train/loss" and the fields from the "params" namespace as columns:
-            ... runs_table_df = project.fetch_runs_table(columns=["params", "train/loss"]).to_pandas()
+            >>> # Include only the field "train/loss" and "params/lr" fields as columns:
+            ... runs_table_df = project.fetch_runs_table(columns=["params/lr", "train/loss"]).to_pandas()
 
             >>> # Pass a custom progress bar callback
             ... runs_table_df = project.fetch_runs_table(progress_bar=MyProgressBar).to_pandas()
@@ -337,9 +336,8 @@ class Project(MetadataContainer):
                 If `True`, only trashed models are retrieved.
                 If `False`, only not-trashed models are retrieved.
                 If `None`, both trashed and not-trashed models are retrieved.
-            columns: Names of columns to include in the table, as a list of namespace or field names.
+            columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None`, all the columns of the models table are included.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the field to sort the results by.
@@ -361,8 +359,8 @@ class Project(MetadataContainer):
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
 
-            >>> # Include only the "datasets" namespace and "info/size" field as columns:
-            ... models_table_df = project.fetch_models_table(columns=["datasets", "info/size"]).to_pandas()
+            >>> # Include only the "params/lr" and "info/size" field as columns:
+            ... models_table_df = project.fetch_models_table(columns=["params/lr", "info/size"]).to_pandas()
 
             >>> # Fetch 10 oldest model objects
             ... models_table_df = project.fetch_models_table(
