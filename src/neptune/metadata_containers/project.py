@@ -264,7 +264,7 @@ class Project(MetadataContainer):
             >>> # Fetch the 100 largest runs (space they take up in Neptune)
             ... runs_table_df = project.fetch_runs_table(sort_by="sys/size", limit=100).to_pandas()
 
-            >>> # Include only the field "train/loss" and "params/lr" fields as columns:
+            >>> # Include only the fields "train/loss" and "params/lr" as columns:
             ... runs_table_df = project.fetch_runs_table(columns=["params/lr", "train/loss"]).to_pandas()
 
             >>> # Pass a custom progress bar callback
@@ -359,7 +359,7 @@ class Project(MetadataContainer):
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
 
-            >>> # Include only the "params/lr" and "info/size" field as columns:
+            >>> # Include only the fields "params/lr" and "info/size" as columns:
             ... models_table_df = project.fetch_models_table(columns=["params/lr", "info/size"]).to_pandas()
 
             >>> # Fetch 10 oldest model objects
