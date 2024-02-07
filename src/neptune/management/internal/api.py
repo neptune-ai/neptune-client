@@ -909,6 +909,7 @@ def trash_objects(
 
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
     errors = list()
+    succeeded = 0
     for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
         params = {
             "projectIdentifier": project_qualified_name,
@@ -920,9 +921,12 @@ def trash_objects(
         except HTTPNotFound as e:
             raise ProjectNotFound(name=project_qualified_name) from e
         errors += response.result.errors
+        succeeded += len(response.result.updatedExperimentIdentifiers)
 
     for error in errors:
         logger.warning(error)
+
+    logger.info("Successfully trashed objects: %d. Number of failures: %d.", succeeded, len(ids) - succeeded)
 
 
 def delete_objects_from_trash(
