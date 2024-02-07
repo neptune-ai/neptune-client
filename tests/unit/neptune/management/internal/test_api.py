@@ -15,8 +15,13 @@
 #
 import os
 import unittest
-from unittest.mock import call
+from unittest.mock import (
+    MagicMock,
+    call,
+)
 
+import pytest
+from bravado.exception import HTTPNotFound
 from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
@@ -29,6 +34,7 @@ from neptune.management import (
     delete_objects_from_trash,
     trash_objects,
 )
+from neptune.management.exceptions import ProjectNotFound
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
@@ -66,6 +72,12 @@ class TestTrashObjects(unittest.TestCase):
             ),
             trash_experiments_mock.call_args,
         )
+
+    @patch("neptune.management.internal.api._get_leaderboard_client")
+    def test_trash_objects_invalid_project_name(self, _get_leaderboard_client_mock):
+        _get_leaderboard_client_mock().api.trashExperiments.side_effect = HTTPNotFound(MagicMock())
+        with pytest.raises(ProjectNotFound):
+            trash_objects(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
 
     @patch("neptune.management.internal.api._get_leaderboard_client")
     def test_project_delete_objects_from_trash(self, _get_leaderboard_client_mock):

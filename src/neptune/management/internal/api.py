@@ -915,7 +915,10 @@ def trash_objects(
             "experimentIdentifiers": batch_ids,
             **DEFAULT_REQUEST_KWARGS,
         }
-        response = leaderboard_client.api.trashExperiments(**params).response()
+        try:
+            response = leaderboard_client.api.trashExperiments(**params).response()
+        except HTTPNotFound as e:
+            raise ProjectNotFound(name=project_qualified_name) from e
         errors += response.result.errors
 
     for error in errors:
