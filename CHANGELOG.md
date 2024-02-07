@@ -25,6 +25,7 @@
 - Use the same logger instance for logging ([#1611](https://github.com/neptune-ai/neptune-client/pull/1611))
 - Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 - Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Changed format of warning messages ([#1635](https://github.com/neptune-ai/neptune-client/pull/1635))
 
 
 ## 1.8.6
