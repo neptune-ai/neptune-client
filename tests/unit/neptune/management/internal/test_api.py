@@ -18,11 +18,11 @@ import unittest
 from unittest.mock import (
     MagicMock,
     call,
+    patch,
 )
 
 import pytest
 from bravado.exception import HTTPNotFound
-from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
 from neptune.common.envs import API_TOKEN_ENV_NAME
@@ -50,8 +50,9 @@ class TestTrashObjects(unittest.TestCase):
         if PROJECT_ENV_NAME in os.environ:
             del os.environ[PROJECT_ENV_NAME]
 
+    @patch("neptune.management.internal.api.logger")
     @patch("neptune.management.internal.api._get_leaderboard_client")
-    def test_project_trash_objects(self, _get_leaderboard_client_mock):
+    def test_project_trash_objects(self, _get_leaderboard_client_mock, _mock_logger):
         # given
         trash_experiments_mock = _get_leaderboard_client_mock().api.trashExperiments
 
@@ -72,6 +73,7 @@ class TestTrashObjects(unittest.TestCase):
             ),
             trash_experiments_mock.call_args,
         )
+        _mock_logger.info.assert_called_once()
 
     @patch("neptune.management.internal.api._get_leaderboard_client")
     def test_trash_objects_invalid_project_name(self, _get_leaderboard_client_mock):
