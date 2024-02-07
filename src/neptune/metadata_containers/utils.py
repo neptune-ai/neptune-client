@@ -29,6 +29,10 @@ from typing import (
     Union,
 )
 
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -155,6 +159,13 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                 for attribute in entry.attributes
             ],
         )
-    except (TypeError, ValueError):
-        # date is already in the right format or the parsing format is incorrect
+    except TypeError:
+        # date is already in the right format
+        return entry
+    except ValueError:
+        # the parsing format is incorrect
+        warn_once(
+            "Date parsing failed. The date format is incorrect. Returning in the string format.",
+            exception=NeptuneWarning,
+        )
         return entry

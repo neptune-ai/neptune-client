@@ -163,7 +163,8 @@ def test_parse_dates():
     assert parsed[0].attributes[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
 
 
-def test_parse_dates_wrong_format():
+@patch("neptune.metadata_containers.utils.warn_once")
+def test_parse_dates_wrong_format(mock_warn_once):
     entries = [
         LeaderboardEntry(
             id="test",
@@ -179,3 +180,7 @@ def test_parse_dates_wrong_format():
 
     parsed = list(parse_dates(entries))
     assert parsed[0].attributes[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
+    mock_warn_once.assert_called_once_with(
+        "Date parsing failed. The date format is incorrect. Returning in the string format.",
+        exception=NeptuneWarning,
+    )
