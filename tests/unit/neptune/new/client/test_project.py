@@ -181,6 +181,6 @@ def test_parse_dates_wrong_format(mock_warn_once):
     parsed = list(parse_dates(entries))
     assert parsed[0].attributes[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
     mock_warn_once.assert_called_once_with(
-        "Date parsing failed. The date format is incorrect. Returning in the string format.",
+        "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
         exception=NeptuneWarning,
     )

@@ -165,7 +165,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
     except ValueError:
         # the parsing format is incorrect
         warn_once(
-            "Date parsing failed. The date format is incorrect. Returning in the string format.",
+            "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
             exception=NeptuneWarning,
         )
         return entry
