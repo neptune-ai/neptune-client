@@ -161,3 +161,21 @@ def test_parse_dates():
     parsed = list(parse_dates(entries_generator()))
     assert parsed[0].attributes[0].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
     assert parsed[0].attributes[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
+
+
+def test_parse_dates_wrong_format():
+    entries = [
+        LeaderboardEntry(
+            id="test",
+            attributes=[
+                AttributeWithProperties(
+                    "attr1",
+                    AttributeType.DATETIME,
+                    {"value": "07-02-2024"},  # different format than expected
+                )
+            ],
+        )
+    ]
+
+    parsed = list(parse_dates(entries))
+    assert parsed[0].attributes[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
