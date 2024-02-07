@@ -87,12 +87,14 @@ def warn_once(message: str, *, exception: type(Exception) = None):
         message_hash = hash(message)
 
         if message_hash not in warned_once:
+            old_formatting = warnings.formatwarning
             warnings.formatwarning = format_message
             warnings.warn(
                 message=message,
                 category=exception,
                 stacklevel=get_user_code_stack_level(),
             )
+            warnings.formatwarning = old_formatting
             warned_once.add(message_hash)
 
 
