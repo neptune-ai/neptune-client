@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 __all__ = ["Table"]
 
 from datetime import datetime
@@ -22,6 +24,7 @@ from typing import (
     Generator,
     List,
     Optional,
+    Tuple,
     Union,
 )
 
@@ -44,6 +47,45 @@ from neptune.typing import ProgressBarType
 logger = get_logger()
 
 
+def get_attribute_by_path(attributes: List[AttributeWithProperties], path: str) -> AttributeWithProperties:
+    for attr in attributes:
+        if attr.path == path:
+            return attr
+
+    raise ValueError("Could not find {} attribute".format(path))
+
+
+def to_value(attr: AttributeWithProperties) -> Any:
+    attr_type = attr.type
+
+    if attr_type == AttributeType.RUN_STATE:
+        return RunState.from_api(attr.properties.get("value")).value
+    if attr_type in (
+        AttributeType.FLOAT,
+        AttributeType.INT,
+        AttributeType.BOOL,
+        AttributeType.STRING,
+        AttributeType.DATETIME,
+    ):
+        return attr.properties.get("value")
+    if attr_type == AttributeType.FLOAT_SERIES or attr_type == AttributeType.STRING_SERIES:
+        return attr.properties.get("last")
+    if attr_type == AttributeType.IMAGE_SERIES:
+        raise MetadataInconsistency("Cannot get value for image series.")
+    if attr_type == AttributeType.FILE:
+        raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
+    if attr_type == AttributeType.FILE_SET:
+        raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
+    if attr_type == AttributeType.STRING_SET:
+        return set(attr.properties.get("values"))
+    if attr_type == AttributeType.GIT_REF:
+        return attr.properties.get("commit", {}).get("commitId")
+    if attr_type == AttributeType.NOTEBOOK_REF:
+        return attr.properties.get("notebookName")
+    if attr_type == AttributeType.ARTIFACT:
+        return attr.properties.get("hash")
+
+
 class TableEntry:
     def __init__(
         self,
@@ -61,109 +103,80 @@ class TableEntry:
         return LeaderboardHandler(table_entry=self, path=path)
 
     def get_attribute_type(self, path: str) -> AttributeType:
-        for attr in self._attributes:
-            if attr.path == path:
-                return attr.type
-        raise ValueError("Could not find {} attribute".format(path))
+        return get_attribute_by_path(attributes=self._attributes, path=path).type
 
-    def get_attribute_value(self, path: str) -> Any:
-        for attr in self._attributes:
-            if attr.path == path:
-                _type = attr.type
-                if _type == AttributeType.RUN_STATE:
-                    return RunState.from_api(attr.properties.get("value")).value
-                if _type in (
-                    AttributeType.FLOAT,
-                    AttributeType.INT,
-                    AttributeType.BOOL,
-                    AttributeType.STRING,
-                    AttributeType.DATETIME,
-                ):
-                    return attr.properties.get("value")
-                if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
-                    return attr.properties.get("last")
-                if _type == AttributeType.IMAGE_SERIES:
-                    raise MetadataInconsistency("Cannot get value for image series.")
-                if _type == AttributeType.FILE:
-                    raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
-                if _type == AttributeType.FILE_SET:
-                    raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
-                if _type == AttributeType.STRING_SET:
-                    return set(attr.properties.get("values"))
-                if _type == AttributeType.GIT_REF:
-                    return attr.properties.get("commit", {}).get("commitId")
-                if _type == AttributeType.NOTEBOOK_REF:
-                    return attr.properties.get("notebookName")
-                if _type == AttributeType.ARTIFACT:
-                    return attr.properties.get("hash")
-                logger.error(
-                    "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
-                    _type,
-                )
-                return None
-        raise ValueError("Could not find {} attribute".format(path))
+    def get_attribute_value(self, path: str) -> Optional[Any]:
+        attr = get_attribute_by_path(attributes=self._attributes, path=path)
+
+        value = to_value(attr=attr)
+        if value is None:
+            logger.error(
+                f"Attribute type {attr.type} not supported in this version, yielding None. Recommended client upgrade.",
+            )
+
+        return value
 
     def download_file_attribute(
         self,
         path: str,
         destination: Optional[str],
         progress_bar: Optional[ProgressBarType] = None,
-    ):
-        for attr in self._attributes:
-            if attr.path == path:
-                _type = attr.type
-                if _type == AttributeType.FILE:
-                    self._backend.download_file(
-                        container_id=self._id,
-                        container_type=self._container_type,
-                        path=parse_path(path),
-                        destination=destination,
-                        progress_bar=progress_bar,
-                    )
-                    return
-                raise MetadataInconsistency("Cannot download file from attribute of type {}".format(_type))
-        raise ValueError("Could not find {} attribute".format(path))
+    ) -> None:
+        attr = get_attribute_by_path(attributes=self._attributes, path=path)
+        if attr.type == AttributeType.FILE:
+            self._backend.download_file(
+                container_id=self._id,
+                container_type=self._container_type,
+                path=parse_path(path),
+                destination=destination,
+                progress_bar=progress_bar,
+            )
+        else:
+            raise MetadataInconsistency(f"Cannot download file from attribute of type {attr.type}")
 
     def download_file_set_attribute(
         self,
         path: str,
         destination: Optional[str],
         progress_bar: Optional[ProgressBarType] = None,
-    ):
-        for attr in self._attributes:
-            if attr.path == path:
-                _type = attr.type
-                if _type == AttributeType.FILE_SET:
-                    self._backend.download_file_set(
-                        container_id=self._id,
-                        container_type=self._container_type,
-                        path=parse_path(path),
-                        destination=destination,
-                        progress_bar=progress_bar,
-                    )
-                    return
-                raise MetadataInconsistency("Cannot download ZIP archive from attribute of type {}".format(_type))
-        raise ValueError("Could not find {} attribute".format(path))
+    ) -> None:
+        attr = get_attribute_by_path(attributes=self._attributes, path=path)
+        if attr.type == AttributeType.FILE_SET:
+            self._backend.download_file_set(
+                container_id=self._id,
+                container_type=self._container_type,
+                path=parse_path(path),
+                destination=destination,
+                progress_bar=progress_bar,
+            )
+        else:
+            raise MetadataInconsistency(f"Cannot download ZIP archive from attribute of type {attr.type}")
 
 
 class LeaderboardHandler:
     def __init__(self, table_entry: TableEntry, path: str):
-        self._table_entry = table_entry
-        self._path = path
+        self._table_entry: TableEntry = table_entry
+        self._path: str = path
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
         return LeaderboardHandler(table_entry=self._table_entry, path=join_paths(self._path, path))
 
-    def get(self):
+    def get(self) -> Any:
         return self._table_entry.get_attribute_value(path=self._path)
 
-    def download(self, destination: Optional[str]):
+    def download(self, destination: Optional[str], progress_bar: Optional[ProgressBarType] = None) -> None:
         attr_type = self._table_entry.get_attribute_type(self._path)
+
         if attr_type == AttributeType.FILE:
-            return self._table_entry.download_file_attribute(self._path, destination)
+            return self._table_entry.download_file_attribute(
+                path=self._path, destination=destination, progress_bar=progress_bar
+            )
         elif attr_type == AttributeType.FILE_SET:
-            return self._table_entry.download_file_set_attribute(path=self._path, destination=destination)
-        raise MetadataInconsistency("Cannot download file from attribute of type {}".format(attr_type))
+            return self._table_entry.download_file_set_attribute(
+                path=self._path, destination=destination, progress_bar=progress_bar
+            )
+
+        raise MetadataInconsistency(f"Cannot download file from attribute of type {attr_type}")
 
 
 class Table:
@@ -194,12 +207,12 @@ class Table:
             attributes=entry.attributes,
         )
 
-    def to_pandas(self):
+    def to_pandas(self) -> Any:  # TODO: return type should be pd.DataFrame
         import pandas as pd
 
         def make_attribute_value(
             attribute: AttributeWithProperties,
-        ) -> Optional[Union[str, float, datetime]]:
+        ) -> Optional[Any]:
             _type = attribute.type
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
@@ -235,14 +248,14 @@ class Table:
         def make_row(
             entry: LeaderboardEntry,
         ) -> Dict[str, Optional[Union[str, float, datetime]]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
+            row: Dict[str, Optional[Union[str, float, datetime]]] = dict()
             for attr in entry.attributes:
                 value = make_attribute_value(attr)
                 if value is not None:
                     row[attr.path] = value
             return row
 
-        def sort_key(attr):
+        def sort_key(attr: str) -> Tuple[int, str]:
             domain = attr.split("/")[0]
             if domain == "sys":
                 return 0, attr
