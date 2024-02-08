@@ -702,7 +702,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.8", "3.10" ]
+        python-version: [ "3.9", "3.11" ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
     name: 'composer (${{ matrix.os }} - py${{ matrix.python-version }})'
