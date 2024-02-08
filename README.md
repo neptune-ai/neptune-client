@@ -154,7 +154,7 @@ Have a single place where your team can see the results and access all models an
 
 * <a href="https://docs.neptune.ai/management/"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
 
-* <a href="https://neptune.ai/pricing"><b>Add your entire org:</b></a> get at least 10 users on every paid plan. So you can invite additional stakeholders, such as product managers and subject-matter experts, at no extra cost.
+* <a href="https://neptune.ai/pricing"><b>Add your entire org:</b></a> you can collaborate with a team on every plan, even the Free one. So, invite your entire organization, including product managers and subject matter experts, to increase the visibility from the very beginning.
 &nbsp;
 
 &nbsp;
