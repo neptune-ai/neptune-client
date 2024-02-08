@@ -154,19 +154,19 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    total = 0
+    total = get_single_page(
+        limit=0,
+        offset=0,
+        **kwargs,
+    ).get("matchingItemCount", 0)
 
-    progress_bar = progress_bar if step_size >= total else None
+    progress_bar = False if total < step_size else progress_bar  # disable progress bar if only one page is fetched
 
     with construct_progress_bar(progress_bar, "Fetching table...") as bar:
         # beginning of the first page
         bar.update(
             by=0,
-            total=get_single_page(
-                limit=0,
-                offset=0,
-                **kwargs,
-            ).get("matchingItemCount", 0),
+            total=total,
         )
 
         while True:
