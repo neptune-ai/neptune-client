@@ -33,7 +33,7 @@ runs:
 
     - name: Install composer
       run: |
-        pip install git+https://github.com/AleksanderWWW/composer@neptune-logger
+        pip install git+https://github.com/mosaicml/composer@dev
       shell:
         bash
 
