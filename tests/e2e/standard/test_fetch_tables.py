@@ -250,8 +250,6 @@ class TestFetchTable(BaseE2ETest):
             project.fetch_runs_table(sort_by="metrics/accuracy", progress_bar=False)
 
     def test_fetch_runs_table_datetime_parsed(self, environment, project):
-        from pandas import Timestamp
-
         # given
         with neptune.init_run(project=environment.project) as run:
             run["some_timestamp"] = datetime.datetime.now()
@@ -262,5 +260,5 @@ class TestFetchTable(BaseE2ETest):
         runs = project.fetch_runs_table(columns=["sys/creation_time", "some_timestamp"], progress_bar=False).to_pandas()
 
         # then
-        assert type(runs["sys/creation_time"].iloc[0]) is Timestamp
-        assert type(runs["some_timestamp"].iloc[0]) is Timestamp
+        assert isinstance(runs["sys/creation_time"].iloc[0], datetime.datetime)
+        assert isinstance(runs["some_timestamp"].iloc[0], datetime.datetime)

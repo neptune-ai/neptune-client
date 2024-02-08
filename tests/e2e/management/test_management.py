@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import time
+from functools import partial
 from typing import (
     Callable,
     Dict,
@@ -463,7 +464,7 @@ class TestTrashObjects(BaseE2ETest):
         # THEN expect none of its versions to be fetched anymore
         self.wait_for_containers([], model.fetch_model_versions_table)
 
-    @backoff.on_exception(backoff.expo, Exception, max_time=5)
+    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=5)
     def wait_for_containers(self, ids: List[str], container_provider: Callable[[], Table]):
         fetched_entries = container_provider().to_pandas()
         actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []
