@@ -15,9 +15,15 @@
 #
 import os
 import unittest
-from unittest.mock import call
+from unittest.mock import (
+    MagicMock,
+    call,
+    patch,
+)
 
-from mock import patch
+import pytest
+from bravado.exception import HTTPNotFound
+from bravado.response import BravadoResponse
 
 from neptune import ANONYMOUS_API_TOKEN
 from neptune.common.envs import API_TOKEN_ENV_NAME
@@ -29,6 +35,7 @@ from neptune.management import (
     delete_objects_from_trash,
     trash_objects,
 )
+from neptune.management.exceptions import ProjectNotFound
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
@@ -44,10 +51,17 @@ class TestTrashObjects(unittest.TestCase):
         if PROJECT_ENV_NAME in os.environ:
             del os.environ[PROJECT_ENV_NAME]
 
+    @patch("neptune.management.internal.api.logger")
     @patch("neptune.management.internal.api._get_leaderboard_client")
-    def test_project_trash_objects(self, _get_leaderboard_client_mock):
+    def test_project_trash_objects(self, _get_leaderboard_client_mock, _mock_logger):
         # given
         trash_experiments_mock = _get_leaderboard_client_mock().api.trashExperiments
+
+        mock_response = MagicMock(spec=BravadoResponse(MagicMock(), MagicMock()))
+        trash_experiments_mock.return_value.response.return_value = mock_response
+
+        mock_response.result.errors = ["some_test_error1", "some_test_error2"]
+        mock_response.result.updatedExperimentIdentifiers = ["RUN-1"]
 
         # when
         trash_objects(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
@@ -66,6 +80,14 @@ class TestTrashObjects(unittest.TestCase):
             ),
             trash_experiments_mock.call_args,
         )
+        _mock_logger.info.assert_called_once_with("Successfully trashed objects: %d. Number of failures: %d.", 1, 2)
+        self.assertEqual(_mock_logger.warning.mock_calls, [call("some_test_error1"), call("some_test_error2")])
+
+    @patch("neptune.management.internal.api._get_leaderboard_client")
+    def test_trash_objects_invalid_project_name(self, _get_leaderboard_client_mock):
+        _get_leaderboard_client_mock().api.trashExperiments.side_effect = HTTPNotFound(MagicMock())
+        with pytest.raises(ProjectNotFound):
+            trash_objects(self.PROJECT_NAME, ["RUN-1", "MOD", "MOD-1"])
 
     @patch("neptune.management.internal.api._get_leaderboard_client")
     def test_project_delete_objects_from_trash(self, _get_leaderboard_client_mock):

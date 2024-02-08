@@ -46,6 +46,7 @@ from neptune.management import (
     trash_objects,
 )
 from neptune.management.exceptions import (
+    ProjectNotFound,
     ProjectPrivacyRestrictedException,
     UserAlreadyInvited,
     UserNotExistsOrWithoutAccess,
@@ -418,6 +419,10 @@ class TestTrashObjects(BaseE2ETest):
     """
     Test trash_objects
     """
+
+    def test_trash_objects_wrong_project(self):
+        with pytest.raises(ProjectNotFound):
+            trash_objects("org/non-existent-project", ["RUN-1", "RUN-2", "RUN-3"])
 
     def test_trash_runs_and_models(self, project, environment):
         # WITH runs and models
