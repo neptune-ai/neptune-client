@@ -27,7 +27,8 @@
 - Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 - Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
 - Changed format of warning messages ([#1635](https://github.com/neptune-ai/neptune-client/pull/1635))
-- Do not show progress bars when no data to fetch / small amount of data ([#1636](https://github.com/neptune-ai/neptune-client/pull/1638))
+- Make `trash_objects()` raise `ProjectNotFound` if project does not exist ([#1636](https://github.com/neptune-ai/neptune-client/pull/1636))
+- Do not show progress bars when no data to fetch / small amount of data ([#1638](https://github.com/neptune-ai/neptune-client/pull/1638))
 
 
 ## 1.8.6
