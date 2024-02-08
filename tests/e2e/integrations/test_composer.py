@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import pytest
+import torch
+import torch.nn.functional as F
 from composer import Trainer
 from composer.algorithms import (
     ChannelsLast,
@@ -22,7 +24,8 @@ from composer.algorithms import (
 )
 from composer.callbacks import ImageVisualizer
 from composer.loggers import NeptuneLogger
-from composer.models import mnist_model
+from composer.models import ComposerClassifier
+from torch import nn
 from torch.utils.data import (
     DataLoader,
     Subset,
@@ -33,9 +36,41 @@ from torchvision import (
 )
 
 
+@pytest.fixture(scope="module")
+def model() -> ComposerClassifier:
+    # https://github.com/mosaicml/composer/blob/dev/examples/checkpoint_with_wandb.py
+    class Model(nn.Module):
+        """Toy convolutional neural network architecture in pytorch for MNIST."""
+
+        def __init__(self, num_classes: int = 10):
+            super().__init__()
+
+            self.num_classes = num_classes
+
+            self.conv1 = nn.Conv2d(1, 16, (3, 3), padding=0)
+            self.conv2 = nn.Conv2d(16, 32, (3, 3), padding=0)
+            self.bn = nn.BatchNorm2d(32)
+            self.fc1 = nn.Linear(32 * 16, 32)
+            self.fc2 = nn.Linear(32, num_classes)
+
+        def forward(self, x):
+            out = self.conv1(x)
+            out = F.relu(out)
+            out = self.conv2(out)
+            out = self.bn(out)
+            out = F.relu(out)
+            out = F.adaptive_avg_pool2d(out, (4, 4))
+            out = torch.flatten(out, 1, -1)
+            out = self.fc1(out)
+            out = F.relu(out)
+            return self.fc2(out)
+
+    return ComposerClassifier(module=Model(num_classes=10))
+
+
 @pytest.mark.integrations
 @pytest.mark.composer
-def test_e2e(environment):
+def test_e2e(model):
     transform = transforms.Compose([transforms.ToTensor()])
 
     train_dataset = datasets.MNIST("data", download=True, train=True, transform=transform)
@@ -45,10 +80,10 @@ def test_e2e(environment):
     eval_dataset = Subset(eval_dataset, indices=range(len(eval_dataset) // 50))
     train_dataloader = DataLoader(train_dataset, batch_size=128)
     eval_dataloader = DataLoader(eval_dataset, batch_size=128)
-    logger = NeptuneLogger(project=environment.project, base_namespace="composer-training")
+    logger = NeptuneLogger(base_namespace="composer-training")
 
     trainer = Trainer(
-        model=mnist_model(),
+        model=model,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
         max_duration="1ep",
