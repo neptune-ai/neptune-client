@@ -57,6 +57,8 @@ class FetchableSeries(Generic[Row]):
                 row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
             return row
 
+        progress_bar = False if len(data) < limit else progress_bar
+
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
             bar.update(by=len(data), total=val.totalItemCount)  # first fetch before the loop
