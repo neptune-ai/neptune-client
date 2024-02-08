@@ -13,13 +13,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = [
+    "DATE_FORMAT",
+    "parse_dates",
+    "prepare_nql_query",
+]
+
+from datetime import datetime
 from typing import (
+    Generator,
     Iterable,
     List,
     Optional,
     Union,
 )
 
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
+from neptune.internal.backends.api_model import (
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -28,6 +46,8 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.utils.run_state import RunState
+
+DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def prepare_nql_query(
@@ -115,3 +135,37 @@ def prepare_nql_query(
 
     query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
     return query
+
+
+def parse_dates(leaderboard_entries: Iterable[LeaderboardEntry]) -> Generator[LeaderboardEntry, None, None]:
+    yield from [_parse_entry(entry) for entry in leaderboard_entries]
+
+
+def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
+    try:
+        return LeaderboardEntry(
+            entry.id,
+            attributes=[
+                AttributeWithProperties(
+                    attribute.path,
+                    attribute.type,
+                    {
+                        **attribute.properties,
+                        "value": datetime.strptime(attribute.properties["value"], DATE_FORMAT),
+                    },
+                )
+                if attribute.type == AttributeType.DATETIME
+                else attribute
+                for attribute in entry.attributes
+            ],
+        )
+    except TypeError:
+        # date is already in the right format
+        return entry
+    except ValueError:
+        # the parsing format is incorrect
+        warn_once(
+            "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
+            exception=NeptuneWarning,
+        )
+        return entry
