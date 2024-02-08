@@ -1094,7 +1094,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sort_by=sort_by,
                 ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
-                progress_bar=False if limit < default_step_size else progress_bar,
+                progress_bar=progress_bar,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
