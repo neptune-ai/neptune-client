@@ -481,8 +481,8 @@ def _store_response_as_file(
         target_file = destination
 
     total_size = int(response.headers.get("content-length", 0))
-    if total_size < 1024 * 1024:  # less than one chunk
-        progress_bar = False
+
+    progress_bar = False if total_size < 1024 * 1024 else progress_bar  # less than one chunk
 
     # TODO: update syntax once py3.10 becomes min supported version (with (x(), y(), z()): ...)
     with ExitStack() as stack:
