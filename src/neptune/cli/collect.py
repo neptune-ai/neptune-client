@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from collections import (
-    defaultdict,
-    namedtuple,
-)
+from collections import defaultdict
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Callable,
     Dict,
-    Generator,
+    Iterable,
     List,
+    NamedTuple,
     Tuple,
 )
 
 from neptune.cli.containers import (
     AsyncContainer,
-    Container,
     ExecutionDirectory,
     OfflineContainer,
 )
@@ -51,13 +48,15 @@ if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 
-CollectedContainers = namedtuple(
-    "CollectedContainers",
-    ["async_containers", "offline_containers", "synced_containers", "unsynced_containers", "not_found_containers"],
-)
+class CollectedContainers(NamedTuple):
+    async_containers: List[AsyncContainer]
+    offline_containers: List[OfflineContainer]
+    synced_containers: List[AsyncContainer]
+    unsynced_containers: List[AsyncContainer]
+    not_found_containers: List[AsyncContainer]
 
 
-def collect_containers(*, path: Path, backend: "NeptuneBackend") -> "CollectedContainers":
+def collect_containers(*, path: Path, backend: "NeptuneBackend") -> CollectedContainers:
     if not path.is_dir():
         return CollectedContainers(
             async_containers=[],
@@ -67,7 +66,7 @@ def collect_containers(*, path: Path, backend: "NeptuneBackend") -> "CollectedCo
             not_found_containers=[],
         )
 
-    async_containers = []
+    async_containers: List[AsyncContainer] = []
     if (path / ASYNC_DIRECTORY).exists():
         async_containers = list(collect_async_containers(path=path, backend=backend))
 
@@ -78,13 +77,13 @@ def collect_containers(*, path: Path, backend: "NeptuneBackend") -> "CollectedCo
     return CollectedContainers(
         async_containers=async_containers,
         offline_containers=offline_containers,
-        synced_containers=list(filter(lambda x: x.synced, async_containers)),
-        unsynced_containers=list(filter(lambda x: not x.synced and x.found is True, async_containers)),
-        not_found_containers=list(filter(lambda x: x.found is False, async_containers)),
+        synced_containers=[x for x in async_containers if x.synced],
+        unsynced_containers=[x for x in async_containers if not x.synced and x.found is True],
+        not_found_containers=[x for x in async_containers if x.found is False],
     )
 
 
-def collect_async_containers(*, path: Path, backend: "NeptuneBackend") -> Generator["Container", None, None]:
+def collect_async_containers(*, path: Path, backend: "NeptuneBackend") -> Iterable[AsyncContainer]:
     container_to_execution_dirs = collect_by_container(base_path=path / ASYNC_DIRECTORY, detect_by=detect_async_dir)
 
     for (container_type, container_id), execution_dirs in container_to_execution_dirs.items():
@@ -100,7 +99,7 @@ def collect_async_containers(*, path: Path, backend: "NeptuneBackend") -> Genera
         )
 
 
-def collect_offline_containers(*, path: Path) -> Generator["Container", None, None]:
+def collect_offline_containers(*, path: Path) -> Iterable[OfflineContainer]:
     container_to_execution_dirs = collect_by_container(base_path=path / OFFLINE_DIRECTORY, detect_by=detect_offline_dir)
 
     for (container_type, container_id), execution_dirs in container_to_execution_dirs.items():
