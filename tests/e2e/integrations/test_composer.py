@@ -70,7 +70,7 @@ def model() -> ComposerClassifier:
 
 @pytest.mark.integrations
 @pytest.mark.composer
-def test_e2e(model):
+def test_e2e(environment, model):
     transform = transforms.Compose([transforms.ToTensor()])
 
     train_dataset = datasets.MNIST("data", download=True, train=True, transform=transform)
@@ -80,7 +80,7 @@ def test_e2e(model):
     eval_dataset = Subset(eval_dataset, indices=range(len(eval_dataset) // 50))
     train_dataloader = DataLoader(train_dataset, batch_size=128)
     eval_dataloader = DataLoader(eval_dataset, batch_size=128)
-    logger = NeptuneLogger(base_namespace="composer-training")
+    logger = NeptuneLogger(project=environment.project, base_namespace="composer-training")
 
     trainer = Trainer(
         model=model,
