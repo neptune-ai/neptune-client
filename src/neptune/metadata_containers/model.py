@@ -273,9 +273,8 @@ class Model(MetadataContainer):
         """Retrieve all versions of the given model.
 
         Args:
-            columns: Names of columns to include in the table, as a list of namespace or field names.
+            columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If you pass the name of a namespace, all the fields inside the namespace are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the field to sort the results by.
