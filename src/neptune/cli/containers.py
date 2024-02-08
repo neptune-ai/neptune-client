@@ -28,7 +28,6 @@ from abc import (
     ABC,
     abstractmethod,
 )
-from dataclasses import dataclass
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -64,18 +63,34 @@ logger = get_logger(with_prefix=False)
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
-@dataclass
 class ExecutionDirectory:
-    path: Path
-    synced: bool
-    structure_version: StructureVersion
-    parent: Optional[Path]
+    def __init__(self, path: Path, synced: bool, structure_version: StructureVersion, parent: Optional[Path] = None):
+        self._path = path
+        self._synced = synced
+        self._structure_version = structure_version
+        self._parent = parent
+
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def synced(self) -> bool:
+        return self._synced
+
+    @property
+    def structure_version(self) -> StructureVersion:
+        return self._structure_version
+
+    @property
+    def parent(self) -> Optional[Path]:
+        return self._parent
 
     def clear(self) -> None:
         if self.path.exists():
             remove_directory_structure(self.path)
 
-    def sync(self, *, backend: "NeptuneBackend", container_id: "UniqueId", container_type: "ContainerType") -> None:
+    def sync(self, *, backend: "NeptuneBackend", container_id: UniqueId, container_type: ContainerType) -> None:
         operation_storage = OperationStorage(self.path)
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
@@ -118,7 +133,7 @@ class ExecutionDirectory:
                             ex.cause.__class__.__name__,
                         )
 
-    def move(self, *, base_path: Path, target_container_id: "UniqueId", container_type: "ContainerType") -> None:
+    def move(self, *, base_path: Path, target_container_id: UniqueId, container_type: ContainerType) -> None:
         new_online_dir = get_container_dir(container_id=target_container_id, container_type=container_type)
         try:
             (base_path / ASYNC_DIRECTORY).mkdir(parents=True, exist_ok=True)
@@ -127,23 +142,27 @@ class ExecutionDirectory:
             return
 
         self.path.rename(base_path / ASYNC_DIRECTORY / new_online_dir)
-        self.path = base_path / ASYNC_DIRECTORY / new_online_dir
-        self.structure_version = StructureVersion.DIRECT_DIRECTORY
+        self._path = base_path / ASYNC_DIRECTORY / new_online_dir
+        self._structure_version = StructureVersion.DIRECT_DIRECTORY
 
 
-@dataclass
 class Container(ABC):
-    container_id: UniqueId
-    container_type: ContainerType
-    execution_dirs: List["ExecutionDirectory"]
-    found: bool
+    @property
+    @abstractmethod
+    def container_id(self) -> UniqueId:
+        ...
+
+    @property
+    @abstractmethod
+    def execution_dirs(self) -> List[ExecutionDirectory]:
+        ...
 
     @property
     def synced(self) -> bool:
         return all(map(lambda execution_dir: execution_dir.synced, self.execution_dirs))
 
     @abstractmethod
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"]) -> None:
+    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
         ...
 
     def clear(self) -> None:
@@ -156,11 +175,42 @@ class Container(ABC):
                 break
 
 
-@dataclass
 class AsyncContainer(Container):
-    experiment: Optional["ApiExperiment"] = None
+    def __init__(
+        self,
+        container_id: UniqueId,
+        container_type: ContainerType,
+        execution_dirs: List[ExecutionDirectory],
+        found: bool,
+        experiment: Optional["ApiExperiment"] = None,
+    ):
+        self._container_id = container_id
+        self._container_type = container_type
+        self._execution_dirs = execution_dirs
+        self._found = found
+        self._experiment = experiment
 
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"]) -> None:
+    @property
+    def container_id(self) -> UniqueId:
+        return self._container_id
+
+    @property
+    def container_type(self) -> ContainerType:
+        return self._container_type
+
+    @property
+    def execution_dirs(self) -> List[ExecutionDirectory]:
+        return self._execution_dirs
+
+    @property
+    def found(self) -> bool:
+        return self._found
+
+    @property
+    def experiment(self) -> Optional["ApiExperiment"]:
+        return self._experiment
+
+    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
         assert self.experiment is not None  # mypy fix
 
         qualified_container_name = get_qualified_name(self.experiment)
@@ -178,9 +228,36 @@ class AsyncContainer(Container):
         logger.info("Synchronization of %s %s completed.", self.experiment.type.value, qualified_container_name)
 
 
-@dataclass
 class OfflineContainer(Container):
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"]) -> None:
+    def __init__(
+        self,
+        container_id: UniqueId,
+        container_type: ContainerType,
+        execution_dirs: List[ExecutionDirectory],
+        found: bool,
+    ):
+        self._container_id = container_id
+        self._container_type = container_type
+        self._execution_dirs = execution_dirs
+        self._found = found
+
+    @property
+    def container_id(self) -> UniqueId:
+        return self._container_id
+
+    @property
+    def container_type(self) -> ContainerType:
+        return self._container_type
+
+    @property
+    def execution_dirs(self) -> List[ExecutionDirectory]:
+        return self._execution_dirs
+
+    @property
+    def found(self) -> bool:
+        return self._found
+
+    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
         assert project is not None  # mypy fix
 
         experiment = register_offline_container(
@@ -190,7 +267,7 @@ class OfflineContainer(Container):
         )
 
         if experiment:
-            self.container_id = experiment.id
+            self._container_id = experiment.id
             for execution_dir in self.execution_dirs:
                 execution_dir.move(
                     base_path=base_path,
@@ -217,8 +294,6 @@ class OfflineContainer(Container):
 
 
 def remove_directory(path: Path) -> None:
-    assert path.is_dir()
-
     try:
         path.rmdir()
         logger.info(f"Deleted: {path}")
@@ -235,7 +310,7 @@ def remove_directory_structure(path: Path) -> None:
 
 
 def register_offline_container(
-    *, backend: "NeptuneBackend", project: "Project", container_type: "ContainerType"
+    *, backend: "NeptuneBackend", project: "Project", container_type: ContainerType
 ) -> Optional["ApiExperiment"]:
     try:
         if container_type == ContainerType.RUN:

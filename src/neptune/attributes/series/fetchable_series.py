@@ -20,6 +20,7 @@ from datetime import datetime
 from typing import (
     Dict,
     Generic,
+    Optional,
     TypeVar,
     Union,
 )
@@ -28,6 +29,9 @@ from neptune.internal.backends.api_model import (
     FloatSeriesValues,
     StringSeriesValues,
 )
+from neptune.internal.backends.utils import construct_progress_bar
+from neptune.internal.utils.paths import path_to_str
+from neptune.typing import ProgressBarType
 
 Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
 
@@ -37,7 +41,7 @@ class FetchableSeries(Generic[Row]):
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
 
-    def fetch_values(self, *, include_timestamp=True):
+    def fetch_values(self, *, include_timestamp: bool = True, progress_bar: Optional[ProgressBarType] = None):
         import pandas as pd
 
         limit = 1000
@@ -53,10 +57,16 @@ class FetchableSeries(Generic[Row]):
                 row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
             return row
 
-        while offset < val.totalItemCount:
-            batch = self._fetch_values_from_backend(offset, limit)
-            data.extend(batch.values)
-            offset += limit
+        progress_bar = False if len(data) < limit else progress_bar
+
+        path = path_to_str(self._path) if hasattr(self, "_path") else ""
+        with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
+            bar.update(by=len(data), total=val.totalItemCount)  # first fetch before the loop
+            while offset < val.totalItemCount:
+                batch = self._fetch_values_from_backend(offset, limit)
+                data.extend(batch.values)
+                offset += limit
+                bar.update(by=len(batch.values), total=val.totalItemCount)
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 

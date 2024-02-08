@@ -25,10 +25,10 @@ import enum
 import json
 import os
 import time
+from contextlib import ExitStack
 from io import BytesIO
 from typing import (
     AnyStr,
-    Callable,
     Dict,
     Iterable,
     List,
@@ -79,6 +79,7 @@ from neptune.internal.backends.swagger_client_wrapper import (
 )
 from neptune.internal.backends.utils import (
     build_operation_url,
+    construct_progress_bar,
     handle_server_raw_response_messages,
 )
 from neptune.internal.utils import (
@@ -86,6 +87,7 @@ from neptune.internal.utils import (
     get_common_root,
 )
 from neptune.internal.utils.logger import get_logger
+from neptune.typing import ProgressBarType
 
 logger = get_logger()
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
@@ -393,6 +395,7 @@ def download_image_series_element(
     attribute: str,
     index: int,
     destination: str,
+    progress_bar: Optional[ProgressBarType],
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -414,6 +417,7 @@ def download_image_series_element(
             destination,
             "{}.{}".format(index, response.headers["content-type"].split("/")[-1]),
         ),
+        progress_bar=progress_bar,
     )
 
 
@@ -422,9 +426,7 @@ def download_file_attribute(
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
-    pre_download_hook: Callable[[int], None] = lambda x: None,
-    download_iter_hook: Callable[[int], None] = lambda x: None,
-    post_download_hook: Callable[[], None] = lambda: None,
+    progress_bar: Optional[ProgressBarType] = None,
 ):
     url = build_operation_url(
         swagger_client.swagger_spec.api_url,
@@ -436,16 +438,14 @@ def download_file_attribute(
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": container_id, "attribute": attribute},
     )
-    _store_response_as_file(response, destination, pre_download_hook, download_iter_hook, post_download_hook)
+    _store_response_as_file(response, destination, progress_bar)
 
 
 def download_file_set_attribute(
     swagger_client: SwaggerClientWrapper,
     download_id: str,
     destination: Optional[str] = None,
-    pre_download_hook: Callable[[int], None] = lambda x: None,
-    download_iter_hook: Callable[[int], None] = lambda x: None,
-    post_download_hook: Callable[[], None] = lambda: None,
+    progress_bar: Optional[ProgressBarType] = None,
 ):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -459,7 +459,7 @@ def download_file_set_attribute(
         url=download_url,
         headers={"Accept": "application/zip"},
     )
-    _store_response_as_file(response, destination, pre_download_hook, download_iter_hook, post_download_hook)
+    _store_response_as_file(response, destination, progress_bar)
 
 
 def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
@@ -471,10 +471,10 @@ def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
 def _store_response_as_file(
     response: Response,
     destination: Optional[str] = None,
-    pre_download_hook: Callable[[int], None] = lambda x: None,
-    download_iter_hook: Callable[[int], None] = lambda x: None,
-    post_download_hook: Callable[[], None] = lambda: None,
+    progress_bar: Optional[ProgressBarType] = None,
 ) -> None:
+    chunk_size = 1024 * 1024
+
     if destination is None:
         target_file = _get_content_disposition_filename(response)
     elif os.path.isdir(destination):
@@ -482,15 +482,22 @@ def _store_response_as_file(
     else:
         target_file = destination
 
-    total_size = int(response.headers.get("content-length", 0))
-    pre_download_hook(total_size)
-    with response:
-        with open(target_file, "wb") as f:
-            for chunk in response.iter_content(chunk_size=1024 * 1024):
-                if chunk:
-                    f.write(chunk)
-                download_iter_hook(len(chunk) if chunk else 0)
-    post_download_hook()
+    if "content-length" in response.headers:
+        total_size = int(response.headers["content-length"])
+        progress_bar = False if total_size < chunk_size else progress_bar  # less than one chunk
+    else:
+        total_size = 0
+
+    # TODO: update syntax once py3.10 becomes min supported version (with (x(), y(), z()): ...)
+    with ExitStack() as stack:
+        bar = stack.enter_context(construct_progress_bar(progress_bar, "Fetching file..."))
+        response = stack.enter_context(response)
+        file_stream = stack.enter_context(open(target_file, "wb"))
+
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                file_stream.write(chunk)
+                bar.update(by=len(chunk), total=total_size)
 
 
 def _get_content_disposition_filename(response: Response) -> str:

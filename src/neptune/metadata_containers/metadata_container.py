@@ -93,8 +93,10 @@ from neptune.metadata_containers.abstract import (
     NeptuneObjectCallback,
 )
 from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.utils import parse_dates
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
+from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
@@ -654,17 +656,35 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]) -> Table:
+    def _fetch_entries(
+        self,
+        child_type: ContainerType,
+        query: NQLQuery,
+        columns: Optional[Iterable[str]],
+        limit: Optional[int],
+        sort_by: str,
+        ascending: bool,
+        progress_bar: Optional[ProgressBarType],
+    ) -> Table:
         if columns is not None:
-            # always return entries with `sys/id` column when filter applied
+            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
             columns = set(columns)
             columns.add("sys/id")
+            columns.add(sort_by)
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
             query=query,
             columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
+        )
+
+        leaderboard_entries = parse_dates(
+            itertools.islice(leaderboard_entries, limit) if limit else leaderboard_entries
         )
 
         return Table(

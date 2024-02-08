@@ -224,6 +224,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 &nbsp;
 ## People behind
 
-Created with :heart: by the [neptune.ai team](https://neptune.ai/about-us):
-
-Piotr, Paulina, Jakub, Magda, Aurimas, Chaz, James, Serine, Alexandra, Eugene, Parth, Aleksandra, Damyan, Sabine, Siddhant, Ani, Patrycja, Dawid, Dominika, Karolina, Aleksiej, Cameron, Krzysztof, Piotr, Hubert, Paweł, Adam, Rafał, Patryk, Bartosz, Artsiom, Jakub, Marcin, Anita, Bartosz, Maciej, Szymon, Marcin, Jakub, Paweł, Siamion, Mateusz, Maciej, Michał, Konrad, Franciszek, Bartosz, Paweł, Dawid, Aleksander, Marta, Karolina, Michał, Martyna, Magdalena, and [you?](https://neptune.ai/jobs)
+Created with :heart: by the [neptune.ai team](https://neptune.ai/jobs#team)

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import datetime
 import random
 import time
 import uuid
@@ -43,7 +44,7 @@ class TestFetchTable(BaseE2ETest):
         # wait for the cache to fill
         time.sleep(5)
 
-        runs_table = project.fetch_runs_table(tag=[tag1, tag2]).to_rows()
+        runs_table = project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows()
         assert len(runs_table) == 1
         assert runs_table[0].get_attribute_value("sys/id") == run_id1
 
@@ -60,12 +61,17 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(5)
 
         versions_table = sorted(
-            container.fetch_model_versions_table().to_rows(),
+            container.fetch_model_versions_table(progress_bar=False).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
+
+        versions_table_gen = container.fetch_model_versions_table(ascending=True, progress_bar=False)
+        for te1, te2 in zip(list(versions_table_gen), versions_table):
+            assert te1._id == te2._id
+            assert te1._container_type == te2._container_type
 
     def _test_fetch_from_container(self, init_container, get_containers_as_rows):
         container_id1, container_id2 = None, None
@@ -131,7 +137,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_run(project=environment.project)
 
         def get_runs_as_rows(**kwargs):
-            return project.fetch_runs_table(**kwargs).to_rows()
+            return project.fetch_runs_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_runs_as_rows)
 
@@ -140,7 +146,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_model(project=environment.project, key=a_key())
 
         def get_models_as_rows(**kwargs):
-            return project.fetch_models_table(**kwargs).to_rows()
+            return project.fetch_models_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_models_as_rows)
 
@@ -152,7 +158,7 @@ class TestFetchTable(BaseE2ETest):
             return neptune.init_model_version(model=model_sys_id, project=environment.project)
 
         def get_model_versions_as_rows(**kwargs):
-            return container.fetch_model_versions_table(**kwargs).to_rows()
+            return container.fetch_model_versions_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
 
@@ -163,14 +169,98 @@ class TestFetchTable(BaseE2ETest):
             run["some_random_val"] = random_val
 
             time.sleep(30)
-            runs = project.fetch_runs_table(state="active").to_pandas()
+            runs = project.fetch_runs_table(state="active", progress_bar=False).to_pandas()
             assert not runs.empty
             assert tag in runs["sys/tags"].values
             assert random_val in runs["some_random_val"].values
 
         time.sleep(30)
 
-        runs = project.fetch_runs_table(state="inactive").to_pandas()
+        runs = project.fetch_runs_table(state="inactive", progress_bar=False).to_pandas()
         assert not runs.empty
         assert tag in runs["sys/tags"].values
         assert random_val in runs["some_random_val"].values
+
+    @pytest.mark.parametrize("ascending", [True, False])
+    def test_fetch_runs_table_sorting(self, environment, project, ascending):
+        # given
+        with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
+            run["metrics/accuracy"] = 0.95
+            run["some_val"] = "b"
+
+        with neptune.init_run(project=environment.project, custom_run_id="run2") as run:
+            run["metrics/accuracy"] = 0.90
+            run["some_val"] = "a"
+
+        time.sleep(30)
+
+        # when
+        runs = project.fetch_runs_table(
+            sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+        ).to_pandas()
+
+        # then
+        # runs are correctly sorted by creation time -> run1 was first
+        assert not runs.empty
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        if ascending:
+            assert run_list == ["run1", "run2"]
+        else:
+            assert run_list == ["run2", "run1"]
+
+        # when
+        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=ascending, progress_bar=False).to_pandas()
+
+        # then
+        assert not runs.empty
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+
+        if ascending:
+            assert run_list == ["run2", "run1"]
+        else:
+            assert run_list == ["run1", "run2"]
+
+        # when
+        runs = project.fetch_runs_table(sort_by="some_val", ascending=ascending, progress_bar=False).to_pandas()
+
+        # then
+        assert not runs.empty
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+
+        if ascending:
+            assert run_list == ["run2", "run1"]
+        else:
+            assert run_list == ["run1", "run2"]
+
+    def test_fetch_runs_table_non_atomic_type(self, environment, project):
+        # test if now it fails when we add a non-atomic type to that field
+
+        # given
+        with neptune.init_run(project=environment.project, custom_run_id="run3") as run:
+            run["metrics/accuracy"] = 0.9
+
+        with neptune.init_run(project=environment.project, custom_run_id="run4") as run:
+            for i in range(5):
+                run["metrics/accuracy"].log(0.95)
+
+        time.sleep(30)
+
+        # then
+        with pytest.raises(ValueError):
+            project.fetch_runs_table(sort_by="metrics/accuracy", progress_bar=False)
+
+    def test_fetch_runs_table_datetime_parsed(self, environment, project):
+        from pandas import Timestamp
+
+        # given
+        with neptune.init_run(project=environment.project) as run:
+            run["some_timestamp"] = datetime.datetime.now()
+
+        time.sleep(30)
+
+        # when
+        runs = project.fetch_runs_table(columns=["sys/creation_time", "some_timestamp"], progress_bar=False).to_pandas()
+
+        # then
+        assert type(runs["sys/creation_time"].iloc[0]) is Timestamp
+        assert type(runs["some_timestamp"].iloc[0]) is Timestamp
