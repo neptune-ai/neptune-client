@@ -473,6 +473,8 @@ def _store_response_as_file(
     destination: Optional[str] = None,
     progress_bar: Optional[ProgressBarType] = None,
 ) -> None:
+    chunk_size = 1024 * 1024
+
     if destination is None:
         target_file = _get_content_disposition_filename(response)
     elif os.path.isdir(destination):
@@ -480,9 +482,11 @@ def _store_response_as_file(
     else:
         target_file = destination
 
-    total_size = int(response.headers.get("content-length", 0))
-
-    progress_bar = False if total_size < 1024 * 1024 else progress_bar  # less than one chunk
+    if "content-length" in response.headers:
+        total_size = int(response.headers["content-length"])
+        progress_bar = False if total_size < chunk_size else progress_bar  # less than one chunk
+    else:
+        total_size = 0
 
     # TODO: update syntax once py3.10 becomes min supported version (with (x(), y(), z()): ...)
     with ExitStack() as stack:
@@ -490,7 +494,7 @@ def _store_response_as_file(
         response = stack.enter_context(response)
         file_stream = stack.enter_context(open(target_file, "wb"))
 
-        for chunk in response.iter_content(chunk_size=1024 * 1024):
+        for chunk in response.iter_content(chunk_size=chunk_size):
             if chunk:
                 file_stream.write(chunk)
                 bar.update(by=len(chunk), total=total_size)

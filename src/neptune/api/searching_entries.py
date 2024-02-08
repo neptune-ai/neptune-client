@@ -160,7 +160,7 @@ def iter_over_pages(
         **kwargs,
     ).get("matchingItemCount", 0)
 
-    progress_bar = False if total < step_size else progress_bar  # disable progress bar if only one page is fetched
+    progress_bar = False if total <= step_size else progress_bar  # disable progress bar if only one page is fetched
 
     with construct_progress_bar(progress_bar, "Fetching table...") as bar:
         # beginning of the first page
