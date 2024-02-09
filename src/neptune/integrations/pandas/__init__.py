@@ -18,20 +18,27 @@ __all__ = [
 ]
 
 from typing import (
-    Iterator,
-    TYPE_CHECKING, Tuple, Dict, Optional, Union,
+    Tuple,
+    Dict,
+    Optional,
+    Union,
 )
 from datetime import datetime
 
-if TYPE_CHECKING:
-    from neptune.internal.backends.api_model import LeaderboardEntry
+from neptune.metadata_containers.tables import (
+    StringSet,
+    File,
+    FileSet,
+    ImageSeries,
+    ToValueVisitor, Table, TableEntry,
+)
 
 
 try:
     import pandas as pd
 except ModuleNotFoundError as e:
     if e.name == "neptune_optuna":
-        from neptune.exceptions import NeptuneIntegrationNotInstalledException
+        from neptune.exceptions import NeptuneIntegrationNotInstalledException, MetadataInconsistency
 
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="pandas", framework_name="pandas"
@@ -40,17 +47,29 @@ except ModuleNotFoundError as e:
         raise
 
 
-def make_attribute_value(attr):
-    # TODO: Implement this
-    return None
+class ToPandasValueVisitor(ToValueVisitor):
+    def visit_string_set(self, field: StringSet) -> str:
+        return ",".join(list(field.values))
+
+    def visit_file(self, field: File) -> None:
+        return None
+
+    def visit_file_set(self, field: FileSet) -> None:
+        return None
+
+    def visit_image_series(self, field: ImageSeries) -> None:
+        return None
 
 
-def make_row(entry: LeaderboardEntry, ) -> Dict[str, Optional[Union[str, float, datetime]]]:
+def make_row(entry: TableEntry, ) -> Dict[str, Optional[Union[str, float, datetime]]]:
+    to_value_visitor = ToPandasValueVisitor()
     row: Dict[str, Optional[Union[str, float, datetime]]] = dict()
-    for attr in entry.attributes:
-        value = make_attribute_value(attr)
+
+    for field in entry.fields:
+        value = to_value_visitor.visit(field)
         if value is not None:
-            row[attr.path] = value
+            row[field.path] = value
+
     return row
 
 
@@ -63,10 +82,8 @@ def sort_key(attr: str) -> Tuple[int, str]:
     return 1, attr
 
 
-def to_pandas(entries: Iterator["LeaderboardEntry"]) -> pd.DataFrame:
-    rows = dict((n, make_row(entry)) for (n, entry) in enumerate(entries))
-
+def to_pandas(table: Table) -> pd.DataFrame:
+    rows = dict((n, make_row(entry)) for (n, entry) in enumerate(table))
     df = pd.DataFrame.from_dict(data=rows, orient="index")
     df = df.reindex(sorted(df.columns, key=sort_key), axis="columns")
-
     return df

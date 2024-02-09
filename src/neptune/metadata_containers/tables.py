@@ -26,6 +26,7 @@ from typing import (
     Optional,
     Union,
     Iterator, TypeVar, Generic,
+    TYPE_CHECKING,
 )
 
 from neptune.exceptions import MetadataInconsistency
@@ -43,6 +44,10 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.utils.run_state import RunState as RunStateEnum
 from neptune.typing import ProgressBarType
+
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 logger = get_logger()
 
@@ -309,7 +314,6 @@ def to_field(attr: AttributeWithProperties) -> Optional[Field]:
     if attr.type == AttributeType.STRING:
         return String(path=attr.path, value=str(attr.properties.get("value")))
     if attr.type == AttributeType.DATETIME:
-        # TODO: Think of this
         return Datetime(path=attr.path, value=attr.properties.get("value"))
     if attr.type == AttributeType.FLOAT_SERIES:
         return FloatSeries(path=attr.path, last=float(attr.properties.get("last")))
@@ -369,6 +373,11 @@ class TableEntry:
     def count(self) -> int:
         """Returns the number of fields in the Neptune object."""
         return len(self._fields)
+
+    @property
+    def fields(self) -> List[Field]:
+        """Returns the list of fields"""
+        return self._fields
 
     @property
     def paths(self) -> List[str]:
@@ -454,11 +463,10 @@ class Table:
         )
 
     def to_rows(self) -> List[TableEntry]:
-        """TODO: Proper docstrings. Converts the leaderboard to a list of rows."""
+        """Get list of entries."""
         return list(self)
 
-    def to_pandas(self) -> Any:  # TODO: return type should be pd.DataFrame
-        """TODO: Proper docstrings. Converts the leaderboard to a pandas DataFrame."""
+    def to_pandas(self) -> "pd.DataFrame":
+        """Converts the table to a pandas DataFrame."""
         from neptune.integrations.pandas import to_pandas
-
-        return to_pandas(entries=self._objects)
+        return to_pandas(table=self)
