@@ -55,6 +55,26 @@ if TYPE_CHECKING:
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
 
 
+class NoLimit(int):
+    def __gt__(self, other: Any) -> bool:
+        return True
+
+    def __lt__(self, other: Any) -> bool:
+        return False
+
+    def __ge__(self, other: Any) -> bool:
+        return True
+
+    def __le__(self, other: Any) -> bool:
+        return False
+
+    def __eq__(self, other: Any) -> bool:
+        return False
+
+    def __ne__(self, other: Any) -> bool:
+        return True
+
+
 def get_single_page(
     *,
     client: "SwaggerClientWrapper",
@@ -161,8 +181,9 @@ def iter_over_pages(
         **kwargs,
     ).get("matchingItemCount", 0)
 
-    if limit is not None and total > limit:
-        total = limit
+    limit = limit if limit is not None else NoLimit()
+
+    total = total if total < limit else limit
 
     progress_bar = False if total <= step_size else progress_bar  # disable progress bar if only one page is fetched
 
@@ -186,7 +207,7 @@ def iter_over_pages(
 
             for offset in range(0, max_offset, step_size):
                 local_limit = min(step_size, max_offset - offset)
-                if limit is not None and extracted_records + local_limit > limit:
+                if extracted_records + local_limit > limit:
                     local_limit = limit - extracted_records
                 result = get_single_page(
                     limit=local_limit,
@@ -202,7 +223,7 @@ def iter_over_pages(
                 if offset == 0 and last_page is not None:
                     total += result.get("matchingItemCount", 0)
 
-                if limit is not None and total > limit:
+                if total > limit:
                     total = limit
 
                 page = _entries_from_page(result)
@@ -214,7 +235,7 @@ def iter_over_pages(
 
                 yield from page
 
-                if limit is not None and extracted_records == limit:
+                if extracted_records == limit:
                     return
 
                 last_page = page
