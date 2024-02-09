@@ -169,6 +169,31 @@ def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page)
     ]
 
 
+@patch("neptune.api.searching_entries._entries_from_page")
+@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 5})
+def test__iter_over_pages__limit(get_single_page, entries_from_page):
+    # since the limiting itself takes place in an external service, we can't test the results
+    # we can only test if the limit is properly passed to the external service call
+
+    # given
+    entries_from_page.side_effect = [
+        generate_leaderboard_entries(values=["a", "b"]),
+        generate_leaderboard_entries(values=["c", "d"]),
+        generate_leaderboard_entries(values=["e"]),
+        [],
+    ]
+
+    # when
+    list(iter_over_pages(step_size=2, limit=4))
+
+    # then
+    assert get_single_page.mock_calls == [
+        call(limit=0, offset=0),  # total checking
+        call(offset=0, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
+        call(offset=2, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
+    ]
+
+
 def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> List[LeaderboardEntry]:
     return [
         LeaderboardEntry(
