@@ -55,7 +55,7 @@ class TestCli(BaseE2ETest):
                 # assign original value
                 container[key] = original_value
                 container.wait()
-                container_id = container._id
+                container_id = container._object_id
                 container_sys_id = container._sys_id
 
                 self.stop_synchronization_process(container)
@@ -170,7 +170,7 @@ class TestCli(BaseE2ETest):
             ) as container:
                 container[key] = fake.unique.word()
                 offline_container_path = container._op_processor.data_path
-                offline_container_id = container._id
+                offline_container_id = container._object_id
 
             assert os.path.exists(container_path)
             assert os.path.exists(offline_container_path)

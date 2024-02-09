@@ -35,7 +35,7 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.metadata_containers.tables import (
     Table,
     TableEntry,
 )
@@ -147,19 +147,19 @@ class AbstractTablesTestMixin:
         # when
         for row in (self.get_table().to_rows()[1], next(table_gen)):
             # then
-            self.assertEqual("Inactive", row.get_attribute_value("run/state"))
-            self.assertEqual(12.5, row.get_attribute_value("float"))
-            self.assertEqual("some text", row.get_attribute_value("string"))
-            self.assertEqual(now, row.get_attribute_value("datetime"))
-            self.assertEqual(8.7, row.get_attribute_value("float/series"))
-            self.assertEqual("last text", row.get_attribute_value("string/series"))
-            self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
-            self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
+            self.assertEqual("Inactive", row.get_field_value("run/state"))
+            self.assertEqual(12.5, row.get_field_value("float"))
+            self.assertEqual("some text", row.get_field_value("string"))
+            self.assertEqual(now, row.get_field_value("datetime"))
+            self.assertEqual(8.7, row.get_field_value("float/series"))
+            self.assertEqual("last text", row.get_field_value("string/series"))
+            self.assertEqual({"a", "b"}, row.get_field_value("string/set"))
+            self.assertEqual("abcdef0123456789", row.get_field_value("git/ref"))
 
             with self.assertRaises(MetadataInconsistency):
-                row.get_attribute_value("file")
+                row.get_field_value("file")
             with self.assertRaises(MetadataInconsistency):
-                row.get_attribute_value("image/series")
+                row.get_field_value("image/series")
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     @patch.object(NeptuneBackendMock, "download_file")

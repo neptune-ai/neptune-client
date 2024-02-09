@@ -34,7 +34,7 @@ from transformers.integrations import (
 from transformers.utils import logging
 
 from neptune import init_run
-from neptune.metadata_containers.metadata_containers_table import TableEntry
+from neptune.metadata_containers.tables import TableEntry
 from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import (
     catch_time,
@@ -128,7 +128,7 @@ class TestHuggingFace(BaseE2ETest):
 
     def _test_monitoring_cpu_present(self, environment, table_entry: TableEntry) -> bool:
         with init_run(
-            with_id=table_entry.get_attribute_value("sys/id"),
+            with_id=table_entry.get_field_value("sys/id"),
             project=environment.project,
             api_token=environment.user_token,
         ) as neptune_run:
@@ -282,8 +282,8 @@ class TestHuggingFace(BaseE2ETest):
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
         with pytest.raises(ValueError):
-            runs[0].get_attribute_value("monitoring/cpu")
-        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+            runs[0].get_field_value("monitoring/cpu")
+        assert runs[0].get_field_value("finetuning/train/metric1") == 123
 
         # when
         trainer.train()
@@ -302,7 +302,7 @@ class TestHuggingFace(BaseE2ETest):
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
         # assert runs[0].get_attribute_value("monitoring/cpu") is not None
-        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+        assert runs[0].get_field_value("finetuning/train/metric2") == 234
 
         # when
         trainer.train()
@@ -311,7 +311,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = sorted(
             project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
+            key=lambda run: run.get_field_value("sys/id"),
         )
         assert len(runs) == 2
         assert self._test_monitoring_cpu_present(environment, runs[1])
@@ -323,10 +323,10 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = sorted(
             project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
+            key=lambda run: run.get_field_value("sys/id"),
         )
         assert len(runs) == 2
-        assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
+        assert runs[1].get_field_value("finetuning/train/metric3") == 345
 
     def test_non_monitoring_runs_creation_with_initial_run(self, environment, project, common_tag):
         # given
@@ -347,7 +347,7 @@ class TestHuggingFace(BaseE2ETest):
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
         assert self._test_monitoring_cpu_present(environment, runs[0])
-        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+        assert runs[0].get_field_value("finetuning/train/metric1") == 123
 
         # when
         trainer.train()
@@ -366,7 +366,7 @@ class TestHuggingFace(BaseE2ETest):
         runs = project.fetch_runs_table(tag=common_tag).to_rows()
         assert len(runs) == 1
         assert self._test_monitoring_cpu_present(environment, runs[0])
-        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+        assert runs[0].get_field_value("finetuning/train/metric2") == 234
 
         # when
         trainer.train()
@@ -375,7 +375,7 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = sorted(
             project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
+            key=lambda run: run.get_field_value("sys/id"),
         )
         assert len(runs) == 2
         assert self._test_monitoring_cpu_present(environment, runs[0])
@@ -387,10 +387,10 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = sorted(
             project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
+            key=lambda run: run.get_field_value("sys/id"),
         )
         assert len(runs) == 2
-        assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
+        assert runs[1].get_field_value("finetuning/train/metric3") == 345
 
     def test_hyperparameter_optimization(self, environment, project, common_tag):
         # given
@@ -416,11 +416,11 @@ class TestHuggingFace(BaseE2ETest):
         # then
         runs = sorted(
             project.fetch_runs_table(tag=common_tag).to_rows(),
-            key=lambda run: run.get_attribute_value("sys/id"),
+            key=lambda run: run.get_field_value("sys/id"),
         )
         assert len(runs) == n_trials
         for run_id, run in enumerate(runs):
-            assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
+            assert run.get_field_value("finetuning/trial") == f"trial_{run_id}"
             assert self._test_monitoring_cpu_present(environment, run)
 
     def test_usages(self):

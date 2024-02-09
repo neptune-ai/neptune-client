@@ -92,7 +92,7 @@ from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.tables import Table
 from neptune.metadata_containers.utils import parse_dates
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -689,8 +689,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
         return Table(
             backend=self._backend,
-            container_type=child_type,
-            entries=leaderboard_entries,
+            object_type=child_type,
+            objects=leaderboard_entries,
         )
 
     def get_root_object(self) -> "MetadataContainer":

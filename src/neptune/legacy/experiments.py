@@ -1013,7 +1013,7 @@ class Experiment(LegacyExperiment):
         return str(self)
 
     def __eq__(self, o):
-        return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
+        return self._id == o._object_id and self._internal_id == o._internal_id and self._project == o._project
 
     def __ne__(self, o):
         return not self.__eq__(o)

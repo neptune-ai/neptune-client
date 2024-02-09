@@ -154,11 +154,11 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    total = get_single_page(
+    total = min(get_single_page(
         limit=0,
         offset=0,
         **kwargs,
-    ).get("matchingItemCount", 0)
+    ).get("matchingItemCount", 0), step_size)
 
     progress_bar = False if total <= step_size else progress_bar  # disable progress bar if only one page is fetched
 
@@ -195,10 +195,10 @@ def iter_over_pages(
 
                 page = _entries_from_page(result)
 
+                bar.update(by=step_size, total=total)
+
                 if not page:
                     return
-
-                bar.update(by=step_size, total=total)
 
                 yield from page
 

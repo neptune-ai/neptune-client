@@ -46,7 +46,7 @@ class TestFetchTable(BaseE2ETest):
 
         runs_table = project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows()
         assert len(runs_table) == 1
-        assert runs_table[0].get_attribute_value("sys/id") == run_id1
+        assert runs_table[0].get_field_value("sys/id") == run_id1
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container: Model, environment):
@@ -62,16 +62,16 @@ class TestFetchTable(BaseE2ETest):
 
         versions_table = sorted(
             container.fetch_model_versions_table(progress_bar=False).to_rows(),
-            key=lambda r: r.get_attribute_value("sys/id"),
+            key=lambda r: r.get_field_value("sys/id"),
         )
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
-            assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
+            assert versions_table[index].get_field_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
         versions_table_gen = container.fetch_model_versions_table(ascending=True, progress_bar=False)
         for te1, te2 in zip(list(versions_table_gen), versions_table):
-            assert te1._id == te2._id
-            assert te1._container_type == te2._container_type
+            assert te1._object_id == te2._object_id
+            assert te1._object_type == te2._object_type
 
     def _test_fetch_from_container(self, init_container, get_containers_as_rows):
         container_id1, container_id2 = None, None
@@ -95,42 +95,42 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(5)
 
         containers_as_rows = get_containers_as_rows()
-        container1 = next(filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows))
-        container2 = next(filter(lambda m: m.get_attribute_value("sys/id") == container_id2, containers_as_rows))
+        container1 = next(filter(lambda m: m.get_field_value("sys/id") == container_id1, containers_as_rows))
+        container2 = next(filter(lambda m: m.get_field_value("sys/id") == container_id2, containers_as_rows))
 
-        assert container1.get_attribute_value(key1) == value1
-        assert container1.get_attribute_value(key2) == value2
-        assert container2.get_attribute_value(key1) == value1
+        assert container1.get_field_value(key1) == value1
+        assert container1.get_field_value(key2) == value2
+        assert container2.get_field_value(key1) == value1
         with pytest.raises(ValueError):
-            container2.get_attribute_value(key2)
+            container2.get_field_value(key2)
 
         def get_container1(**kwargs):
             containers_as_rows = get_containers_as_rows(**kwargs)
-            return next(filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows))
+            return next(filter(lambda m: m.get_field_value("sys/id") == container_id1, containers_as_rows))
 
         non_filtered = get_container1()
-        assert non_filtered.get_attribute_value(key1) == value1
-        assert non_filtered.get_attribute_value(key2) == value2
+        assert non_filtered.get_field_value(key1) == value1
+        assert non_filtered.get_field_value(key2) == value2
 
         columns_none = get_container1(columns=None)
-        assert columns_none.get_attribute_value(key1) == value1
-        assert columns_none.get_attribute_value(key2) == value2
+        assert columns_none.get_field_value(key1) == value1
+        assert columns_none.get_field_value(key2) == value2
 
         columns_empty = get_container1(columns=[])
         with pytest.raises(ValueError):
-            columns_empty.get_attribute_value(key1)
+            columns_empty.get_field_value(key1)
         with pytest.raises(ValueError):
-            columns_empty.get_attribute_value(key2)
+            columns_empty.get_field_value(key2)
 
         columns_with_one_key = get_container1(columns=[key1])
-        assert columns_with_one_key.get_attribute_value(key1) == value1
+        assert columns_with_one_key.get_field_value(key1) == value1
         with pytest.raises(ValueError):
-            columns_with_one_key.get_attribute_value(key2)
+            columns_with_one_key.get_field_value(key2)
 
         columns_with_one_key = get_container1(columns=[key2])
         with pytest.raises(ValueError):
-            columns_with_one_key.get_attribute_value(key1)
-        assert columns_with_one_key.get_attribute_value(key2) == value2
+            columns_with_one_key.get_field_value(key1)
+        assert columns_with_one_key.get_field_value(key2) == value2
 
     def test_fetch_runs_table(self, environment, project):
         def init_run():

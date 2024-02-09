@@ -28,7 +28,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.metadata_containers.tables import (
     Table,
     TableEntry,
 )
@@ -80,5 +80,5 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     )
     def test_creation_time_returned_as_datetime(self):
         table = self.get_table()
-        val = table.to_rows()[0].get_attribute_value("sys/creation_time")
+        val = table.to_rows()[0].get_field_value("sys/creation_time")
         assert val == datetime(2024, 2, 5, 20, 37, 40, 915000)
