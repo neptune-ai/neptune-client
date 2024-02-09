@@ -87,7 +87,7 @@ def test__iter_over_pages__single_pagination(get_single_page, entries_from_page)
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
-        None,
+        [],
     ]
 
     # when
@@ -112,7 +112,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_p
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
-        None,
+        [],
     ]
 
     # when
@@ -153,7 +153,7 @@ def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page)
     entries_from_page.side_effect = [
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e"]),
-        None,
+        [],
     ]
 
     # when
