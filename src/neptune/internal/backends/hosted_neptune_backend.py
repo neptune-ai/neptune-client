@@ -1091,6 +1091,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 query=query,
                 attributes_filter=attributes_filter,
                 step_size=step_size,
+                limit=limit,
                 sort_by=sort_by,
                 ascending=ascending,
                 sort_by_column_type=sort_by_column_type,

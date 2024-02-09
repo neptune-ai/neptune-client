@@ -144,6 +144,7 @@ def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeW
 def iter_over_pages(
     *,
     step_size: int,
+    limit: Optional[int] = None,
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
     sort_by_column_type: Optional[str] = None,
@@ -160,7 +161,12 @@ def iter_over_pages(
         **kwargs,
     ).get("matchingItemCount", 0)
 
+    if limit is not None and total > limit:
+        total = limit
+
     progress_bar = False if total <= step_size else progress_bar  # disable progress bar if only one page is fetched
+
+    extracted_records = 0
 
     with construct_progress_bar(progress_bar, "Fetching table...") as bar:
         # beginning of the first page
@@ -179,8 +185,11 @@ def iter_over_pages(
                 searching_after = page_attribute.properties["value"]
 
             for offset in range(0, max_offset, step_size):
+                local_limit = min(step_size, max_offset - offset)
+                if limit is not None and extracted_records + local_limit > limit:
+                    local_limit = limit - extracted_records
                 result = get_single_page(
-                    limit=min(step_size, max_offset - offset),
+                    limit=local_limit,
                     offset=offset,
                     sort_by=sort_by,
                     sort_by_column_type=sort_by_column_type,
@@ -189,18 +198,24 @@ def iter_over_pages(
                     **kwargs,
                 )
 
-                # fetch the item count everytime a new page is started
-                if offset == 0:
+                # fetch the item count everytime a new page is started (except for the very fist page)
+                if offset == 0 and last_page is not None:
                     total += result.get("matchingItemCount", 0)
 
+                if limit is not None and total > limit:
+                    total = limit
+
                 page = _entries_from_page(result)
+                extracted_records += len(page)
+                bar.update(by=len(page), total=total)
 
                 if not page:
                     return
 
-                bar.update(by=step_size, total=total)
-
                 yield from page
+
+                if limit is not None and extracted_records == limit:
+                    return
 
                 last_page = page
 
