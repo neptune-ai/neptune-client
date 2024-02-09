@@ -151,3 +151,18 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         with self.call_init(name="some_name") as exp:
             exp.wait()
             self.assertEqual(exp["sys/name"].fetch(), "some_name")
+
+
+@patch("neptune.metadata_containers.metadata_container.project_name_lookup")
+@patch("neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container")
+def test_infer_model_key(mock_get_metadata_container, mock_project_name_lookup):
+    mock_project_name_lookup.return_value.workspace = "workspace"
+    mock_project_name_lookup.return_value.name = "project"
+    mock_project_name_lookup.return_value.sys_id = "some_id"
+
+    with init_model_version(mode="debug", model="my_model"):
+        ...
+
+    mock_get_metadata_container.assert_called_once_with(
+        container_id="workspace/project/some_id-my_model", expected_container_type=ContainerType.MODEL
+    )
