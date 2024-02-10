@@ -13,28 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    'to_pandas'
-]
+__all__ = ["to_pandas"]
 
+from datetime import datetime
 from typing import (
-    Tuple,
     Dict,
     Optional,
+    Tuple,
     Union,
 )
-from datetime import datetime
+
+import pandas as pd
 
 from neptune.tables import (
-    StringSet,
     File,
     FileSet,
     ImageSeries,
-    ToValueVisitor, Table, TableEntry,
+    StringSet,
+    Table,
+    TableEntry,
+    ToValueVisitor,
 )
-
-
-import pandas as pd
 
 
 class ToPandasValueVisitor(ToValueVisitor):
@@ -51,7 +50,9 @@ class ToPandasValueVisitor(ToValueVisitor):
         return None
 
 
-def make_row(entry: TableEntry, ) -> Dict[str, Optional[Union[str, float, datetime]]]:
+def make_row(
+    entry: TableEntry,
+) -> Dict[str, Optional[Union[str, float, datetime]]]:
     to_value_visitor = ToPandasValueVisitor()
     row: Dict[str, Optional[Union[str, float, datetime]]] = dict()
 

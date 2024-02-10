@@ -92,8 +92,8 @@ from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.tables import Table
 from neptune.metadata_containers.utils import parse_dates
+from neptune.tables import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.typing import ProgressBarType

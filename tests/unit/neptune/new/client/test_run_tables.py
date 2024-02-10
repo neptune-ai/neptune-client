@@ -28,11 +28,11 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
+from neptune.metadata_containers.utils import DATE_FORMAT
 from neptune.tables import (
     Table,
     TableEntry,
 )
-from neptune.metadata_containers.utils import DATE_FORMAT
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 

@@ -21,12 +21,15 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     Any,
+    Generic,
+    Iterator,
     List,
     Optional,
+    Type,
+    TypeVar,
     Union,
-    Iterator, TypeVar, Generic,
-    TYPE_CHECKING, Type,
 )
 
 from neptune.exceptions import MetadataInconsistency
@@ -44,7 +47,6 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.utils.run_state import RunState as RunStateEnum
 from neptune.typing import ProgressBarType
-
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -473,4 +475,5 @@ class Table:
     def to_pandas(self) -> "pd.DataFrame":
         """Converts the table to a pandas DataFrame."""
         from neptune.integrations.pandas import to_pandas
+
         return to_pandas(table=self)
