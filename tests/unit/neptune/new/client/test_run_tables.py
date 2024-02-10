@@ -28,7 +28,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.tables import (
+from neptune.tables import (
     Table,
     TableEntry,
 )

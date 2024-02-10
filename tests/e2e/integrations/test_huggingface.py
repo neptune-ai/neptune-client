@@ -34,7 +34,7 @@ from transformers.integrations import (
 from transformers.utils import logging
 
 from neptune import init_run
-from neptune.metadata_containers.tables import TableEntry
+from neptune.tables import TableEntry
 from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import (
     catch_time,

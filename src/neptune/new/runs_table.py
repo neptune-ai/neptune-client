@@ -33,9 +33,8 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.tables import (
+from neptune.tables import (
     LeaderboardEntry,
-    LeaderboardHandler,
 )
-from neptune.metadata_containers.tables import Table as RunsTable
-from neptune.metadata_containers.tables import TableEntry as RunsTableEntry
+from neptune.tables import Table as RunsTable
+from neptune.tables import TableEntry as RunsTableEntry

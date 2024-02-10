@@ -25,7 +25,7 @@ from typing import (
 )
 from datetime import datetime
 
-from neptune.metadata_containers.tables import (
+from neptune.tables import (
     StringSet,
     File,
     FileSet,

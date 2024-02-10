@@ -92,7 +92,7 @@ from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.metadata_containers.tables import Table
+from neptune.tables import Table
 from neptune.metadata_containers.utils import parse_dates
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
