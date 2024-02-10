@@ -34,17 +34,7 @@ from neptune.metadata_containers.tables import (
 )
 
 
-try:
-    import pandas as pd
-except ModuleNotFoundError as e:
-    if e.name == "neptune_optuna":
-        from neptune.exceptions import NeptuneIntegrationNotInstalledException, MetadataInconsistency
-
-        raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="pandas", framework_name="pandas"
-        ) from None
-    else:
-        raise
+import pandas as pd
 
 
 class ToPandasValueVisitor(ToValueVisitor):

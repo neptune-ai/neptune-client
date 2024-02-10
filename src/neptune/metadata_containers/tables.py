@@ -26,7 +26,7 @@ from typing import (
     Optional,
     Union,
     Iterator, TypeVar, Generic,
-    TYPE_CHECKING,
+    TYPE_CHECKING, Type,
 )
 
 from neptune.exceptions import MetadataInconsistency
@@ -302,6 +302,10 @@ class ToValueVisitor(FieldVisitor[Union[float, str, int, bool, datetime, List[st
         return field.hash
 
 
+def to_value(value: Ret, target_type: Type) -> Optional[Ret]:
+    return target_type(value) if value else None
+
+
 def to_field(attr: AttributeWithProperties) -> Optional[Field]:
     if attr.type == AttributeType.RUN_STATE:
         return RunState(path=attr.path, value=str(RunStateEnum.from_api(attr.properties.get("value")).value))
@@ -310,17 +314,17 @@ def to_field(attr: AttributeWithProperties) -> Optional[Field]:
     if attr.type == AttributeType.INT:
         return Int(path=attr.path, value=int(attr.properties.get("value")))
     if attr.type == AttributeType.BOOL:
-        return Bool(path=attr.path, value=bool(attr.properties.get("value")))
+        return Bool(path=attr.path, value=(str(attr.properties.get("value")).lower() == "true"))
     if attr.type == AttributeType.STRING:
-        return String(path=attr.path, value=str(attr.properties.get("value")))
+        return String(path=attr.path, value=attr.properties.get("value"))
     if attr.type == AttributeType.DATETIME:
         return Datetime(path=attr.path, value=attr.properties.get("value"))
     if attr.type == AttributeType.FLOAT_SERIES:
-        return FloatSeries(path=attr.path, last=float(attr.properties.get("last")))
+        return FloatSeries(path=attr.path, last=to_value(attr.properties.get("last"), float))
     if attr.type == AttributeType.STRING_SERIES:
-        return StringSeries(path=attr.path, last=str(attr.properties.get("last")))
+        return StringSeries(path=attr.path, last=attr.properties.get("last"))
     if attr.type == AttributeType.STRING_SET:
-        return StringSet(path=attr.path, values=attr.properties.get("values"))
+        return StringSet(path=attr.path, values=to_value(attr.properties.get("values") or set(), set))
     if attr.type == AttributeType.FILE:
         return File(path=attr.path)
     if attr.type == AttributeType.FILE_SET:
