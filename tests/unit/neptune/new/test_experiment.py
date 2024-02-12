@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import signal
 import unittest
 from datetime import datetime
 from unittest import mock
@@ -260,10 +261,19 @@ class TestExperiment(unittest.TestCase):
             del model_version["sys"]
 
     @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
-    def test_operation_processor_lazy_init(self, mock_get_operation_processor):
+    def test_operation_processor_on_fork_lazy_init(self, mock_get_operation_processor):
         for exp in self.get_experiments():
+            mock_get_operation_processor.reset_mock()  # reset all call history after init
             with self.subTest(msg=f"For type {exp.container_type}"):
-                mock_get_operation_processor.assert_not_called()
-                exp["key"] = "value"
-                mock_get_operation_processor.assert_called()
-                # mock_get_operation_processor.reset_mock()  # this might be needed in the future to reset the mock
+                child_pid = os.fork()
+                if child_pid == 0:
+                    # child process exec
+                    # new op processor wasn't created after fork
+                    mock_get_operation_processor.assert_not_called()
+                    exp["some/key"] = "some_value"
+                    # new op processor was created when it was needed
+                    mock_get_operation_processor.assert_called_once()
+                    os.kill(os.getpid(), signal.SIGKILL)
+                else:
+                    # parent process exec
+                    os.waitpid(child_pid, 0)

@@ -23,7 +23,10 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import wraps
+from functools import (
+    partial,
+    wraps,
+)
 from queue import Queue
 from typing import (
     TYPE_CHECKING,
@@ -77,7 +80,7 @@ from neptune.internal.init.parameters import (
 )
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
@@ -175,14 +178,17 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
         )
 
-        self._op_processor: OperationProcessor = get_operation_processor(
-            mode=mode,
-            container_id=self._id,
-            container_type=self.container_type,
-            backend=self._backend,
-            lock=self._lock,
-            flush_period=flush_period,
-            queue=self._signals_queue,
+        self._op_processor: LazyOperationProcessorWrapper = LazyOperationProcessorWrapper(
+            operation_processor_getter=partial(
+                get_operation_processor,
+                mode=mode,
+                container_id=self._id,
+                container_type=self.container_type,
+                backend=self._backend,
+                lock=self._lock,
+                flush_period=flush_period,
+                queue=self._signals_queue,
+            )
         )
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -236,14 +242,17 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
             self._signals_queue = Queue()
-            self._op_processor = get_operation_processor(
-                mode=self._mode,
-                container_id=self._id,
-                container_type=self.container_type,
-                backend=self._backend,
-                lock=self._lock,
-                flush_period=self._flush_period,
-                queue=self._signals_queue,
+            self._op_processor = LazyOperationProcessorWrapper(
+                operation_processor_getter=partial(
+                    get_operation_processor,
+                    mode=self._mode,
+                    container_id=self._id,
+                    container_type=self.container_type,
+                    backend=self._backend,
+                    lock=self._lock,
+                    flush_period=self._flush_period,
+                    queue=self._signals_queue,
+                )
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
@@ -260,6 +269,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                 )
             self._bg_job = BackgroundJobList(jobs)
 
+            # if might have to moved to side effect of lazy operation processor
+            # as ex. AsyncOperationProcessor on starts creates some Deamon threads
             self._op_processor.start()
 
         with self._forking_cond:

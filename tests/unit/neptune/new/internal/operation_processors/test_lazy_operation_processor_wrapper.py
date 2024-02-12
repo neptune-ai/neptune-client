@@ -17,7 +17,8 @@ def test_lazy_initialization():
     assert not lazy_wrapper.evaluated()
 
     # when
-    lazy_wrapper.start()
+    lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
+    lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
 
     # then
     operation_processor_getter.assert_called_once()

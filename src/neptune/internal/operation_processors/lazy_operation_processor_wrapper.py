@@ -52,7 +52,7 @@ def exec_if_triggered(method: Callable[..., RT]) -> Callable[..., RT]:
 class LazyOperationProcessorWrapper(OperationProcessor):
     def __init__(self, operation_processor_getter: Callable[[], OperationProcessor]):
         self._operation_processor_getter = operation_processor_getter
-        self._operation_processor: OperationProcessor
+        self._operation_processor: OperationProcessor = None  # type: ignore
 
     def evaluated(self) -> bool:
         return self._operation_processor is not None
