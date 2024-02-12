@@ -269,11 +269,15 @@ class TestExperiment(unittest.TestCase):
                 if child_pid == 0:
                     # child process exec
                     # new op processor wasn't created after fork
-                    mock_get_operation_processor.assert_not_called()
-                    exp["some/key"] = "some_value"
-                    # new op processor was created when it was needed
-                    mock_get_operation_processor.assert_called_once()
-                    os.kill(os.getpid(), signal.SIGKILL)
+                    try:
+                        mock_get_operation_processor.assert_not_called()
+                        exp["some/key"] = "some_value"
+                        # new op processor was created when it was needed
+                        mock_get_operation_processor.assert_called_once()
+                    except Exception as e:
+                        raise e
+                    finally:
+                        os.kill(os.getpid(), signal.SIGKILL)
                 else:
                     # parent process exec
                     os.waitpid(child_pid, 0)
