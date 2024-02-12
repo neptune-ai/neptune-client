@@ -9,7 +9,7 @@ style = "semver"
 pattern = "default-unprefixed"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.7,<=3.12"
 
 # Python lack of functionalities from future versions
 importlib-metadata = { version = "*", python = "<3.8" }
@@ -40,35 +40,6 @@ GitPython = ">=2.0.8"
 psutil = "*"
 pandas = "*"
 
-# dev
-altair = { version = "*", optional = true }
-bokeh = { version = "*", optional = true }
-freezegun = { version = "*", optional = true }
-matplotlib = { version = "*", optional = true }
-seaborn = { version = "*", optional = true }
-mock = { version = "*", optional = true }
-moto = { version = "<5.0.0", extras = [ "s3" ], optional = true }
-munch = { version = "*", optional = true }
-plotly = { version = "*", optional = true }
-pre-commit = { version = "*", optional = true }
-pytest = { version = "*", optional = true }
-pytest-mock = { version = "*", optional = true }
-pytest-timeout = { version = "*", optional = true }
-pytest-xdist = { version = "*", optional = true }
-pytest-cov = { version = "*", optional = true }
-tensorflow = { version = "*", optional = true }
-torch = { version = "*", optional = true }
-vega_datasets = { version = "*", optional = true }
-Faker = { version = "*", optional = true }
-mypy = { version = "*", optional = true }
-
-# e2e
-optuna = { version = "*", optional = true }
-scikit-learn = { version = "*", optional = true }
-torchvision = { version = "*", optional = true }
-accelerate = { version = "*", optional = true }
-backoff = { version = "*", optional = true }
-
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
 neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
@@ -84,9 +55,9 @@ neptune-tensorflow-keras = { version = "*", optional = true }
 neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
-zenml = { version = "*", optional = true }
+zenml = { version = "*", optional = true, python = ">=3.8,<3.12" }
 neptune-aws = { version = "*", optional = true }
-neptune-mlflow = { version = "*", optional = true }
+neptune-mlflow = { version = "*", optional = true, python = ">=3.8,<3.12" }
 neptune-airflow = { version = "*", optional = true }
 
 [tool.poetry.extras]
@@ -109,41 +80,6 @@ zenml = ["zenml"]
 mlflow = ["neptune-mlflow"]
 airflow = ["neptune-airflow"]
 experimental = ["neptune-experimental"]
-dev = [
-    "altair",
-    "bokeh",
-    "Faker",
-    "freezegun",
-    "matplotlib",
-    "mock",
-    "moto",
-    "munch",
-    "mypy",
-    "plotly",
-    "pre-commit",
-    "pytest",
-    "pytest-cov",
-    "pytest-mock",
-    "pytest-timeout",
-    "pytest-xdist",
-    "seaborn",
-    "tensorflow",
-    "torch",
-    "vega_datasets",
-
-]
-e2e = [
-    # Integrations
-    "optuna",
-    "pytorch-lightning",
-    "scikit-learn",
-    "torchvision",
-    "transformers",
-    "accelerate",
-    "zenml",
-    "mlflow",
-    "backoff",
-]
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
