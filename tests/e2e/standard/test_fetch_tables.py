@@ -262,3 +262,19 @@ class TestFetchTable(BaseE2ETest):
         # then
         assert isinstance(runs["sys/creation_time"].iloc[0], datetime.datetime)
         assert isinstance(runs["some_timestamp"].iloc[0], datetime.datetime)
+
+    def test_fetch_runs_table_limit(self, environment, project):
+        # given
+        with neptune.init_run(project=environment.project) as run:
+            run["some_val"] = "a"
+
+        with neptune.init_run(project=environment.project) as run:
+            run["some_val"] = "b"
+
+        time.sleep(30)
+
+        # when
+        runs = project.fetch_runs_table(limit=1, progress_bar=False).to_pandas()
+
+        # then
+        assert len(runs) == 1
