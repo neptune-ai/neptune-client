@@ -2,6 +2,10 @@
 
 ### Fixes
 - Fixed conda package ([#1652](https://github.com/neptune-ai/neptune-client/pull/1652))
+- Resource cleaning in PyTorch Dataloaders with multiple workers ([issue](https://github.com/neptune-ai/neptune-client/issues/1622)) ([#1649](https://github.com/neptune-ai/neptune-client/pull/1649))
+
+### Changes
+- Lazy initialization of operation processor when forking ([#1649](https://github.com/neptune-ai/neptune-client/pull/1649))
 
 
 ## neptune 1.9.0
