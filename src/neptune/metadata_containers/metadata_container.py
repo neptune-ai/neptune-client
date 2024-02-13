@@ -252,7 +252,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     lock=self._lock,
                     flush_period=self._flush_period,
                     queue=self._signals_queue,
-                )
+                ),
+                post_trigger_side_effect=self._op_processor.start,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
@@ -268,10 +269,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     )
                 )
             self._bg_job = BackgroundJobList(jobs)
-
-            # if might have to moved to side effect of lazy operation processor
-            # as ex. AsyncOperationProcessor on starts creates some Deamon threads
-            self._op_processor.start()
 
         with self._forking_cond:
             self._forking_state = False
