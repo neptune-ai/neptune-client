@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import mmap
 import os
 import signal
 import unittest
@@ -262,22 +263,24 @@ class TestExperiment(unittest.TestCase):
 
     @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
     def test_operation_processor_on_fork_lazy_init(self, mock_get_operation_processor):
+        mmap_size = 5
         for exp in self.get_experiments():
-            mock_get_operation_processor.reset_mock()  # reset all call history after init
             with self.subTest(msg=f"For type {exp.container_type}"):
+                mm = mmap.mmap(-1, mmap_size)
+                before_fork_call_cnt = mock_get_operation_processor.call_count
                 child_pid = os.fork()
+                after_fork_call_cnt = mock_get_operation_processor.call_count
                 if child_pid == 0:
                     # child process exec
-                    # new op processor wasn't created after fork
-                    try:
-                        mock_get_operation_processor.assert_not_called()
-                        exp["some/key"] = "some_value"
-                        # new op processor was created when it was needed
-                        mock_get_operation_processor.assert_called_once()
-                    except Exception as e:
-                        raise e
-                    finally:
-                        os.kill(os.getpid(), signal.SIGKILL)
+                    # send call count after fork from child to parent process
+                    mm.write(after_fork_call_cnt.to_bytes(mmap_size, byteorder="big"))
+                    os.kill(os.getpid(), signal.SIGKILL)
                 else:
                     # parent process exec
+                    # wait for child process to send data and finish
                     os.waitpid(child_pid, 0)
+                    child_after_fork_call_cnt = int.from_bytes(mm.read(mmap_size), byteorder="big")
+                    mm.close()
+                    assert (
+                        before_fork_call_cnt == child_after_fork_call_cnt
+                    ), "fork should not force new get_operation_processor call in forked process"
