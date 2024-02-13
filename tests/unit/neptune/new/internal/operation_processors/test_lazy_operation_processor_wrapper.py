@@ -53,3 +53,18 @@ def test_call_propagation_to_wrapped():
 
         # then
         getattr(operation_processor, method).assert_called_once()
+
+
+def test_post_init_trigger_side_effect_called():
+
+    # given
+    operation_processor = mock.Mock(spec=OperationProcessor)
+    operation_processor_getter = mock.Mock(return_value=operation_processor)
+    post_trigger_side_effect = mock.Mock()
+    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter, post_trigger_side_effect)
+
+    # when
+    lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
+
+    # then
+    post_trigger_side_effect.assert_called_once()

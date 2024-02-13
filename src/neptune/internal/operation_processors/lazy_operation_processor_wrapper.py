@@ -18,6 +18,7 @@ from __future__ import annotations
 
 __all__ = ("LazyOperationProcessorWrapper",)
 
+from pathlib import Path
 from typing import (
     Any,
     Callable,
@@ -25,6 +26,7 @@ from typing import (
     TypeVar,
 )
 
+from neptune.core.components.abstract import Resource
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -32,16 +34,18 @@ from neptune.internal.operation_processors.operation_processor import OperationP
 RT = TypeVar("RT")
 
 
-def trigger_op_processor(method: Callable[..., RT]) -> Callable[..., RT]:
+def trigger_evaluation(method: Callable[..., RT]) -> Callable[..., RT]:
     def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> RT:
         if self._operation_processor is None:
             self._operation_processor = self._operation_processor_getter()
+            if self._post_trigger_side_effect is not None:
+                self._post_trigger_side_effect()
         return method(self, *args, **kwargs)
 
     return _wrapper
 
 
-def exec_if_triggered(method: Callable[..., RT]) -> Callable[..., RT]:
+def noop_if_not_triggered(method: Callable[..., RT]) -> Callable[..., RT]:
     def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> RT:
         if self._operation_processor is not None:
             return method(self, *args, **kwargs)
@@ -50,46 +54,59 @@ def exec_if_triggered(method: Callable[..., RT]) -> Callable[..., RT]:
 
 
 class LazyOperationProcessorWrapper(OperationProcessor):
-    def __init__(self, operation_processor_getter: Callable[[], OperationProcessor]):
+    def __init__(
+        self,
+        operation_processor_getter: Callable[[], OperationProcessor],
+        post_trigger_side_effect: Optional[Callable[[], Any]] = None,
+    ):
         self._operation_processor_getter = operation_processor_getter
+        self._post_trigger_side_effect = post_trigger_side_effect
         self._operation_processor: OperationProcessor = None  # type: ignore
 
     def evaluated(self) -> bool:
         return self._operation_processor is not None
 
-    @trigger_op_processor
+    @trigger_evaluation
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._operation_processor.enqueue_operation(op, wait=wait)
 
     @property
-    @trigger_op_processor
+    @trigger_evaluation
     def operation_storage(self) -> OperationStorage:
         return self._operation_processor.operation_storage
 
-    @exec_if_triggered
+    @property
+    @trigger_evaluation
+    def data_path(self) -> Path:
+        if isinstance(self._operation_processor, Resource):
+            return self._operation_processor.data_path
+        else:
+            raise NotImplementedError
+
+    @trigger_evaluation
     def start(self) -> None:
         self._operation_processor.start()
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def pause(self) -> None:
         self._operation_processor.pause()
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def resume(self) -> None:
         self._operation_processor.resume()
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def flush(self) -> None:
         self._operation_processor.flush()
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def wait(self) -> None:
         self._operation_processor.wait()
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def stop(self, seconds: Optional[float] = None) -> None:
         self._operation_processor.stop(seconds=seconds)
 
-    @exec_if_triggered
+    @noop_if_not_triggered
     def close(self) -> None:
         self._operation_processor.close()
