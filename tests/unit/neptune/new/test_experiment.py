@@ -28,6 +28,7 @@ from neptune import (
     init_project,
     init_run,
 )
+from neptune.common.utils import IS_WINDOWS
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -261,6 +262,7 @@ class TestExperiment(unittest.TestCase):
         with self.assertRaises(NeptuneProtectedPathException):
             del model_version["sys"]
 
+    @unittest.skipIf(IS_WINDOWS, "Windows does not support fork")
     @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
     def test_operation_processor_on_fork_lazy_init(self, mock_get_operation_processor):
         mmap_size = 5
