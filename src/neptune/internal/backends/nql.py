@@ -66,6 +66,9 @@ class NQLAttributeType(str, Enum):
     STRING_SET = "stringSet"
     EXPERIMENT_STATE = "experimentState"
     BOOLEAN = "bool"
+    DATETIME = "datetime"
+    INTEGER = "integer"
+    FLOAT = "float"
 
 
 @dataclass
