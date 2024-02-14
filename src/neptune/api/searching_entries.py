@@ -27,6 +27,10 @@ from typing import (
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
+from typing_extensions import (
+    Literal,
+    TypeAlias,
+)
 
 from neptune.internal.backends.api_model import (
     AttributeType,
@@ -53,6 +57,8 @@ if TYPE_CHECKING:
 
 
 SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
+
+SORT_BY_COLUMN_TYPE: TypeAlias = Literal["string", "datetime", "integer", "boolean", "float"]
 
 
 class NoLimit(int):
@@ -83,17 +89,18 @@ def get_single_page(
     limit: int,
     offset: int,
     sort_by: Optional[str] = None,
-    sort_by_column_type: Optional[str] = None,
+    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
     ascending: bool = False,
     types: Optional[Iterable[str]] = None,
     query: Optional["NQLQuery"] = None,
     searching_after: Optional[str] = None,
 ) -> Any:
     normalized_query = query or NQLEmptyQuery()
+    sort_by_column_type = sort_by_column_type if sort_by_column_type else AttributeType.STRING.value
     if sort_by and searching_after:
         sort_by_as_nql = NQLQueryAttribute(
             name=sort_by,
-            type=NQLAttributeType.STRING,
+            type=NQLAttributeType(sort_by_column_type),
             operator=NQLAttributeOperator.GREATER_THAN,
             value=searching_after,
         )
@@ -167,7 +174,7 @@ def iter_over_pages(
     limit: Optional[int] = None,
     sort_by: str = "sys/id",
     max_offset: int = MAX_SERVER_OFFSET,
-    sort_by_column_type: Optional[str] = None,
+    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
     ascending: bool = False,
     progress_bar: Optional[ProgressBarType] = None,
     **kwargs: Any,
@@ -223,8 +230,7 @@ def iter_over_pages(
                 if offset == 0 and last_page is not None:
                     total += result.get("matchingItemCount", 0)
 
-                if total > limit:
-                    total = limit
+                total = min(total, limit)
 
                 page = _entries_from_page(result)
                 extracted_records += len(page)
