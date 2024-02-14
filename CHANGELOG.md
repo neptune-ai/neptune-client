@@ -17,6 +17,7 @@
 - Better value validation for `state` parameter of `fetch_*_table()` methods ([#1616](https://github.com/neptune-ai/neptune-client/pull/1616))
 - Parse `datetime` attribute values in `fetch_runs_table()` ([#1634](https://github.com/neptune-ai/neptune-client/pull/1634))
 - Better handle limit in `fetch_*_table()` methods ([#1644](https://github.com/neptune-ai/neptune-client/pull/1644))
+- Fix pagination handling in table fetching ([#1651](https://github.com/neptune-ai/neptune-client/pull/1651))
 
 ### Changes
 - Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))

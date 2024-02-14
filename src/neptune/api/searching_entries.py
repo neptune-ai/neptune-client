@@ -22,13 +22,15 @@ from typing import (
     Generator,
     Iterable,
     List,
-    Literal,
     Optional,
 )
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
-from typing_extensions import TypeAlias
+from typing_extensions import (
+    Literal,
+    TypeAlias,
+)
 
 from neptune.internal.backends.api_model import (
     AttributeType,
