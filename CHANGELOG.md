@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.9.0
+## neptune 1.9.0
 
 ### Features
 - Add support for seaborn figures ([#1613](https://github.com/neptune-ai/neptune-client/pull/1613))
