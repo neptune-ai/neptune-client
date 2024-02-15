@@ -91,14 +91,16 @@ def test__iter_over_pages__single_pagination(get_single_page, entries_from_page)
     ]
 
     # when
-    result = list(iter_over_pages(
-        step_size=3,
-        limit=None,
-        sort_by="sys/id",
-        sort_by_column_type=None,
-        ascending=False,
-        progress_bar=None,
-    ))
+    result = list(
+        iter_over_pages(
+            step_size=3,
+            limit=None,
+            sort_by="sys/id",
+            sort_by_column_type=None,
+            ascending=False,
+            progress_bar=None,
+        )
+    )
 
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
@@ -123,15 +125,17 @@ def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_p
     ]
 
     # when
-    result = list(iter_over_pages(
-        step_size=3,
-        limit=None,
-        sort_by="sys/id",
-        sort_by_column_type=None,
-        ascending=False,
-        progress_bar=None,
-        max_offset=6,
-    ))
+    result = list(
+        iter_over_pages(
+            step_size=3,
+            limit=None,
+            sort_by="sys/id",
+            sort_by_column_type=None,
+            ascending=False,
+            progress_bar=None,
+            max_offset=6,
+        )
+    )
 
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
@@ -151,14 +155,16 @@ def test__iter_over_pages__empty(get_single_page, entries_from_page):
     entries_from_page.side_effect = [[]]
 
     # when
-    result = list(iter_over_pages(
-        step_size=3,
-        limit=None,
-        sort_by="sys/id",
-        sort_by_column_type=None,
-        ascending=False,
-        progress_bar=None,
-    ))
+    result = list(
+        iter_over_pages(
+            step_size=3,
+            limit=None,
+            sort_by="sys/id",
+            sort_by_column_type=None,
+            ascending=False,
+            progress_bar=None,
+        )
+    )
 
     # then
     assert result == []
@@ -179,15 +185,17 @@ def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page)
     ]
 
     # when
-    result = list(iter_over_pages(
-        step_size=3,
-        limit=None,
-        sort_by="sys/id",
-        sort_by_column_type=None,
-        ascending=False,
-        progress_bar=None,
-        max_offset=5,
-    ))
+    result = list(
+        iter_over_pages(
+            step_size=3,
+            limit=None,
+            sort_by="sys/id",
+            sort_by_column_type=None,
+            ascending=False,
+            progress_bar=None,
+            max_offset=5,
+        )
+    )
 
     # then
     assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
@@ -214,14 +222,16 @@ def test__iter_over_pages__limit(get_single_page, entries_from_page):
     ]
 
     # when
-    list(iter_over_pages(
-        step_size=2,
-        limit=4,
-        sort_by="sys/id",
-        sort_by_column_type=None,
-        ascending=False,
-        progress_bar=None,
-    ))
+    list(
+        iter_over_pages(
+            step_size=2,
+            limit=4,
+            sort_by="sys/id",
+            sort_by_column_type=None,
+            ascending=False,
+            progress_bar=None,
+        )
+    )
 
     # then
     assert get_single_page.mock_calls == [
