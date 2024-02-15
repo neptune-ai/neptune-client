@@ -3,6 +3,9 @@
 ### Fixes
 - Fixed conda package ([#1652](https://github.com/neptune-ai/neptune-client/pull/1652))
 
+## Changes
+- Removed most of the default values for function parameters in `searching_entries.py` ([#1653](https://github.com/neptune-ai/neptune-client/pull/1653))
+
 
 ## neptune 1.9.0
 

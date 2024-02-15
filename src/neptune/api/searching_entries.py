@@ -88,12 +88,12 @@ def get_single_page(
     attributes_filter: Dict[str, Any],
     limit: int,
     offset: int,
-    sort_by: Optional[str] = None,
-    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
-    ascending: bool = False,
-    types: Optional[Iterable[str]] = None,
-    query: Optional["NQLQuery"] = None,
-    searching_after: Optional[str] = None,
+    sort_by: Optional[str],
+    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE],
+    ascending: bool,
+    types: Optional[Iterable[str]],
+    query: Optional["NQLQuery"],
+    searching_after: Optional[str],
 ) -> Any:
     normalized_query = query or NQLEmptyQuery()
     sort_by_column_type = sort_by_column_type if sort_by_column_type else AttributeType.STRING.value
