@@ -171,12 +171,12 @@ def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeW
 def iter_over_pages(
     *,
     step_size: int,
-    limit: Optional[int] = None,
-    sort_by: str = "sys/id",
+    limit: Optional[int],
+    sort_by: str,
+    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE],
+    ascending: bool,
+    progress_bar: Optional[ProgressBarType],
     max_offset: int = MAX_SERVER_OFFSET,
-    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
-    ascending: bool = False,
-    progress_bar: Optional[ProgressBarType] = None,
     **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None
