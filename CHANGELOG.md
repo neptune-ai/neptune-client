@@ -1,3 +1,9 @@
+## neptune 1.9.1
+
+### Fixes
+- Fixed conda package ([#1652](https://github.com/neptune-ai/neptune-client/pull/1652))
+
+
 ## neptune 1.9.0
 
 ### Features
