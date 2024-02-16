@@ -88,12 +88,12 @@ def get_single_page(
     attributes_filter: Dict[str, Any],
     limit: int,
     offset: int,
-    sort_by: Optional[str] = None,
-    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
-    ascending: bool = False,
-    types: Optional[Iterable[str]] = None,
-    query: Optional["NQLQuery"] = None,
-    searching_after: Optional[str] = None,
+    sort_by: str,
+    sort_by_column_type: SORT_BY_COLUMN_TYPE,
+    ascending: bool,
+    types: Optional[Iterable[str]],
+    query: Optional["NQLQuery"],
+    searching_after: Optional[str],
 ) -> Any:
     normalized_query = query or NQLEmptyQuery()
     sort_by_column_type = sort_by_column_type if sort_by_column_type else AttributeType.STRING.value
@@ -171,12 +171,12 @@ def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeW
 def iter_over_pages(
     *,
     step_size: int,
-    limit: Optional[int] = None,
-    sort_by: str = "sys/id",
+    limit: Optional[int],
+    sort_by: str,
+    sort_by_column_type: SORT_BY_COLUMN_TYPE,
+    ascending: bool,
+    progress_bar: Optional[ProgressBarType],
     max_offset: int = MAX_SERVER_OFFSET,
-    sort_by_column_type: Optional[SORT_BY_COLUMN_TYPE] = None,
-    ascending: bool = False,
-    progress_bar: Optional[ProgressBarType] = None,
     **kwargs: Any,
 ) -> Generator[Any, None, None]:
     searching_after = None
