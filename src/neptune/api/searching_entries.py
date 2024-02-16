@@ -185,6 +185,10 @@ def iter_over_pages(
     total = get_single_page(
         limit=0,
         offset=0,
+        sort_by=sort_by,
+        sort_by_column_type=sort_by_column_type,
+        ascending=ascending,
+        searching_after=None,
         **kwargs,
     ).get("matchingItemCount", 0)
 
