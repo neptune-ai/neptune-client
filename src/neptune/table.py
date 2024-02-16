@@ -15,19 +15,16 @@
 #
 __all__ = ["Table"]
 
-from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Generator,
     List,
     Optional,
-    Tuple,
-    Union,
 )
 
 from neptune.exceptions import MetadataInconsistency
+from neptune.integrations.pandas import to_pandas
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -201,61 +198,4 @@ class Table:
         )
 
     def to_pandas(self) -> "pandas.DataFrame":
-        import pandas as pd
-
-        def make_attribute_value(attribute: AttributeWithProperties) -> Any:
-            _type = attribute.type
-            _properties = attribute.properties
-            if _type == AttributeType.RUN_STATE:
-                return RunState.from_api(_properties.get("value")).value
-            if _type in (
-                AttributeType.FLOAT,
-                AttributeType.INT,
-                AttributeType.BOOL,
-                AttributeType.STRING,
-                AttributeType.DATETIME,
-            ):
-                return _properties.get("value")
-            if _type == AttributeType.FLOAT_SERIES:
-                return _properties.get("last")
-            if _type == AttributeType.STRING_SERIES:
-                return _properties.get("last")
-            if _type == AttributeType.IMAGE_SERIES:
-                return None
-            if _type == AttributeType.FILE or _type == AttributeType.FILE_SET:
-                return None
-            if _type == AttributeType.STRING_SET:
-                return ",".join(_properties.get("values"))
-            if _type == AttributeType.GIT_REF:
-                return _properties.get("commit", {}).get("commitId")
-            if _type == AttributeType.NOTEBOOK_REF:
-                return _properties.get("notebookName")
-            if _type == AttributeType.ARTIFACT:
-                return _properties.get("hash")
-            logger.error(
-                "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
-                _type,
-            )
-            return None
-
-        def make_row(entry: LeaderboardEntry) -> Dict[str, Any]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            for attr in entry.attributes:
-                value = make_attribute_value(attr)
-                if value is not None:
-                    row[attr.path] = value
-            return row
-
-        def sort_key(attr: str) -> Tuple[int, str]:
-            domain = attr.split("/")[0]
-            if domain == "sys":
-                return 0, attr
-            if domain == "monitoring":
-                return 2, attr
-            return 1, attr
-
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(self._entries))
-
-        df = pd.DataFrame.from_dict(data=rows, orient="index")
-        df = df.reindex(sorted(df.columns, key=sort_key), axis="columns")
-        return df
+        return to_pandas(self)
