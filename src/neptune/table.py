@@ -17,11 +17,13 @@ __all__ = ["Table"]
 
 from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     Any,
     Dict,
     Generator,
     List,
     Optional,
+    Tuple,
     Union,
 )
 
@@ -40,6 +42,10 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.utils.run_state import RunState
 from neptune.typing import ProgressBarType
+
+if TYPE_CHECKING:
+    import pandas
+
 
 logger = get_logger()
 
@@ -108,7 +114,7 @@ class TableEntry:
         path: str,
         destination: Optional[str],
         progress_bar: Optional[ProgressBarType] = None,
-    ):
+    ) -> None:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -129,7 +135,7 @@ class TableEntry:
         path: str,
         destination: Optional[str],
         progress_bar: Optional[ProgressBarType] = None,
-    ):
+    ) -> None:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -147,17 +153,17 @@ class TableEntry:
 
 
 class LeaderboardHandler:
-    def __init__(self, table_entry: TableEntry, path: str):
+    def __init__(self, table_entry: TableEntry, path: str) -> None:
         self._table_entry = table_entry
         self._path = path
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
         return LeaderboardHandler(table_entry=self._table_entry, path=join_paths(self._path, path))
 
-    def get(self):
+    def get(self) -> Any:
         return self._table_entry.get_attribute_value(path=self._path)
 
-    def download(self, destination: Optional[str]):
+    def download(self, destination: Optional[str]) -> None:
         attr_type = self._table_entry.get_attribute_type(self._path)
         if attr_type == AttributeType.FILE:
             return self._table_entry.download_file_attribute(self._path, destination)
@@ -172,7 +178,7 @@ class Table:
         backend: NeptuneBackend,
         container_type: ContainerType,
         entries: Generator[LeaderboardEntry, None, None],
-    ):
+    ) -> None:
         self._backend = backend
         self._entries = entries
         self._container_type = container_type
@@ -194,12 +200,10 @@ class Table:
             attributes=entry.attributes,
         )
 
-    def to_pandas(self):
+    def to_pandas(self) -> "pandas.DataFrame":
         import pandas as pd
 
-        def make_attribute_value(
-            attribute: AttributeWithProperties,
-        ) -> Optional[Union[str, float, datetime]]:
+        def make_attribute_value(attribute: AttributeWithProperties) -> Any:
             _type = attribute.type
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
@@ -212,7 +216,9 @@ class Table:
                 AttributeType.DATETIME,
             ):
                 return _properties.get("value")
-            if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
+            if _type == AttributeType.FLOAT_SERIES:
+                return _properties.get("last")
+            if _type == AttributeType.STRING_SERIES:
                 return _properties.get("last")
             if _type == AttributeType.IMAGE_SERIES:
                 return None
@@ -232,9 +238,7 @@ class Table:
             )
             return None
 
-        def make_row(
-            entry: LeaderboardEntry,
-        ) -> Dict[str, Optional[Union[str, float, datetime]]]:
+        def make_row(entry: LeaderboardEntry) -> Dict[str, Any]:
             row: Dict[str, Union[str, float, datetime]] = dict()
             for attr in entry.attributes:
                 value = make_attribute_value(attr)
@@ -242,7 +246,7 @@ class Table:
                     row[attr.path] = value
             return row
 
-        def sort_key(attr):
+        def sort_key(attr: str) -> Tuple[int, str]:
             domain = attr.split("/")[0]
             if domain == "sys":
                 return 0, attr
