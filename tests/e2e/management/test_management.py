@@ -54,7 +54,7 @@ from neptune.management.exceptions import (
     WorkspaceOrUserNotFound,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.table import Table
 from tests.e2e.base import (
     BaseE2ETest,
     fake,

@@ -335,7 +335,7 @@ module = [
     "neptune.management.internal.dto",
     "neptune.management.internal.utils",
     "neptune.metadata_containers.metadata_container",
-    "neptune.metadata_containers.metadata_containers_table",
+    "neptune.table",
     "neptune.metadata_containers.model",
     "neptune.metadata_containers.model_version",
     "neptune.metadata_containers.project",

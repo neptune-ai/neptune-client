@@ -49,8 +49,8 @@ from neptune.internal.utils import (
 )
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.metadata_containers.utils import prepare_nql_query
+from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
