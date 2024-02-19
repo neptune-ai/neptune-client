@@ -35,7 +35,7 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.table import (
     Table,
     TableEntry,
 )

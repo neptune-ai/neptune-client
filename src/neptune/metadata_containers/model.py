@@ -57,7 +57,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
