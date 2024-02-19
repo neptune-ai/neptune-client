@@ -14,7 +14,7 @@ def test_lazy_initialization():
 
     # then
     operation_processor_getter.assert_not_called()
-    assert not lazy_wrapper.evaluated()
+    assert not lazy_wrapper.evaluated
 
     # when
     lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
@@ -22,7 +22,7 @@ def test_lazy_initialization():
 
     # then
     operation_processor_getter.assert_called_once()
-    assert lazy_wrapper.evaluated()
+    assert lazy_wrapper.evaluated
 
 
 def test_call_propagation_to_wrapped():
