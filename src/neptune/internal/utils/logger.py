@@ -49,10 +49,13 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger(with_prefix: bool = True):
+def get_logger(with_prefix: bool = True, loglevel: int = logging.DEBUG):
     if with_prefix:
-        return logging.getLogger(NEPTUNE_LOGGER_NAME)
-    return logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+        logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
+    else:
+        logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+    logger.setLevel(loglevel)
+    return logger
 
 
 def _set_up_logging():
@@ -60,7 +63,6 @@ def _set_up_logging():
     # returns configured logger
     neptune_logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
     neptune_logger.propagate = False
-    neptune_logger.setLevel(logging.DEBUG)
 
     stdout_handler = GrabbableStdoutHandler()
     stdout_handler.setFormatter(CustomFormatter())
@@ -70,7 +72,6 @@ def _set_up_logging():
 def _set_up_no_prefix_logging():
     neptune_logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
     neptune_logger.propagate = False
-    neptune_logger.setLevel(logging.DEBUG)
 
     stdout_handler = GrabbableStdoutHandler()
     stdout_handler.setFormatter(logging.Formatter(NO_PREFIX_FORMAT))

@@ -95,7 +95,7 @@ class AbstractExperimentTestMixin:
 
     def test_async_mode_wait_on_dead(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
-            exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+            exp._backend.execute_operations = Mock(side_effect=ValueError)
             exp["some/variable"] = 13
             # wait for the process to die
             time.sleep(1)
@@ -104,7 +104,7 @@ class AbstractExperimentTestMixin:
 
     def test_async_mode_die_during_wait(self):
         with self.call_init(mode="async", flush_period=1) as exp:
-            exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+            exp._backend.execute_operations = Mock(side_effect=ValueError)
             exp["some/variable"] = 13
             with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
