@@ -25,7 +25,6 @@ import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
 from neptune.common.exceptions import NeptuneException
-from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -115,10 +114,7 @@ class TestCli(BaseE2ETest):
 
     @staticmethod
     def stop_synchronization_process(container):
-        if isinstance(container._op_processor, LazyOperationProcessorWrapper):
-            container._op_processor._operation_processor._consumer.interrupt()
-        else:
-            container._op_processor._consumer.interrupt()
+        container._op_processor._consumer.interrupt()
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
