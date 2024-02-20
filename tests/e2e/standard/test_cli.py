@@ -114,7 +114,7 @@ class TestCli(BaseE2ETest):
 
     @staticmethod
     def stop_synchronization_process(container):
-        container._op_processor._operation_processor._consumer.interrupt()
+        container._op_processor._consumer.interrupt()
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
