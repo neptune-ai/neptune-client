@@ -19,7 +19,7 @@ from typing import List
 
 from neptune import init_project
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.table import (
     Table,
     TableEntry,
 )
