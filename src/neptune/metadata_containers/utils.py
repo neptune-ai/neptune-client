@@ -22,6 +22,7 @@ __all__ = [
 
 from datetime import datetime
 from typing import (
+    Any,
     Generator,
     Iterable,
     List,
@@ -30,6 +31,7 @@ from typing import (
 )
 
 from neptune.common.warnings import (
+    NeptuneDeprecationWarning,
     NeptuneWarning,
     warn_once,
 )
@@ -169,3 +171,19 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
             exception=NeptuneWarning,
         )
         return entry
+
+
+def deprecatied_func_arg_warning_check(fname: str, vname: str, var: Any) -> None:
+    if var is not None:
+        msg = f"""The argument '{vname}' of the function '{fname}' is deprecated and will be removed in the future."""
+        warn_once(msg, exception=NeptuneDeprecationWarning)
+
+
+def extend_nql(query: str, trashed: Optional[bool]) -> str:
+    if trashed is None:
+        return query
+
+    if query == "":
+        return f"(sys/trashed: bool = {trashed})"
+    else:
+        return f"({query}) and (sys/trashed: bool = {trashed})"

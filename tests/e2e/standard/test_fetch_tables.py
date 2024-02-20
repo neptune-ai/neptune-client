@@ -44,9 +44,16 @@ class TestFetchTable(BaseE2ETest):
         # wait for the cache to fill
         time.sleep(5)
 
-        runs_table = project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows()
-        assert len(runs_table) == 1
-        assert runs_table[0].get_attribute_value("sys/id") == run_id1
+        runs_tables = [
+            project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows(),
+            project.fetch_runs_table(
+                query=f"((sys/tags: stringSet CONTAINS '{tag1}') AND (sys/tags: stringSet CONTAINS '{tag2}'))",
+                progress_bar=False,
+            ).to_rows(),
+        ]
+        for run_table in runs_tables:
+            assert len(run_table) == 1
+            assert run_table[0].get_attribute_value("sys/id") == run_id1
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container: Model, environment):
@@ -169,17 +176,27 @@ class TestFetchTable(BaseE2ETest):
             run["some_random_val"] = random_val
 
             time.sleep(30)
-            runs = project.fetch_runs_table(state="active", progress_bar=False).to_pandas()
-            assert not runs.empty
-            assert tag in runs["sys/tags"].values
-            assert random_val in runs["some_random_val"].values
+            runs_results = [
+                project.fetch_runs_table(state="active", progress_bar=False).to_pandas(),
+                project.fetch_runs_table(
+                    query="(sys/state: experimentState = running)", progress_bar=False
+                ).to_pandas(),
+            ]
+            for runs in runs_results:
+                assert not runs.empty
+                assert tag in runs["sys/tags"].values
+                assert random_val in runs["some_random_val"].values
 
         time.sleep(30)
 
-        runs = project.fetch_runs_table(state="inactive", progress_bar=False).to_pandas()
-        assert not runs.empty
-        assert tag in runs["sys/tags"].values
-        assert random_val in runs["some_random_val"].values
+        runs_results = [
+            project.fetch_runs_table(state="inactive", progress_bar=False).to_pandas(),
+            project.fetch_runs_table(query="(sys/state: experimentState = idle)", progress_bar=False).to_pandas(),
+        ]
+        for runs in runs_results:
+            assert not runs.empty
+            assert tag in runs["sys/tags"].values
+            assert random_val in runs["some_random_val"].values
 
     @pytest.mark.parametrize("ascending", [True, False])
     def test_fetch_runs_table_sorting(self, environment, project, ascending):
@@ -278,3 +295,17 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         assert len(runs) == 1
+
+    def test_fetch_runs_table_raw_query(self, environment, project):
+        random_val = random.random()
+        with neptune.init_run(project=environment.project) as run:
+            run["key"] = random_val
+            run.sync(wait=True)
+
+            time.sleep(5)
+
+            runs = project.fetch_runs_table(
+                query=f"(key: float = {random_val})", progress_bar=False, trashed=None
+            ).to_pandas()
+            assert not runs.empty
+            assert random_val in runs["key"].values
