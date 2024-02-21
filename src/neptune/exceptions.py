@@ -91,6 +91,7 @@ __all__ = [
     "StreamAlreadyUsedException",
     "NeptuneUserApiInputException",
     "NeptuneMaxDiskUtilizationExceeded",
+    "NeptuneInvalidQueryException",
 ]
 
 from typing import (
@@ -1223,3 +1224,9 @@ Current disk utilization ({disk_utilization}%) exceeds the limit ({utilization_l
         super().__init__(
             message.format(disk_utilization=disk_utilization, utilization_limit=utilization_limit, **STYLES)
         )
+
+
+class NeptuneInvalidQueryException(NeptuneException):
+    def __init__(self, nql_query: str):
+        message = f"""provided nql query: {nql_query} is invalid"""
+        super().__init__(message)

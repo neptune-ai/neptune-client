@@ -1076,7 +1076,6 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
-        # attributes_filter = {}
 
         if sort_by == "sys/creation_time":
             sort_by_column_type = AttributeType.DATETIME.value

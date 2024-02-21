@@ -32,6 +32,7 @@ from typing_extensions import (
     TypeAlias,
 )
 
+from neptune.api.utils import with_leaderboard_entries_search_exception_handler
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -81,6 +82,7 @@ class NoLimit(int):
         return True
 
 
+@with_leaderboard_entries_search_exception_handler
 def get_single_page(
     *,
     client: "SwaggerClientWrapper",
