@@ -49,12 +49,12 @@ from neptune.internal.utils import (
 )
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.table import Table
 from neptune.metadata_containers.utils import (
     deprecatied_func_arg_warning_check,
     extend_nql,
     prepare_nql_query,
 )
+from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
