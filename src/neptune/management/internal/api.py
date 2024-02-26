@@ -1074,7 +1074,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
         return {
             "storageBytesAvailable": response.result.storageBytesAvailable,
             "storageBytesLimit": response.result.storageBytesLimit,
-            "storageBytesUsed": max(response.result.storageBytesLimit - response.result.storageBytesAvailable, 0),
+            "storageBytesUsed": response.result.storageBytesLimit - response.result.storageBytesAvailable,
         }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace) from e

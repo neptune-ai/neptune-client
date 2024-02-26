@@ -41,6 +41,7 @@ from neptune.management import (
     get_project_service_account_list,
     get_workspace_member_list,
     get_workspace_service_account_list,
+    get_workspace_status,
     invite_to_workspace,
     remove_project_member,
     remove_project_service_account,
@@ -413,6 +414,16 @@ class TestManagement(BaseE2ETest):
             invite_to_workspace(
                 username=environment.user, workspace="non-existent-workspace", api_token=environment.admin_token
             )
+
+    def test_workspace_status(self, environment: "Environment"):
+        status = get_workspace_status(workspace=environment.workspace, api_token=environment.admin_token)
+
+        assert "storageBytesAvailable" in status
+        assert "storageBytesLimit" in status
+        assert "storageBytesUsed" in status
+        assert status["storageBytesAvailable"] >= 0
+        assert status["storageBytesLimit"] >= 0
+        assert status["storageBytesUsed"] >= 0
 
 
 @pytest.mark.management
