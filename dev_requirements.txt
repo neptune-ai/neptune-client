@@ -22,6 +22,7 @@ torchvision
 transformers
 accelerate
 zenml
+composer
 mlflow
 backoff
 altair

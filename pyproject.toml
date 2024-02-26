@@ -56,7 +56,6 @@ neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true }
-composer = { version = "*", optional = true }
 neptune-aws = { version = "*", optional = true }
 neptune-mlflow = { version = "*", optional = true }
 neptune-airflow = { version = "*", optional = true }
@@ -78,7 +77,6 @@ tensorboard = ["neptune-tensorboard"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
-composer = ["composer"]
 mlflow = ["neptune-mlflow"]
 airflow = ["neptune-airflow"]
 experimental = ["neptune-experimental"]
