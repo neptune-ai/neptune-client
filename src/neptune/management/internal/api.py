@@ -1051,7 +1051,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
 
     Example:
         >>> from neptune import management
-        >>> management.get_workspace_member_list(workspace="ml-team")
+        >>> management.get_workspace_status(workspace="ml-team")
         ... {'storageBytesAvailable': 214747451765,
         ... 'storageBytesLimit': 214748364800,
         ... 'storageBytesUsed': 913035,
