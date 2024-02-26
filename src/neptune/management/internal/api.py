@@ -1060,7 +1060,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
         ... 'membersCount': 1}
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs.neptune.ai/api/management/#get_workspace_status
     """
     verify_type("workspace", workspace, str)
     verify_type("api_token", api_token, (str, type(None)))
