@@ -31,12 +31,6 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}-latest
 
-    - name: Install composer
-      run: |
-        pip install git+https://github.com/mosaicml/composer@dev
-      shell:
-        bash
-
     - name: E2E - ${{ inputs.module }}
       run: |
         pytest --cov=neptune --cov-report xml \
