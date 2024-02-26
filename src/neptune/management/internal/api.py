@@ -1054,7 +1054,9 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
         >>> management.get_workspace_member_list(workspace="ml-team")
         ... {'storageBytesAvailable': 214747451765,
         ... 'storageBytesLimit': 214748364800,
-        ... 'storageBytesUsed': 913035}
+        ... 'activeProjectsUsage': 1,
+        ... 'activeProjectsLimit': 1,
+        ... 'membersCount': 1}
 
     You may also want to check the management API reference:
     https://docs.neptune.ai/api/management
@@ -1071,10 +1073,20 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
 
     try:
         response = backend_client.api.workspaceStatus(**params).response()
-        return {
-            "storageBytesAvailable": response.result.storageBytesAvailable,
-            "storageBytesLimit": response.result.storageBytesLimit,
-            "storageBytesUsed": response.result.storageBytesLimit - response.result.storageBytesAvailable,
-        }
+
+        result = dict()
+        if hasattr(response.result, "storageBytesAvailable"):
+            result["storageBytesAvailable"] = response.result.storageBytesAvailable
+        if hasattr(response.result, "storageBytesLimit"):
+            result["storageBytesLimit"] = response.result.storageBytesLimit
+        if hasattr(response.result, "storageBytesUsed") and hasattr(response.result, "storageBytesLimit"):
+            result["storageBytesUsed"] = response.result.storageBytesLimit - response.result.storageBytesAvailable
+        if hasattr(response.result, "activeProjectsUsage"):
+            result["activeProjectsUsage"] = response.result.activeProjectsUsage
+        if hasattr(response.result, "activeProjectsLimit"):
+            result["activeProjectsLimit"] = response.result.activeProjectsLimit
+        if hasattr(response.result, "membersCount"):
+            result["membersCount"] = response.result.membersCount
+        return result
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace) from e
