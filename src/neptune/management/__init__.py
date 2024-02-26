@@ -39,6 +39,9 @@ Functions:
 Usage examples
 --------------
 
+Import management API
+>>> from neptune import management
+
 Getting projects in a workspace as a list:
 >>> projects = management.get_project_list()
 
@@ -95,6 +98,9 @@ Move one or more Neptune objects to the project trash:
 >>> # Move the runs to trash:
 ... management.trash_objects(project=project_name, ids=runs_to_trash)
 
+Get information about workspace including storage usage and limits:
+>>> management.get_workspace_status(workspace="ml-team")
+
 ---
 
 See also the API reference in the docs: https://docs.neptune.ai/api/management
@@ -112,6 +118,7 @@ from .internal.api import (
     get_project_service_account_list,
     get_workspace_member_list,
     get_workspace_service_account_list,
+    get_workspace_status,
     invite_to_workspace,
     remove_project_member,
     remove_project_service_account,
@@ -138,6 +145,7 @@ __all__ = [
     "remove_project_service_account",
     "get_project_service_account_list",
     "get_workspace_service_account_list",
+    "get_workspace_status",
     "trash_objects",
     "MemberRole",
     "ProjectVisibility",

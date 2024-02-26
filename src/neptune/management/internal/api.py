@@ -31,6 +31,7 @@ __all__ = [
     "get_project_service_account_list",
     "get_workspace_service_account_list",
     "trash_objects",
+    "get_workspace_status",
 ]
 
 import os
@@ -1033,3 +1034,47 @@ def clear_trash(
 
     for error in response.result.errors:
         logger.warning(error)
+
+
+def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> Dict[str, int]:
+    """Gets the status of a Neptune workspace including the storage usage and limits.
+
+    Args:
+        workspace: Name of the Neptune workspace.
+        api_token: Account's API token.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+
+    Returns:
+        Dictionary with metric name as keys and float values
+
+    Example:
+        >>> from neptune import management
+        >>> management.get_workspace_member_list(workspace="ml-team")
+        ... {'storageBytesAvailable': 214747451765,
+        ... 'storageBytesLimit': 214748364800,
+        ... 'storageBytesUsed': 913035}
+
+    You may also want to check the management API reference:
+    https://docs.neptune.ai/api/management
+    """
+    verify_type("workspace", workspace, str)
+    verify_type("api_token", api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+
+    params = {
+        "organizationIdentifier": workspace,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        response = backend_client.api.workspaceStatus(**params).response()
+        return {
+            "storageBytesAvailable": response.result.storageBytesAvailable,
+            "storageBytesLimit": response.result.storageBytesLimit,
+            "storageBytesUsed": max(response.result.storageBytesLimit - response.result.storageBytesAvailable, 0),
+        }
+    except HTTPNotFound as e:
+        raise WorkspaceNotFound(workspace=workspace) from e
