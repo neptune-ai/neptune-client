@@ -3,6 +3,9 @@
 ### Features
 - Added get_workspace_status method to management API ([#1662](https://github.com/neptune-ai/neptune-client/pull/1662))
 
+### Fixes
+- Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
+
 
 ## neptune 1.9.1
 
