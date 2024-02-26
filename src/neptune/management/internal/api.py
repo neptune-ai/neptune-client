@@ -1054,6 +1054,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
         >>> management.get_workspace_member_list(workspace="ml-team")
         ... {'storageBytesAvailable': 214747451765,
         ... 'storageBytesLimit': 214748364800,
+        ... 'storageBytesUsed': 913035,
         ... 'activeProjectsUsage': 1,
         ... 'activeProjectsLimit': 1,
         ... 'membersCount': 1}
@@ -1079,7 +1080,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
             result["storageBytesAvailable"] = response.result.storageBytesAvailable
         if hasattr(response.result, "storageBytesLimit"):
             result["storageBytesLimit"] = response.result.storageBytesLimit
-        if hasattr(response.result, "storageBytesUsed") and hasattr(response.result, "storageBytesLimit"):
+        if hasattr(response.result, "storageBytesAvailable") and hasattr(response.result, "storageBytesLimit"):
             result["storageBytesUsed"] = response.result.storageBytesLimit - response.result.storageBytesAvailable
         if hasattr(response.result, "activeProjectsUsage"):
             result["activeProjectsUsage"] = response.result.activeProjectsUsage
