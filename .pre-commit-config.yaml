@@ -16,11 +16,11 @@ repos:
       - id: black
         args: [--config, pyproject.toml]
   - repo: https://github.com/Lucas-C/pre-commit-hooks
-    rev: v1.3.1
+    rev: v1.5.4
     hooks:
       - id: insert-license
-        files: ^src/neptune/new/.*\.py$
-        args: ["--license-filepath", ".github/license_header.txt"]
+        files: ^src/neptune/(?!new/|legacy/|vendor/)[^/]+(?:/[^/]+)*\.py$
+        args: [ "--license-filepath", ".github/license_header.txt", "--allow-past-years"]
   - repo: https://github.com/pycqa/flake8
     rev: 5.0.4
     hooks:

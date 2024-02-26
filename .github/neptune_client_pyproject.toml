@@ -13,6 +13,7 @@ python = "^3.7"
 
 # Python lack of functionalities from future versions
 importlib-metadata = { version = "*", python = "<3.8" }
+typing-extensions = ">=3.10.0"
 
 # Missing compatibility layer between Python 2 and Python 3
 six = ">=1.12.0"
@@ -33,36 +34,11 @@ urllib3 = "*"
 swagger-spec-validator = ">=2.7.4"
 
 # Built-in integrations
-boto3 = ">=1.16.0"
+boto3 = ">=1.28.0"
 Pillow = ">=1.1.6"
 GitPython = ">=2.0.8"
 psutil = "*"
 pandas = "*"
-
-# dev
-altair = { version = "*", optional = true }
-bokeh = { version = "*", optional = true }
-coverage = { version = "*", extras = [ "toml" ], optional = true }
-freezegun = { version = "*", optional = true }
-matplotlib = { version = "*", optional = true }
-mock = { version = "*", optional = true }
-moto = { version = "*", extras = [ "s3" ], optional = true }
-munch = { version = "*", optional = true }
-plotly = { version = "*", optional = true }
-pre-commit = { version = "*", optional = true }
-pytest = { version = "*", optional = true }
-pytest-mock = { version = "*", optional = true }
-pytest-timeout = { version = "*", optional = true }
-pytest-xdist = { version = "*", optional = true }
-tensorflow = { version = "*", optional = true }
-torch = { version = "*", optional = true }
-vega_datasets = { version = "*", optional = true }
-Faker = { version = "*", optional = true }
-
-# e2e
-optuna = { version = "*", optional = true }
-scikit-learn = { version = "*", optional = true }
-torchvision = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
@@ -72,13 +48,18 @@ neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
 neptune-optuna = { version = "*", optional = true }
 neptune-prophet = { version = "*", optional = true }
+neptune-pytorch = { version = "*", optional = true }
 neptune-sacred = { version = "*", optional = true }
 neptune-sklearn = { version = "*", optional = true }
 neptune-tensorflow-keras = { version = "*", optional = true }
+neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
-zenml = { version = "*", optional = true, python = "<3.9" }
+zenml = { version = "*", optional = true }
+composer = { version = "*", optional = true }
 neptune-aws = { version = "*", optional = true }
+neptune-mlflow = { version = "*", optional = true }
+neptune-airflow = { version = "*", optional = true }
 
 [tool.poetry.extras]
 aws = ["neptune-aws"]
@@ -88,42 +69,19 @@ kedro = ["kedro-neptune"]
 lightgbm = ["neptune-lightgbm"]
 optuna = ["neptune-optuna"]
 prophet = ["neptune-prophet"]
+pytorch = ["neptune-pytorch"]
 pytorch-lightning = ["pytorch-lightning"]
 sacred = ["neptune-sacred"]
 sklearn = ["neptune-sklearn"]
 tensorflow-keras = ["neptune-tensorflow-keras"]
+tensorboard = ["neptune-tensorboard"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
 zenml = ["zenml"]
-dev = [
-    "altair",
-    "bokeh",
-    "coverage",
-    "Faker",
-    "freezegun",
-    "matplotlib",
-    "mock",
-    "moto",
-    "munch",
-    "plotly",
-    "pre-commit",
-    "pytest",
-    "pytest-mock",
-    "pytest-timeout",
-    "pytest-xdist",
-    "tensorflow",
-    "torch",
-    "vega_datasets",
-]
-e2e = [
-    # Integrations
-    "optuna",
-    "pytorch-lightning",
-    "scikit-learn",
-    "torchvision",
-    "transformers",
-    "zenml",
-]
+composer = ["composer"]
+mlflow = ["neptune-mlflow"]
+airflow = ["neptune-airflow"]
+experimental = ["neptune-experimental"]
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]

@@ -19,6 +19,7 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import List
 
+import pytest
 from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
@@ -34,7 +35,7 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.table import (
     Table,
     TableEntry,
 )
@@ -95,7 +96,7 @@ class AbstractTablesTestMixin:
         # then
         self.assertEqual(1, search_leaderboard_entries.call_count)
         parameters = search_leaderboard_entries.call_args[1]
-        self.assertEqual({"sys/id", "datetime"}, parameters.get("columns"))
+        self.assertEqual({"sys/id", "sys/creation_time", "datetime"}, parameters.get("columns"))
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_as_pandas(self, search_leaderboard_entries):
@@ -127,6 +128,38 @@ class AbstractTablesTestMixin:
             self.assertTrue(df["file/set"])
         with self.assertRaises(KeyError):
             self.assertTrue(df["image/series"])
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_get_table_as_rows(self, search_leaderboard_entries):
+        # given
+        now = datetime.now()
+        attributes = self.build_attributes_leaderboard(now)
+
+        # and
+        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
+        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        search_leaderboard_entries.return_value = [empty_entry, filled_entry]
+
+        # and
+        # (check if using both to_rows and table generator produces the same results)
+        table_gen = self.get_table()
+        next(table_gen)  # to move to the second table entry
+        # when
+        for row in (self.get_table().to_rows()[1], next(table_gen)):
+            # then
+            self.assertEqual("Inactive", row.get_attribute_value("run/state"))
+            self.assertEqual(12.5, row.get_attribute_value("float"))
+            self.assertEqual("some text", row.get_attribute_value("string"))
+            self.assertEqual(now, row.get_attribute_value("datetime"))
+            self.assertEqual(8.7, row.get_attribute_value("float/series"))
+            self.assertEqual("last text", row.get_attribute_value("string/series"))
+            self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
+            self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
+
+            with self.assertRaises(MetadataInconsistency):
+                row.get_attribute_value("file")
+            with self.assertRaises(MetadataInconsistency):
+                row.get_attribute_value("image/series")
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     @patch.object(NeptuneBackendMock, "download_file")
@@ -172,6 +205,7 @@ class AbstractTablesTestMixin:
             container_type=self.expected_container_type,
             path=["file"],
             destination="some_directory",
+            progress_bar=None,
         )
 
         table_entry["file/set"].download("some_directory")
@@ -180,4 +214,12 @@ class AbstractTablesTestMixin:
             container_type=self.expected_container_type,
             path=["file", "set"],
             destination="some_directory",
+            progress_bar=None,
         )
+
+    def test_table_limit(self):
+        with pytest.raises(ValueError):
+            self.get_table(limit=-4)
+
+        with pytest.raises(ValueError):
+            self.get_table(limit=0)

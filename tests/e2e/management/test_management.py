@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import time
+from functools import partial
 from typing import (
     Callable,
     Dict,
@@ -46,13 +47,14 @@ from neptune.management import (
     trash_objects,
 )
 from neptune.management.exceptions import (
+    ProjectNotFound,
     ProjectPrivacyRestrictedException,
     UserAlreadyInvited,
     UserNotExistsOrWithoutAccess,
     WorkspaceOrUserNotFound,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.table import Table
 from tests.e2e.base import (
     BaseE2ETest,
     fake,
@@ -419,6 +421,10 @@ class TestTrashObjects(BaseE2ETest):
     Test trash_objects
     """
 
+    def test_trash_objects_wrong_project(self):
+        with pytest.raises(ProjectNotFound):
+            trash_objects("org/non-existent-project", ["RUN-1", "RUN-2", "RUN-3"])
+
     def test_trash_runs_and_models(self, project, environment):
         # WITH runs and models
         run1_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
@@ -458,7 +464,7 @@ class TestTrashObjects(BaseE2ETest):
         # THEN expect none of its versions to be fetched anymore
         self.wait_for_containers([], model.fetch_model_versions_table)
 
-    @backoff.on_exception(backoff.expo, Exception, max_time=5)
+    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=5)
     def wait_for_containers(self, ids: List[str], container_provider: Callable[[], Table]):
         fetched_entries = container_provider().to_pandas()
         actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []

@@ -15,17 +15,16 @@
 #
 __all__ = ["Table"]
 
-import logging
-from datetime import datetime
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Dict,
+    Generator,
     List,
     Optional,
-    Union,
 )
 
 from neptune.exceptions import MetadataInconsistency
+from neptune.integrations.pandas import to_pandas
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -33,13 +32,19 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import (
     join_paths,
     parse_path,
 )
 from neptune.internal.utils.run_state import RunState
+from neptune.typing import ProgressBarType
 
-logger = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    import pandas
+
+
+logger = get_logger()
 
 
 class TableEntry:
@@ -101,7 +106,12 @@ class TableEntry:
                 return None
         raise ValueError("Could not find {} attribute".format(path))
 
-    def download_file_attribute(self, path: str, destination: Optional[str]):
+    def download_file_attribute(
+        self,
+        path: str,
+        destination: Optional[str],
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> None:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -111,12 +121,18 @@ class TableEntry:
                         container_type=self._container_type,
                         path=parse_path(path),
                         destination=destination,
+                        progress_bar=progress_bar,
                     )
                     return
                 raise MetadataInconsistency("Cannot download file from attribute of type {}".format(_type))
         raise ValueError("Could not find {} attribute".format(path))
 
-    def download_file_set_attribute(self, path: str, destination: Optional[str]):
+    def download_file_set_attribute(
+        self,
+        path: str,
+        destination: Optional[str],
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> None:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -126,6 +142,7 @@ class TableEntry:
                         container_type=self._container_type,
                         path=parse_path(path),
                         destination=destination,
+                        progress_bar=progress_bar,
                     )
                     return
                 raise MetadataInconsistency("Cannot download ZIP archive from attribute of type {}".format(_type))
@@ -133,17 +150,17 @@ class TableEntry:
 
 
 class LeaderboardHandler:
-    def __init__(self, table_entry: TableEntry, path: str):
+    def __init__(self, table_entry: TableEntry, path: str) -> None:
         self._table_entry = table_entry
         self._path = path
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
         return LeaderboardHandler(table_entry=self._table_entry, path=join_paths(self._path, path))
 
-    def get(self):
+    def get(self) -> Any:
         return self._table_entry.get_attribute_value(path=self._path)
 
-    def download(self, destination: Optional[str]):
+    def download(self, destination: Optional[str]) -> None:
         attr_type = self._table_entry.get_attribute_type(self._path)
         if attr_type == AttributeType.FILE:
             return self._table_entry.download_file_attribute(self._path, destination)
@@ -157,81 +174,28 @@ class Table:
         self,
         backend: NeptuneBackend,
         container_type: ContainerType,
-        entries: List[LeaderboardEntry],
-    ):
+        entries: Generator[LeaderboardEntry, None, None],
+    ) -> None:
         self._backend = backend
         self._entries = entries
         self._container_type = container_type
+        self._iterator = iter(entries if entries else ())
 
     def to_rows(self) -> List[TableEntry]:
-        return [
-            TableEntry(
-                backend=self._backend,
-                container_type=self._container_type,
-                _id=e.id,
-                attributes=e.attributes,
-            )
-            for e in self._entries
-        ]
+        return list(self)
 
-    def to_pandas(self):
-        import pandas as pd
+    def __iter__(self) -> "Table":
+        return self
 
-        def make_attribute_value(
-            attribute: AttributeWithProperties,
-        ) -> Optional[Union[str, float, datetime]]:
-            _type = attribute.type
-            _properties = attribute.properties
-            if _type == AttributeType.RUN_STATE:
-                return RunState.from_api(_properties.get("value")).value
-            if _type in (
-                AttributeType.FLOAT,
-                AttributeType.INT,
-                AttributeType.BOOL,
-                AttributeType.STRING,
-                AttributeType.DATETIME,
-            ):
-                return _properties.get("value")
-            if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
-                return _properties.get("last")
-            if _type == AttributeType.IMAGE_SERIES:
-                return None
-            if _type == AttributeType.FILE or _type == AttributeType.FILE_SET:
-                return None
-            if _type == AttributeType.STRING_SET:
-                return ",".join(_properties.get("values"))
-            if _type == AttributeType.GIT_REF:
-                return _properties.get("commit", {}).get("commitId")
-            if _type == AttributeType.NOTEBOOK_REF:
-                return _properties.get("notebookName")
-            if _type == AttributeType.ARTIFACT:
-                return _properties.get("hash")
-            logger.error(
-                "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
-                _type,
-            )
-            return None
+    def __next__(self) -> TableEntry:
+        entry = next(self._iterator)
 
-        def make_row(
-            entry: LeaderboardEntry,
-        ) -> Dict[str, Optional[Union[str, float, datetime]]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            for attr in entry.attributes:
-                value = make_attribute_value(attr)
-                if value is not None:
-                    row[attr.path] = value
-            return row
+        return TableEntry(
+            backend=self._backend,
+            container_type=self._container_type,
+            _id=entry.id,
+            attributes=entry.attributes,
+        )
 
-        def sort_key(attr):
-            domain = attr.split("/")[0]
-            if domain == "sys":
-                return 0, attr
-            if domain == "monitoring":
-                return 2, attr
-            return 1, attr
-
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(self._entries))
-
-        df = pd.DataFrame.from_dict(data=rows, orient="index")
-        df = df.reindex(sorted(df.columns, key=sort_key), axis="columns")
-        return df
+    def to_pandas(self) -> "pandas.DataFrame":
+        return to_pandas(self)

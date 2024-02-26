@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -37,7 +37,7 @@ jobs:
       - name: Build package
         run: poetry build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: neptune-package
           path: dist/
@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
@@ -64,7 +64,7 @@ jobs:
           cp .github/neptune_client_pyproject.toml pyproject.toml
           poetry build
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: neptune-client-package
           path: dist/
@@ -73,7 +73,7 @@ jobs:
     needs: [ build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -91,7 +91,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -109,12 +109,12 @@ jobs:
     needs: [ build-neptune-client, build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -140,7 +140,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -161,7 +161,7 @@ jobs:
     needs: [ build-neptune-client ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist
@@ -185,7 +185,7 @@ jobs:
     needs: [ build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist
@@ -216,7 +216,7 @@ jobs:
       - test-uninstall-0-16-install-neptune
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-package
           path: dist/
@@ -245,7 +245,7 @@ jobs:
       - test-uninstall-0-16-install-neptune
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: neptune-client-package
           path: dist/

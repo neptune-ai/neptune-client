@@ -15,15 +15,21 @@
 #
 
 import unittest
+from datetime import datetime
 from typing import List
 
 from mock import patch
 
 from neptune import init_project
-from neptune.exceptions import NeptuneException
+from neptune.internal.backends.api_model import (
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.metadata_containers_table import (
+from neptune.metadata_containers.utils import DATE_FORMAT
+from neptune.table import (
     Table,
     TableEntry,
 )
@@ -53,6 +59,26 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
         for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
             with self.subTest(incorrect_state):
-                with self.assertRaises(NeptuneException) as context:
+                with self.assertRaises(ValueError):
                     self.get_table(state=incorrect_state)
-                self.assertEquals(f"Can't map RunState to API: {incorrect_state}", str(context.exception))
+
+    @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+    @patch(
+        "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.search_leaderboard_entries",
+        new=lambda *args, **kwargs: [
+            LeaderboardEntry(
+                id="123",
+                attributes=[
+                    AttributeWithProperties(
+                        "sys/creation_time",
+                        AttributeType.DATETIME,
+                        {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                    )
+                ],
+            )
+        ],
+    )
+    def test_creation_time_returned_as_datetime(self):
+        table = self.get_table()
+        val = table.to_rows()[0].get_attribute_value("sys/creation_time")
+        assert val == datetime(2024, 2, 5, 20, 37, 40, 915000)

@@ -47,6 +47,7 @@ from tests.e2e.plot_utils import (
     generate_matplotlib_figure,
     generate_pil_image,
     generate_plotly_figure,
+    generate_seaborn_figure,
 )
 from tests.e2e.utils import (
     SIZE_1KB,
@@ -515,3 +516,8 @@ class TestPlotObjectsAssignment(BaseE2ETest):
     def test_plotly_figure(self, container: MetadataContainer):
         plotly_figure = generate_plotly_figure()
         container["plotly_figure"] = plotly_figure
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_seaborn_figure(self, container: MetadataContainer):
+        seaborn_figure = generate_seaborn_figure()
+        container["seaborn_figure"] = seaborn_figure

@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import mmap
 import os
+import signal
 import unittest
 from datetime import datetime
+from unittest import mock
 
 from neptune import (
     ANONYMOUS_API_TOKEN,
@@ -25,6 +28,7 @@ from neptune import (
     init_project,
     init_run,
 )
+from neptune.common.utils import IS_WINDOWS
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -37,6 +41,7 @@ from neptune.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
+from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.metadata_containers import (
     Model,
     ModelVersion,
@@ -256,3 +261,28 @@ class TestExperiment(unittest.TestCase):
 
         with self.assertRaises(NeptuneProtectedPathException):
             del model_version["sys"]
+
+    @unittest.skipIf(IS_WINDOWS, "Windows does not support fork")
+    @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
+    def test_operation_processor_on_fork_lazy_init(self, mock_get_operation_processor):
+        mmap_size = 5
+        for exp in self.get_experiments():
+            with self.subTest(msg=f"For type {exp.container_type}"):
+                mm = mmap.mmap(-1, mmap_size)
+                before_fork_call_cnt = mock_get_operation_processor.call_count
+                child_pid = os.fork()
+                after_fork_call_cnt = mock_get_operation_processor.call_count
+                if child_pid == 0:
+                    # child process exec
+                    # send call count after fork from child to parent process
+                    mm.write(after_fork_call_cnt.to_bytes(mmap_size, byteorder="big"))
+                    os.kill(os.getpid(), signal.SIGKILL)
+                else:
+                    # parent process exec
+                    # wait for child process to send data and finish
+                    os.waitpid(child_pid, 0)
+                    child_after_fork_call_cnt = int.from_bytes(mm.read(mmap_size), byteorder="big")
+                    mm.close()
+                    assert (
+                        before_fork_call_cnt == child_after_fork_call_cnt
+                    ), "fork should not force new get_operation_processor call in forked process"

@@ -15,7 +15,6 @@
 #
 __all__ = ["TracebackJob"]
 
-import logging
 import uuid
 from typing import (
     TYPE_CHECKING,
@@ -25,12 +24,13 @@ from typing import (
 
 from neptune.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.internal.background_job import BackgroundJob
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.uncaught_exception_handler import instance as traceback_handler
 
 if TYPE_CHECKING:
     from neptune.metadata_containers import MetadataContainer
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class TracebackJob(BackgroundJob):

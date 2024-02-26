@@ -41,7 +41,7 @@ from tests.e2e.utils import (
 runner = CliRunner()
 
 
-class TestSync(BaseE2ETest):
+class TestCli(BaseE2ETest):
     SYNCHRONIZED_SYSID_RE = r"[\w-]+/[\w-]+/([\w-]+)"
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
@@ -63,9 +63,7 @@ class TestSync(BaseE2ETest):
                 container[self.gen_key()] = fake.unique.word()
 
             # manually add operations to queue
-            queue_dir = list(Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*"))[0]
-            if list(queue_dir.glob("partition-*")):
-                queue_dir = list(queue_dir.glob("partition-*"))[0]
+            queue_dir = list(Path("./.neptune/async/").glob(f"{container_type}__{container_id}__*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
             with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
@@ -164,15 +162,14 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
-                container_path_parent = container_path.parent
+                container_path = container._op_processor.data_path
                 container_sys_id = container._sys_id
 
             with initialize_container(
                 container_type=container_type, project=environment.project, mode="offline"
             ) as container:
                 container[key] = fake.unique.word()
-                offline_container_path = container._op_processor._queue._dir_path
+                offline_container_path = container._op_processor.data_path
                 offline_container_id = container._id
 
             assert os.path.exists(container_path)
@@ -190,11 +187,11 @@ class TestSync(BaseE2ETest):
                 f"- {environment.project}/{container_sys_id}",
                 "",
                 "Unsynchronized offline objects:",
-                f"- offline/run__{offline_container_id}",
+                f"- offline/{offline_container_id}",
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
-                f"Deleted: {offline_container_path}",
-                f"Deleted: {container_path_parent}",
+                f"Deleted: {offline_container_path.resolve()}",
+                f"Deleted: {container_path.resolve()}",
             ]
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
@@ -206,7 +203,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor.data_path
                 container_sys_id = container._sys_id
 
             assert os.path.exists(container_path)
@@ -221,7 +218,7 @@ class TestSync(BaseE2ETest):
                 f"- {environment.project}/{container_sys_id}",
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
-                f"Deleted: {container_path.parent.resolve()}",
+                f"Deleted: {container_path.resolve()}",
             ]
 
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
@@ -233,7 +230,7 @@ class TestSync(BaseE2ETest):
                 self.stop_synchronization_process(container)
 
                 container[key] = fake.unique.word()
-                container_path = container._op_processor._queue._dir_path
+                container_path = container._op_processor.data_path
 
             assert os.path.exists(container_path)
 

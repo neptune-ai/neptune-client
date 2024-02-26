@@ -21,13 +21,14 @@ from typing import (
     TypeVar,
 )
 
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import parse_path
 from neptune.types.value import Value
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
 
+logger = get_logger()
 Ret = TypeVar("Ret")
 
 

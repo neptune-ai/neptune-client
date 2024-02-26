@@ -15,7 +15,6 @@
 #
 __all__ = ["instance"]
 
-import logging
 import sys
 import threading
 import traceback
@@ -27,10 +26,12 @@ from typing import (
     List,
 )
 
+from neptune.internal.utils.logger import get_logger
+
 if TYPE_CHECKING:
     pass
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 class UncaughtExceptionHandler:

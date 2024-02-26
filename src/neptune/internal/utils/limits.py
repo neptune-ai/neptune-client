@@ -15,10 +15,11 @@
 #
 __all__ = ["custom_run_id_exceeds_length", "image_size_exceeds_limit_for_logging"]
 
-import logging
 import warnings
 
-_logger = logging.getLogger(__name__)
+from neptune.internal.utils.logger import get_logger
+
+_logger = get_logger()
 
 
 _CUSTOM_RUN_ID_LENGTH = 36

@@ -70,7 +70,7 @@ from neptune.internal.utils import (
     verify_type,
 )
 from neptune.internal.utils.iteration import get_batches
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -100,6 +100,7 @@ from neptune.management.internal.utils import (
     normalize_project_name,
 )
 
+logger = get_logger()
 TRASH_BATCH_SIZE = 100
 
 
@@ -908,17 +909,24 @@ def trash_objects(
 
     qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
     errors = list()
+    succeeded = 0
     for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
         params = {
             "projectIdentifier": project_qualified_name,
             "experimentIdentifiers": batch_ids,
             **DEFAULT_REQUEST_KWARGS,
         }
-        response = leaderboard_client.api.trashExperiments(**params).response()
+        try:
+            response = leaderboard_client.api.trashExperiments(**params).response()
+        except HTTPNotFound as e:
+            raise ProjectNotFound(name=project_qualified_name) from e
         errors += response.result.errors
+        succeeded += len(response.result.updatedExperimentIdentifiers)
 
     for error in errors:
         logger.warning(error)
+
+    logger.info("Successfully trashed objects: %d. Number of failures: %d.", succeeded, len(ids) - succeeded)
 
 
 def delete_objects_from_trash(

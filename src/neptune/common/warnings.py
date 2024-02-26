@@ -27,6 +27,11 @@ import traceback
 import warnings
 
 import neptune
+from neptune.internal.utils.logger import NEPTUNE_LOGGER_NAME
+from neptune.internal.utils.runningmode import in_interactive
+
+DEFAULT_FORMAT = "[%(name)s] [warning] %(filename)s:%(lineno)d: %(category)s: %(message)s\n"
+INTERACTIVE_FORMAT = "[%(name)s] [warning] %(category)s: %(message)s\n"
 
 
 class NeptuneDeprecationWarning(DeprecationWarning):
@@ -60,6 +65,20 @@ def get_user_code_stack_level():
     return 2
 
 
+def format_message(message, category, filename, lineno, line=None) -> str:
+    variables = {
+        "message": message,
+        "category": category.__name__,
+        "filename": filename,
+        "lineno": lineno,
+        "name": NEPTUNE_LOGGER_NAME,
+    }
+
+    message_format = INTERACTIVE_FORMAT if in_interactive() else DEFAULT_FORMAT
+
+    return message_format % variables
+
+
 def warn_once(message: str, *, exception: type(Exception) = None):
     if len(warned_once) < MAX_WARNED_ONCE_CAPACITY:
         if exception is None:
@@ -68,11 +87,14 @@ def warn_once(message: str, *, exception: type(Exception) = None):
         message_hash = hash(message)
 
         if message_hash not in warned_once:
+            old_formatting = warnings.formatwarning
+            warnings.formatwarning = format_message
             warnings.warn(
                 message=message,
                 category=exception,
                 stacklevel=get_user_code_stack_level(),
             )
+            warnings.formatwarning = old_formatting
             warned_once.add(message_hash)
 
 

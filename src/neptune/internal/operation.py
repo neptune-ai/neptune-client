@@ -32,9 +32,9 @@ from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
 )
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import MalformedOperation
 from neptune.internal.container_type import ContainerType
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.types.file_types import FileType
 from neptune.types.atoms.file import File
 

@@ -18,12 +18,16 @@ __all__ = ["MetadataContainer"]
 import abc
 import atexit
 import itertools
+import logging
 import os
 import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import wraps
+from functools import (
+    partial,
+    wraps,
+)
 from queue import Queue
 from typing import (
     TYPE_CHECKING,
@@ -77,6 +81,7 @@ from neptune.internal.init.parameters import (
 )
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
+from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
@@ -84,7 +89,7 @@ from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
 )
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
@@ -92,9 +97,11 @@ from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.metadata_containers.metadata_containers_table import Table
+from neptune.metadata_containers.utils import parse_dates
+from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
+from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
@@ -145,6 +152,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._forking_state: bool = False
         self._state: ContainerState = ContainerState.CREATED
         self._signals_queue: "Queue[Signal]" = Queue()
+        self._logger: logging.Logger = get_logger()
 
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -180,6 +188,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             flush_period=flush_period,
             queue=self._signals_queue,
         )
+
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
 
@@ -229,17 +238,22 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
+        self._logger = get_logger(loglevel=logging.WARNING)
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
             self._signals_queue = Queue()
-            self._op_processor = get_operation_processor(
-                mode=self._mode,
-                container_id=self._id,
-                container_type=self.container_type,
-                backend=self._backend,
-                lock=self._lock,
-                flush_period=self._flush_period,
-                queue=self._signals_queue,
+            self._op_processor = LazyOperationProcessorWrapper(
+                operation_processor_getter=partial(
+                    get_operation_processor,
+                    mode=self._mode,
+                    container_id=self._id,
+                    container_type=self.container_type,
+                    backend=self._backend,
+                    lock=self._lock,
+                    flush_period=self._flush_period,
+                    queue=self._signals_queue,
+                ),
+                post_trigger_side_effect=self._op_processor.start,
             )
 
             # TODO: Every implementation of background job should handle fork by itself.
@@ -255,8 +269,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     )
                 )
             self._bg_job = BackgroundJobList(jobs)
-
-            self._op_processor.start()
 
         with self._forking_cond:
             self._forking_state = False
@@ -441,17 +453,17 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._state = ContainerState.STOPPING
 
         ts = time.time()
-        logger.info("Shutting down background jobs, please wait a moment...")
+        self._logger.info("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
-        logger.info("Done!")
+        self._logger.info("Done!")
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
 
         if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
-            logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self.get_url().rstrip("/") + "/metadata")
+            metadata_url = self.get_url().rstrip("/") + "/metadata"
+            self._logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
         self._backend.close()
 
         with self._forking_cond:
@@ -643,7 +655,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            logger.info(self.get_url())
+            self._logger.info(f"Neptune initialized. Open in the app: {self.get_url()}")
 
         self.start()
 
@@ -652,18 +664,34 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]) -> Table:
+    def _fetch_entries(
+        self,
+        child_type: ContainerType,
+        query: NQLQuery,
+        columns: Optional[Iterable[str]],
+        limit: Optional[int],
+        sort_by: str,
+        ascending: bool,
+        progress_bar: Optional[ProgressBarType],
+    ) -> Table:
         if columns is not None:
-            # always return entries with `sys/id` column when filter applied
+            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
             columns = set(columns)
             columns.add("sys/id")
+            columns.add(sort_by)
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
             query=query,
             columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
         )
+
+        leaderboard_entries = parse_dates(leaderboard_entries)
 
         return Table(
             backend=self._backend,

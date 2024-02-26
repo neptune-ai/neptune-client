@@ -16,6 +16,7 @@
 __all__ = [
     "replace_patch_version",
     "verify_type",
+    "verify_value",
     "is_stream",
     "is_bool",
     "is_int",
@@ -38,11 +39,11 @@ __all__ = [
 ]
 
 import base64
-import logging
 import os
 from glob import glob
 from io import IOBase
 from typing import (
+    Any,
     Iterable,
     List,
     Mapping,
@@ -53,10 +54,11 @@ from typing import (
 )
 
 from neptune.internal.types.stringify_value import StringifyValue
+from neptune.internal.utils.logger import get_logger
 
 T = TypeVar("T")
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
 
 
 def replace_patch_version(version: str):
@@ -78,6 +80,11 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
 
     if isinstance(var, IOBase) and not hasattr(var, "read"):
         raise TypeError("{} is a stream, which does not implement read method".format(var_name))
+
+
+def verify_value(var_name: str, var: Any, expected_values: Iterable[T]) -> None:
+    if var not in expected_values:
+        raise ValueError(f"{var_name} must be one of {expected_values} (was `{var}`)")
 
 
 def is_stream(var):
@@ -184,11 +191,15 @@ def is_ipython() -> bool:
         return False
 
 
-def as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:
+def as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Iterable[str]:
     verify_type(name, value, (type(None), str, Iterable))
+
     if value is None:
         return []
+
     if isinstance(value, str):
         return [value]
+
     verify_collection_type(name, value, str)
+
     return value

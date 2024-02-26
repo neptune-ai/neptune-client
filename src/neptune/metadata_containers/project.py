@@ -43,13 +43,19 @@ from neptune.internal.init.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
+    verify_collection_type,
     verify_type,
+    verify_value,
 )
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.metadata_containers_table import Table
 from neptune.metadata_containers.utils import prepare_nql_query
+from neptune.table import Table
 from neptune.types.mode import Mode
+from neptune.typing import (
+    ProgressBarCallback,
+    ProgressBarType,
+)
 
 
 class Project(MetadataContainer):
@@ -191,11 +197,15 @@ class Project(MetadataContainer):
         self,
         *,
         id: Optional[Union[str, Iterable[str]]] = None,
-        state: Optional[Union[str, Iterable[str]]] = None,
+        state: Optional[Union[Literal["inactive", "active"], Iterable[Literal["inactive", "active"]]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
+        ascending: bool = False,
+        progress_bar: Optional[ProgressBarType] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
@@ -217,16 +227,19 @@ class Project(MetadataContainer):
             tag: A tag or list of tags applied to the run.
                 Example: `"lightGBM"` or `["pytorch", "cycleLR"]`.
                 Only runs that have all specified tags will match this criterion.
-            columns: Names of columns to include in the table, as a list of namespace or field names.
+            columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                Examples:
-                    Fields: `["params/lr", "params/batch", "train/acc"]` - these fields are included as columns.
-                    Namespaces: `["params", "train"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the runs table are included.
             trashed: Whether to retrieve trashed runs.
                 If `True`, only trashed runs are retrieved.
                 If `False` (default), only not-trashed runs are retrieved.
                 If `None`, both trashed and not-trashed runs are retrieved.
+            limit: How many entries to return at most. If `None`, all entries are returned.
+            sort_by: Name of the field to sort the results by.
+                The field must represent a simple type (string, float, datetime, integer, or Boolean).
+            ascending: Whether to sort the entries in ascending order of the sorting column values.
+            progress_bar: Set to `False` to disable the download progress bar,
+                or pass a `ProgressBarCallback` class to use your own progress bar callback.
 
         Returns:
             `Table` object containing `Run` objects matching the specified criteria.
@@ -235,22 +248,28 @@ class Project(MetadataContainer):
 
         Examples:
             >>> import neptune
-
-            >>> # Fetch project "jackie/sandbox"
+            ... # Fetch project "jackie/sandbox"
             ... project = neptune.init_project(mode="read-only", project="jackie/sandbox")
 
             >>> # Fetch the metadata of all runs as a pandas DataFrame
             ... runs_table_df = project.fetch_runs_table().to_pandas()
-
-            >>> # Fetch the metadata of all runs as a pandas DataFrame, including only the field "train/loss"
-            ... # and the fields from the "params" namespace as columns:
-            ... runs_table_df = project.fetch_runs_table(columns=["params", "train/loss"]).to_pandas()
-
-            >>> # Sort runs by creation time
-            ... runs_table_df = runs_table_df.sort_values(by="sys/creation_time", ascending=False)
-
-            >>> # Extract the id of the last run
+            ... # Extract the ID of the last run
             ... last_run_id = runs_table_df["sys/id"].values[0]
+
+            >>> # Fetch the 100 oldest runs
+            ... runs_table_df = project.fetch_runs_table(
+            ...     sort_by="sys/creation_time", ascending=True, limit=100
+            ... ).to_pandas()
+
+            >>> # Fetch the 100 largest runs (space they take up in Neptune)
+            ... runs_table_df = project.fetch_runs_table(sort_by="sys/size", limit=100).to_pandas()
+
+            >>> # Include only the fields "train/loss" and "params/lr" as columns:
+            ... runs_table_df = project.fetch_runs_table(columns=["params/lr", "train/loss"]).to_pandas()
+
+            >>> # Pass a custom progress bar callback
+            ... runs_table_df = project.fetch_runs_table(progress_bar=MyProgressBar).to_pandas()
+            ... # The class MyProgressBar(ProgressBarCallback) must be defined
 
             You can also filter the runs table by state, owner, tag, or a combination of these:
 
@@ -275,6 +294,17 @@ class Project(MetadataContainer):
         tags = as_list("tag", tag)
 
         verify_type("trashed", trashed, (bool, type(None)))
+        verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
+        verify_collection_type("state", states, str)
+
+        for state in states:
+            verify_value("state", state.lower(), ("inactive", "active"))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
         nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
@@ -283,22 +313,38 @@ class Project(MetadataContainer):
             child_type=ContainerType.RUN,
             query=nql_query,
             columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
         )
 
-    def fetch_models_table(self, *, columns: Optional[Iterable[str]] = None, trashed: Optional[bool] = False) -> Table:
+    def fetch_models_table(
+        self,
+        *,
+        columns: Optional[Iterable[str]] = None,
+        trashed: Optional[bool] = False,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
+        ascending: bool = False,
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> Table:
         """Retrieve models stored in the project.
 
         Args:
             trashed: Whether to retrieve trashed models.
                 If `True`, only trashed models are retrieved.
-                If `False` (default), only not-trashed models are retrieved.
+                If `False`, only not-trashed models are retrieved.
                 If `None`, both trashed and not-trashed models are retrieved.
-            columns: Names of columns to include in the table, as a list of namespace or field names.
+            columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                Examples:
-                    Fields: `["datasets/test", "info/size"]` - these fields are included as columns.
-                    Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
-                If `None` (default), all the columns of the models table are included.
+                If `None`, all the columns of the models table are included.
+            limit: How many entries to return at most. If `None`, all entries are returned.
+            sort_by: Name of the field to sort the results by.
+                The field must represent a simple type (string, float, datetime, integer, or Boolean).
+            ascending: Whether to sort the entries in ascending order of the sorting column values.
+            progress_bar: Set to `False` to disable the download progress bar,
+                or pass a `ProgressBarCallback` class to use your own progress bar callback.
 
         Returns:
             `Table` object containing `Model` objects.
@@ -307,29 +353,33 @@ class Project(MetadataContainer):
 
         Examples:
             >>> import neptune
-
-            >>> # Fetch project "jackie/sandbox"
+            ... # Fetch project "jackie/sandbox"
             ... project = neptune.init_project(mode="read-only", project="jackie/sandbox")
 
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
 
-            >>> # Fetch the metadata of all models as a pandas DataFrame,
-            ... # including only the "datasets" namespace and "info/size" field as columns:
-            ... models_table_df = project.fetch_models_table(columns=["datasets", "info/size"]).to_pandas()
+            >>> # Include only the fields "params/lr" and "info/size" as columns:
+            ... models_table_df = project.fetch_models_table(columns=["params/lr", "info/size"]).to_pandas()
 
-            >>> # Sort model objects by size
-            ... models_table_df = models_table_df.sort_values(by="sys/size")
-
-            >>> # Sort models by creation time
-            ... models_table_df = models_table_df.sort_values(by="sys/creation_time", ascending=False)
-
-            >>> # Extract the last model id
+            >>> # Fetch 10 oldest model objects
+            ... models_table_df = project.fetch_models_table(
+            ...     sort_by="sys/creation_time", ascending=True, limit=10
+            ...  ).to_pandas()
+            ... # Extract the ID of the first listed (oldest) model object
             ... last_model_id = models_table_df["sys/id"].values[0]
 
-        You may also want to check the API referene in the docs:
+        See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_models_table
         """
+        verify_type("limit", limit, (int, type(None)))
+        verify_type("sort_by", sort_by, str)
+        verify_type("ascending", ascending, bool)
+        verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
+
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
+
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
@@ -342,4 +392,8 @@ class Project(MetadataContainer):
             if trashed is not None
             else NQLEmptyQuery,
             columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
         )

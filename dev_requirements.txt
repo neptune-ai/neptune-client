@@ -1,0 +1,41 @@
+-e .
+
+# dev
+Faker
+freezegun
+mock
+moto[s3]<5.0.0
+munch
+mypy
+pre-commit
+pytest
+pytest-cov
+pytest-mock
+pytest-timeout
+pytest-xdist
+
+# Integrations
+optuna
+pytorch-lightning
+scikit-learn
+torchvision
+transformers
+accelerate
+zenml
+mlflow
+backoff
+altair
+bokeh
+matplotlib
+seaborn
+tensorflow
+torch
+vega_datasets
+plotly
+
+# e2e
+optuna
+scikit-learn
+torchvision
+accelerate
+backoff

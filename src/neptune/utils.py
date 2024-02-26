@@ -14,19 +14,36 @@
 # limitations under the License.
 #
 """Utility functions to support ML metadata logging with neptune.ai."""
-__all__ = ["stringify_unsupported", "stop_synchronization_callback"]
+__all__ = [
+    "stringify_unsupported",
+    "stop_synchronization_callback",
+    "TqdmProgressBar",
+    "NullProgressBar",
+]
 
+from types import TracebackType
 from typing import (
     Any,
     Mapping,
     MutableMapping,
+    Optional,
+    Type,
     Union,
 )
 
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
-from neptune.internal.utils.logger import logger
-from neptune.typing import NeptuneObject
+from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
+from neptune.typing import (
+    NeptuneObject,
+    ProgressBarCallback,
+)
+
+logger = get_logger()
 
 
 def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
@@ -73,3 +90,58 @@ def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
         "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."
     )
     neptune_object.stop(seconds=DEFAULT_STOP_TIMEOUT)
+
+
+class NullProgressBar(ProgressBarCallback):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        pass
+
+    def update(self, *, by: int, total: Optional[int] = None) -> None:
+        pass
+
+
+class TqdmProgressBar(ProgressBarCallback):
+    def __init__(
+        self,
+        *args: Any,
+        description: Optional[str] = None,
+        unit: Optional[str] = None,
+        unit_scale: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+        interactive = in_interactive() or in_notebook()
+
+        if interactive:
+            from tqdm.notebook import tqdm
+        else:
+            from tqdm import tqdm  # type: ignore
+
+        unit = unit if unit else ""
+
+        self._progress_bar = tqdm(desc=description, unit=unit, unit_scale=unit_scale, **kwargs)
+
+    def __enter__(self) -> "TqdmProgressBar":
+        self._progress_bar.__enter__()
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        self._progress_bar.__exit__(exc_type, exc_val, exc_tb)
+
+    def update(self, *, by: int, total: Optional[int] = None) -> None:
+        if total:
+            self._progress_bar.total = total
+        self._progress_bar.update(by)

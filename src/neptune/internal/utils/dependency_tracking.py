@@ -1,3 +1,19 @@
+#
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 __all__ = [
     "DependencyTrackingStrategy",
     "InferDependenciesStrategy",
@@ -15,16 +31,22 @@ from typing import (
     Union,
 )
 
-if sys.version_info >= (3, 8):
-    from importlib.metadata import distributions
-else:
-    from importlib_metadata import distributions
+from neptune.internal.utils.logger import get_logger
 
-from neptune.internal.utils.logger import logger
+if sys.version_info >= (3, 8):
+    from importlib.metadata import (
+        Distribution,
+        distributions,
+    )
+else:
+    from importlib_metadata import Distribution, distributions
+
 from neptune.types import File
 
 if TYPE_CHECKING:
     from neptune import Run
+
+logger = get_logger()
 
 
 class DependencyTrackingStrategy(ABC):
@@ -36,11 +58,16 @@ class DependencyTrackingStrategy(ABC):
 class InferDependenciesStrategy(DependencyTrackingStrategy):
     def log_dependencies(self, run: "Run") -> None:
         dependencies = []
-        dists = list(sorted(distributions(), key=lambda d: d.metadata["Name"]))
+
+        def sorting_key_func(d: Distribution) -> str:
+            _name = d.metadata["Name"]
+            return _name.lower() if isinstance(_name, str) else ""
+
+        dists = sorted(distributions(), key=sorting_key_func)
 
         for dist in dists:
-            name, version = dist.metadata["Name"], dist.metadata["Version"]
-            dependencies.append(f"{name}=={version}")
+            if dist.metadata["Name"]:
+                dependencies.append(f'{dist.metadata["Name"]}=={dist.metadata["Version"]}')
 
         dependencies_str = "\n".join(dependencies)
 

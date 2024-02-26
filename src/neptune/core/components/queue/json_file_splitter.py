@@ -15,13 +15,22 @@
 #
 __all__ = ["JsonFileSplitter"]
 
-import json
 from collections import deque
 from io import StringIO
-from json import JSONDecodeError
+from json import (
+    JSONDecodeError,
+    JSONDecoder,
+)
+from pathlib import Path
+from types import TracebackType
 from typing import (
+    IO,
+    Any,
+    Deque,
     Optional,
     Tuple,
+    Type,
+    Union,
 )
 
 
@@ -29,16 +38,18 @@ class JsonFileSplitter:
     BUFFER_SIZE = 64 * 1024
     MAX_PART_READ = 8 * 1024
 
-    def __init__(self, file_path: str):
-        self._file = open(file_path, "r")
-        self._decoder = json.JSONDecoder(strict=False)
-        self._part_buffer = StringIO()
-        self._parsed_queue = deque()
-        self._start_pos = 0
+    def __init__(self, file_path: Union[str, Path]):
+        self._file: IO = open(file_path, "r")
+        self._decoder: JSONDecoder = JSONDecoder(strict=False)
+        self._part_buffer: StringIO = StringIO()
+        self._parsed_queue: Deque[Tuple[Any, int]] = deque()
+        self._start_pos: int = 0
 
     def close(self) -> None:
-        self._file.close()
-        self._part_buffer.close()
+        if not self._file.closed:
+            self._file.close()
+        if not self._part_buffer.closed:
+            self._part_buffer.close()
 
     def get(self) -> Optional[dict]:
         return (self.get_with_size() or (None, None))[0]
@@ -51,7 +62,7 @@ class JsonFileSplitter:
             return self._parsed_queue.popleft()
         return None, 0
 
-    def _read_data(self):
+    def _read_data(self) -> None:
         if self._part_buffer.tell() < self.MAX_PART_READ:
             data = self._file.read(self.BUFFER_SIZE)
             if not data:
@@ -68,7 +79,7 @@ class JsonFileSplitter:
             data = self._reset_part_buffer()
             self._decode(data)
 
-    def _decode(self, data: str):
+    def _decode(self, data: str) -> None:
         start = self._json_start(data)
         while start is not None:
             try:
@@ -94,3 +105,14 @@ class JsonFileSplitter:
         self._part_buffer.close()
         self._part_buffer = StringIO()
         return data
+
+    def __enter__(self) -> "JsonFileSplitter":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Type[Optional[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
+    ) -> None:
+        self.close()

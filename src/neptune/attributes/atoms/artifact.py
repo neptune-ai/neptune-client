@@ -30,6 +30,7 @@ from neptune.internal.operation import (
     TrackFilesToArtifact,
 )
 from neptune.types.atoms.artifact import Artifact as ArtifactVal
+from neptune.typing import ProgressBarType
 
 
 class Artifact(Atom):
@@ -62,7 +63,7 @@ class Artifact(Atom):
             artifact_hash,
         )
 
-    def download(self, destination: str = None):
+    def download(self, destination: str = None, progress_bar: typing.Optional[ProgressBarType] = None):
         self._check_feature()
         for file_definition in self.fetch_files_list():
             driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)

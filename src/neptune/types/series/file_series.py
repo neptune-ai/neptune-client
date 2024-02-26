@@ -27,13 +27,14 @@ from typing import (
 
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.utils import is_collection
-from neptune.internal.utils.logger import logger
+from neptune.internal.utils.logger import get_logger
 from neptune.types import File
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
 
+logger = get_logger()
 Ret = TypeVar("Ret")
 
 

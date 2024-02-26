@@ -43,6 +43,7 @@ from neptune.internal.utils.images import (
     is_pandas_dataframe,
     is_pil_image,
     is_plotly_figure,
+    is_seaborn_figure,
 )
 from neptune.types.atoms.atom import Atom
 
@@ -173,12 +174,12 @@ class File(Atom):
     def as_image(image) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
-        This way you can upload `Matplotlib` figures, `PIL` images, `NumPy` arrays, as static images.
+        This way you can upload `Matplotlib` figures, `Seaborn` figures, `PIL` images, `NumPy` arrays, as static images.
 
         Args:
             image: Image-like object to be converted.
-                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images
-                and `Matplotlib` figures.
+                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images,
+                `Matplotlib` figures and `Seaborn` figures.
 
         Returns:
             ``File``: value object with converted image
@@ -213,12 +214,12 @@ class File(Atom):
     def as_html(chart) -> "File":
         """Converts an object to an HTML File value object.
 
-        This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts
+        This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts
         or upload directly `Pandas` `DataFrame` objects to explore them in Neptune UI.
 
         Args:
             chart: An object to be converted.
-                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts,
+                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts,
                 and `Pandas` `DataFrame` objects.
 
         Returns:
@@ -307,15 +308,16 @@ class File(Atom):
             or is_bokeh_figure(value)
             or is_numpy_array(value)
             or is_pandas_dataframe(value)
+            or is_seaborn_figure(value)
             or isinstance(value, File)
         )
 
     @staticmethod
     def is_convertable_to_image(value):
-        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure)
+        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure, is_seaborn_figure)
         return any(predicate(value) for predicate in convertable_to_img_predicates)
 
     @staticmethod
     def is_convertable_to_html(value):
-        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure)
+        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure, is_seaborn_figure)
         return any(predicate(value) for predicate in convertable_to_html_predicates)

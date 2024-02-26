@@ -1,11 +1,52 @@
-## [UNRELEASED] 1.8.7
+## [UNRELEASED] neptune 1.9.2
+
+### Fixes
+- Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
+
+
+## neptune 1.9.1
+
+### Fixes
+- Fixed conda package ([#1652](https://github.com/neptune-ai/neptune-client/pull/1652))
+- Resource cleaning in PyTorch Dataloaders with multiple workers ([issue](https://github.com/neptune-ai/neptune-client/issues/1622)) ([#1649](https://github.com/neptune-ai/neptune-client/pull/1649))
+
+### Changes
+- Lazy initialization of operation processor when forking ([#1649](https://github.com/neptune-ai/neptune-client/pull/1649))
+
+
+## neptune 1.9.0
+
+### Features
+- Add support for seaborn figures ([#1613](https://github.com/neptune-ai/neptune-client/pull/1613))
+- Added fetching with iterators in `fetch_*_table()` methods ([#1585](https://github.com/neptune-ai/neptune-client/pull/1585))
+- Added `limit` parameter to `fetch_*_table()` methods ([#1593](https://github.com/neptune-ai/neptune-client/pull/1593))
+- Added `sort_by` parameter to `fetch_*_table()` methods ([#1595](https://github.com/neptune-ai/neptune-client/pull/1595))
+- Added `ascending` parameter to `fetch_*_table()` methods ([#1602](https://github.com/neptune-ai/neptune-client/pull/1602))
+- Added `progress_bar` parameter to `fetch_*_table()` methods ([#1599](https://github.com/neptune-ai/neptune-client/pull/1599))
+- Added `progress_bar` parameter to `download()` method of the `Handler` class ([#1620](https://github.com/neptune-ai/neptune-client/pull/1620))
+- Added `progress_bar` parameter to `fetch_values()` method of the `Handler` class ([#1633](https://github.com/neptune-ai/neptune-client/pull/1633))
 
 ### Fixes
 - Add direct requirement of `typing-extensions` ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
+- Handle `None` values in distribution sorting in `InferDependeciesStrategy` ([#1612](https://github.com/neptune-ai/neptune-client/pull/1612))
+- Fixed race conditions with cleaning internal files ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Better value validation for `state` parameter of `fetch_*_table()` methods ([#1616](https://github.com/neptune-ai/neptune-client/pull/1616))
+- Parse `datetime` attribute values in `fetch_runs_table()` ([#1634](https://github.com/neptune-ai/neptune-client/pull/1634))
+- Better handle limit in `fetch_*_table()` methods ([#1644](https://github.com/neptune-ai/neptune-client/pull/1644))
+- Fix pagination handling in table fetching ([#1651](https://github.com/neptune-ai/neptune-client/pull/1651))
 
 ### Changes
 - Use literals instead of str for Mode typing ([#1586](https://github.com/neptune-ai/neptune-client/pull/1586))
 - Flag added for cleaning internal data ([#1589](https://github.com/neptune-ai/neptune-client/pull/1589))
+- Handle logging in the `AsyncOperationProcessor` with `OperationLogger` and signal queue ([#1610](https://github.com/neptune-ai/neptune-client/pull/1610))
+- Stringify `Handler` paths ([#1623](https://github.com/neptune-ai/neptune-client/pull/1623))
+- Added processor id to `ProcessorStopSignalData` ([#1625](https://github.com/neptune-ai/neptune-client/pull/1625))
+- Use the same logger instance for logging ([#1611](https://github.com/neptune-ai/neptune-client/pull/1611))
+- Changed offline directories internal path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Changed internal directories path structure ([#1606](https://github.com/neptune-ai/neptune-client/pull/1606))
+- Changed format of warning messages ([#1635](https://github.com/neptune-ai/neptune-client/pull/1635))
+- Make `trash_objects()` raise `ProjectNotFound` if project does not exist ([#1636](https://github.com/neptune-ai/neptune-client/pull/1636))
+- Do not show progress bars when no data to fetch / small amount of data ([#1638](https://github.com/neptune-ai/neptune-client/pull/1638))
 
 
 ## 1.8.6

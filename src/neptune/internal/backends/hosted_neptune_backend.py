@@ -16,7 +16,6 @@
 __all__ = ["HostedNeptuneBackend"]
 
 import itertools
-import logging
 import os
 import re
 import typing
@@ -24,6 +23,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    Generator,
     Iterable,
     List,
     Optional,
@@ -47,6 +47,11 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
     AmbiguousProjectName,
@@ -132,13 +137,14 @@ from neptune.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.git import GitInfo
+from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
+from neptune.typing import ProgressBarType
 from neptune.version import version as neptune_client_version
 
 if TYPE_CHECKING:
@@ -147,7 +153,25 @@ if TYPE_CHECKING:
     from neptune.internal.backends.api_model import ClientConfig
 
 
-_logger = logging.getLogger(__name__)
+_logger = get_logger()
+
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+}
+
+ATOMIC_ATTRIBUTE_TYPES = {
+    AttributeType.INT.value,
+    AttributeType.FLOAT.value,
+    AttributeType.STRING.value,
+    AttributeType.BOOL.value,
+    AttributeType.DATETIME.value,
+    AttributeType.RUN_STATE.value,
+}
 
 
 class HostedNeptuneBackend(NeptuneBackend):
@@ -694,6 +718,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         path: List[str],
         index: int,
         destination: str,
+        progress_bar: Optional[ProgressBarType],
     ):
         try:
             download_image_series_element(
@@ -702,6 +727,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attribute=path_to_str(path),
                 index=index,
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:
@@ -715,6 +741,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         try:
             download_file_attribute(
@@ -722,6 +749,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 container_id=container_id,
                 attribute=path_to_str(path),
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:
@@ -735,6 +763,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
+        progress_bar: Optional[ProgressBarType] = None,
     ):
         download_request = self._get_file_set_download_request(container_id, container_type, path)
         try:
@@ -742,6 +771,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 swagger_client=self.leaderboard_client,
                 download_id=download_request.id,
                 destination=destination,
+                progress_bar=progress_bar,
             )
         except ClientHttpError as e:
             if e.status == HTTPNotFound.status_code:
@@ -1015,28 +1045,57 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
+        params = {
+            "projectIdentifier": project_id,
+            "search": column,
+            "type": types,
+            "params": {},
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries
+        except HTTPNotFound as e:
+            raise ProjectNotFound(project_id=project_id) from e
+
+    @with_api_exceptions_handler
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
         columns: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
-        step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
+        ascending: bool = False,
+        progress_bar: Optional[ProgressBarType] = None,
+    ) -> Generator[LeaderboardEntry, None, None]:
+        default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+
+        step_size = min(default_step_size, limit) if limit else default_step_size
 
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
+        if sort_by == "sys/creation_time":
+            sort_by_column_type = AttributeType.DATETIME.value
+        else:
+            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
+            sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
+
         try:
-            return list(
-                iter_over_pages(
-                    client=self.leaderboard_client,
-                    project_id=project_id,
-                    types=types_filter,
-                    query=query,
-                    attributes_filter=attributes_filter,
-                    step_size=step_size,
-                )
+            return iter_over_pages(
+                client=self.leaderboard_client,
+                project_id=project_id,
+                types=types_filter,
+                query=query,
+                attributes_filter=attributes_filter,
+                step_size=step_size,
+                limit=limit,
+                sort_by=sort_by,
+                ascending=ascending,
+                sort_by_column_type=sort_by_column_type,
+                progress_bar=progress_bar,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
@@ -1063,3 +1122,31 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+
+def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
+    if not entries:  # column chosen is not present in the table
+        raise ValueError(f"Column '{column}' chosen for sorting is not present in the table")
+
+    if len(entries) == 1 and entries[0].name == column:
+        return entries[0].type
+
+    types = set()
+    for entry in entries:
+        if entry.name != column:  # caught by regex, but it's not this column
+            continue
+        if entry.type not in ATOMIC_ATTRIBUTE_TYPES:  # non-atomic type - no need to look further
+            raise ValueError(
+                f"Column {column} used for sorting is a complex type. For more, "
+                f"see https://docs.neptune.ai/api/field_types/#simple-types"
+            )
+        types.add(entry.type)
+
+    if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
+        return AttributeType.FLOAT.value
+
+    warn_once(
+        f"Column {column} contains more than one simple data type. Sorting result might be inaccurate.",
+        exception=NeptuneWarning,
+    )
+    return AttributeType.STRING.value

@@ -36,6 +36,7 @@ from mock import (
 )
 from packaging.version import Version
 
+from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     CannotResolveHostname,
     FileSetNotFound,
@@ -65,7 +66,6 @@ from neptune.internal.operation import (
     UploadFile,
     UploadFileContent,
 )
-from neptune.internal.operation_processors.operation_storage import OperationStorage
 from neptune.internal.utils import base64_encode
 from tests.unit.neptune.backend_test_mixin import BackendTestMixin
 from tests.unit.neptune.new.utils import response_mock
