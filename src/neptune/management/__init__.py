@@ -98,7 +98,7 @@ Move one or more Neptune objects to the project trash:
 >>> # Move the runs to trash:
 ... management.trash_objects(project=project_name, ids=runs_to_trash)
 
-Get information about workspace including storage usage and limits:
+Get information about a workspace, including storage usage and limits:
 >>> management.get_workspace_status(workspace="ml-team")
 
 ---
