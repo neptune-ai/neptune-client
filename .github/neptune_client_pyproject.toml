@@ -56,7 +56,7 @@ neptune-tensorboard = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 zenml = { version = "*", optional = true }
-mosaicml = { version = "*", optional = true }
+mosaicml = { version = "*", optional = true, python = ">=3.8" }
 neptune-aws = { version = "*", optional = true }
 neptune-mlflow = { version = "*", optional = true }
 neptune-airflow = { version = "*", optional = true }
