@@ -284,7 +284,7 @@ class TestImage(unittest.TestCase):
 
 def test_scale_array_when_array_already_scaled():
     # given
-    arr = numpy.array([[1, 0], [0, 0.5]])
+    arr = numpy.array([[123, 32], [255, 0]])
 
     # when
     result = _scale_array(arr)
@@ -295,23 +295,11 @@ def test_scale_array_when_array_already_scaled():
 
 def test_scale_array_when_array_not_scaled():
     # given
-    arr = numpy.array([[10, 100], [100, 10]])
+    arr = numpy.array([[-1, 0], [0.5, 1]])
 
     # when
     result = _scale_array(arr)
-    expected = numpy.array([[0.0, 1], [1, 0.0]])
-
-    # then
-    assert numpy.all(expected == result)
-
-
-def test_scale_array_when_all_values_are_the_same():
-    # given
-    arr = numpy.array([[10, 10], [10, 10]])
-
-    # when
-    result = _scale_array(arr)
-    expected = numpy.array([[0.0, 0], [0, 0.0]])
+    expected = numpy.array([[0.0, 127.5], [191.25, 255.0]])
 
     # then
     assert numpy.all(expected == result)

@@ -204,15 +204,13 @@ def _get_numpy_as_image(array: np.ndarray, autoscale: bool) -> bytes:
     else:
         _warn_if_data_range_incorrect(array)
 
-    array *= 255
-    shape = array.shape
-    if len(shape) == 2:
+    if len(array.shape) == 2:
         return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
-    if len(shape) == 3:
-        if shape[2] == 1:
+    if len(array.shape) == 3:
+        if array.shape[2] == 1:
             array2d = numpy_array([[col[0] for col in row] for row in array])
             return _get_pil_image_data(pilimage_fromarray(array2d.astype(numpy_uint8)))
-        if shape[2] in (3, 4):
+        if array.shape[2] in (3, 4):
             return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
     raise ValueError(
         "Incorrect size of numpy.ndarray. Should be 2-dimensional or"
@@ -224,17 +222,16 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
     min_value = np.min(array)
     max_value = np.max(array)
 
-    if min_value >= 0 and max_value <= 1:
+    if min_value >= 0 and 1 < max_value <= 255:
         return array
 
-    # Avoid division by zero if all values are the same
-    if min_value == max_value:
-        scaled_array = np.zeros_like(array)
-    else:
-        scaled_array = (array - min_value) / (max_value - min_value)
+    if min_value >= 0 and max_value <= 1:
+        return array * 255
 
-    # Ensure that values outside [0, 1] are clipped to [0, 1]
-    return np.clip(scaled_array, 0, 1)
+    if min_value >= -1 and max_value <= 1:
+        return (array + 1) / 2 * 255
+
+    return (array + 1) * 128
 
 
 def _warn_if_data_range_incorrect(array: np.ndarray) -> None:
@@ -243,12 +240,12 @@ def _warn_if_data_range_incorrect(array: np.ndarray) -> None:
     array_max = array.max()
     if array_min < 0:
         data_range_warnings.append(f"the smallest value in the array is {array_min}")
-    if array_max > 1:
+    if array_max > 255:
         data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
         data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
         logger.warning(
-            "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
+            "%s To be interpreted as colors correctly values in the array need to be in the [0, 255] range.",
             data_range_warning_message,
         )
 
