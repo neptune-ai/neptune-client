@@ -50,8 +50,8 @@ from neptune.internal.utils import (
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.utils import (
+    build_raw_query,
     deprecatied_func_arg_warning_check,
-    extend_nql,
     prepare_nql_query,
 )
 from neptune.table import Table
@@ -318,7 +318,7 @@ class Project(MetadataContainer):
         verify_collection_type("state", states, str)
 
         if query is not None:
-            nql_query = extend_nql(query, trashed=trashed)
+            nql_query = build_raw_query(query, trashed=trashed)
         else:
             for state in states:
                 verify_value("state", state.lower(), ("inactive", "active"))

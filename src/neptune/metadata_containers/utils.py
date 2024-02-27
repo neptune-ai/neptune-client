@@ -44,8 +44,10 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
+    RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
 
@@ -179,11 +181,19 @@ def deprecatied_func_arg_warning_check(fname: str, vname: str, var: Any) -> None
         warn_once(msg, exception=NeptuneDeprecationWarning)
 
 
-def extend_nql(query: str, trashed: Optional[bool]) -> str:
-    if trashed is None:
-        return query
+def build_raw_query(query: str, trashed: Optional[bool]) -> NQLQuery:
+    raw_nql = RawNQLQuery(query)
 
-    if query == "":
-        return f"(sys/trashed: bool = {trashed})"
-    else:
-        return f"({query}) and (sys/trashed: bool = {trashed})"
+    if trashed is None:
+        return raw_nql
+
+    nql = NQLQueryAggregate(
+        items=[
+            raw_nql,
+            NQLQueryAttribute(
+                name="sys/trashed", type=NQLAttributeType.BOOLEAN, operator=NQLAttributeOperator.EQUALS, value=trashed
+            ),
+        ],
+        aggregator=NQLAggregator.AND,
+    )
+    return nql

@@ -19,8 +19,10 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
+    RawNQLQuery,
 )
 
 
@@ -125,4 +127,37 @@ class TestNQL(unittest.TestCase):
             ),
             '(((`sys/owner`:string = "user1") OR (`sys/owner`:string = "user2")) AND '
             '((`sys/tags`:stringSet CONTAINS "tag1") OR (`sys/tags`:stringSet CONTAINS "tag2")))',
+        )
+
+    def test_raw_query(self):
+        self.assertEqual(str(RawNQLQuery("")), str(NQLEmptyQuery()))
+        self.assertEqual(RawNQLQuery("").eval(), NQLEmptyQuery().eval())
+        self.assertEqual(
+            str(RawNQLQuery('(`sys/owner`:string = "user1")')),
+            str(
+                NQLQueryAttribute(
+                    name="sys/owner",
+                    type=NQLAttributeType.STRING,
+                    operator=NQLAttributeOperator.EQUALS,
+                    value="user1",
+                )
+            ),
+        )
+
+    def test_nql_evaluation(self):
+        self.assertEqual(
+            NQLQueryAggregate(items=[NQLEmptyQuery(), RawNQLQuery("")], aggregator=NQLAggregator.AND).eval(),
+            NQLEmptyQuery(),
+        )
+
+        query_of_interest = NQLQueryAttribute(
+            name="sys/owner",
+            type=NQLAttributeType.STRING,
+            operator=NQLAttributeOperator.EQUALS,
+            value="user1",
+        )
+
+        self.assertEqual(
+            NQLQueryAggregate(items=[query_of_interest, NQLEmptyQuery()], aggregator=NQLAggregator.AND).eval(),
+            query_of_interest.eval(),
         )
