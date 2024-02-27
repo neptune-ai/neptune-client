@@ -219,7 +219,8 @@ class Project(MetadataContainer):
 
         Args:
             query: NQL query string.
-                Example: `(`accuracy`:float > 0.88) AND (`loss`:float < 0.2)`.
+                Example: `"(accuracy: float > 0.88) AND (loss: float < 0.2)"`.
+                Exclusive with the `id`, `state`, `owner`, and `tag` parameters.
             id: Neptune ID of a run, or list of several IDs.
                 Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
@@ -301,7 +302,7 @@ class Project(MetadataContainer):
         deprecatied_func_arg_warning_check("fetch_runs_table", "owner", owner)
         deprecatied_func_arg_warning_check("fetch_runs_table", "tag", tag)
 
-        if any((id, state, owner, tag)) and query:
+        if any((id, state, owner, tag)) and query is not None:
             raise ValueError("You can't use both the query and the id, state, owner, or tag parameters.")
 
         ids = as_list("id", id)
