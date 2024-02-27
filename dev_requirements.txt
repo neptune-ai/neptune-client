@@ -18,10 +18,10 @@ pytest-xdist
 optuna
 pytorch-lightning
 scikit-learn
+mosaicml>=0.20.0
 torchvision
 transformers
 accelerate
-mosaicml
 zenml
 mlflow
 backoff
