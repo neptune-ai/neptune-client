@@ -23,7 +23,6 @@ from uuid import uuid4
 import altair as alt
 import matplotlib
 import numpy
-import numpy as np
 import pandas
 import plotly.express as px
 import seaborn as sns
@@ -284,28 +283,35 @@ class TestImage(unittest.TestCase):
 
 
 def test_scale_array_when_array_already_scaled():
-    arr = np.array([[1, 0], [0, 0.5]])
+    # given
+    arr = numpy.array([[1, 0], [0, 0.5]])
 
+    # when
     result = _scale_array(arr)
 
-    assert np.all(arr == result)
+    # then
+    assert numpy.all(arr == result)
 
 
 def test_scale_array_when_array_not_scaled():
-    arr = np.array([[10, 100], [100, 10]])
+    # given
+    arr = numpy.array([[10, 100], [100, 10]])
 
+    # when
     result = _scale_array(arr)
+    expected = numpy.array([[0.0, 1], [1, 0.0]])
 
-    expected = np.array([[0.0, 1], [1, 0.0]])
-
-    assert np.all(expected == result)
+    # then
+    assert numpy.all(expected == result)
 
 
 def test_scale_array_when_all_values_are_the_same():
-    arr = np.array([[10, 10], [10, 10]])
+    # given
+    arr = numpy.array([[10, 10], [10, 10]])
 
+    # when
     result = _scale_array(arr)
+    expected = numpy.array([[0.0, 0], [0, 0.0]])
 
-    expected = np.array([[0.0, 0], [0, 0.0]])
-
-    assert np.all(expected == result)
+    # then
+    assert numpy.all(expected == result)
