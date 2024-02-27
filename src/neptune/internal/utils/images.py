@@ -37,6 +37,7 @@ from io import (
 )
 from typing import Optional
 
+import numpy as np
 from packaging import version
 from pandas import DataFrame
 
@@ -199,19 +200,8 @@ def _image_content_to_html(content: bytes) -> str:
 def _get_numpy_as_image(array):
     array = array.copy()  # prevent original array from modifying
 
-    data_range_warnings = []
-    array_min = array.min()
-    array_max = array.max()
-    if array_min < 0:
-        data_range_warnings.append(f"the smallest value in the array is {array_min}")
-    if array_max > 1:
-        data_range_warnings.append(f"the largest value in the array is {array_max}")
-    if data_range_warnings:
-        data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
-        logger.warning(
-            "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
-            data_range_warning_message,
-        )
+    array = _scale_array(array)
+
     array *= 255
     shape = array.shape
     if len(shape) == 2:
@@ -226,6 +216,20 @@ def _get_numpy_as_image(array):
         "Incorrect size of numpy.ndarray. Should be 2-dimensional or"
         "3-dimensional with 3rd dimension of size 1, 3 or 4."
     )
+
+
+def _scale_array(array: np.ndarray) -> np.ndarray:
+    min_value = np.min(array)
+    max_value = np.max(array)
+
+    # Avoid division by zero if all values are the same
+    if min_value == max_value:
+        scaled_array = np.zeros_like(array)
+    else:
+        scaled_array = (array - min_value) / (max_value - min_value)
+
+    # Ensure that values outside [0, 1] are clipped to [0, 1]
+    return np.clip(scaled_array, 0, 1)
 
 
 def _get_pil_image_data(image: PILImage) -> bytes:
