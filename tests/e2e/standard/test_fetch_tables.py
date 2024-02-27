@@ -30,7 +30,8 @@ from tests.e2e.utils import a_key
 
 
 class TestFetchTable(BaseE2ETest):
-    def test_fetch_runs_by_tag(self, environment, project):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_by_tag(self, environment, project, with_query):
         tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
 
         with neptune.init_run(project=environment.project) as run:
@@ -44,16 +45,15 @@ class TestFetchTable(BaseE2ETest):
         # wait for the cache to fill
         time.sleep(5)
 
-        runs_tables = [
-            project.fetch_runs_table(tag=[tag1, tag2], progress_bar=False).to_rows(),
-            project.fetch_runs_table(
-                query=f"((sys/tags: stringSet CONTAINS '{tag1}') AND (sys/tags: stringSet CONTAINS '{tag2}'))",
-                progress_bar=False,
-            ).to_rows(),
-        ]
-        for run_table in runs_tables:
-            assert len(run_table) == 1
-            assert run_table[0].get_attribute_value("sys/id") == run_id1
+        if with_query:
+            kwargs = {"query": f"(sys/tags: stringSet CONTAINS '{tag1}')"}
+        else:
+            kwargs = {"tag": [tag1, tag2]}
+
+        runs = project.fetch_runs_table(progress_bar=False, **kwargs).to_rows()
+
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("sys/id") == run_id1
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container: Model, environment):
@@ -169,37 +169,42 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
 
-    def test_fetch_runs_table_by_state(self, environment, project):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_table_by_state(self, environment, project, with_query):
         tag = str(uuid.uuid4())
         random_val = random.random()
         with neptune.init_run(project=environment.project, tags=tag) as run:
             run["some_random_val"] = random_val
 
-            time.sleep(30)
-            runs_results = [
-                project.fetch_runs_table(state="active", progress_bar=False).to_pandas(),
-                project.fetch_runs_table(
-                    query="(sys/state: experimentState = running)", progress_bar=False
-                ).to_pandas(),
-            ]
-            for runs in runs_results:
-                assert not runs.empty
-                assert tag in runs["sys/tags"].values
-                assert random_val in runs["some_random_val"].values
+            time.sleep(10)
 
-        time.sleep(30)
+            if with_query:
+                kwargs = {"query": "(sys/state: experimentState = running)"}
+            else:
+                kwargs = {"state": "active"}
+            runs = project.fetch_runs_table(**kwargs).to_pandas()
+            runs = project.fetch_runs_table(**kwargs, progress_bar=False).to_pandas()
 
-        runs_results = [
-            project.fetch_runs_table(state="inactive", progress_bar=False).to_pandas(),
-            project.fetch_runs_table(query="(sys/state: experimentState = idle)", progress_bar=False).to_pandas(),
-        ]
-        for runs in runs_results:
             assert not runs.empty
             assert tag in runs["sys/tags"].values
             assert random_val in runs["some_random_val"].values
 
+        time.sleep(30)
+
+        if with_query:
+            kwargs = {"query": "(sys/state: experimentState = idle)"}
+        else:
+            kwargs = {"state": "inactive"}
+
+        runs = project.fetch_runs_table(**kwargs, progress_bar=False).to_pandas()
+
+        assert not runs.empty
+        assert tag in runs["sys/tags"].values
+        assert random_val in runs["some_random_val"].values
+
     @pytest.mark.parametrize("ascending", [True, False])
-    def test_fetch_runs_table_sorting(self, environment, project, ascending):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_table_sorting(self, environment, project, ascending, with_query):
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
             run["metrics/accuracy"] = 0.95
@@ -209,11 +214,12 @@ class TestFetchTable(BaseE2ETest):
             run["metrics/accuracy"] = 0.90
             run["some_val"] = "a"
 
-        time.sleep(30)
+        time.sleep(10)
+        query = "" if with_query else None
 
         # when
         runs = project.fetch_runs_table(
-            sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+            query=query, sort_by="sys/creation_time", ascending=ascending, progress_bar=False
         ).to_pandas()
 
         # then
@@ -226,7 +232,9 @@ class TestFetchTable(BaseE2ETest):
             assert run_list == ["run2", "run1"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="metrics/accuracy", ascending=ascending, progress_bar=False).to_pandas()
+        runs = project.fetch_runs_table(
+            query=query, sort_by="metrics/accuracy", ascending=ascending, progress_bar=False
+        ).to_pandas()
 
         # then
         assert not runs.empty
@@ -238,7 +246,9 @@ class TestFetchTable(BaseE2ETest):
             assert run_list == ["run1", "run2"]
 
         # when
-        runs = project.fetch_runs_table(sort_by="some_val", ascending=ascending, progress_bar=False).to_pandas()
+        runs = project.fetch_runs_table(
+            query=query, sort_by="some_val", ascending=ascending, progress_bar=False
+        ).to_pandas()
 
         # then
         assert not runs.empty
@@ -249,9 +259,11 @@ class TestFetchTable(BaseE2ETest):
         else:
             assert run_list == ["run1", "run2"]
 
-    def test_fetch_runs_table_non_atomic_type(self, environment, project):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_table_non_atomic_type(self, environment, project, with_query):
         # test if now it fails when we add a non-atomic type to that field
 
+        query = "" if with_query else None
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run3") as run:
             run["metrics/accuracy"] = 0.9
@@ -264,9 +276,10 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         with pytest.raises(ValueError):
-            project.fetch_runs_table(sort_by="metrics/accuracy", progress_bar=False)
+            project.fetch_runs_table(query=query, sort_by="metrics/accuracy", progress_bar=False)
 
-    def test_fetch_runs_table_datetime_parsed(self, environment, project):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_table_datetime_parsed(self, environment, project, with_query):
         # given
         with neptune.init_run(project=environment.project) as run:
             run["some_timestamp"] = datetime.datetime.now()
@@ -274,13 +287,17 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(30)
 
         # when
-        runs = project.fetch_runs_table(columns=["sys/creation_time", "some_timestamp"], progress_bar=False).to_pandas()
+        query = "" if with_query else None
+        runs = project.fetch_runs_table(
+            query=query, columns=["sys/creation_time", "some_timestamp"], progress_bar=False
+        ).to_pandas()
 
         # then
         assert isinstance(runs["sys/creation_time"].iloc[0], datetime.datetime)
         assert isinstance(runs["some_timestamp"].iloc[0], datetime.datetime)
 
-    def test_fetch_runs_table_limit(self, environment, project):
+    @pytest.mark.parametrize("with_query", [True, False])
+    def test_fetch_runs_table_limit(self, environment, project, with_query):
         # given
         with neptune.init_run(project=environment.project) as run:
             run["some_val"] = "a"
@@ -291,21 +308,46 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(30)
 
         # when
-        runs = project.fetch_runs_table(limit=1, progress_bar=False).to_pandas()
+        query = "" if with_query else None
+        runs = project.fetch_runs_table(query=query, limit=1, progress_bar=False).to_pandas()
 
         # then
         assert len(runs) == 1
 
-    def test_fetch_runs_table_raw_query(self, environment, project):
-        random_val = random.random()
-        with neptune.init_run(project=environment.project) as run:
-            run["key"] = random_val
-            run.sync(wait=True)
+    def test_fetch_runs_table_raw_query_trashed(self, environment, project):
+        # given
+        val: float = 2.2
+        with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
+            run["key"] = val
 
-            time.sleep(5)
+        with neptune.init_run(project=environment.project, custom_run_id="run2") as run:
+            run["key"] = val
 
-            runs = project.fetch_runs_table(
-                query=f"(key: float = {random_val})", progress_bar=False, trashed=None
-            ).to_pandas()
-            assert not runs.empty
-            assert random_val in runs["key"].values
+        time.sleep(5)
+
+        # when
+        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=False).to_pandas()
+
+        # then
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        assert ["run1", "run2"] == sorted(run_list)
+
+        # when
+        neptune.management.trash_objects(
+            project=environment.project, ids=runs[runs["sys/custom_run_id"] == "run2"]["sys/id"].item()
+        )
+
+        time.sleep(5)
+
+        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=True).to_pandas()
+
+        # then
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        assert ["run2"] == run_list
+
+        # when
+        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=None).to_pandas()
+
+        # then
+        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        assert ["run1", "run2"] == sorted(run_list)
