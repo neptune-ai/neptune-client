@@ -21,6 +21,7 @@ scikit-learn
 torchvision
 transformers
 accelerate
+mosaicml
 zenml
 mlflow
 backoff
