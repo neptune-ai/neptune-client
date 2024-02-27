@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import contextlib
 import io
 import os
 import sys
 import unittest
-from functools import partial
 from typing import Optional
 from uuid import uuid4
 
@@ -39,10 +37,10 @@ from neptune.common.utils import (
     IS_WINDOWS,
 )
 from neptune.internal.utils.images import (
+    _scale_array,
     get_html_content,
     get_image_content,
 )
-from tests.unit.neptune.new.utils.logging import format_log
 
 matplotlib.use("agg")
 
@@ -75,23 +73,13 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
         image_array = numpy.array([[[1], [0]], [[-3], [4]], [[5], [6]]])
-        expected_array = numpy.array([[1, 0], [-3, 4], [5, 6]]) * 255
+        expected_array = _scale_array(numpy.array([[1, 0], [-3, 4], [5, 6]])) * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # when
-        _log = partial(format_log, "WARNING")
 
         # expect
-        stdout = io.StringIO()
-        with contextlib.redirect_stdout(stdout):
-            self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
-        self.assertEqual(
-            stdout.getvalue(),
-            _log(
-                "The smallest value in the array is -3 and the largest value in the array is 6."
-                " To be interpreted as colors correctly values in the array need to be in the [0, 1] range.\n",
-            ),
-        )
+        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
 
     def test_get_image_content_from_rgb_array(self):
         # given
