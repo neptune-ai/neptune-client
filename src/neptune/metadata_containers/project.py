@@ -317,15 +317,15 @@ class Project(MetadataContainer):
         verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
         verify_collection_type("state", states, str)
 
+        if isinstance(limit, int) and limit <= 0:
+            raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
+
+        for state in states:
+            verify_value("state", state.lower(), ("inactive", "active"))
+
         if query is not None:
             nql_query = build_raw_query(query, trashed=trashed)
         else:
-            for state in states:
-                verify_value("state", state.lower(), ("inactive", "active"))
-
-            if isinstance(limit, int) and limit <= 0:
-                raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
-
             nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
         return MetadataContainer._fetch_entries(
