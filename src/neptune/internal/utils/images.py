@@ -66,8 +66,8 @@ except ImportError:
         pass
 
 
-def get_image_content(image) -> Optional[bytes]:
-    content = _image_to_bytes(image)
+def get_image_content(image, autoscale=True) -> Optional[bytes]:
+    content = _image_to_bytes(image, autoscale)
 
     return content
 
@@ -84,12 +84,12 @@ def get_pickle_content(obj) -> Optional[bytes]:
     return content
 
 
-def _image_to_bytes(image) -> bytes:
+def _image_to_bytes(image, autoscale) -> bytes:
     if image is None:
         raise ValueError("image is None")
 
     elif is_numpy_array(image):
-        return _get_numpy_as_image(image)
+        return _get_numpy_as_image(image, autoscale)
 
     elif is_pil_image(image):
         return _get_pil_image_data(image)
@@ -98,10 +98,10 @@ def _image_to_bytes(image) -> bytes:
         return _get_figure_image_data(image)
 
     elif _is_torch_tensor(image):
-        return _get_numpy_as_image(image.detach().numpy())
+        return _get_numpy_as_image(image.detach().numpy(), autoscale)
 
     elif _is_tensorflow_tensor(image):
-        return _get_numpy_as_image(image.numpy())
+        return _get_numpy_as_image(image.numpy(), autoscale)
 
     elif is_seaborn_figure(image):
         return _get_figure_image_data(image.figure)
@@ -197,10 +197,12 @@ def _image_content_to_html(content: bytes) -> str:
     return "<img src='data:image/png;base64," + str_equivalent_image + "'/>"
 
 
-def _get_numpy_as_image(array):
+def _get_numpy_as_image(array: np.ndarray, autoscale: bool) -> bytes:
     array = array.copy()  # prevent original array from modifying
-
-    array = _scale_array(array)
+    if autoscale:
+        array = _scale_array(array)
+    else:
+        _warn_if_data_range_incorrect(array)
 
     array *= 255
     shape = array.shape
@@ -233,6 +235,22 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
 
     # Ensure that values outside [0, 1] are clipped to [0, 1]
     return np.clip(scaled_array, 0, 1)
+
+
+def _warn_if_data_range_incorrect(array: np.ndarray) -> None:
+    data_range_warnings = []
+    array_min = array.min()
+    array_max = array.max()
+    if array_min < 0:
+        data_range_warnings.append(f"the smallest value in the array is {array_min}")
+    if array_max > 1:
+        data_range_warnings.append(f"the largest value in the array is {array_max}")
+    if data_range_warnings:
+        data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
+        logger.warning(
+            "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
+            data_range_warning_message,
+        )
 
 
 def _get_pil_image_data(image: PILImage) -> bytes:

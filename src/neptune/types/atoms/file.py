@@ -171,7 +171,7 @@ class File(Atom):
         return File(file_composite=file_composite)
 
     @staticmethod
-    def as_image(image) -> "File":
+    def as_image(image, autoscale: bool = True) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
         This way you can upload `Matplotlib` figures, `Seaborn` figures, `PIL` images, `NumPy` arrays, as static images.
@@ -207,7 +207,7 @@ class File(Atom):
         .. _as_image docs page:
            https://docs.neptune.ai/api/field_types#as_image
         """
-        content_bytes = get_image_content(image)
+        content_bytes = get_image_content(image, autoscale=autoscale)
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
 
     @staticmethod
