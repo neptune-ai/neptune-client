@@ -21,6 +21,7 @@ import uuid
 import pytest
 
 import neptune
+from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
     BaseE2ETest,
@@ -351,3 +352,11 @@ class TestFetchTable(BaseE2ETest):
         # then
         run_list = runs["sys/custom_run_id"].dropna().to_list()
         assert ["run1", "run2"] == sorted(run_list)
+
+    def test_fetch_runs_invalid_query_handling(self, project):
+        # given
+        runs_table = project.fetch_runs_table(query="key: float = (-_-)", progress_bar=False)
+
+        # then
+        with pytest.raises(NeptuneInvalidQueryException):
+            next(iter(runs_table))
