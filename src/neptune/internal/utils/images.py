@@ -222,6 +222,9 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
     min_value = np.min(array)
     max_value = np.max(array)
 
+    if min_value >= 0 and max_value <= 1:
+        return array
+
     # Avoid division by zero if all values are the same
     if min_value == max_value:
         scaled_array = np.zeros_like(array)
