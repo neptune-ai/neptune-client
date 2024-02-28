@@ -232,11 +232,11 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
     if array_min >= -1 and array_max <= 1:
         return (array + 1) / 2 * 255
 
-    _warn_about_data_range_incorrect(array_min, array_max)
+    _warn_about_incorrect_image_data_range(array_min, array_max)
     return array
 
 
-def _warn_about_data_range_incorrect(array_min: int | float, array_max: int | float) -> None:
+def _warn_about_incorrect_image_data_range(array_min: int | float, array_max: int | float) -> None:
     data_range_warnings = []
     if array_min < 0:
         data_range_warnings.append(f"the smallest value in the array is {array_min}")
@@ -245,7 +245,7 @@ def _warn_about_data_range_incorrect(array_min: int | float, array_max: int | fl
     if data_range_warnings:
         data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
         logger.warning(
-            "%s " "To be interpreted as colors correctly values in the array need to be in the %s, %s or %s range.",
+            "%s To be interpreted as colors correctly values in the array need to be in the %s, %s or %s range.",
             data_range_warning_message,
             *ALLOWED_IMG_PIXEL_RANGES,
         )
