@@ -21,6 +21,9 @@ inputs:
     description: "Codecov token"
     required: false
     default: ""
+  is_integration:
+    description: "Is integration test"
+    required: false
 
 runs:
   using: "composite"
@@ -33,7 +36,7 @@ runs:
 
     - name: Install integration package
       run: |
-        pip install {{ inputs.module }}
+        pip install ${{ inputs.module }}
       if: inputs.is_integration == 'true'
       shell:
         bash
