@@ -15,6 +15,7 @@ pytest-timeout
 pytest-xdist
 
 # Integrations
+validators>=0.20.0
 optuna
 pytorch-lightning
 scikit-learn
@@ -32,7 +33,7 @@ tensorflow
 torch
 vega_datasets
 plotly
-git+https://github.com/mosaicml/composer.git
+mosaicml
 
 # e2e
 optuna
