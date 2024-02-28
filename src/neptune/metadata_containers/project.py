@@ -218,7 +218,7 @@ class Project(MetadataContainer):
         Only runs matching all of the criteria will be returned.
 
         Args:
-            query: NQL query string.
+            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
                 Example: `"(accuracy: float > 0.88) AND (loss: float < 0.2)"`.
                 Exclusive with the `id`, `state`, `owner`, and `tag` parameters.
             id: Neptune ID of a run, or list of several IDs.
