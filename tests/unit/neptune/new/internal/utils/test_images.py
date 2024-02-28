@@ -323,6 +323,6 @@ def test_scale_array_incorrect_range():
     assert numpy.all(arr == result)  # returned original array
 
     assert stdout.getvalue() == _log(
-        "The smallest value in the array is -12 and the largest value in the array is 300. To be interpreted as colors "
+        "Image data is in range [-12, 300]. To be interpreted as colors "
         "correctly values in the array need to be in the [0, 255], [0, 1] or [-1, 1] range.\n",
     )
