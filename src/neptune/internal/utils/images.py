@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 __all__ = [
     "get_image_content",
     "get_html_content",
@@ -46,6 +48,7 @@ from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
+ALLOWED_IMG_PIXEL_RANGES = ("[0, 255]", "[0, 1]", "[-1, 1]")
 
 try:
     from numpy import array as numpy_array
@@ -201,8 +204,6 @@ def _get_numpy_as_image(array: np.ndarray, autoscale: bool) -> bytes:
     array = array.copy()  # prevent original array from modifying
     if autoscale:
         array = _scale_array(array)
-    else:
-        _warn_if_data_range_incorrect(array)
 
     if len(array.shape) == 2:
         return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
@@ -219,25 +220,24 @@ def _get_numpy_as_image(array: np.ndarray, autoscale: bool) -> bytes:
 
 
 def _scale_array(array: np.ndarray) -> np.ndarray:
-    min_value = np.min(array)
-    max_value = np.max(array)
-
-    if min_value >= 0 and 1 < max_value <= 255:
-        return array
-
-    if min_value >= 0 and max_value <= 1:
-        return array * 255
-
-    if min_value >= -1 and max_value <= 1:
-        return (array + 1) / 2 * 255
-
-    return (array + 1) * 128
-
-
-def _warn_if_data_range_incorrect(array: np.ndarray) -> None:
-    data_range_warnings = []
     array_min = array.min()
     array_max = array.max()
+
+    if array_min >= 0 and 1 < array_max <= 255:
+        return array
+
+    if array_min >= 0 and array_max <= 1:
+        return array * 255
+
+    if array_min >= -1 and array_max <= 1:
+        return (array + 1) / 2 * 255
+
+    _warn_about_data_range_incorrect(array_min, array_max)
+    return array
+
+
+def _warn_about_data_range_incorrect(array_min: int | float, array_max: int | float) -> None:
+    data_range_warnings = []
     if array_min < 0:
         data_range_warnings.append(f"the smallest value in the array is {array_min}")
     if array_max > 255:
@@ -245,8 +245,9 @@ def _warn_if_data_range_incorrect(array: np.ndarray) -> None:
     if data_range_warnings:
         data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
         logger.warning(
-            "%s To be interpreted as colors correctly values in the array need to be in the [0, 255] range.",
+            "%s " "To be interpreted as colors correctly values in the array need to be in the %s, %s or %s range.",
             data_range_warning_message,
+            *ALLOWED_IMG_PIXEL_RANGES,
         )
 
 

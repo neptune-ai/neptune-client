@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import contextlib
 import io
 import os
 import sys
 import unittest
+from functools import partial
 from typing import Optional
 from uuid import uuid4
 
@@ -41,6 +43,7 @@ from neptune.internal.utils.images import (
     get_html_content,
     get_image_content,
 )
+from tests.unit.neptune.new.utils.logging import format_log
 
 matplotlib.use("agg")
 
@@ -73,7 +76,7 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
         image_array = numpy.array([[[1], [0]], [[-3], [4]], [[5], [6]]])
-        expected_array = _scale_array(numpy.array([[1, 0], [-3, 4], [5, 6]])) * 255
+        expected_array = numpy.array([[1, 0], [-3, 4], [5, 6]])
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # when
@@ -303,3 +306,23 @@ def test_scale_array_when_array_not_scaled():
 
     # then
     assert numpy.all(expected == result)
+
+
+def test_scale_array_incorrect_range():
+    # given
+    arr = numpy.array([[-12, 7], [300, 0]])
+
+    # when
+    _log = partial(format_log, "WARNING")
+
+    stdout = io.StringIO()
+    with contextlib.redirect_stdout(stdout):
+        result = _scale_array(arr)
+
+    # then
+    assert numpy.all(arr == result)  # returned original array
+
+    assert stdout.getvalue() == _log(
+        "The smallest value in the array is -12 and the largest value in the array is 300. To be interpreted as colors "
+        "correctly values in the array need to be in the [0, 255], [0, 1] or [-1, 1] range.\n",
+    )
