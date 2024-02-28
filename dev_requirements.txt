@@ -18,7 +18,7 @@ pytest-xdist
 optuna
 pytorch-lightning
 scikit-learn
-mosaicml
+mosaicml>0.12.0
 torchvision
 transformers
 accelerate
