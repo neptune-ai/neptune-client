@@ -32,7 +32,7 @@ tensorflow
 torch
 vega_datasets
 plotly
-mosaicml
+git+https://github.com/mosaicml/composer.git
 
 # e2e
 optuna
