@@ -31,6 +31,12 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}-latest
 
+    - name: Install mosaicml
+      run: |
+        pip install mosaicml
+      shell:
+        bash
+
     - name: E2E - ${{ inputs.module }}
       run: |
         pytest --cov=neptune --cov-report xml \

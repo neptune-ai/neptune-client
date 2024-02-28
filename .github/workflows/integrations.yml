@@ -691,7 +691,7 @@ jobs:
 #          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 #          job-status: ${{ needs.airflow.result }}
 
-  composer:
+  mosaicml:
     env:
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
       USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
@@ -705,7 +705,7 @@ jobs:
         python-version: [ "3.9", "3.11" ]
         os: [ ubuntu-latest ]
     runs-on: ${{ matrix.os }}
-    name: 'composer (${{ matrix.os }} - py${{ matrix.python-version }})'
+    name: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -713,20 +713,16 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
-      - name: Install composer
-        run: |
-            pip install mosaicml
-
       - name: Test
         uses: ./.github/actions/test-e2e
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: composer
-          report_job: 'composer (${{ matrix.os }} - py${{ matrix.python-version }})'
+          module: mosaicml
+          report_job: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
 
-  composer-notify:
-    needs: [ composer ]
+  mosaicml-notify:
+    needs: [ mosaicml ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
@@ -740,4 +736,4 @@ jobs:
         uses: ./.github/actions/job-notify
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.composer.result }}
+          job-status: ${{ needs.mosaicml.result }}
