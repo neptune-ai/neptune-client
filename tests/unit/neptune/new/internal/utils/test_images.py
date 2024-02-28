@@ -298,11 +298,11 @@ def test_scale_array_when_array_already_scaled():
 
 def test_scale_array_when_array_not_scaled():
     # given
-    arr = numpy.array([[-1, 0], [0.5, 1]])
+    arr = numpy.array([[0.3, 0], [0.5, 1]])
 
     # when
     result = _scale_array(arr)
-    expected = numpy.array([[0.0, 127.5], [191.25, 255.0]])
+    expected = numpy.array([[76.5, 0.0], [127.5, 255.0]])
 
     # then
     assert numpy.all(expected == result)
@@ -324,5 +324,5 @@ def test_scale_array_incorrect_range():
 
     assert stdout.getvalue() == _log(
         "Image data is in range [-12, 300]. To be interpreted as colors "
-        "correctly values in the array need to be in the [0, 255], [0, 1] or [-1, 1] range.\n",
+        "correctly values in the array need to be in the [0, 255] or [0.0, 1.0] range.\n",
     )

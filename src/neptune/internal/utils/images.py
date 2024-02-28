@@ -48,7 +48,7 @@ from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
-ALLOWED_IMG_PIXEL_RANGES = ("[0, 255]", "[0, 1]", "[-1, 1]")
+ALLOWED_IMG_PIXEL_RANGES = ("[0, 255]", "[0.0, 1.0]")
 
 try:
     from numpy import array as numpy_array
@@ -229,9 +229,6 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
     if array_min >= 0 and array_max <= 1:
         return array * 255
 
-    if array_min >= -1 and array_max <= 1:
-        return (array + 1) / 2 * 255
-
     _warn_about_incorrect_image_data_range(array_min, array_max)
     return array
 
@@ -239,7 +236,7 @@ def _scale_array(array: np.ndarray) -> np.ndarray:
 def _warn_about_incorrect_image_data_range(array_min: int | float, array_max: int | float) -> None:
     msg = f"Image data is in range [{array_min}, {array_max}]."
     logger.warning(
-        "%s To be interpreted as colors correctly values in the array need to be in the %s, %s or %s range.",
+        "%s To be interpreted as colors correctly values in the array need to be in the %s or %s range.",
         msg,
         *ALLOWED_IMG_PIXEL_RANGES,
     )

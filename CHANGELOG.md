@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune 1.10.0
 
 ### Features
-- Added auto-scaling for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
+- Added auto-scaling pixel values for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
 
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
