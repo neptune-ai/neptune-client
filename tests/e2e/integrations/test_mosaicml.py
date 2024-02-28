@@ -69,7 +69,7 @@ def model() -> ComposerClassifier:
 
 
 @pytest.mark.integrations
-@pytest.mark.composer
+@pytest.mark.mosaicml
 def test_e2e(environment, model):
     transform = transforms.Compose([transforms.ToTensor()])
 
