@@ -719,6 +719,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: mosaicml
+          is_integration: true
           report_job: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   mosaicml-notify:

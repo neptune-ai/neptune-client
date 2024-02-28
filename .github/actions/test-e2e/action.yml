@@ -31,9 +31,10 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}-latest
 
-    - name: Install mosaicml
+    - name: Install integration package
       run: |
-        pip install mosaicml
+        pip install {{ inputs.module }}
+      if: inputs.is_integration == 'true'
       shell:
         bash
 
