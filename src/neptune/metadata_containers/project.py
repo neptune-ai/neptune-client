@@ -303,7 +303,7 @@ class Project(MetadataContainer):
         deprecatied_func_arg_warning_check("fetch_runs_table", "tag", tag)
 
         if any((id, state, owner, tag)) and query is not None:
-            raise ValueError("You can't use both the query and the id, state, owner, or tag parameters.")
+            raise ValueError("You can't use the 'query' parameter together with the 'id', 'state', 'owner', or 'tag' parameters.")
 
         ids = as_list("id", id)
         states = as_list("state", state)
