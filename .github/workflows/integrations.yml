@@ -713,6 +713,10 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
+      - name: Install composer
+        run: |
+            pip install mosaicml
+
       - name: Test
         uses: ./.github/actions/test-e2e
         with:
