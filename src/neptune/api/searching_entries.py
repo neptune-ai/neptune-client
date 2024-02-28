@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_single_page", "iter_over_pages"]
+__all__ = ["get_single_page", "iter_over_pages", "NoLimit"]
 
 from typing import (
     TYPE_CHECKING,

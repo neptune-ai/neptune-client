@@ -22,11 +22,27 @@ from mock import (
 from neptune import init_run
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.common.warnings import NeptuneUnsupportedValue
+from neptune.internal.backends.api_model import (
+    FloatPointValue,
+    FloatSeriesValues,
+)
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestFloatSeries(TestAttributeBase):
+    def _get_float_series_values_dummy_impl(self, series: FloatSeriesValues):
+        def _wrapper(self, _container_id, _container_type, _path, offset, limit) -> FloatSeriesValues:
+            if offset < 0:
+                raise ValueError("Offset must be non-negative")
+            if limit < 0:
+                raise ValueError("Limit must be non-negative")
+            return FloatSeriesValues(
+                values=series.values[offset : offset + limit], totalItemCount=series.totalItemCount
+            )
+
+        return _wrapper
+
     def test_assign_type_error(self):
         values = [["text"], 55, "string", None]
         for value in values:
@@ -81,3 +97,21 @@ class TestFloatSeries(TestAttributeBase):
         assert result["value"][2] == 4.7
 
         run.stop()
+
+    # @patch("neptune.attributes.series.fetchable_series.MAX_FETCH_LIMIT", 10)
+    def test_custom_offset_limit(self):
+        total = 100
+        offset = 27
+        limit = 42
+        series = FloatSeriesValues(
+            values=[FloatPointValue(step=i, value=i, timestampMillis=i) for i in range(total)], totalItemCount=total
+        )
+        with self._exp() as exp:
+            with patch(
+                "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_float_series_values",
+                new=self._get_float_series_values_dummy_impl(series),
+            ):
+                var = FloatSeries(exp, self._random_path())
+                values = list(var.fetch_values(offset=offset, limit=limit)["value"].array)
+                expected = list(range(offset, offset + limit))
+                self.assertEqual(expected, values)

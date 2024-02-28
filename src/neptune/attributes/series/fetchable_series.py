@@ -35,19 +35,31 @@ from neptune.typing import ProgressBarType
 
 Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
 
+MAX_FETCH_LIMIT = 1000
+
+
+def min_skip_none(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    return min(a, b)
+
 
 class FetchableSeries(Generic[Row]):
     @abc.abstractmethod
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
 
-    def fetch_values(self, *, include_timestamp: bool = True, progress_bar: Optional[ProgressBarType] = None):
+    def fetch_values(
+        self,
+        *,
+        include_timestamp: bool = True,
+        progress_bar: Optional[ProgressBarType] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+    ):
         import pandas as pd
-
-        limit = 1000
-        val = self._fetch_values_from_backend(0, limit)
-        data = val.values
-        offset = limit
 
         def make_row(entry: Row) -> Dict[str, Union[str, float, datetime]]:
             row: Dict[str, Union[str, float, datetime]] = dict()
@@ -57,16 +69,38 @@ class FetchableSeries(Generic[Row]):
                 row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
             return row
 
-        progress_bar = False if len(data) < limit else progress_bar
+        if offset is None:
+            offset = 0
+
+        if limit is not None:
+            fetch_chunk_size = min(limit, MAX_FETCH_LIMIT)
+        else:
+            fetch_chunk_size = MAX_FETCH_LIMIT
+
+        val = self._fetch_values_from_backend(offset=offset, limit=fetch_chunk_size)
+
+        if limit is None:
+            limit = val.totalItemCount
+
+        data = val.values
+        offset += len(data)
+        # limit -= len(data)
+
+        # dont display progress bar if all values are fetched in one go
+        if limit - len(data) == 0:
+            progress_bar = False
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
-            bar.update(by=len(data), total=val.totalItemCount)  # first fetch before the loop
-            while offset < val.totalItemCount:
-                batch = self._fetch_values_from_backend(offset, limit)
+            bar.update(by=len(data), total=limit)  # first fetch before the loop
+            while limit - len(data) != 0:
+                fetch_chunk_size = min(limit, MAX_FETCH_LIMIT)
+                batch = self._fetch_values_from_backend(offset, fetch_chunk_size)
+
                 data.extend(batch.values)
-                offset += limit
-                bar.update(by=len(batch.values), total=val.totalItemCount)
+                offset += len(batch.values)
+                # limit -= len(batch.values)
+                bar.update(by=len(batch.values), total=limit)
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 

@@ -557,7 +557,14 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_last")
 
-    def fetch_values(self, *, include_timestamp: Optional[bool] = True, progress_bar: Optional[ProgressBarType] = None):
+    def fetch_values(
+        self,
+        *,
+        include_timestamp: Optional[bool] = True,
+        progress_bar: Optional[ProgressBarType] = None,
+        offset: Optional[int] = None,
+        limit: Optional[int] = None,
+    ):
         """Fetches all values stored in the series from Neptune.
 
         Available for the following field types:
@@ -573,6 +580,10 @@ class Handler(SupportsNamespaces):
                 If `False` no progress bar will be used.
                 If a type of progress bar is passed, it will be used instead of the default one.
                 Defaults to `None`.
+            offset (int, optional): The number of values to skip before starting to fetch the values.
+                Defaults to `None`.
+            limit (int, optional): The maximum number of values to fetch.
+                Defaults to `None`.
 
         Returns:
             ``Pandas.DataFrame``: containing all the values and their indexes stored in the series field.
@@ -584,6 +595,8 @@ class Handler(SupportsNamespaces):
             function_name="fetch_values",
             include_timestamp=include_timestamp,
             progress_bar=progress_bar,
+            offset=offset,
+            limit=limit,
         )
 
     @check_protected_paths
