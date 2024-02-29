@@ -299,7 +299,7 @@ jobs:
           os: ${{ matrix.os }}
           module: huggingface
           report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
-          pip_url: transformers torch optuna typing_extensions>=4.6.0
+          pip_url: transformers torch optuna
 
   huggingface-notify:
     needs: [huggingface]
