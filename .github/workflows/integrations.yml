@@ -246,6 +246,7 @@ jobs:
 #          os: ${{ matrix.os }}
 #          module: lightning
 #          report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+#          pip_url: pytorch_lightning torch
 #
 #  lightning-notify:
 #    needs: [lightning]
@@ -298,6 +299,7 @@ jobs:
 #          os: ${{ matrix.os }}
 #          module: huggingface
 #          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+#          pip_url: transformers torch optuna
 #
 #  huggingface-notify:
 #    needs: [huggingface]
@@ -346,6 +348,7 @@ jobs:
 #          os: ${{ matrix.os }}
 #          module: zenml
 #          report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+#          pip_url: zenml scikit-learn
 #
 #  zenml-notify:
 #    needs: [zenml]
@@ -363,7 +366,55 @@ jobs:
 #        with:
 #          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 #          job-status: ${{ needs.zenml.result }}
-#
+
+  mosaicml:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9", "3.11" ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: mosaicml
+          report_job: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
+          pip_url: mosaicml torch torchvision
+
+  mosaicml-notify:
+    needs: [ mosaicml ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.mosaicml.result }}
+
 #  detectron2:
 #    env:
 #      NEPTUNE_PROJECT: e2e-tests/integrations
@@ -690,51 +741,3 @@ jobs:
 #        with:
 #          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 #          job-status: ${{ needs.airflow.result }}
-
-  mosaicml:
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.9", "3.11" ]
-        os: [ ubuntu-latest ]
-    runs-on: ${{ matrix.os }}
-    name: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Test
-        uses: ./.github/actions/test-e2e
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: mosaicml
-          is_integration: true
-          report_job: 'mosaicml (${{ matrix.os }} - py${{ matrix.python-version }})'
-
-  mosaicml-notify:
-    needs: [ mosaicml ]
-    runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/master'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Notify
-        uses: ./.github/actions/job-notify
-        with:
-          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
-          job-status: ${{ needs.mosaicml.result }}

@@ -8,6 +8,9 @@ inputs:
   os:
     description: "Operating system"
     required: true
+  pip_url:
+    description: "Pip URL for integration installation"
+    required: false
 
 runs:
     using: "composite"
@@ -27,6 +30,12 @@ runs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ inputs.python-version }}
+
+      - name: Install integration packages (if applicable)
+        run: |
+            pip install ${{ inputs.pip_url }}
+        shell: bash
+        if: inputs.pip_url
 
       - name: Install dependencies
         run: |

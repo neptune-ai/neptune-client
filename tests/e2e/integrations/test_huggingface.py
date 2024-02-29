@@ -19,19 +19,7 @@ from zipfile import ZipFile
 
 import numpy as np
 import pytest
-import torch
 from faker import Faker
-from transformers import (
-    PretrainedConfig,
-    PreTrainedModel,
-    Trainer,
-    TrainingArguments,
-)
-from transformers.integrations import (
-    NeptuneCallback,
-    NeptuneMissingConfiguration,
-)
-from transformers.utils import logging
 
 from neptune import init_run
 from neptune.table import TableEntry
@@ -42,22 +30,27 @@ from tests.e2e.utils import (
     tmp_context,
 )
 
+torch = pytest.importorskip("torch")
+transformers = pytest.importorskip("transformers")
+transformers.integrations = pytest.importorskip("transformers.integrations")
+transformers.utils = pytest.importorskip("transformers.utils")
+
 MAX_OVERWHELMING_FACTOR = 1.2
 SECONDS_TO_WAIT_FOR_UPDATE = 15
 
 
-logging.set_verbosity_error()
+transformers.utils.logging.set_verbosity_error()
 fake = Faker()
 
 
-class RegressionModelConfig(PretrainedConfig):
+class RegressionModelConfig(transformers.PretrainedConfig):
     def __init__(self, a=2, b=3, **kwargs):
         super().__init__(**kwargs)
         self.a = a
         self.b = b
 
 
-class RegressionPreTrainedModel(PreTrainedModel):
+class RegressionPreTrainedModel(transformers.PreTrainedModel):
     config_class = RegressionModelConfig
     base_model_prefix = "regression"
 
@@ -103,7 +96,7 @@ class TestHuggingFace(BaseE2ETest):
         train_dataset = RegressionDataset(length=32)
         validation_dataset = RegressionDataset(length=16)
 
-        train_args = TrainingArguments("model", report_to=[], num_train_epochs=500, learning_rate=0.5)
+        train_args = transformers.TrainingArguments("model", report_to=[], num_train_epochs=500, learning_rate=0.5)
 
         return {
             "model": model,
@@ -137,10 +130,12 @@ class TestHuggingFace(BaseE2ETest):
             return neptune_run.exists(f"monitoring/{hash_key}/cpu")
 
     def test_every_train_should_create_new_run(self, environment, project, common_tag):
-        trainer = Trainer(
+        trainer = transformers.Trainer(
             **self._trainer_default_attributes,
             callbacks=[
-                NeptuneCallback(api_token=environment.user_token, project=environment.project, tags=[common_tag])
+                transformers.integrations.NeptuneCallback(
+                    api_token=environment.user_token, project=environment.project, tags=[common_tag]
+                )
             ],
         )
 
@@ -153,14 +148,18 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_runtime_factor(self, environment):
         with catch_time() as standard:
-            trainer = Trainer(**self._trainer_default_attributes)
+            trainer = transformers.Trainer(**self._trainer_default_attributes)
             trainer.train()
             del trainer
 
         with catch_time() as with_neptune_callback:
-            trainer = Trainer(
+            trainer = transformers.Trainer(
                 **self._trainer_default_attributes,
-                callbacks=[NeptuneCallback(api_token=environment.user_token, project=environment.project)],
+                callbacks=[
+                    transformers.integrations.NeptuneCallback(
+                        api_token=environment.user_token, project=environment.project
+                    )
+                ],
             )
             trainer.train()
             del trainer
@@ -168,42 +167,44 @@ class TestHuggingFace(BaseE2ETest):
         assert with_neptune_callback() / standard() <= MAX_OVERWHELMING_FACTOR
 
     def test_run_access_methods(self, environment):
-        callback = NeptuneCallback(api_token=environment.user_token, project=environment.project)
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+        callback = transformers.integrations.NeptuneCallback(
+            api_token=environment.user_token, project=environment.project
+        )
+        trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
-        assert callback.run.get_url() == NeptuneCallback.get_run(trainer).get_url()
+        assert callback.run.get_url() == transformers.integrations.NeptuneCallback.get_run(trainer).get_url()
 
     def test_initialization_with_run_provided(self, environment):
         run = init_run(project=environment.project, api_token=environment.user_token)
-        callback = NeptuneCallback(run=run)
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+        callback = transformers.integrations.NeptuneCallback(run=run)
+        trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
-        assert run.get_url() == NeptuneCallback.get_run(trainer).get_url()
+        assert run.get_url() == transformers.integrations.NeptuneCallback.get_run(trainer).get_url()
 
     def test_run_reinitialization_failure(self, environment):
         run = init_run(project=environment.project, api_token=environment.user_token)
 
         with modified_environ("NEPTUNE_API_TOKEN", "NEPTUNE_PROJECT"):
-            callback = NeptuneCallback(run=run)
-            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            callback = transformers.integrations.NeptuneCallback(run=run)
+            trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
             trainer.train()
 
-            with pytest.raises(NeptuneMissingConfiguration):
+            with pytest.raises(transformers.integrations.NeptuneMissingConfiguration):
                 trainer.train()
 
     def test_run_access_without_callback_configured(self):
-        trainer = Trainer(**self._trainer_default_attributes)
+        trainer = transformers.Trainer(**self._trainer_default_attributes)
 
         with pytest.raises(Exception):
-            NeptuneCallback.get_run(trainer)
+            transformers.integrations.NeptuneCallback.get_run(trainer)
 
     def test_log_parameters_with_base_namespace(self, environment):
         base_namespace = "custom/base/path"
 
         def run_test(run):
-            callback = NeptuneCallback(run=run, base_namespace=base_namespace)
-            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            callback = transformers.integrations.NeptuneCallback(run=run, base_namespace=base_namespace)
+            trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
         def assert_metadata_structure(run):
@@ -221,8 +222,8 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_log_parameters_disabled(self, environment):
         def run_test(run):
-            callback = NeptuneCallback(run=run, log_parameters=False)
-            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            callback = transformers.integrations.NeptuneCallback(run=run, log_parameters=False)
+            trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
         def assert_metadata_structure(run):
@@ -235,13 +236,13 @@ class TestHuggingFace(BaseE2ETest):
         base_namespace = "just/a/sample/path"
 
         def run_test(run):
-            callback = NeptuneCallback(
+            callback = transformers.integrations.NeptuneCallback(
                 run=run,
                 base_namespace=base_namespace,
                 project=environment.project,
                 api_token=environment.user_token,
             )
-            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.log({"metric1": 123, "another/metric": 0.2})
             trainer.train()
             trainer.log({"after_training_metric": 2501})
@@ -260,8 +261,8 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_integration_version_is_logged(self, environment):
         def run_test(run):
-            callback = NeptuneCallback(run=run)
-            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            callback = transformers.integrations.NeptuneCallback(run=run)
+            trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
         def assert_metadata_structure(run):
@@ -271,8 +272,10 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_non_monitoring_runs_creation(self, environment, project, common_tag):
         # given
-        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+        callback = transformers.integrations.NeptuneCallback(
+            project=environment.project, api_token=environment.user_token, tags=common_tag
+        )
+        trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         # when
         trainer.log({"metric1": 123})
@@ -331,13 +334,13 @@ class TestHuggingFace(BaseE2ETest):
     def test_non_monitoring_runs_creation_with_initial_run(self, environment, project, common_tag):
         # given
         initial_run = init_run(project=environment.project, api_token=environment.user_token, tags=common_tag)
-        callback = NeptuneCallback(
+        callback = transformers.integrations.NeptuneCallback(
             project=environment.project,
             api_token=environment.user_token,
             tags=common_tag,
             run=initial_run,
         )
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+        trainer = transformers.Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         # when
         trainer.log({"metric1": 123})
@@ -402,10 +405,12 @@ class TestHuggingFace(BaseE2ETest):
             return RegressionPreTrainedModel(config)
 
         # and
-        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
+        callback = transformers.integrations.NeptuneCallback(
+            project=environment.project, api_token=environment.user_token, tags=common_tag
+        )
         trainer_config = self._trainer_default_attributes
         del trainer_config["model"]
-        trainer = Trainer(**trainer_config, model_init=model_init, callbacks=[callback])
+        trainer = transformers.Trainer(**trainer_config, model_init=model_init, callbacks=[callback])
 
         # when
         trainer.hyperparameter_search(
@@ -426,32 +431,36 @@ class TestHuggingFace(BaseE2ETest):
     def test_usages(self):
         # given
         trainer_args = self._trainer_default_attributes
-        trainer_args["args"] = TrainingArguments("model", report_to=["all"])
+        trainer_args["args"] = transformers.TrainingArguments("model", report_to=["all"])
 
         # when
-        trainer = Trainer(**trainer_args)
+        trainer = transformers.Trainer(**trainer_args)
 
         # then
         assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # given
         trainer_args = self._trainer_default_attributes
-        trainer_args["args"] = TrainingArguments("model", report_to=["neptune"])
+        trainer_args["args"] = transformers.TrainingArguments("model", report_to=["neptune"])
 
         # when
-        trainer = Trainer(**trainer_args)
+        trainer = transformers.Trainer(**trainer_args)
 
         # then
         assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # when
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback])
+        trainer = transformers.Trainer(
+            **self._trainer_default_attributes, callbacks=[transformers.integrations.NeptuneCallback]
+        )
 
         # then
         assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # when
-        trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback()])
+        trainer = transformers.Trainer(
+            **self._trainer_default_attributes, callbacks=[transformers.integrations.NeptuneCallback()]
+        )
 
         # then
         assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
@@ -472,9 +481,9 @@ class TestHuggingFace(BaseE2ETest):
             additional_training_args = {}
 
         def run_test(run):
-            callback = NeptuneCallback(run=run, log_checkpoints=log_checkpoints)
+            callback = transformers.integrations.NeptuneCallback(run=run, log_checkpoints=log_checkpoints)
             training_args = self._trainer_default_attributes
-            training_args["args"] = TrainingArguments(
+            training_args["args"] = transformers.TrainingArguments(
                 "model",
                 report_to=[],
                 num_train_epochs=500,
@@ -482,7 +491,7 @@ class TestHuggingFace(BaseE2ETest):
                 save_strategy="steps",
                 **additional_training_args,
             )
-            trainer = Trainer(**training_args, callbacks=[callback])
+            trainer = transformers.Trainer(**training_args, callbacks=[callback])
             trainer.train()
 
         def assert_metadata_structure(run):
@@ -505,10 +514,10 @@ class TestHuggingFace(BaseE2ETest):
 
     def _test_restore_from_checkpoint(self, environment):
         def run_test(run):
-            callback = NeptuneCallback(run=run)
+            callback = transformers.integrations.NeptuneCallback(run=run)
             training_args = self._trainer_default_attributes
-            training_args["args"] = TrainingArguments("model", report_to=[], num_train_epochs=1000)
-            trainer = Trainer(**training_args, callbacks=[callback])
+            training_args["args"] = transformers.TrainingArguments("model", report_to=[], num_train_epochs=1000)
+            trainer = transformers.Trainer(**training_args, callbacks=[callback])
             checkpoint_id = max(os.listdir("model"))
             trainer.train(resume_from_checkpoint=f"model/{checkpoint_id}")
 
@@ -559,9 +568,9 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_model_checkpoints_best_invalid_load_best_model_at_end(self, environment):
         with init_run(project=environment.project, api_token=environment.user_token) as run:
-            callback = NeptuneCallback(run=run, log_checkpoints="best")
+            callback = transformers.integrations.NeptuneCallback(run=run, log_checkpoints="best")
             training_args = self._trainer_default_attributes
-            training_args["args"] = TrainingArguments(
+            training_args["args"] = transformers.TrainingArguments(
                 "model",
                 report_to=[],
                 num_train_epochs=500,
@@ -573,4 +582,4 @@ class TestHuggingFace(BaseE2ETest):
                 eval_steps=500,
             )
             with pytest.raises(ValueError):
-                Trainer(**training_args, callbacks=[callback])
+                transformers.Trainer(**training_args, callbacks=[callback])
