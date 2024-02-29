@@ -16,23 +16,21 @@
 import pytest
 
 torch = pytest.importorskip("torch")
+torch.utils.data = pytest.importorskip("torch.utils.data")
 nn = pytest.importorskip("torch.nn")
 F = pytest.importorskip("torch.nn.functional")
-Trainer = pytest.importorskip("composer.Trainer")
-NeptuneLogger = pytest.importorskip("composer.loggers.NeptuneLogger")
-ComposerClassifier = pytest.importorskip("composer.models.ComposerClassifier")
-datasets = pytest.importorskip("torchvision.datasets")
-transforms = pytest.importorskip("torchvision.transforms")
-DataLoader = pytest.importorskip("torch.utils.data.DataLoader")
-Subset = pytest.importorskip("torch.utils.data.Subset")
-ChannelsLast = pytest.importorskip("composer.algorithms.ChannelsLast")
-CutMix = pytest.importorskip("composer.algorithms.CutMix")
-LabelSmoothing = pytest.importorskip("composer.algorithms.LabelSmoothing")
-ImageVisualizer = pytest.importorskip("composer.callbacks.ImageVisualizer")
+
+torchvision = pytest.importorskip("torchvision")
+
+composer = pytest.importorskip("composer")
+composer.loggers = pytest.importorskip("composer.loggers")
+composer.models = pytest.importorskip("composer.models")
+composer.algorithms = pytest.importorskip("composer.algorithms")
+composer.callbacks = pytest.importorskip("composer.callbacks")
 
 
 @pytest.fixture(scope="module")
-def model() -> ComposerClassifier:
+def model() -> composer.models.ComposerClassifier:
     # https://github.com/mosaicml/composer/blob/dev/examples/checkpoint_with_wandb.py
     class Model(nn.Module):
         """Toy convolutional neural network architecture in pytorch for MNIST."""
@@ -60,35 +58,35 @@ def model() -> ComposerClassifier:
             out = F.relu(out)
             return self.fc2(out)
 
-    return ComposerClassifier(module=Model(num_classes=10))
+    return composer.models.ComposerClassifier(module=Model(num_classes=10))
 
 
 @pytest.mark.integrations
 @pytest.mark.mosaicml
 def test_e2e(environment, model):
-    transform = transforms.Compose([transforms.ToTensor()])
+    transform = torchvision.transforms.Compose([torchvision.transforms.ToTensor()])
 
-    train_dataset = datasets.MNIST("data", download=True, train=True, transform=transform)
-    eval_dataset = datasets.MNIST("data", download=True, train=False, transform=transform)
+    train_dataset = torchvision.datasets.MNIST("data", download=True, train=True, transform=transform)
+    eval_dataset = torchvision.datasets.MNIST("data", download=True, train=False, transform=transform)
 
-    train_dataset = Subset(train_dataset, indices=range(len(train_dataset) // 50))
-    eval_dataset = Subset(eval_dataset, indices=range(len(eval_dataset) // 50))
-    train_dataloader = DataLoader(train_dataset, batch_size=128)
-    eval_dataloader = DataLoader(eval_dataset, batch_size=128)
-    logger = NeptuneLogger(project=environment.project, base_namespace="composer-training")
+    train_dataset = torch.utils.data.Subset(train_dataset, indices=range(len(train_dataset) // 50))
+    eval_dataset = torch.utils.data.Subset(eval_dataset, indices=range(len(eval_dataset) // 50))
+    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=128)
+    eval_dataloader = torch.utils.data.DataLoader(eval_dataset, batch_size=128)
+    logger = composer.loggers.NeptuneLogger(project=environment.project, base_namespace="composer-training")
 
-    trainer = Trainer(
+    trainer = composer.Trainer(
         model=model,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
         max_duration="1ep",
         algorithms=[
-            ChannelsLast(),
-            CutMix(alpha=1.0),
-            LabelSmoothing(smoothing=0.1),
+            composer.algorithms.ChannelsLast(),
+            composer.algorithms.CutMix(alpha=1.0),
+            composer.algorithms.LabelSmoothing(smoothing=0.1),
         ],
         loggers=logger,
-        callbacks=ImageVisualizer(),
+        callbacks=composer.callbacks.ImageVisualizer(),
     )
     trainer.fit()
 
