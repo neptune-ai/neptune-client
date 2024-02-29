@@ -17,21 +17,15 @@ import os
 import re
 
 import pytest
-import pytorch_lightning
-import torch
-from pytorch_lightning import (
-    LightningModule,
-    Trainer,
-)
-from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.loggers.neptune import NeptuneLogger
-from torch.utils.data import (
-    DataLoader,
-    Dataset,
-)
 
 import neptune
 from tests.e2e.base import BaseE2ETest
+
+torch = pytest.importorskip("torch")
+torch.utils.data = pytest.importorskip("torch.utils.data")
+pytorch_lightning = pytest.importorskip("pytorch_lightning")
+pytorch_lightning.callbacks = pytest.importorskip("pytorch_lightning.callbacks")
+pytorch_lightning.loggers.neptune = pytest.importorskip("pytorch_lightning.loggers.neptune")
 
 LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
 
@@ -43,7 +37,7 @@ skip_if_on_lightning_ecosystem = pytest.mark.skipif(
 )
 
 
-class RandomDataset(Dataset):
+class RandomDataset(torch.utils.data.Dataset):
     def __init__(self, size, length):
         self.len = length
         self.data = torch.randn(length, size)
@@ -55,7 +49,7 @@ class RandomDataset(Dataset):
         return self.len
 
 
-class BoringModel(LightningModule):
+class BoringModel(pytorch_lightning.LightningModule):
     def __init__(self):
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
@@ -87,7 +81,7 @@ def prepare(project):
     # given
     run = neptune.init_run(name="Pytorch-Lightning integration", project=project)
     # and
-    model_checkpoint = ModelCheckpoint(
+    model_checkpoint = pytorch_lightning.callbacks.ModelCheckpoint(
         dirpath="my_model/checkpoints/",
         filename="{epoch:02d}-{valid/loss:.2f}",
         save_weights_only=True,
@@ -96,10 +90,10 @@ def prepare(project):
         monitor="valid/loss",
         every_n_epochs=1,
     )
-    neptune_logger = NeptuneLogger(run=run, prefix="custom_prefix")
+    neptune_logger = pytorch_lightning.loggers.neptune.NeptuneLogger(run=run, prefix="custom_prefix")
     # and (Subject)
     model = BoringModel()
-    trainer = Trainer(
+    trainer = pytorch_lightning.Trainer(
         limit_train_batches=1,
         limit_val_batches=1,
         log_every_n_steps=1,
@@ -107,9 +101,9 @@ def prepare(project):
         logger=neptune_logger,
         callbacks=[model_checkpoint],
     )
-    train_data = DataLoader(RandomDataset(32, 64), batch_size=2)
-    val_data = DataLoader(RandomDataset(32, 64), batch_size=2)
-    test_data = DataLoader(RandomDataset(32, 64), batch_size=2)
+    train_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
+    val_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
+    test_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
 
     # then
     trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
