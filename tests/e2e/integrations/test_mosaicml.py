@@ -14,26 +14,21 @@
 # limitations under the License.
 #
 import pytest
-import torch
-import torch.nn.functional as F
-from composer import Trainer
-from composer.algorithms import (
-    ChannelsLast,
-    CutMix,
-    LabelSmoothing,
-)
-from composer.callbacks import ImageVisualizer
-from composer.loggers import NeptuneLogger
-from composer.models import ComposerClassifier
-from torch import nn
-from torch.utils.data import (
-    DataLoader,
-    Subset,
-)
-from torchvision import (
-    datasets,
-    transforms,
-)
+
+torch = pytest.importorskip("torch")
+nn = pytest.importorskip("torch.nn")
+F = pytest.importorskip("torch.nn.functional")
+Trainer = pytest.importorskip("composer.Trainer")
+NeptuneLogger = pytest.importorskip("composer.loggers.NeptuneLogger")
+ComposerClassifier = pytest.importorskip("composer.models.ComposerClassifier")
+datasets = pytest.importorskip("torchvision.datasets")
+transforms = pytest.importorskip("torchvision.transforms")
+DataLoader = pytest.importorskip("torch.utils.data.DataLoader")
+Subset = pytest.importorskip("torch.utils.data.Subset")
+ChannelsLast = pytest.importorskip("composer.algorithms.ChannelsLast")
+CutMix = pytest.importorskip("composer.algorithms.CutMix")
+LabelSmoothing = pytest.importorskip("composer.algorithms.LabelSmoothing")
+ImageVisualizer = pytest.importorskip("composer.callbacks.ImageVisualizer")
 
 
 @pytest.fixture(scope="module")
