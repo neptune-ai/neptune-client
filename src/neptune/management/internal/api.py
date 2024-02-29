@@ -1037,7 +1037,13 @@ def clear_trash(
 
 
 def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> Dict[str, int]:
-    """Gets the status of a Neptune workspace including the storage usage and limits.
+    """Retrieves status information about a Neptune workspace.
+
+    Includes the following:
+
+    - Storage usage and limit
+    - Active project count and limit
+    - Member count
 
     Args:
         workspace: Name of the Neptune workspace.
