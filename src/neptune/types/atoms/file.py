@@ -181,7 +181,8 @@ class File(Atom):
                 The input image pixel must be either in range [0.0, 1.0] (float) or [0, 255] (integer).
                 Supported are PyTorch tensors, TensorFlow/Keras tensors, NumPy arrays, PIL images,
                 Matplotlib figures and Seaborn figures.
-            autoscale: Whether to scale images to the [0, 1] range.
+            autoscale: Whether Neptune should try to detect the pixel range automatically
+                and scale it to an acceptable format.
 
         Returns:
             `File`: value object with converted image
