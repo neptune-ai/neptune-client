@@ -463,9 +463,7 @@ class TestHuggingFace(BaseE2ETest):
         )
 
         # then
-        assert "transformers.integrations.NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
     def _test_checkpoints_creation(
         self,
