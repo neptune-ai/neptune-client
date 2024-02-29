@@ -180,7 +180,7 @@ class File(Atom):
             image: Image-like object to be converted.
                 Supported are PyTorch tensors, TensorFlow/Keras tensors, NumPy arrays, PIL images,
                 Matplotlib figures and Seaborn figures.
-            autoscale: Whether to scale images to the [0,1] range.
+            autoscale: Whether to scale image data to the [0,1] range.
 
         Returns:
             `File`: value object with converted image
