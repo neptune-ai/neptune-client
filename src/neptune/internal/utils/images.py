@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from __future__ import annotations
+
 __all__ = [
     "get_image_content",
     "get_html_content",
@@ -37,6 +39,7 @@ from io import (
 )
 from typing import Optional
 
+import numpy as np
 from packaging import version
 from pandas import DataFrame
 
@@ -45,6 +48,7 @@ from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
 SEABORN_GRID_CLASSES = {"FacetGrid", "PairGrid", "JointGrid"}
+ALLOWED_IMG_PIXEL_RANGES = ("[0, 255]", "[0.0, 1.0]")
 
 try:
     from numpy import array as numpy_array
@@ -65,8 +69,8 @@ except ImportError:
         pass
 
 
-def get_image_content(image) -> Optional[bytes]:
-    content = _image_to_bytes(image)
+def get_image_content(image, autoscale=True) -> Optional[bytes]:
+    content = _image_to_bytes(image, autoscale)
 
     return content
 
@@ -83,12 +87,12 @@ def get_pickle_content(obj) -> Optional[bytes]:
     return content
 
 
-def _image_to_bytes(image) -> bytes:
+def _image_to_bytes(image, autoscale) -> bytes:
     if image is None:
         raise ValueError("image is None")
 
     elif is_numpy_array(image):
-        return _get_numpy_as_image(image)
+        return _get_numpy_as_image(image, autoscale)
 
     elif is_pil_image(image):
         return _get_pil_image_data(image)
@@ -97,10 +101,10 @@ def _image_to_bytes(image) -> bytes:
         return _get_figure_image_data(image)
 
     elif _is_torch_tensor(image):
-        return _get_numpy_as_image(image.detach().numpy())
+        return _get_numpy_as_image(image.detach().numpy(), autoscale)
 
     elif _is_tensorflow_tensor(image):
-        return _get_numpy_as_image(image.numpy())
+        return _get_numpy_as_image(image.numpy(), autoscale)
 
     elif is_seaborn_figure(image):
         return _get_figure_image_data(image.figure)
@@ -196,35 +200,45 @@ def _image_content_to_html(content: bytes) -> str:
     return "<img src='data:image/png;base64," + str_equivalent_image + "'/>"
 
 
-def _get_numpy_as_image(array):
+def _get_numpy_as_image(array: np.ndarray, autoscale: bool) -> bytes:
     array = array.copy()  # prevent original array from modifying
+    if autoscale:
+        array = _scale_array(array)
 
-    data_range_warnings = []
-    array_min = array.min()
-    array_max = array.max()
-    if array_min < 0:
-        data_range_warnings.append(f"the smallest value in the array is {array_min}")
-    if array_max > 1:
-        data_range_warnings.append(f"the largest value in the array is {array_max}")
-    if data_range_warnings:
-        data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
-        logger.warning(
-            "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
-            data_range_warning_message,
-        )
-    array *= 255
-    shape = array.shape
-    if len(shape) == 2:
+    if len(array.shape) == 2:
         return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
-    if len(shape) == 3:
-        if shape[2] == 1:
+    if len(array.shape) == 3:
+        if array.shape[2] == 1:
             array2d = numpy_array([[col[0] for col in row] for row in array])
             return _get_pil_image_data(pilimage_fromarray(array2d.astype(numpy_uint8)))
-        if shape[2] in (3, 4):
+        if array.shape[2] in (3, 4):
             return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
     raise ValueError(
         "Incorrect size of numpy.ndarray. Should be 2-dimensional or"
         "3-dimensional with 3rd dimension of size 1, 3 or 4."
+    )
+
+
+def _scale_array(array: np.ndarray) -> np.ndarray:
+    array_min = array.min()
+    array_max = array.max()
+
+    if array_min >= 0 and 1 < array_max <= 255:
+        return array
+
+    if array_min >= 0 and array_max <= 1:
+        return array * 255
+
+    _warn_about_incorrect_image_data_range(array_min, array_max)
+    return array
+
+
+def _warn_about_incorrect_image_data_range(array_min: int | float, array_max: int | float) -> None:
+    msg = f"Image data is in range [{array_min}, {array_max}]."
+    logger.warning(
+        "%s To be interpreted as colors correctly values in the array need to be in the %s or %s range.",
+        msg,
+        *ALLOWED_IMG_PIXEL_RANGES,
     )
 
 
