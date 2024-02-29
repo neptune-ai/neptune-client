@@ -13,28 +13,15 @@ pytest-cov
 pytest-mock
 pytest-timeout
 pytest-xdist
-
-# Integrations
-optuna
-pytorch-lightning
-scikit-learn
-torchvision
-transformers
-accelerate
-zenml
-mlflow
+vega_datasets
 backoff
 altair
 bokeh
 matplotlib
 seaborn
-tensorflow
-torch
-vega_datasets
 plotly
 
 # e2e
-optuna
 scikit-learn
 torchvision
 accelerate

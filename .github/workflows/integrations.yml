@@ -1,10 +1,11 @@
 name: integrations
 
 on:
-  workflow_call:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
+  push:
+#  workflow_call:
+#  workflow_dispatch:
+#  schedule:
+#    - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
 
 env:
   WORKSPACE_NAME: e2e-tests
@@ -245,6 +246,7 @@ jobs:
           os: ${{ matrix.os }}
           module: lightning
           report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
+          pip_url: pytorch_lightning torch
 
   lightning-notify:
     needs: [lightning]
@@ -297,6 +299,7 @@ jobs:
           os: ${{ matrix.os }}
           module: huggingface
           report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
+          pip_url: transformers torch
 
   huggingface-notify:
     needs: [huggingface]
@@ -345,6 +348,7 @@ jobs:
           os: ${{ matrix.os }}
           module: zenml
           report_job: 'zenml (${{ matrix.os }} - py${{ matrix.python-version }})'
+          pip_url: zenml scikit-learn
 
   zenml-notify:
     needs: [zenml]
