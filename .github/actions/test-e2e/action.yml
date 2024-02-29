@@ -21,6 +21,9 @@ inputs:
     description: "Codecov token"
     required: false
     default: ""
+  pip_url:
+    description: "Pip URL for integration installation"
+    required: false
 
 runs:
   using: "composite"
@@ -30,6 +33,7 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}-latest
+        pip_url: ${{ inputs.pip_url }}
 
     - name: E2E - ${{ inputs.module }}
       run: |
