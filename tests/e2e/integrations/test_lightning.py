@@ -101,9 +101,9 @@ def prepare(project):
         logger=neptune_logger,
         callbacks=[model_checkpoint],
     )
-    train_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
-    val_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
-    test_data = torch.DataLoader(RandomDataset(32, 64), batch_size=2)
+    train_data = torch.utils.data.DataLoader(RandomDataset(32, 64), batch_size=2)
+    val_data = torch.utils.data.DataLoader(RandomDataset(32, 64), batch_size=2)
+    test_data = torch.utils.data.DataLoader(RandomDataset(32, 64), batch_size=2)
 
     # then
     trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)

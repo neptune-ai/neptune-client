@@ -437,9 +437,7 @@ class TestHuggingFace(BaseE2ETest):
         trainer = transformers.Trainer(**trainer_args)
 
         # then
-        assert "transformers_integrations.NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # given
         trainer_args = self._trainer_default_attributes
@@ -449,9 +447,7 @@ class TestHuggingFace(BaseE2ETest):
         trainer = transformers.Trainer(**trainer_args)
 
         # then
-        assert "transformers_integrations.NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # when
         trainer = transformers.Trainer(
