@@ -174,15 +174,16 @@ class File(Atom):
     def as_image(image, autoscale: bool = True) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
-        This way you can upload `Matplotlib` figures, `Seaborn` figures, `PIL` images, `NumPy` arrays, as static images.
+        This way you can upload Matplotlib figures, Seaborn figures, PIL images, and NumPy arrays as static images.
 
         Args:
             image: Image-like object to be converted.
-                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images,
-                `Matplotlib` figures and `Seaborn` figures.
+                Supported are PyTorch tensors, TensorFlow/Keras tensors, NumPy arrays, PIL images,
+                Matplotlib figures and Seaborn figures.
+            autoscale: Whether to scale images to the [0,1] range.
 
         Returns:
-            ``File``: value object with converted image
+            `File`: value object with converted image
 
         Examples:
             >>> import neptune
@@ -198,14 +199,13 @@ class File(Atom):
             >>> pil_file = File.as_image(pil_image)
             >>> run["dataset/data_sample/img1"].upload(pil_file)
 
-            You can upload PIL image without explicit conversion
+            You can upload PIL images without explicit conversion
 
             >>> run["dataset/data_sample/img2"].upload(pil_image)
 
-        You may also want to check `as_image docs page`_.
-
-        .. _as_image docs page:
-           https://docs.neptune.ai/api/field_types#as_image
+        See also the docs:
+            - How to log images: https://docs.neptune.ai/logging/images/
+            - API referene: https://docs.neptune.ai/api/field_types#as_image
         """
         content_bytes = get_image_content(image, autoscale=autoscale)
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
