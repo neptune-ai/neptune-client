@@ -20,6 +20,8 @@ bokeh
 matplotlib
 seaborn
 plotly
+tensorflow
+torch
 
 # e2e
 scikit-learn
