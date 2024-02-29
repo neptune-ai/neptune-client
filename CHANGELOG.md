@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune 1.10.0
 
 ### Features
+- Added `get_workspace_status()` method to management API ([#1662](https://github.com/neptune-ai/neptune-client/pull/1662))
 - Added auto-scaling pixel values for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
 
 ### Fixes
