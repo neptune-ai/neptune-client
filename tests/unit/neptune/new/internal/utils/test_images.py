@@ -324,5 +324,5 @@ def test_scale_array_incorrect_range():
 
     assert stdout.getvalue() == _log(
         "Image data is in range [-12, 300]. To be interpreted as colors "
-        "correctly values in the array need to be in the [0, 255] or [0.0, 1.0] range.\n",
+        "correctly, values in the array need to be in the [0, 255] or [0.0, 1.0] range.\n",
     )
