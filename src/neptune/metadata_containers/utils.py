@@ -175,7 +175,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
         return entry
 
 
-def deprecatied_func_arg_warning_check(fname: str, vname: str, var: Any) -> None:
+def deprecated_func_arg_warning_check(fname: str, vname: str, var: Any) -> None:
     if var is not None:
         msg = f"""The argument '{vname}' of the function '{fname}' is deprecated and will be removed in the future."""
         warn_once(msg, exception=NeptuneDeprecationWarning)

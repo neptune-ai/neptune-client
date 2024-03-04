@@ -1228,5 +1228,8 @@ Current disk utilization ({disk_utilization}%) exceeds the limit ({utilization_l
 
 class NeptuneInvalidQueryException(NeptuneException):
     def __init__(self, nql_query: str):
-        message = f"""provided nql query: {nql_query} is invalid"""
+        message = f"""
+The provided NQL query is invalid: {nql_query}.
+Learn more: https://docs.neptune.ai/usage/nql/
+"""
         super().__init__(message)
