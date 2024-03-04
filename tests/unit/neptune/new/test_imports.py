@@ -149,6 +149,7 @@ from neptune.new.exceptions import (
     NeptuneLocalStorageAccessException,
     NeptuneMissingApiTokenException,
     NeptuneMissingProjectNameException,
+    NeptuneMissingRequirementException,
     NeptuneOfflineModeFetchException,
     NeptunePossibleLegacyUsageException,
     NeptuneRemoteStorageAccessException,
