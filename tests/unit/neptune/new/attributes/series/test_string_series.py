@@ -13,17 +13,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from faker import Faker
 from mock import (
     MagicMock,
     patch,
 )
 
 from neptune.attributes.series.string_series import StringSeries
+from neptune.internal.backends.api_model import (
+    StringPointValue,
+    StringSeriesValues,
+)
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+
+fake = Faker()
 
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestStringSeries(TestAttributeBase):
+    def _get_string_series_values_dummy_impl(self, series: StringSeriesValues):
+        def _wrapper(self, _container_id, _container_type, _path, offset, limit) -> StringSeriesValues:
+            if offset < 0:
+                raise ValueError("Offset must be non-negative")
+            if limit < 0:
+                raise ValueError("Limit must be non-negative")
+            return StringSeriesValues(
+                values=series.values[offset : offset + limit], totalItemCount=series.totalItemCount
+            )
+
+        return _wrapper
+
     def test_assign_type_error(self):
         values = [55, "string", None]
         for value in values:
@@ -45,3 +64,23 @@ class TestStringSeries(TestAttributeBase):
             values = list(var.fetch_values()["value"].array)
             expected = list(range(0, 5000))
             self.assertEqual(len(set(expected)), len(set(values)))
+
+    @patch("neptune.attributes.series.fetchable_series.MAX_FETCH_LIMIT", 7)
+    def test_custom_offset_limit(self):
+        total = 100
+        offset = 27
+        limit = 42
+        words = [fake.word() for _ in range(total)]
+        series = StringSeriesValues(
+            values=[StringPointValue(step=i, value=words[i], timestampMillis=i) for i in range(total)],
+            totalItemCount=total,
+        )
+        with self._exp() as exp:
+            with patch(
+                "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_series_values",
+                new=self._get_string_series_values_dummy_impl(series),
+            ):
+                var = StringSeries(exp, self._random_path())
+                values = list(var.fetch_values(offset=offset, limit=limit)["value"].array)
+                expected = words[offset : offset + limit]
+                self.assertEqual(expected, values)
