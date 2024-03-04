@@ -222,14 +222,14 @@ jobs:
           path: dist/
 
 #      - name: Uploading to test PyPI
-#        uses: pypa/gh-action-pypi-publish@v1.8.11
+#        uses: pypa/gh-action-pypi-publish@v1.8.12
 #        with:
 #         user: __token__
 #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 #         repository_url: https://test.pypi.org/legacy/
 
       - name: Uploading to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.12
         with:
           user: __token__
           password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
@@ -251,14 +251,14 @@ jobs:
           path: dist/
 
       - name: Uploading to test PyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.12
         with:
           user: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
 
       - name: Publish package
-        uses: pypa/gh-action-pypi-publish@v1.8.11
+        uses: pypa/gh-action-pypi-publish@v1.8.12
         with:
           user: __token__
           password: ${{ secrets.NEPTUNE_CLIENT_PYPI_API_TOKEN }}
