@@ -16,11 +16,8 @@
 
 import pytest
 
-from neptune.exceptions import (
-    NeptuneIntegrationNotInstalledException,
-    NeptuneMissingRequirementException,
-)
-from neptune.utils import (
+from neptune.exceptions import NeptuneMissingRequirementException
+from neptune.internal.utils.requirement_check import (
     is_installed,
     require_installed,
 )
@@ -57,18 +54,14 @@ def test_check_requirement_if_package_not_installed():
     )
 
 
-def test_check_requirement_if_integration_not_installed():
-    with pytest.raises(NeptuneIntegrationNotInstalledException) as e:
-        require_installed(
-            "neptune-wrong-integration",
-            suggestion="wrong-integration",
-            exception=NeptuneIntegrationNotInstalledException,
-        )
+def test_check_requirement_with_custom_suggestion():
+    with pytest.raises(NeptuneMissingRequirementException) as e:
+        require_installed("neptune-wrong-package-name", suggestion="wrong-package-name")
 
     assert_exception_message_contains(
         str(e.value),
-        "NeptuneIntegrationNotInstalledException",
-        "neptune-wrong-integration",
-        "pip install neptune-wrong-integration",
-        'pip install "neptune[wrong-integration]"',
+        "NeptuneMissingRequirementException",
+        "wrong-package-name",
+        "pip install neptune-wrong-package-name",
+        'pip install "neptune[wrong-package-name]"',
     )

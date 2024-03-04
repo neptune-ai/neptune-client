@@ -67,7 +67,6 @@ __all__ = [
     "NeptuneCannotChangeStageManually",
     "OperationNotSupported",
     "NeptuneLegacyProjectException",
-    "NeptuneIntegrationNotInstalledException",
     "NeptuneMissingRequirementException",
     "NeptuneLimitExceedException",
     "NeptuneFieldCountLimitExceedException",
@@ -795,7 +794,7 @@ class NeptuneMissingRequirementException(NeptuneException):
     def __init__(self, package_name: str, framework_name: Optional[str]):
         message = """
     {h1}
-    ----{exception}-----------------------------------------
+    ----NeptuneMissingRequirementException-----------------------------------------
     {end}
     Looks like package {package_name} wasn't installed.
     To install, run:
@@ -811,17 +810,11 @@ class NeptuneMissingRequirementException(NeptuneException):
         framework_name = framework_name if framework_name else package_name
         super().__init__(
             message.format(
-                exception=self.__class__.__name__,
                 package_name=package_name,
                 framework_name=framework_name,
                 **STYLES,
             )
         )
-
-
-class NeptuneIntegrationNotInstalledException(NeptuneMissingRequirementException):
-    def __init__(self, integration_package_name, framework_name):
-        super().__init__(integration_package_name, framework_name)
 
 
 class NeptuneLimitExceedException(NeptuneException):

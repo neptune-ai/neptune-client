@@ -19,11 +19,8 @@ __all__ = [
     "stop_synchronization_callback",
     "TqdmProgressBar",
     "NullProgressBar",
-    "is_installed",
-    "require_installed",
 ]
 
-from importlib.util import find_spec
 from types import TracebackType
 from typing import (
     Any,
@@ -34,7 +31,6 @@ from typing import (
     Union,
 )
 
-from neptune.exceptions import NeptuneMissingRequirementException
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils.logger import get_logger
@@ -149,20 +145,3 @@ class TqdmProgressBar(ProgressBarCallback):
         if total:
             self._progress_bar.total = total
         self._progress_bar.update(by)
-
-
-def is_installed(requirement_name: str) -> bool:
-    return find_spec(requirement_name) is not None
-
-
-def require_installed(
-    requirement_name: str,
-    *,
-    suggestion: Optional[str] = None,
-    exception: Optional[Type[NeptuneMissingRequirementException]] = None,
-) -> None:
-    if is_installed(requirement_name):
-        return
-
-    exception = exception or NeptuneMissingRequirementException
-    raise exception(requirement_name, suggestion)

@@ -15,15 +15,9 @@
 #
 __all__ = ["NeptuneLogger"]
 
-try:
-    from pytorch_lightning.loggers import NeptuneLogger
-except ModuleNotFoundError as e:
-    if e.name == "pytorch_lightning":
-        from neptune.exceptions import NeptuneIntegrationNotInstalledException
+from neptune.internal.utils.requirement_check import require_installed
 
-        raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="pytorch-lightning",
-            framework_name="pytorch-lightning",
-        ) from None
-    else:
-        raise
+require_installed("pytorch-lightning")
+
+
+from pytorch_lightning.loggers import NeptuneLogger  # noqa: F401,F403,E402

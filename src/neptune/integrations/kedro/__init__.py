@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.internal.utils.requirement_check import require_installed
 
-try:
-    from kedro_neptune import *  # noqa: F401,F403
-except ModuleNotFoundError as e:
-    if e.name == "kedro_neptune":
-        from neptune.exceptions import NeptuneIntegrationNotInstalledException
+require_installed("kedro-neptune", suggestion="kedro")
 
-        raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="kedro-neptune", framework_name="kedro"
-        ) from None
-    else:
-        raise
+from kedro_neptune.impl import *  # noqa: F401,F403,E402

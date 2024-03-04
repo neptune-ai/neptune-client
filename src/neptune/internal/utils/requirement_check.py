@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.utils.requirement_check import require_installed
+from importlib.util import find_spec
+from typing import Optional
 
-require_installed("neptune-detectron2", suggestion="detectron2")
+from neptune.exceptions import NeptuneMissingRequirementException
 
-from neptune_detectron2.impl import *  # noqa: F401,F403,E402
+
+def is_installed(requirement_name: str) -> bool:
+    return find_spec(requirement_name) is not None
+
+
+def require_installed(requirement_name: str, *, suggestion: Optional[str] = None) -> None:
+    if is_installed(requirement_name):
+        return
+
+    raise NeptuneMissingRequirementException(requirement_name, suggestion)
