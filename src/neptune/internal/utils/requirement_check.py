@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "require_installed",
+    "is_installed",
+]
+
 from importlib.util import find_spec
 from typing import Optional
 
