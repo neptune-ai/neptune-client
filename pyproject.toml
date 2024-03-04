@@ -41,7 +41,7 @@ psutil = "*"
 pandas = "*"
 
 # Additional integrations
-kedro-neptune = { version = "*", optional = true, python = ">=3.9" }
+kedro-neptune = { version = "*", optional = true, python = ">=3.9,<3.12" }
 neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
 neptune-fastai = { version = "*", optional = true }
 neptune-lightgbm = { version = "*", optional = true }
