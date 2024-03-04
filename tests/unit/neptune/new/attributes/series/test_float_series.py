@@ -98,7 +98,7 @@ class TestFloatSeries(TestAttributeBase):
 
         run.stop()
 
-    # @patch("neptune.attributes.series.fetchable_series.MAX_FETCH_LIMIT", 10)
+    @patch("neptune.attributes.series.fetchable_series.MAX_FETCH_LIMIT", 10)
     def test_custom_offset_limit(self):
         total = 100
         offset = 27
