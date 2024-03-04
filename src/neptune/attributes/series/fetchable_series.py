@@ -38,14 +38,6 @@ Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
 MAX_FETCH_LIMIT = 1000
 
 
-def min_skip_none(a, b):
-    if a is None:
-        return b
-    if b is None:
-        return a
-    return min(a, b)
-
-
 class FetchableSeries(Generic[Row]):
     @abc.abstractmethod
     def _fetch_values_from_backend(self, offset, limit) -> Row:
@@ -80,27 +72,29 @@ class FetchableSeries(Generic[Row]):
         val = self._fetch_values_from_backend(offset=offset, limit=fetch_chunk_size)
 
         if limit is None:
-            limit = val.totalItemCount
+            to_load = val.totalItemCount - offset
+        else:
+            to_load = min(val.totalItemCount - offset, limit)
 
         data = val.values
         offset += len(data)
-        # limit -= len(data)
 
         # dont display progress bar if all values are fetched in one go
-        if limit - len(data) == 0:
+        left_to_fetch = to_load - len(data)
+        if left_to_fetch == 0:
             progress_bar = False
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
-            bar.update(by=len(data), total=limit)  # first fetch before the loop
-            while limit - len(data) != 0:
-                fetch_chunk_size = min(limit, MAX_FETCH_LIMIT)
+            bar.update(by=len(data), total=to_load)  # first fetch before the loop
+            while left_to_fetch != 0:
+                fetch_chunk_size = min(left_to_fetch, MAX_FETCH_LIMIT)
                 batch = self._fetch_values_from_backend(offset, fetch_chunk_size)
 
                 data.extend(batch.values)
                 offset += len(batch.values)
-                # limit -= len(batch.values)
-                bar.update(by=len(batch.values), total=limit)
+                left_to_fetch -= len(batch.values)
+                bar.update(by=len(batch.values), total=to_load)
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 
