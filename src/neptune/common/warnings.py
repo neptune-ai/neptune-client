@@ -25,7 +25,6 @@ __all__ = [
 import os
 import traceback
 import warnings
-from typing import Any
 
 import neptune
 from neptune.internal.utils.logger import NEPTUNE_LOGGER_NAME
@@ -107,9 +106,3 @@ def warn_about_unsupported_type(type_str: str):
         For more, see https://docs.neptune.ai/help/value_of_unsupported_type""",
         exception=NeptuneUnsupportedType,
     )
-
-
-def deprecatied_func_arg_warning_check(fname: str, vname: str, var: Any):
-    if var is not None:
-        msg = f"""The argument '{vname}' of the function '{fname}' is deprecated and will be removed in the future."""
-        warn_once(msg, exception=NeptuneDeprecationWarning)

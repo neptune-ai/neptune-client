@@ -14,21 +14,29 @@
 # limitations under the License.
 #
 
-from bravado.exception import HTTPBadRequest
+
+from typing import (
+    Any,
+    Callable,
+    TypeVar,
+)
 
 from neptune.exceptions import NeptuneInvalidQueryException
+from neptune.management.internal.api import HTTPBadRequest
 
 __all__ = ["with_leaderboard_entries_search_exception_handler"]
 
+RT = TypeVar("RT")
 
-def with_leaderboard_entries_search_exception_handler(func):
-    def wrapper(*args, **kwargs):
+
+def with_leaderboard_entries_search_exception_handler(func: Callable[..., RT]) -> Callable[..., RT]:
+    def wrapper(*args: Any, **kwargs: Any) -> RT:
         try:
             return func(*args, **kwargs)
         except HTTPBadRequest as e:
             title = e.response.json().get("title")
             if title == "Syntax error":
-                query = kwargs.get("query")
+                query = kwargs["query"]
                 raise NeptuneInvalidQueryException(nql_query=query)
             raise e
 
