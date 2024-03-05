@@ -21,8 +21,9 @@ from typing import (
     TypeVar,
 )
 
+from bravado.exception import HTTPBadRequest  # type: ignore
+
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.management.internal.api import HTTPBadRequest
 
 __all__ = ["with_leaderboard_entries_search_exception_handler"]
 
