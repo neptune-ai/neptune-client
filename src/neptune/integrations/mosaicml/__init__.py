@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["NeptuneLogger"]
+
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-detectron2", suggestion="detectron2")
+require_installed("mosaicml")
 
-from neptune_detectron2.impl import *  # noqa: F401,F403,E402
+from composer.loggers import NeptuneLogger  # type: ignore[import]  # noqa: F401,F403,E402

@@ -67,7 +67,7 @@ __all__ = [
     "NeptuneCannotChangeStageManually",
     "OperationNotSupported",
     "NeptuneLegacyProjectException",
-    "NeptuneIntegrationNotInstalledException",
+    "NeptuneMissingRequirementException",
     "NeptuneLimitExceedException",
     "NeptuneFieldCountLimitExceedException",
     "NeptuneStorageLimitException",
@@ -790,26 +790,27 @@ You can find documentation for the legacy neptune Python API here:
         super().__init__(message.format(project=project, **STYLES))
 
 
-class NeptuneIntegrationNotInstalledException(NeptuneException):
-    def __init__(self, integration_package_name, framework_name):
+class NeptuneMissingRequirementException(NeptuneException):
+    def __init__(self, package_name: str, framework_name: Optional[str]):
         message = """
-{h1}
-----NeptuneIntegrationNotInstalledException-----------------------------------------
-{end}
-Looks like integration {integration_package_name} wasn't installed.
-To install, run:
-    {bash}pip install {integration_package_name}{end}
-Or:
-    {bash}pip install "neptune[{framework_name}]"{end}
+    {h1}
+    ----NeptuneMissingRequirementException-----------------------------------------
+    {end}
+    Looks like the {package_name} package isn't installed.
+    To install it, run:
+        {bash}pip install {package_name}{end}
+    Or install both Neptune and the integration:
+        {bash}pip install "neptune[{framework_name}]"{end}
 
-You may also want to check the following docs page:
-    - https://docs.neptune.ai/integrations
+    For detailed instructions, check the integration guides:
+        - https://docs.neptune.ai/integrations
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+    """
+        framework_name = framework_name if framework_name else package_name
         super().__init__(
             message.format(
-                integration_package_name=integration_package_name,
+                package_name=package_name,
                 framework_name=framework_name,
                 **STYLES,
             )

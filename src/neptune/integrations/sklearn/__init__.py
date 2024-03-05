@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.internal.utils.requirement_check import require_installed
 
-try:
-    from neptune_sklearn.impl import *  # noqa: F401,F403
-except ModuleNotFoundError as e:
-    if e.name == "neptune_sklearn":
-        from neptune.exceptions import NeptuneIntegrationNotInstalledException
+require_installed("neptune-sklearn", suggestion="sklearn")
 
-        raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="neptune-sklearn", framework_name="sklearn"
-        ) from None
-    else:
-        raise
+from neptune_sklearn.impl import *  # noqa: F401,F403,E402
