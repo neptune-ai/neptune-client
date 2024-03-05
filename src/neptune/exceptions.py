@@ -796,13 +796,13 @@ class NeptuneMissingRequirementException(NeptuneException):
     {h1}
     ----NeptuneMissingRequirementException-----------------------------------------
     {end}
-    Looks like package {package_name} wasn't installed.
-    To install, run:
+    Looks like the {package_name} package isn't installed.
+    To install it, run:
         {bash}pip install {package_name}{end}
-    Or:
+    Or install both Neptune and the integration:
         {bash}pip install "neptune[{framework_name}]"{end}
 
-    You may also want to check the following docs page:
+    For detailed instructions, check the integration guides:
         - https://docs.neptune.ai/integrations
 
     {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
