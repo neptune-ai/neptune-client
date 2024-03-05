@@ -25,7 +25,7 @@ from typing import Optional
 from neptune.exceptions import NeptuneMissingRequirementException
 
 
-@lru_cache
+@lru_cache(maxsize=32)
 def is_installed(requirement_name: str) -> bool:
     return find_spec(requirement_name) is not None
 
