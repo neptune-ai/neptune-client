@@ -27,12 +27,13 @@ from typing import (
 
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
+from bravado.exception import HTTPBadRequest  # type: ignore
 from typing_extensions import (
     Literal,
     TypeAlias,
 )
 
-from neptune.api.utils import with_leaderboard_entries_search_exception_handler
+from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -82,7 +83,6 @@ class NoLimit(int):
         return True
 
 
-@with_leaderboard_entries_search_exception_handler
 def get_single_page(
     *,
     client: "SwaggerClientWrapper",
@@ -144,11 +144,17 @@ def get_single_page(
 
     http_client = client.swagger_spec.http_client
 
-    return (
-        http_client.request(request_params, operation=None, request_config=request_config)
-        .response()
-        .incoming_response.json()
-    )
+    try:
+        return (
+            http_client.request(request_params, operation=None, request_config=request_config)
+            .response()
+            .incoming_response.json()
+        )
+    except HTTPBadRequest as e:
+        title = e.response.json().get("title")
+        if title == "Syntax error":
+            raise NeptuneInvalidQueryException(nql_query=str(normalized_query))
+        raise e
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
