@@ -18,12 +18,14 @@ __all__ = [
     "is_installed",
 ]
 
+from functools import lru_cache
 from importlib.util import find_spec
 from typing import Optional
 
 from neptune.exceptions import NeptuneMissingRequirementException
 
 
+@lru_cache
 def is_installed(requirement_name: str) -> bool:
     return find_spec(requirement_name) is not None
 
