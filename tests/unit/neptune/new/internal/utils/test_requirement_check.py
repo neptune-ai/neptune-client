@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from unittest.mock import patch
 
 import pytest
 
@@ -65,3 +66,11 @@ def test_check_requirement_with_custom_suggestion():
         "pip install neptune-wrong-package-name",
         'pip install "neptune[wrong-package-name]"',
     )
+
+
+@patch("neptune.internal.utils.requirement_check.find_spec")
+def test_caching(mock_find_spec):
+    is_installed("some-package")
+    is_installed("some-package")
+
+    mock_find_spec.assert_called_once_with("some-package")
