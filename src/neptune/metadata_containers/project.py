@@ -28,12 +28,7 @@ from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backends.nql import (
-    NQLAttributeOperator,
-    NQLAttributeType,
-    NQLEmptyQuery,
-    NQLQueryAttribute,
-)
+from neptune.internal.backends.nql import NQLEmptyQuery
 from neptune.internal.container_type import ContainerType
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -345,6 +340,7 @@ class Project(MetadataContainer):
     def fetch_models_table(
         self,
         *,
+        query: Optional[str] = None,
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
@@ -355,6 +351,8 @@ class Project(MetadataContainer):
         """Retrieve models stored in the project.
 
         Args:
+            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+                Example: `"some model query"`.
             trashed: Whether to retrieve trashed models.
                 If `True`, only trashed models are retrieved.
                 If `False`, only not-trashed models are retrieved.
@@ -392,9 +390,12 @@ class Project(MetadataContainer):
             ... # Extract the ID of the first listed (oldest) model object
             ... last_model_id = models_table_df["sys/id"].values[0]
 
+            >>> TODO query example
+
         See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_models_table
         """
+        verify_type("query", query, (str, type(None)))
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
@@ -403,17 +404,11 @@ class Project(MetadataContainer):
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
+        nql = build_raw_query(query, trashed=trashed) if query is not None else NQLEmptyQuery()
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
-            query=NQLQueryAttribute(
-                name="sys/trashed",
-                type=NQLAttributeType.BOOLEAN,
-                operator=NQLAttributeOperator.EQUALS,
-                value=trashed,
-            )
-            if trashed is not None
-            else NQLEmptyQuery,
+            query=nql,
             columns=columns,
             limit=limit,
             sort_by=sort_by,
