@@ -352,7 +352,7 @@ class Project(MetadataContainer):
 
         Args:
             query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
-                Example: `"some model query"`.
+                Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             trashed: Whether to retrieve trashed models.
                 If `True`, only trashed models are retrieved.
                 If `False`, only not-trashed models are retrieved.
@@ -390,7 +390,10 @@ class Project(MetadataContainer):
             ... # Extract the ID of the first listed (oldest) model object
             ... last_model_id = models_table_df["sys/id"].values[0]
 
-            >>> TODO query example
+            >>> # Fetch models with VGG backbone
+            ... models_table_df = project.fetch_models_table(
+                    query="(backbone: string = VGG)"
+                ).to_pandas()
 
         See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_models_table

@@ -4,6 +4,7 @@
 - Added `get_workspace_status()` method to management API ([#1662](https://github.com/neptune-ai/neptune-client/pull/1662))
 - Added auto-scaling pixel values for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
 - Introduce querying capabilities to `fetch_runs_table()` ([#1660](https://github.com/neptune-ai/neptune-client/pull/1660))
+- Introduce querying capabilities to `fetch_models_table()` ([#1677](https://github.com/neptune-ai/neptune-client/pull/1677))
 
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
