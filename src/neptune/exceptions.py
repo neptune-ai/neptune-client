@@ -1230,6 +1230,6 @@ class NeptuneInvalidQueryException(NeptuneException):
     def __init__(self, nql_query: str):
         message = f"""
 The provided NQL query is invalid: {nql_query}.
-Learn more: https://docs.neptune.ai/usage/nql/
+For syntax help, see https://docs.neptune.ai/usage/nql/
 """
         super().__init__(message)
