@@ -49,7 +49,11 @@ from neptune.internal.utils import (
 )
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.utils import prepare_nql_query
+from neptune.metadata_containers.utils import (
+    build_raw_query,
+    deprecated_func_arg_warning_check,
+    prepare_nql_query,
+)
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
@@ -196,6 +200,7 @@ class Project(MetadataContainer):
     def fetch_runs_table(
         self,
         *,
+        query: Optional[str] = None,
         id: Optional[Union[str, Iterable[str]]] = None,
         state: Optional[Union[Literal["inactive", "active"], Iterable[Literal["inactive", "active"]]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
@@ -213,6 +218,9 @@ class Project(MetadataContainer):
         Only runs matching all of the criteria will be returned.
 
         Args:
+            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+                Example: `"(accuracy: float > 0.88) AND (loss: float < 0.2)"`.
+                Exclusive with the `id`, `state`, `owner`, and `tag` parameters.
             id: Neptune ID of a run, or list of several IDs.
                 Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
@@ -288,11 +296,23 @@ class Project(MetadataContainer):
         See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_runs_table
         """
+
+        deprecated_func_arg_warning_check("fetch_runs_table", "id", id)
+        deprecated_func_arg_warning_check("fetch_runs_table", "state", state)
+        deprecated_func_arg_warning_check("fetch_runs_table", "owner", owner)
+        deprecated_func_arg_warning_check("fetch_runs_table", "tag", tag)
+
+        if any((id, state, owner, tag)) and query is not None:
+            raise ValueError(
+                "You can't use the 'query' parameter together with the 'id', 'state', 'owner', or 'tag' parameters."
+            )
+
         ids = as_list("id", id)
         states = as_list("state", state)
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
+        verify_type("query", query, (str, type(None)))
         verify_type("trashed", trashed, (bool, type(None)))
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
@@ -300,13 +320,16 @@ class Project(MetadataContainer):
         verify_type("progress_bar", progress_bar, (type(None), bool, type(ProgressBarCallback)))
         verify_collection_type("state", states, str)
 
-        for state in states:
-            verify_value("state", state.lower(), ("inactive", "active"))
-
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
-        nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
+        for state in states:
+            verify_value("state", state.lower(), ("inactive", "active"))
+
+        if query is not None:
+            nql_query = build_raw_query(query, trashed=trashed)
+        else:
+            nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
         return MetadataContainer._fetch_entries(
             self,

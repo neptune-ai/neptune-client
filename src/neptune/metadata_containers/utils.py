@@ -22,6 +22,7 @@ __all__ = [
 
 from datetime import datetime
 from typing import (
+    Any,
     Generator,
     Iterable,
     List,
@@ -30,6 +31,7 @@ from typing import (
 )
 
 from neptune.common.warnings import (
+    NeptuneDeprecationWarning,
     NeptuneWarning,
     warn_once,
 )
@@ -42,8 +44,10 @@ from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
+    RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
 
@@ -169,3 +173,27 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
             exception=NeptuneWarning,
         )
         return entry
+
+
+def deprecated_func_arg_warning_check(fname: str, vname: str, var: Any) -> None:
+    if var is not None:
+        msg = f"""The argument '{vname}' of the function '{fname}' is deprecated and will be removed in the future."""
+        warn_once(msg, exception=NeptuneDeprecationWarning)
+
+
+def build_raw_query(query: str, trashed: Optional[bool]) -> NQLQuery:
+    raw_nql = RawNQLQuery(query)
+
+    if trashed is None:
+        return raw_nql
+
+    nql = NQLQueryAggregate(
+        items=[
+            raw_nql,
+            NQLQueryAttribute(
+                name="sys/trashed", type=NQLAttributeType.BOOLEAN, operator=NQLAttributeOperator.EQUALS, value=trashed
+            ),
+        ],
+        aggregator=NQLAggregator.AND,
+    )
+    return nql

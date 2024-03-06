@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from __future__ import annotations
+
 __all__ = [
     "NQLQuery",
     "NQLEmptyQuery",
@@ -21,6 +24,7 @@ __all__ = [
     "NQLAttributeOperator",
     "NQLAttributeType",
     "NQLQueryAttribute",
+    "RawNQLQuery",
 ]
 
 import typing
@@ -31,9 +35,11 @@ from typing import Iterable
 
 @dataclass
 class NQLQuery:
-    pass
+    def eval(self) -> NQLQuery:
+        return self
 
 
+@dataclass
 class NQLEmptyQuery(NQLQuery):
     def __str__(self) -> str:
         return ""
@@ -49,10 +55,20 @@ class NQLQueryAggregate(NQLQuery):
     items: Iterable[NQLQuery]
     aggregator: NQLAggregator
 
+    def eval(self) -> NQLQuery:
+        self.items = list(filter(lambda nql: not isinstance(nql, NQLEmptyQuery), (item.eval() for item in self.items)))
+
+        if len(self.items) == 0:
+            return NQLEmptyQuery()
+        elif len(self.items) == 1:
+            return self.items[0]
+        return self
+
     def __str__(self) -> str:
-        if self.items:
+        evaluated = self.eval()
+        if isinstance(evaluated, NQLQueryAggregate):
             return "(" + f" {self.aggregator.value} ".join(map(str, self.items)) + ")"
-        return ""
+        return str(evaluated)
 
 
 class NQLAttributeOperator(str, Enum):
@@ -85,3 +101,19 @@ class NQLQueryAttribute(NQLQuery):
             value = f'"{self.value}"'
 
         return f"(`{self.name}`:{self.type.value} {self.operator.value} {value})"
+
+
+@dataclass
+class RawNQLQuery(NQLQuery):
+    query: str
+
+    def eval(self) -> NQLQuery:
+        if self.query == "":
+            return NQLEmptyQuery()
+        return self
+
+    def __str__(self) -> str:
+        evaluated = self.eval()
+        if isinstance(evaluated, RawNQLQuery):
+            return self.query
+        return str(evaluated)

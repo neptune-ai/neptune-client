@@ -18,15 +18,20 @@ from typing import (
     Sequence,
 )
 
+import pytest
+from bravado.exception import HTTPBadRequest
 from mock import (
+    Mock,
     call,
     patch,
 )
 
 from neptune.api.searching_entries import (
+    get_single_page,
     iter_over_pages,
     to_leaderboard_entry,
 )
+from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -254,3 +259,29 @@ def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -
         )
         for value in values
     ]
+
+
+@patch("neptune.api.searching_entries.construct_request")
+def test_get_single_page_error_handling(construct_request_mock):
+    # given
+    bravado_exception = HTTPBadRequest(response=Mock())
+    bravado_exception.response.json.return_value = {"title": "Syntax error"}
+
+    failing_clinet = Mock()
+    failing_clinet.swagger_spec.http_client.request.side_effect = bravado_exception
+
+    # then
+    with pytest.raises(NeptuneInvalidQueryException):
+        get_single_page(
+            project_id="id",
+            attributes_filter={},
+            types=None,
+            query="invalid_query",
+            limit=0,
+            offset=0,
+            sort_by="sys/id",
+            ascending=False,
+            sort_by_column_type=None,
+            searching_after=None,
+            client=failing_clinet,
+        )
