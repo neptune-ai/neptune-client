@@ -28,7 +28,6 @@ from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backends.nql import NQLEmptyQuery
 from neptune.internal.container_type import ContainerType
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -407,7 +406,8 @@ class Project(MetadataContainer):
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
-        nql = build_raw_query(query, trashed=trashed) if query is not None else NQLEmptyQuery()
+        query = query if query is not None else ""
+        nql = build_raw_query(query=query, trashed=trashed)
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
