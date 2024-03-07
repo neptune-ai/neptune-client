@@ -48,17 +48,17 @@ class FileHasher:
 
         if stored_file_hash:
             if stored_file_hash.modification_date >= modification_date:
-                return stored_file_hash.file_hash
+                computed_hash = stored_file_hash.file_hash
             else:
                 computed_hash = sha1(absolute)
                 local_storage.update(absolute, computed_hash, modification_date)
-
-                return computed_hash
         else:
             computed_hash = sha1(absolute)
             local_storage.insert(absolute, computed_hash, modification_date)
 
-            return computed_hash
+        local_storage.close()
+
+        return computed_hash
 
     @classmethod
     def _number_to_bytes(cls, int_value: int, bytes_cnt):
