@@ -1,9 +1,14 @@
+import logging
 from contextlib import contextmanager
 from functools import partial
 
 import pytest
 
-from neptune.internal.utils.logger import get_logger
+import neptune
+from neptune.internal.utils.logger import (
+    NEPTUNE_LOGGER_NAME,
+    get_logger,
+)
 from tests.unit.neptune.new.utils.logging import format_log
 
 
@@ -38,3 +43,16 @@ def test_internal_logger_loglevels(capsys: pytest.CaptureFixture):
 
     with assert_out(capsys, _log("CRITICAL")):
         logger.critical("message")
+
+
+def test_user_can_set_logging_levels(capsys: pytest.CaptureFixture):
+    # given
+    logger = get_logger(NEPTUNE_LOGGER_NAME)
+
+    # when
+    logger.setLevel(logging.CRITICAL)
+
+    # then
+    with assert_out(capsys):
+        with neptune.init_run(mode="debug"):
+            ...

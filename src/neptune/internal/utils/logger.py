@@ -49,12 +49,11 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger(with_prefix: bool = True, loglevel: int = logging.DEBUG):
+def get_logger(with_prefix: bool = True):
     if with_prefix:
         logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
     else:
         logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
-    logger.setLevel(loglevel)
     return logger
 
 
