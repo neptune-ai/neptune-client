@@ -1,14 +1,12 @@
-import logging
+import os
 from contextlib import contextmanager
 from functools import partial
 
 import pytest
 
 import neptune
-from neptune.internal.utils.logger import (
-    NEPTUNE_LOGGER_NAME,
-    get_logger,
-)
+from neptune.envs import NEPTUNE_LOG_LEVEL
+from neptune.internal.utils.logger import get_logger
 from tests.unit.neptune.new.utils.logging import format_log
 
 
@@ -22,11 +20,10 @@ def assert_out(capsys: pytest.CaptureFixture, out_msg: str = "", err_msg: str = 
 
 
 @pytest.fixture
-def log_level() -> None:
+def log_level_env_var_teardown() -> None:
     yield
 
-    logger = get_logger(NEPTUNE_LOGGER_NAME)
-    logger.setLevel(logging.DEBUG)
+    os.unsetenv(NEPTUNE_LOG_LEVEL)
 
 
 class TestLogger:
@@ -53,14 +50,11 @@ class TestLogger:
         with assert_out(capsys, _log("CRITICAL")):
             logger.critical("message")
 
-    def test_user_can_set_logging_levels(self, capsys, log_level):
-        # given
-        logger = get_logger(NEPTUNE_LOGGER_NAME)
-
+    def test_user_can_set_logging_levels(self, capsys, log_level_env_var_teardown):
         # when
-        logger.setLevel(logging.CRITICAL)
+        os.environ["NEPTUNE_LOG_LEVEL"] = "CRITICAL"
 
         # then
-        with assert_out(capsys):
+        with assert_out(capsys, out_msg="", err_msg=""):
             with neptune.init_run(mode="debug"):
                 ...

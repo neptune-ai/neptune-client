@@ -16,12 +16,27 @@
 __all__ = ["get_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
+import os
 import sys
+from typing import Optional
+
+from neptune.envs import NEPTUNE_LOG_LEVEL
 
 NEPTUNE_LOGGER_NAME = "neptune"
 NEPTUNE_NO_PREFIX_LOGGER_NAME = "neptune_no_prefix"
 LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
 NO_PREFIX_FORMAT = "%(message)s"
+
+_name_to_level = {
+    "CRITICAL": logging.CRITICAL,
+    "FATAL": logging.FATAL,
+    "ERROR": logging.ERROR,
+    "WARN": logging.WARNING,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+    "NOTSET": logging.NOTSET,
+}
 
 
 class CustomFormatter(logging.Formatter):
@@ -49,12 +64,22 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger(with_prefix: bool = True):
+def get_logger(with_prefix: bool = True, loglevel: Optional[int] = None) -> logging.Logger:
     if with_prefix:
         logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
     else:
         logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+
+    loglevel = loglevel or _get_logging_level_from_env()
+    logger.setLevel(loglevel)
     return logger
+
+
+def _get_logging_level_from_env() -> int:
+    level_name = os.getenv(NEPTUNE_LOG_LEVEL, "DEBUG")
+    if level_name not in _name_to_level:
+        raise ValueError(f"Invalid log level set in '{NEPTUNE_LOG_LEVEL}' env variable: {level_name}.")
+    return _name_to_level.get(level_name)
 
 
 def _set_up_logging():
