@@ -8,7 +8,7 @@ from neptune.internal.utils.logger import (
 )
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def set_logging_level():
     logging.getLogger(NEPTUNE_LOGGER_NAME).setLevel(logging.DEBUG)
     logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME).setLevel(logging.DEBUG)
