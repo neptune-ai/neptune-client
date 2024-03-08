@@ -89,7 +89,10 @@ from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
 )
-from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.logger import (
+    get_disabled_logger,
+    get_logger,
+)
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
@@ -238,7 +241,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
-        self._logger = get_logger(loglevel=logging.WARNING)
+        self._logger = get_disabled_logger()
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
             self._signals_queue = Queue()
