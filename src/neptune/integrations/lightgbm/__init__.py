@@ -17,4 +17,4 @@ from neptune.internal.utils.requirement_check import require_installed
 
 require_installed("neptune-lightgbm", suggestion="lightgbm")
 
-from neptune_lightgbm.impl import *  # noqa: F401,F403,E402
+from neptune_lightgbm.impl import *  # type: ignore[import] # noqa: F401,F403,E402

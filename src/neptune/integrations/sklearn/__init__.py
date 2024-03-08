@@ -17,4 +17,4 @@ from neptune.internal.utils.requirement_check import require_installed
 
 require_installed("neptune-sklearn", suggestion="sklearn")
 
-from neptune_sklearn.impl import *  # noqa: F401,F403,E402
+from neptune_sklearn.impl import *  # type: ignore[import] # noqa: F401,F403,E402
