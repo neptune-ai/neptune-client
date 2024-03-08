@@ -161,7 +161,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                 for attribute in entry.attributes
             ],
         )
-    except TypeError:
+    except AttributeError:
         # date is already in the right format
         return entry
     except ValueError:
