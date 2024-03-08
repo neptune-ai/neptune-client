@@ -19,7 +19,6 @@ __all__ = [
     "prepare_nql_query",
 ]
 
-from datetime import datetime
 from typing import (
     Any,
     Generator,
@@ -28,6 +27,8 @@ from typing import (
     Optional,
     Union,
 )
+
+import isodate  # type: ignore[import]
 
 from neptune.common.warnings import (
     NeptuneDeprecationWarning,
@@ -152,7 +153,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                     attribute.type,
                     {
                         **attribute.properties,
-                        "value": datetime.fromisoformat(attribute.properties["value"]),
+                        "value": isodate.parse_datetime(attribute.properties["value"]),
                     },
                 )
                 if attribute.type == AttributeType.DATETIME
