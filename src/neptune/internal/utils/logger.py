@@ -13,30 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_logger", "NEPTUNE_LOGGER_NAME"]
+__all__ = ["get_logger", "get_disabled_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
-import os
 import sys
-from typing import Optional
-
-from neptune.envs import NEPTUNE_LOG_LEVEL
 
 NEPTUNE_LOGGER_NAME = "neptune"
 NEPTUNE_NO_PREFIX_LOGGER_NAME = "neptune_no_prefix"
+NEPTUNE_NOOP_LOGGER_NAME = "neptune_noop"
 LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
 NO_PREFIX_FORMAT = "%(message)s"
-
-_name_to_level = {
-    "CRITICAL": logging.CRITICAL,
-    "FATAL": logging.FATAL,
-    "ERROR": logging.ERROR,
-    "WARN": logging.WARNING,
-    "WARNING": logging.WARNING,
-    "INFO": logging.INFO,
-    "DEBUG": logging.DEBUG,
-    "NOTSET": logging.NOTSET,
-}
 
 
 class CustomFormatter(logging.Formatter):
@@ -64,22 +50,14 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger(with_prefix: bool = True, loglevel: Optional[int] = None) -> logging.Logger:
-    if with_prefix:
-        logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
-    else:
-        logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
+def get_logger(with_prefix: bool = True) -> logging.Logger:
+    name = NEPTUNE_LOGGER_NAME if with_prefix else NEPTUNE_NO_PREFIX_LOGGER_NAME
 
-    loglevel = loglevel or _get_logging_level_from_env()
-    logger.setLevel(loglevel)
-    return logger
+    return logging.getLogger(name)
 
 
-def _get_logging_level_from_env() -> int:
-    level_name = os.getenv(NEPTUNE_LOG_LEVEL, "DEBUG")
-    if level_name not in _name_to_level:
-        raise ValueError(f"Invalid log level set in '{NEPTUNE_LOG_LEVEL}' env variable: {level_name}.")
-    return _name_to_level.get(level_name)
+def get_disabled_logger() -> logging.Logger:
+    return logging.getLogger(NEPTUNE_NOOP_LOGGER_NAME)
 
 
 def _set_up_logging():
@@ -106,5 +84,12 @@ def _set_up_no_prefix_logging():
     neptune_logger.setLevel(logging.INFO)
 
 
+def _set_up_disabled_logging():
+    neptune_logger = logging.getLogger(NEPTUNE_NOOP_LOGGER_NAME)
+
+    neptune_logger.setLevel(logging.CRITICAL)
+
+
 _set_up_logging()
 _set_up_no_prefix_logging()
+_set_up_disabled_logging()
