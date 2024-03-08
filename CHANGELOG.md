@@ -11,6 +11,7 @@
 ### Changes
 - Improve dependency installation checking ([#1670](https://github.com/neptune-ai/neptune-client/pull/1670))
 - Cache dependencies check ([#1675](https://github.com/neptune-ai/neptune-client/pull/1675))
+- Improve datetime parsing in `fetch_*_table()` ([#1680](https://github.com/neptune-ai/neptune-client/pull/1680))
 
 
 ## neptune 1.9.1
