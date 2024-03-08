@@ -15,7 +15,6 @@
 #
 
 __all__ = [
-    "DATE_FORMAT",
     "parse_dates",
     "prepare_nql_query",
 ]
@@ -50,8 +49,6 @@ from neptune.internal.backends.nql import (
     RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
-
-DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def prepare_nql_query(
@@ -155,7 +152,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                     attribute.type,
                     {
                         **attribute.properties,
-                        "value": datetime.strptime(attribute.properties["value"], DATE_FORMAT),
+                        "value": datetime.fromisoformat(attribute.properties["value"]),
                     },
                 )
                 if attribute.type == AttributeType.DATETIME

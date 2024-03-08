@@ -28,7 +28,6 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
-from neptune.metadata_containers.utils import DATE_FORMAT
 from neptune.table import (
     Table,
     TableEntry,
@@ -72,7 +71,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
                     AttributeWithProperties(
                         "sys/creation_time",
                         AttributeType.DATETIME,
-                        {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                        {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).isoformat()},
                     )
                 ],
             )
