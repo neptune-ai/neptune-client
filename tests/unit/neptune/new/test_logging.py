@@ -1,5 +1,4 @@
 import logging
-import unittest
 from contextlib import contextmanager
 from functools import partial
 
@@ -22,42 +21,46 @@ def assert_out(capsys: pytest.CaptureFixture, out_msg: str = "", err_msg: str = 
     assert err_msg == captured.err
 
 
-class TestLogger(unittest.TestCase):
-    def test_internal_logger_loglevels(self, capsys: pytest.CaptureFixture):
-        # given
-        logger = get_logger()
+@contextmanager
+def preserve_logging_level(logger: logging.Logger) -> None:
+    yield
 
-        # when
-        _log = partial(format_log, msg="message\n")
+    logger.setLevel(logging.DEBUG)
 
-        # then
-        with assert_out(capsys, _log("DEBUG")):
-            logger.debug("message")
 
-        with assert_out(capsys, _log("INFO")):
-            logger.info("message")
+def test_internal_logger_loglevels(capsys: pytest.CaptureFixture):
+    # given
+    logger = get_logger()
 
-        with assert_out(capsys, _log("WARNING")):
-            logger.warning("message")
+    # when
+    _log = partial(format_log, msg="message\n")
 
-        with assert_out(capsys, _log("ERROR")):
-            logger.error("message")
+    # then
+    with assert_out(capsys, _log("DEBUG")):
+        logger.debug("message")
 
-        with assert_out(capsys, _log("CRITICAL")):
-            logger.critical("message")
+    with assert_out(capsys, _log("INFO")):
+        logger.info("message")
 
-    def test_user_can_set_logging_levels(self, capsys: pytest.CaptureFixture):
-        # given
-        logger = get_logger(NEPTUNE_LOGGER_NAME)
+    with assert_out(capsys, _log("WARNING")):
+        logger.warning("message")
 
-        # when
-        logger.setLevel(logging.CRITICAL)
+    with assert_out(capsys, _log("ERROR")):
+        logger.error("message")
 
-        # then
+    with assert_out(capsys, _log("CRITICAL")):
+        logger.critical("message")
+
+
+def test_user_can_set_logging_levels(capsys: pytest.CaptureFixture):
+    # given
+    logger = get_logger(NEPTUNE_LOGGER_NAME)
+
+    # when
+    logger.setLevel(logging.CRITICAL)
+
+    # then
+    with preserve_logging_level(logger):
         with assert_out(capsys):
             with neptune.init_run(mode="debug"):
                 ...
-
-    def tearDown(self):
-        logger = get_logger(NEPTUNE_LOGGER_NAME)
-        logger.setLevel(logging.DEBUG)
