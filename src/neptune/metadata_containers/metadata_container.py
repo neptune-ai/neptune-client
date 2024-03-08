@@ -238,7 +238,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def _handle_fork_in_child(self):
         reset_internal_ssl_state()
-        self._logger = get_logger(loglevel=logging.WARNING)
+        self._logger = get_logger()
+        self._logger.setLevel(logging.WARNING)
         if self._state == ContainerState.STARTED:
             self._op_processor.close()
             self._signals_queue = Queue()

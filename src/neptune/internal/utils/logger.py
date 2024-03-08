@@ -67,6 +67,8 @@ def _set_up_logging():
     stdout_handler.setFormatter(CustomFormatter())
     neptune_logger.addHandler(stdout_handler)
 
+    neptune_logger.setLevel(logging.INFO)
+
 
 def _set_up_no_prefix_logging():
     neptune_logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
@@ -75,6 +77,8 @@ def _set_up_no_prefix_logging():
     stdout_handler = GrabbableStdoutHandler()
     stdout_handler.setFormatter(logging.Formatter(NO_PREFIX_FORMAT))
     neptune_logger.addHandler(stdout_handler)
+
+    neptune_logger.setLevel(logging.INFO)
 
 
 _set_up_logging()
