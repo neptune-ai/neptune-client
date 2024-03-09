@@ -399,7 +399,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
     def test_container_not_found(self):
         # given
-        for (container_id, container_type) in self.ids_with_types:
+        for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
                     container_id,

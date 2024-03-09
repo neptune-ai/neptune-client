@@ -149,21 +149,18 @@ class ExecutionDirectory:
 class Container(ABC):
     @property
     @abstractmethod
-    def container_id(self) -> UniqueId:
-        ...
+    def container_id(self) -> UniqueId: ...
 
     @property
     @abstractmethod
-    def execution_dirs(self) -> List[ExecutionDirectory]:
-        ...
+    def execution_dirs(self) -> List[ExecutionDirectory]: ...
 
     @property
     def synced(self) -> bool:
         return all(map(lambda execution_dir: execution_dir.synced, self.execution_dirs))
 
     @abstractmethod
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
-        ...
+    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None: ...
 
     def clear(self) -> None:
         for execution_dir in self.execution_dirs:

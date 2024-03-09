@@ -30,8 +30,7 @@ class Signal:
     occured_at: float
 
     @abstractmethod
-    def accept(self, visitor: "SignalsVisitor") -> None:
-        ...
+    def accept(self, visitor: "SignalsVisitor") -> None: ...
 
 
 @dataclass
@@ -56,13 +55,10 @@ class BatchLagSignal(Signal):
 
 class SignalsVisitor:
     @abstractmethod
-    def visit_batch_started(self, signal: Signal) -> None:
-        ...
+    def visit_batch_started(self, signal: Signal) -> None: ...
 
     @abstractmethod
-    def visit_batch_processed(self, signal: Signal) -> None:
-        ...
+    def visit_batch_processed(self, signal: Signal) -> None: ...
 
     @abstractmethod
-    def visit_batch_lag(self, signal: Signal) -> None:
-        ...
+    def visit_batch_lag(self, signal: Signal) -> None: ...

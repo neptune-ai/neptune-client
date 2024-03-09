@@ -33,8 +33,7 @@ class AutoCloseable(ABC):
         return self
 
     @abstractmethod
-    def close(self) -> None:
-        ...
+    def close(self) -> None: ...
 
     def __exit__(
         self,
@@ -47,8 +46,7 @@ class AutoCloseable(ABC):
 
 class Resource(AutoCloseable):
     @abstractmethod
-    def cleanup(self) -> None:
-        ...
+    def cleanup(self) -> None: ...
 
     def flush(self) -> None:
         pass
@@ -58,15 +56,13 @@ class Resource(AutoCloseable):
 
     @property
     @abstractmethod
-    def data_path(self) -> Path:
-        ...
+    def data_path(self) -> Path: ...
 
 
 class WithResources(Resource):
     @property
     @abstractmethod
-    def resources(self) -> Tuple[Resource, ...]:
-        ...
+    def resources(self) -> Tuple[Resource, ...]: ...
 
     def flush(self) -> None:
         for resource in self.resources:

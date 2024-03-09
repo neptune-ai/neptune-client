@@ -48,8 +48,7 @@ class CopiableAtom(Atom):
 
     @staticmethod
     @abc.abstractmethod
-    def create_assignment_operation(path, value: int):
-        ...
+    def create_assignment_operation(path, value: int): ...
 
     @staticmethod
     @abc.abstractmethod
@@ -58,8 +57,7 @@ class CopiableAtom(Atom):
         container_id: str,
         container_type: ContainerType,
         path: typing.List[str],
-    ) -> int:
-        ...
+    ) -> int: ...
 
     def fetch(self):
         return self.getter(self._backend, self._container_id, self._container_type, self._path)

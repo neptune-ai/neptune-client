@@ -53,8 +53,8 @@ class GaugesFixture(object):
         gpu_usage_gauge_2 = MagicMock(wraps=GpuUsageGauge(card_index=2))
         gpu_usage_gauge_2.value.return_value = self.gpu1_usage_gauge_value
 
-        self.gauge_factory.create_gpu_usage_gauge.side_effect = (
-            lambda card_index: gpu_usage_gauge_0 if card_index == 0 else gpu_usage_gauge_2
+        self.gauge_factory.create_gpu_usage_gauge.side_effect = lambda card_index: (
+            gpu_usage_gauge_0 if card_index == 0 else gpu_usage_gauge_2
         )
 
         gpu_memory_gauge_0 = MagicMock(wraps=GpuMemoryGauge(card_index=0))
@@ -62,6 +62,6 @@ class GaugesFixture(object):
 
         gpu_memory_gauge_2 = MagicMock(wraps=GpuMemoryGauge(card_index=2))
         gpu_memory_gauge_2.value.return_value = self.gpu1_memory_gauge_value
-        self.gauge_factory.create_gpu_memory_gauge.side_effect = (
-            lambda card_index: gpu_memory_gauge_0 if card_index == 0 else gpu_memory_gauge_2
+        self.gauge_factory.create_gpu_memory_gauge.side_effect = lambda card_index: (
+            gpu_memory_gauge_0 if card_index == 0 else gpu_memory_gauge_2
         )

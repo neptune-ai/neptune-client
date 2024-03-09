@@ -280,14 +280,14 @@ You can check all of your projects on the Projects page:
 
         super().__init__(
             message.format(
-                available_projects_message=available_projects_message.format(projects=projects_formated_list)
-                if available_projects
-                else "",
-                available_workspaces_message=available_workspaces_message.format(
-                    workspaces_urls=workspaces_formated_list
-                )
-                if available_workspaces
-                else "",
+                available_projects_message=(
+                    available_projects_message.format(projects=projects_formated_list) if available_projects else ""
+                ),
+                available_workspaces_message=(
+                    available_workspaces_message.format(workspaces_urls=workspaces_formated_list)
+                    if available_workspaces
+                    else ""
+                ),
                 **STYLES,
                 **kwargs,
             )

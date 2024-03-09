@@ -499,7 +499,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
         )
 
-        (artifact_operations_errors, assign_artifact_operations,) = self._execute_artifact_operations(
+        (
+            artifact_operations_errors,
+            assign_artifact_operations,
+        ) = self._execute_artifact_operations(
             container_id=container_id,
             container_type=container_type,
             artifact_operations=preprocessed_operations.artifact_operations,
