@@ -180,9 +180,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.proxies = proxies
         self.missing_features = []
 
-        self._http_client, self._client_config = create_http_client_with_auth(
+        http_client, client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
-        )  # type: (RequestsClient, ClientConfig)
+        )
+        self._http_client: "RequestsClient" = http_client
+        self._client_config: "ClientConfig" = client_config
 
         self.backend_client = create_backend_client(self._client_config, self._http_client)
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
