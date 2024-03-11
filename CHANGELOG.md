@@ -1,3 +1,12 @@
+## [UNRELEASED] neptune 2.0.0
+
+### Breaking changes
+- ?
+
+### Features
+- ?
+
+
 ## neptune 1.10.0
 
 ### Features
