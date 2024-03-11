@@ -85,7 +85,7 @@ jobs:
         run: pip list
 
       - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+        run: python -c "from neptune import init_run"
 
   test-clean-install-neptune-client:
     needs: [ build-neptune-client ]
@@ -103,7 +103,7 @@ jobs:
         run: pip list
 
       - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+        run: python -c "from neptune import init_run"
 
   test-neptune-and-neptune-client:
     needs: [ build-neptune-client, build-neptune ]
@@ -130,7 +130,7 @@ jobs:
 
       - name: Run tests
         run: |
-          echo "TEST_EXIT_CODE=$(python -c "from neptune.new import init_run; from neptune import init_run")" >> $GITHUB_ENV
+          echo "TEST_EXIT_CODE=$(python -c "from neptune import init_run")" >> $GITHUB_ENV
 
       - name: Test that fails (due to RuntimeException)
         if: env.TEST_EXIT_CODE == '0'
@@ -155,7 +155,7 @@ jobs:
         run: pip list
 
       - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+        run: python -c "from neptune import init_run"
 
   test-uninstall-0-16-install-neptune-client:
     needs: [ build-neptune-client ]
@@ -179,7 +179,7 @@ jobs:
         run: pip list
 
       - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+        run: python -c "from neptune import init_run"
 
   test-uninstall-0-16-install-neptune:
     needs: [ build-neptune ]
@@ -203,7 +203,7 @@ jobs:
         run: pip list
 
       - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+        run: python -c "from neptune import init_run"
 
   publish-neptune:
     needs:
@@ -220,13 +220,6 @@ jobs:
         with:
           name: neptune-package
           path: dist/
-
-#      - name: Uploading to test PyPI
-#        uses: pypa/gh-action-pypi-publish@v1.8.12
-#        with:
-#         user: __token__
-#         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-#         repository_url: https://test.pypi.org/legacy/
 
       - name: Uploading to PyPI
         uses: pypa/gh-action-pypi-publish@v1.8.12
