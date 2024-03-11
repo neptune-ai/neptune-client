@@ -147,12 +147,12 @@ def test_parse_dates():
                 AttributeWithProperties(
                     "attr1",
                     AttributeType.DATETIME,
-                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).isoformat()},
+                    {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
                 AttributeWithProperties(
                     "attr2",
                     AttributeType.DATETIME,
-                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).isoformat()},
+                    {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
             ],
         )

@@ -28,8 +28,6 @@ from typing import (
     Union,
 )
 
-import isodate  # type: ignore[import]
-
 from neptune.common.warnings import (
     NeptuneDeprecationWarning,
     NeptuneWarning,
@@ -49,6 +47,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
     RawNQLQuery,
 )
+from neptune.internal.utils.iso_dates import parse_iso_date
 from neptune.internal.utils.run_state import RunState
 
 
@@ -153,7 +152,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                     attribute.type,
                     {
                         **attribute.properties,
-                        "value": isodate.parse_datetime(attribute.properties["value"]),
+                        "value": parse_iso_date(attribute.properties["value"]),
                     },
                 )
                 if attribute.type == AttributeType.DATETIME
@@ -161,9 +160,6 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                 for attribute in entry.attributes
             ],
         )
-    except AttributeError:
-        # date is already in the right format
-        return entry
     except ValueError:
         # the parsing format is incorrect
         warn_once(
