@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import Tuple
 
 import pytest
 
