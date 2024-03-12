@@ -60,7 +60,7 @@ def test_parse_iso_date_with_correct_date_format():
 
 
 @pytest.mark.parametrize(
-    "date_test",
+    ("date", "expected"),
     [
         ("2022-01-01", False),  # no time
         ("2022-01-01T00:00Z", False),  # no seconds
@@ -74,6 +74,5 @@ def test_parse_iso_date_with_correct_date_format():
         ("2022-01-01T00:00:00.000000000Z", False),  # too big precision
     ],
 )
-def test_date_string_validation(date_test: Tuple[str, bool]):
-    date, expected = date_test
+def test_date_string_validation(date: str, expected: bool):
     assert _is_valid_iso_date(date) == expected
