@@ -81,15 +81,9 @@ component_management:
         - src/neptune/logging/**
         - src/neptune/metadata_containers/**
         - src/neptune/new/**
-        - src/netpune/types/**
+        - src/neptune/types/**
         - src/neptune/vendor/**
         - src/neptune/*.py
-
-    - component_id: legacy
-      name: legacy
-      paths:
-        - src/neptune/legacy/**
-        - src/neptune/common/**
 
     - component_id: management
       name: management
