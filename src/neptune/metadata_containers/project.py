@@ -51,7 +51,6 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.utils import (
     build_raw_query,
-    deprecated_func_arg_warning_check,
     prepare_nql_query,
 )
 from neptune.table import Table
@@ -296,11 +295,6 @@ class Project(MetadataContainer):
         See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_runs_table
         """
-
-        deprecated_func_arg_warning_check("fetch_runs_table", "id", id)
-        deprecated_func_arg_warning_check("fetch_runs_table", "state", state)
-        deprecated_func_arg_warning_check("fetch_runs_table", "owner", owner)
-        deprecated_func_arg_warning_check("fetch_runs_table", "tag", tag)
 
         if any((id, state, owner, tag)) and query is not None:
             raise ValueError(
