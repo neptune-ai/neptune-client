@@ -28,12 +28,6 @@ from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backends.nql import (
-    NQLAttributeOperator,
-    NQLAttributeType,
-    NQLEmptyQuery,
-    NQLQueryAttribute,
-)
 from neptune.internal.container_type import ContainerType
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -51,7 +45,6 @@ from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.utils import (
     build_raw_query,
-    deprecated_func_arg_warning_check,
     prepare_nql_query,
 )
 from neptune.table import Table
@@ -297,11 +290,6 @@ class Project(MetadataContainer):
             https://docs.neptune.ai/api/project#fetch_runs_table
         """
 
-        deprecated_func_arg_warning_check("fetch_runs_table", "id", id)
-        deprecated_func_arg_warning_check("fetch_runs_table", "state", state)
-        deprecated_func_arg_warning_check("fetch_runs_table", "owner", owner)
-        deprecated_func_arg_warning_check("fetch_runs_table", "tag", tag)
-
         if any((id, state, owner, tag)) and query is not None:
             raise ValueError(
                 "You can't use the 'query' parameter together with the 'id', 'state', 'owner', or 'tag' parameters."
@@ -345,6 +333,7 @@ class Project(MetadataContainer):
     def fetch_models_table(
         self,
         *,
+        query: Optional[str] = None,
         columns: Optional[Iterable[str]] = None,
         trashed: Optional[bool] = False,
         limit: Optional[int] = None,
@@ -355,6 +344,8 @@ class Project(MetadataContainer):
         """Retrieve models stored in the project.
 
         Args:
+            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+                Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             trashed: Whether to retrieve trashed models.
                 If `True`, only trashed models are retrieved.
                 If `False`, only not-trashed models are retrieved.
@@ -392,9 +383,15 @@ class Project(MetadataContainer):
             ... # Extract the ID of the first listed (oldest) model object
             ... last_model_id = models_table_df["sys/id"].values[0]
 
+            >>> # Fetch models with VGG backbone
+            ... models_table_df = project.fetch_models_table(
+                    query="(backbone: string = VGG)"
+                ).to_pandas()
+
         See also the API reference in the docs:
             https://docs.neptune.ai/api/project#fetch_models_table
         """
+        verify_type("query", query, (str, type(None)))
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
@@ -403,17 +400,12 @@ class Project(MetadataContainer):
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
+        query = query if query is not None else ""
+        nql = build_raw_query(query=query, trashed=trashed)
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
-            query=NQLQueryAttribute(
-                name="sys/trashed",
-                type=NQLAttributeType.BOOLEAN,
-                operator=NQLAttributeOperator.EQUALS,
-                value=trashed,
-            )
-            if trashed is not None
-            else NQLEmptyQuery,
+            query=nql,
             columns=columns,
             limit=limit,
             sort_by=sort_by,

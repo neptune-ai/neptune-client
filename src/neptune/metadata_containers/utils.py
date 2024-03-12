@@ -20,7 +20,6 @@ __all__ = [
 ]
 
 from typing import (
-    Any,
     Generator,
     Iterable,
     List,
@@ -29,7 +28,6 @@ from typing import (
 )
 
 from neptune.common.warnings import (
-    NeptuneDeprecationWarning,
     NeptuneWarning,
     warn_once,
 )
@@ -167,12 +165,6 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
             exception=NeptuneWarning,
         )
         return entry
-
-
-def deprecated_func_arg_warning_check(fname: str, vname: str, var: Any) -> None:
-    if var is not None:
-        msg = f"""The argument '{vname}' of the function '{fname}' is deprecated and will be removed in the future."""
-        warn_once(msg, exception=NeptuneDeprecationWarning)
 
 
 def build_raw_query(query: str, trashed: Optional[bool]) -> NQLQuery:

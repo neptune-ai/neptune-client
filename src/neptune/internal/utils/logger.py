@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["get_logger", "NEPTUNE_LOGGER_NAME"]
+__all__ = ["get_logger", "get_disabled_logger", "NEPTUNE_LOGGER_NAME"]
 
 import logging
 import sys
 
 NEPTUNE_LOGGER_NAME = "neptune"
 NEPTUNE_NO_PREFIX_LOGGER_NAME = "neptune_no_prefix"
+NEPTUNE_NOOP_LOGGER_NAME = "neptune_noop"
 LOG_FORMAT = "[%(name)s] [%(levelname)s] %(message)s"
 NO_PREFIX_FORMAT = "%(message)s"
 
@@ -49,13 +50,14 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-def get_logger(with_prefix: bool = True, loglevel: int = logging.DEBUG):
-    if with_prefix:
-        logger = logging.getLogger(NEPTUNE_LOGGER_NAME)
-    else:
-        logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
-    logger.setLevel(loglevel)
-    return logger
+def get_logger(with_prefix: bool = True) -> logging.Logger:
+    name = NEPTUNE_LOGGER_NAME if with_prefix else NEPTUNE_NO_PREFIX_LOGGER_NAME
+
+    return logging.getLogger(name)
+
+
+def get_disabled_logger() -> logging.Logger:
+    return logging.getLogger(NEPTUNE_NOOP_LOGGER_NAME)
 
 
 def _set_up_logging():
@@ -68,6 +70,8 @@ def _set_up_logging():
     stdout_handler.setFormatter(CustomFormatter())
     neptune_logger.addHandler(stdout_handler)
 
+    neptune_logger.setLevel(logging.INFO)
+
 
 def _set_up_no_prefix_logging():
     neptune_logger = logging.getLogger(NEPTUNE_NO_PREFIX_LOGGER_NAME)
@@ -77,6 +81,15 @@ def _set_up_no_prefix_logging():
     stdout_handler.setFormatter(logging.Formatter(NO_PREFIX_FORMAT))
     neptune_logger.addHandler(stdout_handler)
 
+    neptune_logger.setLevel(logging.INFO)
+
+
+def _set_up_disabled_logging():
+    neptune_logger = logging.getLogger(NEPTUNE_NOOP_LOGGER_NAME)
+
+    neptune_logger.setLevel(logging.CRITICAL)
+
 
 _set_up_logging()
 _set_up_no_prefix_logging()
+_set_up_disabled_logging()

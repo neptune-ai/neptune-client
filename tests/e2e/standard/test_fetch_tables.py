@@ -21,6 +21,7 @@ import uuid
 import pytest
 
 import neptune
+from neptune.common.utils import IS_MACOS
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
@@ -315,6 +316,7 @@ class TestFetchTable(BaseE2ETest):
         # then
         assert len(runs) == 1
 
+    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
     def test_fetch_runs_table_raw_query_trashed(self, environment, project):
         # given
         val: float = 2.2
@@ -356,6 +358,55 @@ class TestFetchTable(BaseE2ETest):
     def test_fetch_runs_invalid_query_handling(self, project):
         # given
         runs_table = project.fetch_runs_table(query="key: float = (-_-)", progress_bar=False)
+
+        # then
+        with pytest.raises(NeptuneInvalidQueryException):
+            next(iter(runs_table))
+
+    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
+    def test_fetch_models_raw_query_trashed(self, environment, project):
+        # given
+        val: float = 2.2
+        with neptune.init_model(project=environment.project, key=a_key(), name="name-1") as model:
+            model["key"] = val
+
+        with neptune.init_model(project=environment.project, key=a_key(), name="name-2") as model:
+            model["key"] = val
+
+        time.sleep(5)
+
+        # when
+        models = project.fetch_models_table(
+            query=f"(key: float = {val})", progress_bar=False, trashed=False
+        ).to_pandas()
+
+        # then
+        model_list = models["sys/name"].dropna().to_list()
+        assert sorted(model_list) == sorted(["name-1", "name-2"])
+
+        # when
+        neptune.management.trash_objects(
+            project=environment.project, ids=models[models["sys/name"] == "name-1"]["sys/id"].item()
+        )
+
+        time.sleep(5)
+
+        trashed_vals = [True, False, None]
+        expected_model_names = [["name-1"], ["name-2"], ["name-1", "name-2"]]
+
+        for trashed, model_names in zip(trashed_vals, expected_model_names):
+            # when
+            models = project.fetch_models_table(
+                query=f"(key: float = {val})", progress_bar=False, trashed=trashed
+            ).to_pandas()
+
+            # then
+            model_list = models["sys/name"].dropna().to_list()
+            assert sorted(model_list) == sorted(model_names)
+
+    def test_fetch_models_invalid_query_handling(self, project):
+        # given
+        runs_table = project.fetch_models_table(query="key: float = (-_-)", progress_bar=False)
 
         # then
         with pytest.raises(NeptuneInvalidQueryException):
