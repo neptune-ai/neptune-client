@@ -222,8 +222,11 @@ class ModelVersion(MetadataContainer):
             if self._mode == Mode.READ_ONLY:
                 raise NeedExistingModelVersionForReadOnlyMode()
 
+            model_id = self._project_api_object.sys_id
+            full_model_name = self._model if self._model.split("-")[0] == model_id else f"{model_id}-{self._model}"
+
             api_model = self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._model),
+                container_id=QualifiedName(project_qualified_name + "/" + full_model_name),
                 expected_container_type=ContainerType.MODEL,
             )
             return self._backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
