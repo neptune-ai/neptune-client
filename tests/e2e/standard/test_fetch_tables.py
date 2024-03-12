@@ -21,6 +21,7 @@ import uuid
 import pytest
 
 import neptune
+from neptune.common.utils import IS_MACOS
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
@@ -315,6 +316,7 @@ class TestFetchTable(BaseE2ETest):
         # then
         assert len(runs) == 1
 
+    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
     def test_fetch_runs_table_raw_query_trashed(self, environment, project):
         # given
         val: float = 2.2
