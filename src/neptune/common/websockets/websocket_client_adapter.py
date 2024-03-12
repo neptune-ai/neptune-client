@@ -16,9 +16,8 @@
 
 import os
 import ssl
+import urllib.parse
 
-from future.utils import PY3
-from six.moves import urllib
 from websocket import (
     ABNF,
     create_connection,
@@ -62,7 +61,7 @@ class WebsocketClientAdapter(object):
         while opcode != ABNF.OPCODE_TEXT:
             opcode, data = self._ws_client.recv_data()
 
-        return data.decode("utf-8") if PY3 else data
+        return data.decode("utf-8")
 
     @property
     def connected(self):
