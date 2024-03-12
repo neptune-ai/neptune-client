@@ -350,13 +350,11 @@ module = [
     "neptune.metadata_containers.model_version",
     "neptune.metadata_containers.project",
     "neptune.metadata_containers.run",
-    "neptune.new._compatibility",
     "neptune.types.type_casting",
     "neptune.vendor.pynvml",
     "neptune.api.requests_utils",
     "neptune.version",
     "neptune.internal.container_type",
-    "neptune.new",
     "neptune.common.patches",
     "neptune.internal.utils",
 ]
