@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 import datetime
+import random
+import string
 import unittest
 import uuid
 from pathlib import Path
-from random import randint
 from time import time
 
 from neptune.core.components.operation_storage import OperationStorage
@@ -47,7 +48,11 @@ from neptune.internal.operation import (
     LogFloats,
     LogStrings,
 )
-from tests.unit.neptune.legacy.random_utils import a_string
+
+
+def a_string() -> str:
+    char_set = string.ascii_letters
+    return "".join(random.sample(char_set * 10, 10))
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
@@ -72,7 +77,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 # given
-                digit = randint(1, 10**4)
+                digit = random.randint(1, 10**4)
                 self.backend.execute_operations(
                     container_id,
                     container_type,
