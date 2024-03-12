@@ -5,7 +5,7 @@
 - Added auto-scaling pixel values for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
 - Introduce querying capabilities to `fetch_runs_table()` ([#1660](https://github.com/neptune-ai/neptune-client/pull/1660))
 - Introduce querying capabilities to `fetch_models_table()` ([#1677](https://github.com/neptune-ai/neptune-client/pull/1677))
-- Introduce querying capabilities to `fetch_model_versions_table()` ([#TODO](TODO))
+- Introduce querying capabilities to `fetch_model_versions_table()` ([#1688](https://github.com/neptune-ai/neptune-client/pull/1688))
 
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
