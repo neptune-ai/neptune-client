@@ -20,4 +20,4 @@ from neptune.internal.utils.requirement_check import require_installed
 require_installed("pytorch-lightning")
 
 
-from pytorch_lightning.loggers import NeptuneLogger  # type: ignore[import] # noqa: F401,F403,E402
+from pytorch_lightning.loggers import NeptuneLogger  # noqa: F401,F403,E402
