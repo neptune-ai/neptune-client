@@ -362,3 +362,51 @@ class TestFetchTable(BaseE2ETest):
         # then
         with pytest.raises(NeptuneInvalidQueryException):
             next(iter(runs_table))
+
+    def test_fetch_models_raw_query_trashed(self, environment, project):
+        # given
+        val: float = 2.2
+        with neptune.init_model(project=environment.project, key=a_key(), name="name-1") as model:
+            model["key"] = val
+
+        with neptune.init_model(project=environment.project, key=a_key(), name="name-2") as model:
+            model["key"] = val
+
+        time.sleep(5)
+
+        # when
+        models = project.fetch_models_table(
+            query=f"(key: float = {val})", progress_bar=False, trashed=False
+        ).to_pandas()
+
+        # then
+        model_list = models["sys/name"].dropna().to_list()
+        assert sorted(model_list) == sorted(["name-1", "name-2"])
+
+        # when
+        neptune.management.trash_objects(
+            project=environment.project, ids=models[models["sys/name"] == "name-1"]["sys/id"].item()
+        )
+
+        time.sleep(5)
+
+        trashed_vals = [True, False, None]
+        expected_model_names = [["name-1"], ["name-2"], ["name-1", "name-2"]]
+
+        for trashed, model_names in zip(trashed_vals, expected_model_names):
+            # when
+            models = project.fetch_models_table(
+                query=f"(key: float = {val})", progress_bar=False, trashed=trashed
+            ).to_pandas()
+
+            # then
+            model_list = models["sys/name"].dropna().to_list()
+            assert sorted(model_list) == sorted(model_names)
+
+    def test_fetch_models_invalid_query_handling(self, project):
+        # given
+        runs_table = project.fetch_models_table(query="key: float = (-_-)", progress_bar=False)
+
+        # then
+        with pytest.raises(NeptuneInvalidQueryException):
+            next(iter(runs_table))
