@@ -50,10 +50,7 @@ from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
 )
-from neptune.exceptions import (
-    MetadataInconsistency,
-    NeptunePossibleLegacyUsageException,
-)
+from neptune.exceptions import MetadataInconsistency
 from neptune.handler import Handler
 from neptune.internal.backends.api_model import (
     ApiExperiment,
@@ -122,8 +119,6 @@ def ensure_not_stopped(fun):
 
 class MetadataContainer(AbstractContextManager, NeptuneObject):
     container_type: ContainerType
-
-    LEGACY_METHODS = set()
 
     def __init__(
         self,
@@ -319,8 +314,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self.stop()
 
     def __getattr__(self, item):
-        if item in self.LEGACY_METHODS:
-            raise NeptunePossibleLegacyUsageException()
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
     @abc.abstractmethod
