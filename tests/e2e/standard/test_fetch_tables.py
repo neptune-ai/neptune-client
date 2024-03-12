@@ -57,9 +57,10 @@ class TestFetchTable(BaseE2ETest):
         assert len(runs) == 1
         assert runs[0].get_attribute_value("sys/id") == run_id1
 
-    @pytest.mark.parametrize("container", ["model"], indirect=True)
-    def test_fetch_model_versions_with_correct_ids(self, container: Model, environment):
-        model_sys_id = container["sys/id"].fetch()
+    @pytest.mark.parametrize("with_query", [True, False])
+    @pytest.mark.parametrize("container_fn_scope", ["model"], indirect=True)
+    def test_fetch_model_versions_with_correct_ids(self, container_fn_scope: Model, environment, with_query: bool):
+        model_sys_id = container_fn_scope["sys/id"].fetch()
         versions_to_initialize = 5
 
         for _ in range(versions_to_initialize):
@@ -69,15 +70,18 @@ class TestFetchTable(BaseE2ETest):
         # wait for the elasticsearch cache to fill
         time.sleep(5)
 
+        query = "" if with_query else None
         versions_table = sorted(
-            container.fetch_model_versions_table(progress_bar=False).to_rows(),
+            container_fn_scope.fetch_model_versions_table(query=query, progress_bar=False).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
             assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
-        versions_table_gen = container.fetch_model_versions_table(ascending=True, progress_bar=False)
+        versions_table_gen = container_fn_scope.fetch_model_versions_table(
+            query=query, ascending=True, progress_bar=False
+        )
         for te1, te2 in zip(list(versions_table_gen), versions_table):
             assert te1._id == te2._id
             assert te1._container_type == te2._container_type
@@ -170,6 +174,26 @@ class TestFetchTable(BaseE2ETest):
             return container.fetch_model_versions_table(**kwargs, progress_bar=False).to_rows()
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
+
+    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    def test_fetch_model_versions_table_by_query(self, container, environment):
+        model_sys_id = container["sys/id"].fetch()
+        key = "some_key"
+        vals = ["some_val_1", "some_val_2"]
+        names = ["name_1", "name_2"]
+
+        for name, val in zip(names, vals):
+            with neptune.init_model_version(model=model_sys_id, name=name, project=environment.project) as mv:
+                mv[key] = val
+
+        time.sleep(5)
+
+        for val, expected_names in zip(vals + ["non_existent_val"], [[names[0]], [names[1]], []]):
+            model_versions = container.fetch_model_versions_table(
+                query=f"({key}: string = '{val}')",
+                sort_by="name",
+            ).to_rows()
+            assert sorted([mv.get_attribute_value("sys/name") for mv in model_versions]) == sorted(expected_names)
 
     @pytest.mark.parametrize("with_query", [True, False])
     def test_fetch_runs_table_by_state(self, environment, project, with_query):
