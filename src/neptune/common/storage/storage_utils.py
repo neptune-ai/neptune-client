@@ -32,8 +32,6 @@ from typing import (
     Union,
 )
 
-import six
-
 from neptune.internal.utils.logger import get_logger
 
 _logger = get_logger()
@@ -164,8 +162,7 @@ class UploadPackage(object):
         return self.to_str()
 
 
-@six.add_metaclass(ABCMeta)
-class ProgressIndicator(object):
+class ProgressIndicator(metaclass=ABCMeta):
     @abstractmethod
     def progress(self, steps):
         pass

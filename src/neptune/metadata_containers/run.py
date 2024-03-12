@@ -49,7 +49,6 @@ from neptune.envs import (
 from neptune.exceptions import (
     InactiveRunException,
     NeedExistingRunForReadOnlyMode,
-    NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
@@ -280,29 +279,6 @@ class Run(MetadataContainer):
     """
 
     container_type = ContainerType.RUN
-
-    LEGACY_METHODS = (
-        "create_experiment",
-        "send_metric",
-        "log_metric",
-        "send_text",
-        "log_text",
-        "send_image",
-        "log_image",
-        "send_artifact",
-        "log_artifact",
-        "delete_artifacts",
-        "download_artifact",
-        "download_sources",
-        "download_artifacts",
-        "reset_log",
-        "get_parameters",
-        "get_properties",
-        "set_property",
-        "remove_property",
-        "get_hardware_utilization",
-        "get_numeric_channels_values",
-    )
 
     def __init__(
         self,
@@ -579,12 +555,6 @@ def generate_monitoring_namespace(*descriptors) -> str:
 
 
 def check_for_extra_kwargs(caller_name: str, kwargs: dict):
-    legacy_kwargs = ("project_qualified_name", "backend")
-
-    for name in legacy_kwargs:
-        if name in kwargs:
-            raise NeptunePossibleLegacyUsageException()
-
     if kwargs:
         first_key = next(iter(kwargs.keys()))
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")

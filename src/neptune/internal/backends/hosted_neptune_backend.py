@@ -61,7 +61,6 @@ from neptune.exceptions import (
     MetadataContainerNotFound,
     MetadataInconsistency,
     NeptuneFeatureNotAvailableException,
-    NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
     NeptuneObjectCreationConflict,
     ProjectNotFound,
@@ -241,9 +240,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **DEFAULT_REQUEST_KWARGS,
             ).response()
             project = response.result
-            project_version = project.version if hasattr(project, "version") else 1
-            if project_version < 2:
-                raise NeptuneLegacyProjectException(project_id)
+
             return Project(
                 id=project.id,
                 name=project.name,
