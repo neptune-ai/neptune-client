@@ -13,6 +13,7 @@
 ### Changes
 - Improve dependency installation checking ([#1670](https://github.com/neptune-ai/neptune-client/pull/1670))
 - Cache dependencies check ([#1675](https://github.com/neptune-ai/neptune-client/pull/1675))
+- Remove deprecation warning in `fetch_runs_table()` ([#1686](https://github.com/neptune-ai/neptune-client/pull/1686))
 
 
 ## neptune 1.9.1
