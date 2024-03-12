@@ -49,7 +49,6 @@ from neptune.envs import (
 from neptune.exceptions import (
     InactiveRunException,
     NeedExistingRunForReadOnlyMode,
-    NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
@@ -579,12 +578,6 @@ def generate_monitoring_namespace(*descriptors) -> str:
 
 
 def check_for_extra_kwargs(caller_name: str, kwargs: dict):
-    legacy_kwargs = ("project_qualified_name", "backend")
-
-    for name in legacy_kwargs:
-        if name in kwargs:
-            raise NeptunePossibleLegacyUsageException()
-
     if kwargs:
         first_key = next(iter(kwargs.keys()))
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")

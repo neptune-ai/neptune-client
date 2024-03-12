@@ -66,7 +66,6 @@ __all__ = [
     "NeptuneProtectedPathException",
     "NeptuneCannotChangeStageManually",
     "OperationNotSupported",
-    "NeptuneLegacyProjectException",
     "NeptuneMissingRequirementException",
     "NeptuneLimitExceedException",
     "NeptuneFieldCountLimitExceedException",
@@ -74,8 +73,6 @@ __all__ = [
     "FetchAttributeNotFoundException",
     "ArtifactNotFoundException",
     "PlotlyIncompatibilityException",
-    "NeptunePossibleLegacyUsageException",
-    "NeptuneLegacyIncompatibilityException",
     "NeptuneUnhandledArtifactSchemeException",
     "NeptuneUnhandledArtifactTypeException",
     "NeptuneLocalStorageAccessException",
@@ -772,25 +769,6 @@ class OperationNotSupported(NeptuneException):
         super().__init__(f"Operation not supported: {message}")
 
 
-class NeptuneLegacyProjectException(NeptuneException):
-    def __init__(self, project: QualifiedName):
-        message = """
-{h1}
-----NeptuneLegacyProjectException---------------------------------------------------------
-{end}
-Your project "{project}" has not been migrated to the new structure yet.
-Unfortunately the neptune.new Python API is incompatible with projects using the old structure,
-so please use legacy neptune Python API.
-Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon.
-
-You can find documentation for the legacy neptune Python API here:
-    - https://docs-legacy.neptune.ai/index.html
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(project=project, **STYLES))
-
-
 class NeptuneMissingRequirementException(NeptuneException):
     def __init__(self, package_name: str, framework_name: Optional[str]):
         message = """
@@ -953,53 +931,6 @@ class PlotlyIncompatibilityException(Exception):
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "{}".format(matplotlib_version, plotly_version, details)
         )
-
-
-class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptunePossibleLegacyUsageException----------------------------------------------------------------
-{end}
-It seems you are trying to use the legacy API, but you imported the new one.
-
-Simply update your import statement to:
-    {python}import neptune{end}
-
-You may want to check the legacy API docs:
-    - https://docs-legacy.neptune.ai
-
-If you want to update your code with the new API, we prepared a handy migration guide:
-    - https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew
-
-You can read more about neptune.new in the release blog post:
-    - https://neptune.ai/blog/neptune-new
-
-You may also want to check the following docs page:
-    - https://docs-legacy.neptune.ai/getting-started/integrate-neptune-into-your-codebase.html
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(**STYLES))
-
-
-class NeptuneLegacyIncompatibilityException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneLegacyIncompatibilityException----------------------------------------
-{end}
-It seems you are passing the legacy Experiment object, when a Run object is expected.
-
-What can I do?
-    - Updating your code to the new Python API requires few changes, but to help you with this process we prepared a handy migration guide:
-    https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew
-    - You can read more about neptune.new in the release blog post:
-    https://neptune.ai/blog/neptune-new
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""  # noqa: E501
-        super().__init__(message.format(**STYLES))
 
 
 class NeptuneUnhandledArtifactSchemeException(NeptuneException):
