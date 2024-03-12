@@ -120,8 +120,6 @@ def ensure_not_stopped(fun):
 class MetadataContainer(AbstractContextManager, NeptuneObject):
     container_type: ContainerType
 
-    LEGACY_METHODS = set()
-
     def __init__(
         self,
         *,

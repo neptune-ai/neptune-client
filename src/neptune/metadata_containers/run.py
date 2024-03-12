@@ -280,29 +280,6 @@ class Run(MetadataContainer):
 
     container_type = ContainerType.RUN
 
-    LEGACY_METHODS = (
-        "create_experiment",
-        "send_metric",
-        "log_metric",
-        "send_text",
-        "log_text",
-        "send_image",
-        "log_image",
-        "send_artifact",
-        "log_artifact",
-        "delete_artifacts",
-        "download_artifact",
-        "download_sources",
-        "download_artifacts",
-        "reset_log",
-        "get_parameters",
-        "get_properties",
-        "set_property",
-        "remove_property",
-        "get_hardware_utilization",
-        "get_numeric_channels_values",
-    )
-
     def __init__(
         self,
         with_id: Optional[str] = None,
