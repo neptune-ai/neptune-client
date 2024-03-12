@@ -1,7 +1,7 @@
 ## [UNRELEASED] neptune 2.0.0
 
 ### Breaking changes
-- ?
+- Deleted `neptune.new` package ([#1684](https://github.com/neptune-ai/neptune-client/pull/1684))
 
 ### Features
 - ?
