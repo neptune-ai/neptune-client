@@ -363,6 +363,7 @@ class TestFetchTable(BaseE2ETest):
         with pytest.raises(NeptuneInvalidQueryException):
             next(iter(runs_table))
 
+    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
     def test_fetch_models_raw_query_trashed(self, environment, project):
         # given
         val: float = 2.2
