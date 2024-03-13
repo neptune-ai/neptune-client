@@ -42,10 +42,6 @@ from neptune.api.dtos import FileEntry
 from neptune.api.searching_entries import iter_over_pages
 from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
@@ -141,6 +137,10 @@ from neptune.internal.utils.generic_attribute_mapper import map_attribute_result
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
 from neptune.typing import ProgressBarType

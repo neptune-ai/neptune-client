@@ -226,7 +226,7 @@ module = [
     "neptune.common.storage.datastream",
     "neptune.common.storage.storage_utils",
     "neptune.common.utils",
-    "neptune.common.warnings",
+    "neptune.internal.warnings",
     "neptune.common.websockets.reconnecting_websocket",
     "neptune.common.websockets.websocket_client_adapter",
     "neptune.exceptions",

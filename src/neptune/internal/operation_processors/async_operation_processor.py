@@ -33,10 +33,6 @@ from typing import (
     Tuple,
 )
 
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.abstract import WithResources
 from neptune.core.components.metadata_file import MetadataFile
@@ -61,6 +57,10 @@ from neptune.internal.signals_processing.utils import (
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 
 if TYPE_CHECKING:
     from neptune.core.components.abstract import Resource

@@ -66,10 +66,6 @@ from requests import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.exceptions import (
     CannotResolveHostname,
@@ -85,6 +81,10 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.typing import (
     ProgressBarCallback,
     ProgressBarType,

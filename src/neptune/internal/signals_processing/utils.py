@@ -22,15 +22,15 @@ from queue import (
 from time import monotonic
 from typing import Optional
 
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.internal.signals_processing.signals import (
     BatchLagSignal,
     BatchProcessedSignal,
     BatchStartedSignal,
     Signal,
+)
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
 )
 
 

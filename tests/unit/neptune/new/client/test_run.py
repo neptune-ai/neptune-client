@@ -28,10 +28,6 @@ from neptune import (
 )
 from neptune.attributes.atoms import String
 from neptune.common.utils import IS_WINDOWS
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warned_once,
-)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -43,6 +39,10 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from neptune.types import GitRef
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_run

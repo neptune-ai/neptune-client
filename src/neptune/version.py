@@ -20,7 +20,7 @@ from typing import Optional
 
 from packaging.version import parse
 
-from neptune.common.warnings import warn_once
+from neptune.internal.warnings import warn_once
 
 if sys.version_info >= (3, 8):
     from importlib.metadata import PackageNotFoundError

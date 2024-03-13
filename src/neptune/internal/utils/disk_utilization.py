@@ -31,16 +31,16 @@ from typing import (
 import psutil
 from psutil import Error
 
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.envs import (
     NEPTUNE_MAX_DISK_USAGE,
     NEPTUNE_RAISE_ERROR_ON_DISK_USAGE_EXCEEDED,
 )
 from neptune.exceptions import NeptuneMaxDiskUtilizationExceeded
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 
 
 def get_neptune_data_directory() -> str:

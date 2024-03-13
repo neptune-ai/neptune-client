@@ -24,9 +24,9 @@ from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
 )
-from neptune.common.warnings import NeptuneUnsupportedValue
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.operation import AssignFloat
+from neptune.internal.warnings import NeptuneUnsupportedValue
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
