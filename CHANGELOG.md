@@ -3,6 +3,8 @@
 ### Breaking changes
 - Deleted `neptune.new` package ([#1684](https://github.com/neptune-ai/neptune-client/pull/1684))
 - Deleted `neptune.legacy` package ([#1685](https://github.com/neptune-ai/neptune-client/pull/1685))
+- Deleted `neptune.common` package ([#1693](https://github.com/neptune-ai/neptune-client/pull/1693))
+([#1690](https://github.com/neptune-ai/neptune-client/pull/1690))
 
 ### Features
 - ?
