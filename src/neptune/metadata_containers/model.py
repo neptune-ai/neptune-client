@@ -279,7 +279,8 @@ class Model(MetadataContainer):
                 Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If `None` (default), all the columns of the model versions table are included.
+                If `None` (default), all the columns of the model versions table are included,
+                    up to a maximum of 10 000 columns.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the field to sort the results by.
                 The field must represent a simple type (string, float, datetime, integer, or Boolean).
