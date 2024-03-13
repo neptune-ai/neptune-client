@@ -48,7 +48,6 @@ from requests import (
     Response,
 )
 
-from neptune.common.hardware.constants import BYTES_IN_ONE_MB
 from neptune.common.storage.datastream import (
     FileChunk,
     FileChunker,
@@ -82,6 +81,7 @@ from neptune.internal.exceptions import (
     NeptuneException,
     UploadedFileChanged,
 )
+from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 from neptune.internal.utils import (
     get_absolute_paths,
     get_common_root,
