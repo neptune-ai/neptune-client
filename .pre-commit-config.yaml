@@ -6,12 +6,12 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.13.2
     hooks:
       - id: isort
         args: [--settings-path, pyproject.toml]
   - repo: https://github.com/psf/black
-    rev: 22.6.0
+    rev: 24.2.0
     hooks:
       - id: black
         args: [--config, pyproject.toml]
@@ -22,11 +22,12 @@ repos:
         files: ^src/neptune/(?!new/|legacy/|vendor/)[^/]+(?:/[^/]+)*\.py$
         args: [ "--license-filepath", ".github/license_header.txt", "--allow-past-years"]
   - repo: https://github.com/pycqa/flake8
-    rev: 5.0.4
+    rev: 7.0.0
     hooks:
       - id: flake8
         entry: pflake8
-        additional_dependencies: [pyproject-flake8]
+        # We use a custom version of flake8 that includes a fix for Python 3.12 compatibility
+        additional_dependencies: ["git+https://github.com/Raalsky/pyproject-flake8.git@b66428e758ea6b2cb89d0d90f1e8ecbbbb133626"]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.4.1
     hooks:

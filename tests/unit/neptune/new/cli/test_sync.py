@@ -79,7 +79,7 @@ def test_sync_all_v2_containers(tmp_path, mocker, capsys, backend, container_typ
     assert f"Synchronising {get_qualified_name(synced_container)}" not in captured.out
 
     # and
-    assert backend.execute_operations.called_once()
+    backend.execute_operations.assert_called_once()
     backend.execute_operations.assert_has_calls(
         calls=[
             mocker.call(
@@ -235,7 +235,7 @@ def test_sync_all_v1_containers(tmp_path, mocker, capsys, backend, container_typ
     assert f"Synchronising {get_qualified_name(synced_container)}" not in captured.out
 
     # and
-    assert backend.execute_operations.called_once()
+    backend.execute_operations.assert_called_once()
     backend.execute_operations.assert_has_calls(
         calls=[
             mocker.call(

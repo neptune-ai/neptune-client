@@ -145,16 +145,18 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
         return LeaderboardEntry(
             entry.id,
             attributes=[
-                AttributeWithProperties(
-                    attribute.path,
-                    attribute.type,
-                    {
-                        **attribute.properties,
-                        "value": parse_iso_date(attribute.properties["value"]),
-                    },
+                (
+                    AttributeWithProperties(
+                        attribute.path,
+                        attribute.type,
+                        {
+                            **attribute.properties,
+                            "value": parse_iso_date(attribute.properties["value"]),
+                        },
+                    )
+                    if attribute.type == AttributeType.DATETIME
+                    else attribute
                 )
-                if attribute.type == AttributeType.DATETIME
-                else attribute
                 for attribute in entry.attributes
             ],
         )

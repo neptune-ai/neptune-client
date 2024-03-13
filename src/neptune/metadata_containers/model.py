@@ -57,6 +57,7 @@ from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.metadata_containers.utils import build_raw_query
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
@@ -264,6 +265,7 @@ class Model(MetadataContainer):
     def fetch_model_versions_table(
         self,
         *,
+        query: Optional[str] = None,
         columns: Optional[Iterable[str]] = None,
         limit: Optional[int] = None,
         sort_by: str = "sys/creation_time",
@@ -273,6 +275,8 @@ class Model(MetadataContainer):
         """Retrieve all versions of the given model.
 
         Args:
+            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+                Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
                 If `None` (default), all the columns of the model versions table are included.
@@ -303,9 +307,15 @@ class Model(MetadataContainer):
             ... # Extract the ID of the largest model version object
             ... largest_model_version_id = model_versions_df["sys/id"].values[0]
 
+            >>> # Fetch model versions with VGG backbone
+            ... models_table_df = project.fetch_model_versions_table(
+            ...     query="(backbone: string = VGG)"
+            ... ).to_pandas()
+
         See also the API referene:
             https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
+        verify_type("query", query, (str, type(None)))
         verify_type("limit", limit, (int, type(None)))
         verify_type("sort_by", sort_by, str)
         verify_type("ascending", ascending, bool)
@@ -313,26 +323,25 @@ class Model(MetadataContainer):
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
+
+        query = query if query is not None else ""
+        nql = build_raw_query(query=query, trashed=False)
+        nql = NQLQueryAggregate(
+            items=[
+                nql,
+                NQLQueryAttribute(
+                    name="sys/model_id",
+                    value=self._sys_id,
+                    operator=NQLAttributeOperator.EQUALS,
+                    type=NQLAttributeType.STRING,
+                ),
+            ],
+            aggregator=NQLAggregator.AND,
+        )
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
-            query=NQLQueryAggregate(
-                items=[
-                    NQLQueryAttribute(
-                        name="sys/model_id",
-                        value=self._sys_id,
-                        operator=NQLAttributeOperator.EQUALS,
-                        type=NQLAttributeType.STRING,
-                    ),
-                    NQLQueryAttribute(
-                        name="sys/trashed",
-                        type=NQLAttributeType.BOOLEAN,
-                        operator=NQLAttributeOperator.EQUALS,
-                        value=False,
-                    ),
-                ],
-                aggregator=NQLAggregator.AND,
-            ),
+            query=nql,
             columns=columns,
             limit=limit,
             sort_by=sort_by,

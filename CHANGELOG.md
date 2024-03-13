@@ -5,6 +5,7 @@
 - Added auto-scaling pixel values for image logging ([#1664](https://github.com/neptune-ai/neptune-client/pull/1664))
 - Introduce querying capabilities to `fetch_runs_table()` ([#1660](https://github.com/neptune-ai/neptune-client/pull/1660))
 - Introduce querying capabilities to `fetch_models_table()` ([#1677](https://github.com/neptune-ai/neptune-client/pull/1677))
+- Introduce querying capabilities to `fetch_model_versions_table()` ([#1688](https://github.com/neptune-ai/neptune-client/pull/1688))
 
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
@@ -15,6 +16,9 @@
 - Cache dependencies check ([#1675](https://github.com/neptune-ai/neptune-client/pull/1675))
 - Improve datetime parsing in `fetch_*_table()` ([#1680](https://github.com/neptune-ai/neptune-client/pull/1680))
 - Remove deprecation warning in `fetch_runs_table()` ([#1686](https://github.com/neptune-ai/neptune-client/pull/1686))
+
+### Changes
+- Minor updates to made package compatible with Python 3.11 and 3.12 ([#1678](https://github.com/neptune-ai/neptune-client/pull/1678))
 
 
 ## neptune 1.9.1

@@ -21,18 +21,21 @@ from importlib.abc import (
     Loader,
     MetaPathFinder,
 )
+from importlib.machinery import ModuleSpec
 
 
 class CompatibilityModuleLoader(Loader):
-    def module_repr(self, module):
-        return repr(module)
-
-    def load_module(self, fullname):
+    def exec_module(self, module):
+        fullname = module.__name__
         module_name_parts = fullname.split(".")
         new_module_name = f"neptune.{module_name_parts[2]}"
 
-        module = sys.modules[fullname] = import_module(new_module_name)
-        return module
+        # Load the module with the new name and update sys.modules
+        new_module = import_module(new_module_name)
+        sys.modules[fullname] = new_module
+
+        # Update the module's dictionary to reflect the newly loaded module
+        module.__dict__.update(new_module.__dict__)
 
 
 modules = [
@@ -46,6 +49,7 @@ modules = [
 
 
 class CompatibilityImporter(MetaPathFinder):
-    def find_module(self, fullname, path=None):
-        if ".".join(fullname.split(".")) in modules:
-            return CompatibilityModuleLoader()
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname in modules:
+            return ModuleSpec(fullname, CompatibilityModuleLoader(), is_package=False)
+        return None  # Not handling other modules
