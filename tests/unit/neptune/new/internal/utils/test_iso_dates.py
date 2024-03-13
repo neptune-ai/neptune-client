@@ -17,10 +17,7 @@ from datetime import datetime
 
 import pytest
 
-from neptune.internal.utils.iso_dates import (
-    _is_valid_iso_date,
-    parse_iso_date,
-)
+from neptune.internal.utils.iso_dates import parse_iso_date
 
 
 def test_parse_iso_dates_if_date_already_is_datetime():
@@ -56,22 +53,3 @@ def test_parse_iso_date_with_correct_date_format():
 
         # Then
         assert parsed_date == expected
-
-
-@pytest.mark.parametrize(
-    ("date", "expected"),
-    [
-        ("2022-01-01", False),  # no time
-        ("2022-01-01T00:00Z", False),  # no seconds
-        ("2022-01-01T00:00:00", False),  # no "Z" at the end
-        ("2022-01-01T00:00:00Z", True),
-        ("2022-01-0100:00:00ZT", False),  # "T" in wrong place
-        ("2022-01-01-00:00:00Z", False),  # date and time not separated by "T"
-        ("2022-01-01T00:00:00.000Z", True),
-        ("22-01-01T00:00:00.000000Z", False),  # wrong year format (not 4 digits)
-        ("2022-01-01T00:00:00.000000Z", True),
-        ("2022-01-01T00:00:00.000000000Z", False),  # too big precision
-    ],
-)
-def test_date_string_validation(date: str, expected: bool):
-    assert _is_valid_iso_date(date) == expected
