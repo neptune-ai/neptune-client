@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from neptune.common.hardware.cgroup.cgroup_monitor import CGroupMonitor
-from neptune.common.hardware.constants import BYTES_IN_ONE_GB
-from neptune.common.hardware.gauges.gauge import Gauge
-from neptune.common.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
+from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
+from neptune.internal.hardware.gauges.gauge import Gauge
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class SystemMemoryUsageGauge(Gauge):

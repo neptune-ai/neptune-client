@@ -13,15 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["apply_patches"]
+__all__ = [
+    "AttributeUploadConfiguration",
+    "UploadEntry",
+    "normalize_file_name",
+    "scan_unique_upload_entries",
+    "split_upload_files",
+    "FileChunk",
+    "FileChunker",
+    "compress_to_tar_gz_in_memory",
+]
 
-from neptune.common.patches.bravado import patch as bravado_patch
-
-patches = [bravado_patch]
-
-
-# Apply patches when importing a patching module
-# Should be called before usages of patched objects
-def apply_patches():
-    for patch in patches:
-        patch()
+from neptune.internal.storage.datastream import (
+    FileChunk,
+    FileChunker,
+    compress_to_tar_gz_in_memory,
+)
+from neptune.internal.storage.storage_utils import (
+    AttributeUploadConfiguration,
+    UploadEntry,
+    normalize_file_name,
+    scan_unique_upload_entries,
+    split_upload_files,
+)

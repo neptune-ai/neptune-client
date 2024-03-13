@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.hardware.constants import BYTES_IN_ONE_GB
-from neptune.common.hardware.metrics.metric import (
+from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
+from neptune.internal.hardware.metrics.metric import (
     Metric,
     MetricResourceType,
 )
-from neptune.common.hardware.metrics.metrics_container import MetricsContainer
+from neptune.internal.hardware.metrics.metrics_container import MetricsContainer
 
 
 class MetricsFactory(object):
