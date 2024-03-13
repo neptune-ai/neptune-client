@@ -43,9 +43,6 @@ from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
-from neptune.common.exceptions import UNIX_STYLES
-from neptune.common.utils import reset_internal_ssl_state
-from neptune.common.warnings import warn_about_unsupported_type
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -65,6 +62,7 @@ from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
+from neptune.internal.exceptions import UNIX_STYLES
 from neptune.internal.id_formats import (
     QualifiedName,
     SysId,
@@ -92,7 +90,9 @@ from neptune.internal.utils.logger import (
 )
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
+from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.metadata_containers.abstract import (
     NeptuneObject,
     NeptuneObjectCallback,

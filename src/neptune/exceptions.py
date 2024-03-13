@@ -100,10 +100,17 @@ from urllib.parse import urlparse
 
 from packaging.version import Version
 
-from neptune.common.envs import API_TOKEN_ENV_NAME
-
-# Backward compatibility import
-from neptune.common.exceptions import (
+from neptune.envs import (
+    CUSTOM_RUN_ID_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
+from neptune.internal.backends.api_model import (
+    Project,
+    Workspace,
+)
+from neptune.internal.container_type import ContainerType
+from neptune.internal.envs import API_TOKEN_ENV_NAME
+from neptune.internal.exceptions import (
     STYLES,
     ClientHttpError,
     Forbidden,
@@ -116,15 +123,6 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.envs import (
-    CUSTOM_RUN_ID_ENV_NAME,
-    PROJECT_ENV_NAME,
-)
-from neptune.internal.backends.api_model import (
-    Project,
-    Workspace,
-)
-from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.paths import path_to_str

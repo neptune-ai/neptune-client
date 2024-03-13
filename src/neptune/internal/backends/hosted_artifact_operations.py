@@ -30,7 +30,6 @@ from typing import (
 
 from bravado.exception import HTTPNotFound
 
-from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.exceptions import (
     ArtifactNotFoundException,
     ArtifactUploadingError,
@@ -48,6 +47,7 @@ from neptune.internal.backends.api_model import (
     ArtifactModel,
 )
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
+from neptune.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.operation import (
     AssignArtifact,
     Operation,

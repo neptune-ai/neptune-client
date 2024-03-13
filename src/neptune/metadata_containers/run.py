@@ -35,10 +35,6 @@ from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
@@ -90,6 +86,10 @@ from neptune.internal.utils.runningmode import (
 )
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback

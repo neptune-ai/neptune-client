@@ -24,7 +24,6 @@ from typing import (
 
 from typing_extensions import Literal
 
-from neptune.common.exceptions import NeptuneException
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import InactiveProjectException
 from neptune.internal.backends.api_model import ApiExperiment
@@ -35,6 +34,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.container_type import ContainerType
+from neptune.internal.exceptions import NeptuneException
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,

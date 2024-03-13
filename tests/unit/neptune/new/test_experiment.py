@@ -28,7 +28,6 @@ from neptune import (
     init_project,
     init_run,
 )
-from neptune.common.utils import IS_WINDOWS
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -42,6 +41,7 @@ from neptune.exceptions import (
     NeptuneProtectedPathException,
 )
 from neptune.internal.operation_processors.factory import get_operation_processor
+from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.metadata_containers import (
     Model,
     ModelVersion,

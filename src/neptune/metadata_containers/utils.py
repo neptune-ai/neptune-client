@@ -30,11 +30,6 @@ from typing import (
     Union,
 )
 
-from neptune.common.warnings import (
-    NeptuneDeprecationWarning,
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -50,6 +45,11 @@ from neptune.internal.backends.nql import (
     RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
+from neptune.internal.warnings import (
+    NeptuneDeprecationWarning,
+    NeptuneWarning,
+    warn_once,
+)
 
 DATE_FORMAT: str = "%Y-%m-%dT%H:%M:%S.%fZ"
 

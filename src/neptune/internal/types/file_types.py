@@ -32,8 +32,8 @@ from typing import (
     Union,
 )
 
-from neptune.common.exceptions import NeptuneException
 from neptune.exceptions import StreamAlreadyUsedException
+from neptune.internal.exceptions import NeptuneException
 from neptune.internal.utils import verify_type
 
 

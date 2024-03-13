@@ -34,14 +34,14 @@ from matplotlib.figure import Figure
 from PIL import Image
 from vega_datasets import data
 
-from neptune.common.utils import (
-    IS_MACOS,
-    IS_WINDOWS,
-)
 from neptune.internal.utils.images import (
     _scale_array,
     get_html_content,
     get_image_content,
+)
+from neptune.internal.utils.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
 )
 from tests.unit.neptune.new.utils.logging import format_log
 

@@ -31,13 +31,13 @@ from pytest import (
 )
 
 from neptune import init_run
-from neptune.common.warnings import (
-    NeptuneUnsupportedType,
-    warned_once,
-)
 from neptune.constants import (
     MAX_32_BIT_INT,
     MIN_32_BIT_INT,
+)
+from neptune.internal.warnings import (
+    NeptuneUnsupportedType,
+    warned_once,
 )
 from neptune.types import (
     Artifact,
