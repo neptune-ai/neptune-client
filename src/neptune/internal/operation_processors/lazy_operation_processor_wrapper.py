@@ -63,6 +63,9 @@ class LazyOperationProcessorWrapper(OperationProcessor):
         self._post_trigger_side_effect = post_trigger_side_effect
         self._operation_processor: OperationProcessor = None  # type: ignore
 
+    def set_post_trigger_side_effect(self, post_trigger_side_effect: Callable[[], Any]) -> None:
+        self._post_trigger_side_effect = post_trigger_side_effect
+
     @property
     def evaluated(self) -> bool:
         return self._operation_processor is not None

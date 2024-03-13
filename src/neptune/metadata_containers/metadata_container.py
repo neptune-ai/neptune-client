@@ -256,8 +256,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     flush_period=self._flush_period,
                     queue=self._signals_queue,
                 ),
-                post_trigger_side_effect=self._op_processor.start,
             )
+            self._op_processor.set_post_trigger_side_effect(self._op_processor.start)
 
             # TODO: Every implementation of background job should handle fork by itself.
             jobs = []
