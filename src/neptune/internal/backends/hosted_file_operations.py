@@ -48,18 +48,6 @@ from requests import (
     Response,
 )
 
-from neptune.common.storage.datastream import (
-    FileChunk,
-    FileChunker,
-    compress_to_tar_gz_in_memory,
-)
-from neptune.common.storage.storage_utils import (
-    AttributeUploadConfiguration,
-    UploadEntry,
-    normalize_file_name,
-    scan_unique_upload_entries,
-    split_upload_files,
-)
 from neptune.exceptions import (
     FileUploadError,
     MetadataInconsistency,
@@ -82,6 +70,16 @@ from neptune.internal.exceptions import (
     UploadedFileChanged,
 )
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
+from neptune.internal.storage import (
+    AttributeUploadConfiguration,
+    FileChunk,
+    FileChunker,
+    UploadEntry,
+    compress_to_tar_gz_in_memory,
+    normalize_file_name,
+    scan_unique_upload_entries,
+    split_upload_files,
+)
 from neptune.internal.utils import (
     get_absolute_paths,
     get_common_root,

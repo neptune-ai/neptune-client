@@ -15,7 +15,7 @@
 #
 __all__ = ["apply_patches"]
 
-from neptune.common.patches.bravado import patch as bravado_patch
+from neptune.internal.patches.bravado import patch as bravado_patch
 
 patches = [bravado_patch]
 
