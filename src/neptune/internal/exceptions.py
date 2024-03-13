@@ -19,7 +19,7 @@ from typing import (
     Optional,
 )
 
-from neptune.common.envs import (
+from neptune.internal.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )

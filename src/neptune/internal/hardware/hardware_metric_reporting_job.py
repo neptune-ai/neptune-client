@@ -31,11 +31,11 @@ from neptune.common.hardware.metrics.reports.metric_reporter import MetricReport
 from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.common.hardware.system.system_monitor import SystemMonitor
-from neptune.common.utils import in_docker
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.utils import in_docker
 from neptune.types.series import FloatSeries
 
 if TYPE_CHECKING:

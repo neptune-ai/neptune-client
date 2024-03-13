@@ -100,7 +100,6 @@ from urllib.parse import urlparse
 
 from packaging.version import Version
 
-from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.envs import (
     CUSTOM_RUN_ID_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -110,6 +109,7 @@ from neptune.internal.backends.api_model import (
     Workspace,
 )
 from neptune.internal.container_type import ContainerType
+from neptune.internal.envs import API_TOKEN_ENV_NAME
 from neptune.internal.exceptions import (
     STYLES,
     ClientHttpError,

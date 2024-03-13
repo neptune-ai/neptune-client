@@ -52,7 +52,6 @@ from bravado.exception import (
 )
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,
@@ -65,6 +64,7 @@ from neptune.internal.backends.utils import (
     ssl_verify,
 )
 from neptune.internal.credentials import Credentials
+from neptune.internal.envs import API_TOKEN_ENV_NAME
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import (
     verify_collection_type,

@@ -33,7 +33,6 @@ from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.oauth import NeptuneAuthenticator
 from neptune.envs import NEPTUNE_REQUEST_TIMEOUT
 from neptune.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.internal.backends.api_model import ClientConfig
@@ -48,6 +47,7 @@ from neptune.internal.backends.utils import (
     verify_host_resolution,
 )
 from neptune.internal.credentials import Credentials
+from neptune.internal.oauth import NeptuneAuthenticator
 from neptune.version import version as neptune_client_version
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"

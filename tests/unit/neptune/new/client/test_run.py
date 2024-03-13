@@ -27,7 +27,6 @@ from neptune import (
     init_run,
 )
 from neptune.attributes.atoms import String
-from neptune.common.utils import IS_WINDOWS
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -39,6 +38,7 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,

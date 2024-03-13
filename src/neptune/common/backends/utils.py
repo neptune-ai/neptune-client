@@ -37,8 +37,7 @@ from bravado_core.util import RecursiveCallException
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import NewConnectionError
 
-from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
-from neptune.common.utils import reset_internal_ssl_state
+from neptune.internal.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.internal.exceptions import (
     ClientHttpError,
     Forbidden,
@@ -49,6 +48,7 @@ from neptune.internal.exceptions import (
     Unauthorized,
 )
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.utils import reset_internal_ssl_state
 
 _logger = get_logger()
 
