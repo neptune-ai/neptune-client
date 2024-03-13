@@ -21,7 +21,7 @@ from websocket import (
     WebSocketTimeoutException,
 )
 
-from neptune.common.websockets.websocket_client_adapter import (
+from neptune.internal.websockets.websocket_client_adapter import (
     WebsocketClientAdapter,
     WebsocketNotConnectedException,
 )
