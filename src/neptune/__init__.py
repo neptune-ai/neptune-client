@@ -102,9 +102,9 @@ __all__ = [
 ]
 
 
-from neptune.common.patches import apply_patches
 from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.internal.extensions import load_extensions
+from neptune.internal.patches import apply_patches
 from neptune.metadata_containers import (
     Model,
     ModelVersion,

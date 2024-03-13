@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
-from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
-from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
-from neptune.common.hardware.metrics.service.metric_service import MetricService
-from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
-from neptune.common.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
+from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
+from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.internal.hardware.metrics.service.metric_service import MetricService
+from neptune.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class MetricServiceFactory(object):
