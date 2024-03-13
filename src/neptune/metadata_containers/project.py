@@ -230,7 +230,7 @@ class Project(MetadataContainer):
                 Only runs that have all specified tags will match this criterion.
             columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If `None` (default), all the columns of the runs table are included, up to a maximum of 10,000 columns.
+                If `None` (default), all the columns of the runs table are included, up to a maximum of 10 000 columns.
             trashed: Whether to retrieve trashed runs.
                 If `True`, only trashed runs are retrieved.
                 If `False` (default), only not-trashed runs are retrieved.
