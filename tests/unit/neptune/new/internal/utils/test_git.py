@@ -224,7 +224,7 @@ def test_get_uncommitted_changes_clean_repo(tmp_path_factory):
 
 
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
-@patch("neptune.metadata_containers.Run")
+@patch("neptune.objects.Run")
 def test_git_ref_disabled(mock_run, mock_get_changes):
     # when
     track_uncommitted_changes(GitRef.DISABLED, mock_run)
@@ -236,7 +236,7 @@ def test_git_ref_disabled(mock_run, mock_get_changes):
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
 @patch("neptune.internal.utils.git.get_repo_from_git_ref")
 @patch("neptune.internal.utils.git.File")
-@patch("neptune.metadata_containers.Run")
+@patch("neptune.objects.Run")
 def test_track_uncommitted_changes(mock_run, mock_file, mock_get_repo, mock_get_changes):
     # given
     git_ref = GitRef()

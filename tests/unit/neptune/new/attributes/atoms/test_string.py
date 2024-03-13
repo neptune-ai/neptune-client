@@ -27,7 +27,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestString(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor

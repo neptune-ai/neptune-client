@@ -91,8 +91,8 @@ from neptune.internal.utils.runningmode import (
 from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
-from neptune.metadata_containers import MetadataContainer
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.objects import NeptuneObject
+from neptune.objects.abstract import NeptuneObjectCallback
 from neptune.types import (
     GitRef,
     StringSeries,
@@ -104,7 +104,7 @@ if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
-class Run(MetadataContainer):
+class Run(NeptuneObject):
     """Starts a new tracked run that logs ML model-building metadata to neptune.ai.
 
     You can log metadata by assigning it to the initialized Run object:

@@ -41,7 +41,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestArtifact(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def setUp(self, get_operation_processor):
         self.monkeypatch = MonkeyPatch()
 

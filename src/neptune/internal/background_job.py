@@ -22,12 +22,12 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 
 class BackgroundJob:
     @abc.abstractmethod
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "NeptuneObject"):
         pass
 
     @abc.abstractmethod

@@ -27,7 +27,7 @@ from neptune.internal.signals_processing.signals_processor import SignalsProcess
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 
 class CallbacksMonitor(BackgroundJob):
@@ -36,8 +36,8 @@ class CallbacksMonitor(BackgroundJob):
         queue: "Queue[Signal]",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
-        async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
-        async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+        async_lag_callback: Optional[Callable[["NeptuneObject"], None]] = None,
+        async_no_progress_callback: Optional[Callable[["NeptuneObject"], None]] = None,
         period: float = 10,
     ) -> None:
         self._period: float = period
@@ -46,10 +46,10 @@ class CallbacksMonitor(BackgroundJob):
         self._started: bool = False
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_threshold: float = async_no_progress_threshold
-        self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
-        self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
+        self._async_lag_callback: Optional[Callable[["NeptuneObject"], None]] = async_lag_callback
+        self._async_no_progress_callback: Optional[Callable[["NeptuneObject"], None]] = async_no_progress_callback
 
-    def start(self, container: "MetadataContainer") -> None:
+    def start(self, container: "NeptuneObject") -> None:
         self._thread = SignalsProcessor(
             period=self._period,
             container=container,

@@ -49,7 +49,7 @@ from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.utils import get_container_dir
 from neptune.internal.utils.logger import get_logger
-from neptune.metadata_containers.structure_version import StructureVersion
+from neptune.objects.structure_version import StructureVersion
 
 if TYPE_CHECKING:
     from neptune.internal.backends.api_model import (

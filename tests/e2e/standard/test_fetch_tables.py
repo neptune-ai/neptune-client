@@ -22,7 +22,7 @@ import pytest
 
 import neptune
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.metadata_containers import Model
+from neptune.objects import Model
 from tests.e2e.base import (
     BaseE2ETest,
     fake,

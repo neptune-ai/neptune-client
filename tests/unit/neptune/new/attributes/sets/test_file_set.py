@@ -29,7 +29,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestFileSet(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign(self, get_operation_processor):
         globs = ["path1", "dir/", "glob/*.py"]
         expected = [os.path.abspath(glob) for glob in globs]
@@ -46,7 +46,7 @@ class TestFileSet(TestAttributeBase):
             var.assign(globs, wait=wait)
             processor.enqueue_operation.assert_called_with(UploadFileSet(path, expected, reset=True), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_upload_files(self, get_operation_processor):
         globs = ["path1", "dir/", "glob/*.py"]
         processor = MagicMock()
@@ -64,7 +64,7 @@ class TestFileSet(TestAttributeBase):
                 wait=wait,
             )
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_delete_files(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -78,7 +78,7 @@ class TestFileSet(TestAttributeBase):
             var.delete_files(["path1", "dir/"], wait=wait)
             processor.enqueue_operation.assert_called_with(DeleteFiles(path, {"path1", "dir/"}), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_list_fileset_files(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor

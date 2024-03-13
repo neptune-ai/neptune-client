@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["MetadataContainer"]
+__all__ = ["NeptuneObject"]
 
 import abc
 import atexit
@@ -93,11 +93,11 @@ from neptune.internal.utils.logger import (
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.metadata_containers.abstract import (
-    NeptuneObject,
+from neptune.objects.abstract import (
+    AbstractNeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.metadata_containers.utils import parse_dates
+from neptune.objects.utils import parse_dates
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -110,14 +110,14 @@ if TYPE_CHECKING:
 
 def ensure_not_stopped(fun):
     @wraps(fun)
-    def inner_fun(self: "MetadataContainer", *args, **kwargs):
+    def inner_fun(self: "NeptuneObject", *args, **kwargs):
         self._raise_if_stopped()
         return fun(self, *args, **kwargs)
 
     return inner_fun
 
 
-class MetadataContainer(AbstractContextManager, NeptuneObject):
+class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
     container_type: ContainerType
 
     def __init__(
@@ -167,12 +167,12 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
         self._project_name: str = self._api_object.project_name
 
         self._async_lag_threshold = async_lag_threshold
-        self._async_lag_callback = MetadataContainer._get_callback(
+        self._async_lag_callback = NeptuneObject._get_callback(
             provided=async_lag_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
         )
         self._async_no_progress_threshold = async_no_progress_threshold
-        self._async_no_progress_callback = MetadataContainer._get_callback(
+        self._async_no_progress_callback = NeptuneObject._get_callback(
             provided=async_no_progress_callback,
             env_name=NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
         )
@@ -695,6 +695,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             entries=leaderboard_entries,
         )
 
-    def get_root_object(self) -> "MetadataContainer":
+    def get_root_object(self) -> "NeptuneObject":
         """Returns the same Neptune object."""
         return self

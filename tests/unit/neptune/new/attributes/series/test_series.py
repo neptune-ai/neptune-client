@@ -38,7 +38,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestSeries(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign(self, get_operation_processor):
         value = FloatSeriesVal([17, 3.6], min=0, max=100, unit="%")
         expected = [
@@ -63,7 +63,7 @@ class TestSeries(TestAttributeBase):
                 ]
             )
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign_empty(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -77,7 +77,7 @@ class TestSeries(TestAttributeBase):
             var.assign(StringSeriesVal([]), wait=wait)
             processor.enqueue_operation.assert_called_with(ClearStringLog(path), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log(self, get_operation_processor):
         value_and_expected = [
             (13, [LogFloats.ValueType(13, None, self._now())]),
@@ -121,7 +121,7 @@ class TestSeries(TestAttributeBase):
                 var.log(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(LogFloats(path, expected), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log_with_step(self, get_operation_processor):
         value_step_and_expected = [
             (13, 5.3, LogFloats.ValueType(13, 5.3, self._now())),
@@ -144,7 +144,7 @@ class TestSeries(TestAttributeBase):
                 var.log(value, step=step, wait=wait)
                 processor.enqueue_operation.assert_called_with(LogFloats(path, [expected]), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log_with_timestamp(self, get_operation_processor):
         value_step_and_expected = [
             (13, 5.3, LogFloats.ValueType(13, None, 5.3)),
@@ -164,7 +164,7 @@ class TestSeries(TestAttributeBase):
                 var.log(value, timestamp=ts, wait=wait)
                 processor.enqueue_operation.assert_called_with(LogFloats(path, [expected]), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log_value_errors(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -181,7 +181,7 @@ class TestSeries(TestAttributeBase):
             with self.assertRaises(TypeError):
                 attr.log(5, timestamp="str")
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_clear(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor

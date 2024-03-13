@@ -51,7 +51,7 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(TypeError):
                 FileSeries(MagicMock(), MagicMock()).log(value)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log_content(self, get_operation_processor):
         # given
         wait = self._random_wait()
@@ -89,7 +89,7 @@ class TestFileSeries(TestAttributeBase):
                 wait=wait,
             )
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign_content(self, get_operation_processor):
         # given
         wait = self._random_wait()
@@ -125,7 +125,7 @@ class TestFileSeries(TestAttributeBase):
                 ]
             )
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_log_path(self, get_operation_processor):
         # given
         wait = self._random_wait()

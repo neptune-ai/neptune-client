@@ -29,7 +29,7 @@ from typing import (
 )
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.metadata_containers.structure_version import StructureVersion
+from neptune.objects.structure_version import StructureVersion
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType

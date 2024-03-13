@@ -47,7 +47,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_assign(self, get_operation_processor):
         def get_tmp_uploaded_file_name(tmp_upload_dir):
             """Get tmp file to uploaded from `upload_path`
@@ -110,7 +110,7 @@ class TestFile(TestAttributeBase):
                 File(MagicMock(), MagicMock()).assign(value)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_save(self, get_operation_processor):
         value_and_expected = [("some/path", os.getcwd() + "/some/path")]
 
@@ -130,7 +130,7 @@ class TestFile(TestAttributeBase):
                 )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.metadata_container.get_operation_processor")
     def test_save_files(self, get_operation_processor):
         value_and_expected = [("some/path/*", [os.getcwd() + "/some/path/*"])]
 

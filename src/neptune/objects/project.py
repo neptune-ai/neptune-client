@@ -47,9 +47,9 @@ from neptune.internal.utils import (
     verify_type,
     verify_value,
 )
-from neptune.metadata_containers import MetadataContainer
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.utils import (
+from neptune.objects import NeptuneObject
+from neptune.objects.abstract import NeptuneObjectCallback
+from neptune.objects.utils import (
     build_raw_query,
     deprecated_func_arg_warning_check,
     prepare_nql_query,
@@ -62,7 +62,7 @@ from neptune.typing import (
 )
 
 
-class Project(MetadataContainer):
+class Project(NeptuneObject):
     """Starts a connection to an existing Neptune project.
 
     You can use the Project object to retrieve information about runs, models, and model versions
@@ -331,7 +331,7 @@ class Project(MetadataContainer):
         else:
             nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
-        return MetadataContainer._fetch_entries(
+        return NeptuneObject._fetch_entries(
             self,
             child_type=ContainerType.RUN,
             query=nql_query,
@@ -403,7 +403,7 @@ class Project(MetadataContainer):
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
 
-        return MetadataContainer._fetch_entries(
+        return NeptuneObject._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
             query=NQLQueryAttribute(

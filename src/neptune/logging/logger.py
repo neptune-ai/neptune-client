@@ -19,11 +19,11 @@ __all__ = [
     "Logger",
 ]
 
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 
 
 class Logger(object):
-    def __init__(self, container: MetadataContainer, attribute_name: str):
+    def __init__(self, container: NeptuneObject, attribute_name: str):
         self._container = container
         self._attribute_name = attribute_name
 

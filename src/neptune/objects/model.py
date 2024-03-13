@@ -55,8 +55,8 @@ from neptune.internal.init.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.metadata_containers import MetadataContainer
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.objects import NeptuneObject
+from neptune.objects.abstract import NeptuneObjectCallback
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
-class Model(MetadataContainer):
+class Model(NeptuneObject):
     """Initializes a Model object from an existing or new model.
 
     You can use this to create a new model from code or to perform actions on existing models.
@@ -313,7 +313,7 @@ class Model(MetadataContainer):
 
         if isinstance(limit, int) and limit <= 0:
             raise ValueError(f"Parameter 'limit' must be a positive integer or None. Got {limit}.")
-        return MetadataContainer._fetch_entries(
+        return NeptuneObject._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
             query=NQLQueryAggregate(
