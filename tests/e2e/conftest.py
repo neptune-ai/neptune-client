@@ -96,6 +96,13 @@ def container(request, environment):
     exp.stop()
 
 
+@pytest.fixture(scope="function")
+def container_fn_scope(request, environment):
+    exp = initialize_container(container_type=request.param, project=environment.project)
+    yield exp
+    exp.stop()
+
+
 @pytest.fixture(scope="session")
 def containers_pair(request, environment):
     container_a_type, container_b_type = request.param.split("-")
