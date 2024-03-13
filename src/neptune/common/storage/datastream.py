@@ -24,8 +24,8 @@ from typing import (
     Optional,
 )
 
-from neptune.common.backends.api_model import MultipartConfig
-from neptune.common.exceptions import (
+from neptune.internal.backends.api_model import MultipartConfig
+from neptune.internal.exceptions import (
     InternalClientError,
     UploadedFileChanged,
 )

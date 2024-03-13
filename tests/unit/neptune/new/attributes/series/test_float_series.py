@@ -21,7 +21,7 @@ from mock import (
 
 from neptune import init_run
 from neptune.attributes.series.float_series import FloatSeries
-from neptune.common.warnings import NeptuneUnsupportedValue
+from neptune.internal.warnings import NeptuneUnsupportedValue
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

@@ -39,7 +39,6 @@ from neptune.attributes.series import FileSeries
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.attributes.series.string_series import StringSeries
 from neptune.attributes.sets.string_set import StringSet
-from neptune.common.warnings import warn_about_unsupported_type
 from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
@@ -62,6 +61,7 @@ from neptune.internal.utils.paths import (
     parse_path,
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.metadata_containers.abstract import SupportsNamespaces
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend

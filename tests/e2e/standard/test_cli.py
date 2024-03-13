@@ -24,7 +24,7 @@ from click.testing import CliRunner
 import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
-from neptune.common.exceptions import NeptuneException
+from neptune.internal.exceptions import NeptuneException
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,

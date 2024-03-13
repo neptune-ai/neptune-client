@@ -35,12 +35,12 @@ from neptune.attributes.file_set import (
     FileSet,
     FileSetVal,
 )
-from neptune.common.utils import IS_WINDOWS
 from neptune.internal.operation import (
     UploadFile,
     UploadFileSet,
 )
 from neptune.internal.types.file_types import FileType
+from neptune.internal.utils.utils import IS_WINDOWS
 from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 

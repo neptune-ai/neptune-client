@@ -33,11 +33,6 @@ from typing import (
     Tuple,
 )
 
-from neptune.common.exceptions import NeptuneException
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.abstract import WithResources
 from neptune.core.components.metadata_file import MetadataFile
@@ -45,6 +40,7 @@ from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
+from neptune.internal.exceptions import NeptuneException
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_logger import ProcessorStopLogger
@@ -61,6 +57,10 @@ from neptune.internal.signals_processing.utils import (
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 
 if TYPE_CHECKING:
     from neptune.core.components.abstract import Resource

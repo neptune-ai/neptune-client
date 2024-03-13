@@ -35,7 +35,7 @@ __all__ = [
     "NEPTUNE_ASYNC_BATCH_SIZE",
 ]
 
-from neptune.common.envs import (
+from neptune.internal.envs import (
     API_TOKEN_ENV_NAME,
     NEPTUNE_RETRIES_TIMEOUT_ENV,
 )
