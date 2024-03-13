@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.hardware.metrics.reports.metric_report import (
+from neptune.internal.hardware.metrics.reports.metric_report import (
     MetricReport,
     MetricValue,
 )

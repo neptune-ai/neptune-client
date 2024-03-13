@@ -16,8 +16,8 @@
 
 import time
 
-from neptune.common.hardware.cgroup.cgroup_filesystem_reader import CGroupFilesystemReader
-from neptune.common.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.hardware.cgroup.cgroup_filesystem_reader import CGroupFilesystemReader
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class CGroupMonitor(object):
