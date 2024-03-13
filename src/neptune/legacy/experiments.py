@@ -1054,7 +1054,7 @@ class Experiment(LegacyExperiment):
     def _get_channels(self, channels_names_with_types):
         existing_channels = self._backend.get_channels(self)
         channels_by_name = {}
-        for (channel_name, channel_type) in channels_names_with_types:
+        for channel_name, channel_type in channels_names_with_types:
             channel = existing_channels.get(channel_name, None)
             if channel is None:
                 channel = self._create_channel(channel_name, channel_type)

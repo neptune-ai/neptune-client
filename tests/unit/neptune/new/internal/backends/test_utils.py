@@ -45,11 +45,9 @@ from neptune.utils import (
 
 
 class CustomProgressBar(ProgressBarCallback):
-    def __enter__(self):
-        ...
+    def __enter__(self): ...
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        ...
+    def __exit__(self, exc_type, exc_val, exc_tb): ...
 
     def update(self, *, by: int, total: Optional[int] = None) -> None:
         pass

@@ -63,3 +63,6 @@ class LocalFileHashStorage:
             (computed_hash, modification_date, str(path)),
         )
         self.session.commit()
+
+    def close(self) -> None:
+        self.session.close()

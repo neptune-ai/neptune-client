@@ -28,8 +28,7 @@ if TYPE_CHECKING:
 
 class OperationProcessor(abc.ABC):
     @abc.abstractmethod
-    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None:
-        ...
+    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None: ...
 
     @property
     def operation_storage(self) -> "OperationStorage":

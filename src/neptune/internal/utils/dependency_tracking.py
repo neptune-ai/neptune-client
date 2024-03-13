@@ -51,8 +51,7 @@ logger = get_logger()
 
 class DependencyTrackingStrategy(ABC):
     @abstractmethod
-    def log_dependencies(self, run: "Run") -> None:
-        ...
+    def log_dependencies(self, run: "Run") -> None: ...
 
 
 class InferDependenciesStrategy(DependencyTrackingStrategy):

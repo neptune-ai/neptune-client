@@ -78,12 +78,10 @@ class ProgressBarCallback(contextlib.AbstractContextManager):
         That is, `ClickProgressBar`, not `ClickProgressBar()`.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        ...
+    def __init__(self, *args: Any, **kwargs: Any) -> None: ...
 
     @abc.abstractmethod
-    def update(self, *, by: int, total: Optional[int] = None) -> None:
-        ...
+    def update(self, *, by: int, total: Optional[int] = None) -> None: ...
 
 
 ProgressBarType: TypeAlias = Union[bool, Type[ProgressBarCallback]]

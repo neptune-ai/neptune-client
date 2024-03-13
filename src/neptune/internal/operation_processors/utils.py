@@ -20,7 +20,10 @@ import platform
 import random
 import string
 import sys
-from datetime import datetime
+from datetime import (
+    datetime,
+    timezone,
+)
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
@@ -54,7 +57,7 @@ def common_metadata(mode: str, container_id: "UniqueId", container_type: "Contai
         "os": platform.platform(),
         "pythonVersion": sys.version,
         "neptuneClientVersion": get_neptune_version(),
-        "createdAt": datetime.utcnow().isoformat(),
+        "createdAt": datetime.now(timezone.utc).isoformat(),
     }
 
 

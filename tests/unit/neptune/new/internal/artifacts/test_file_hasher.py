@@ -14,10 +14,9 @@
 # limitations under the License.
 #
 import hashlib
-import tempfile
 import time
-import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from mock import (
     Mock,
@@ -28,16 +27,7 @@ from neptune.internal.artifacts.file_hasher import FileHasher
 from neptune.internal.artifacts.types import ArtifactFileData
 
 
-class TestFileHasher(unittest.TestCase):
-    def setUp(self) -> None:
-        self.temp = tempfile.TemporaryDirectory()
-
-        with open(f"{self.temp.name}/test", "wb") as handler:
-            handler.write(b"\xde\xad\xbe\xef")
-
-    def tearDown(self) -> None:
-        self.temp.cleanup()
-
+class TestFileHasher:
     def test_artifact_hash(self):
         # do not change this test case without coordinating with Artifact API's ArtifactHashComputer
         artifacts = [
@@ -63,8 +53,8 @@ class TestFileHasher(unittest.TestCase):
         ]
 
         expected_hash = "56e64245b1d4915ff27b306c8077cd4f9ce1b31233c690a93ebc38a1b737a9ea"
-        self.assertEqual(expected_hash, FileHasher.get_artifact_hash(artifacts))
-        self.assertEqual(expected_hash, FileHasher.get_artifact_hash(reversed(artifacts)))
+        assert expected_hash == FileHasher.get_artifact_hash(artifacts)
+        assert expected_hash == FileHasher.get_artifact_hash(reversed(artifacts))
 
     def test_artifact_hash_without_metadata(self):
         # do not change this test case without coordinating with Artifact API's ArtifactHashComputer
@@ -91,45 +81,54 @@ class TestFileHasher(unittest.TestCase):
         ]
 
         expected_hash = "e6d96bccc12db43acc6e24e2e79052ecaee52307470e44f93d74ecfebc119128"
-        self.assertEqual(expected_hash, FileHasher.get_artifact_hash_without_metadata(artifacts))
-        self.assertEqual(expected_hash, FileHasher.get_artifact_hash_without_metadata(reversed(artifacts)))
+        assert expected_hash == FileHasher.get_artifact_hash_without_metadata(artifacts)
+        assert expected_hash == FileHasher.get_artifact_hash_without_metadata(reversed(artifacts))
 
     @patch("pathlib.Path.home")
     def test_local_file_hash(self, home):
-        home.return_value = Path(self.temp.name)
+        with TemporaryDirectory() as tmp_dir:
+            with open(f"{tmp_dir}/test", "wb") as handler:
+                handler.write(b"\xde\xad\xbe\xef")
 
-        self.assertEqual(
-            "d78f8bb992a56a597f6c7a1fb918bb78271367eb",
-            FileHasher.get_local_file_hash(f"{self.temp.name}/test"),
-        )
+            home.return_value = Path(tmp_dir)
+
+            assert "d78f8bb992a56a597f6c7a1fb918bb78271367eb" == FileHasher.get_local_file_hash(f"{tmp_dir}/test")
 
     @patch("pathlib.Path.home")
     def test_local_file_hashed_only_once(self, home):
-        home.return_value = Path(self.temp.name)
-        hashlib.sha1 = Mock(side_effect=hashlib.sha1)
+        with TemporaryDirectory() as tmp_dir:
+            with open(f"{tmp_dir}/test", "wb") as handler:
+                handler.write(b"\xde\xad\xbe\xef")
 
-        hash1 = FileHasher.get_local_file_hash(f"{self.temp.name}/test")
-        hash2 = FileHasher.get_local_file_hash(f"{self.temp.name}/test")
+            home.return_value = Path(tmp_dir)
+            hashlib.sha1 = Mock(side_effect=hashlib.sha1)
 
-        self.assertEqual("d78f8bb992a56a597f6c7a1fb918bb78271367eb", hash1)
-        self.assertEqual("d78f8bb992a56a597f6c7a1fb918bb78271367eb", hash2)
-        self.assertEqual(1, hashlib.sha1.call_count)
+            hash1 = FileHasher.get_local_file_hash(f"{tmp_dir}/test")
+            hash2 = FileHasher.get_local_file_hash(f"{tmp_dir}/test")
+
+            assert "d78f8bb992a56a597f6c7a1fb918bb78271367eb" == hash1
+            assert "d78f8bb992a56a597f6c7a1fb918bb78271367eb" == hash2
+            assert 1 == hashlib.sha1.call_count
 
     @patch("pathlib.Path.home")
     def test_local_file_hashed_update(self, home):
-        home.return_value = Path(self.temp.name)
-        hashlib.sha1 = Mock(side_effect=hashlib.sha1)
+        with TemporaryDirectory() as tmp_dir:
+            with open(f"{tmp_dir}/test", "wb") as handler:
+                handler.write(b"\xde\xad\xbe\xef")
 
-        hash1 = FileHasher.get_local_file_hash(f"{self.temp.name}/test")
+            home.return_value = Path(tmp_dir)
+            hashlib.sha1 = Mock(side_effect=hashlib.sha1)
 
-        # Minimal change in modification time
-        time.sleep(0.1)
+            hash1 = FileHasher.get_local_file_hash(f"{tmp_dir}/test")
 
-        with open(f"{self.temp.name}/test", "wb") as handler:
-            handler.write(b"\x01\x02\x03\x04")
+            # Minimal change in modification time
+            time.sleep(0.1)
 
-        hash2 = FileHasher.get_local_file_hash(f"{self.temp.name}/test")
+            with open(f"{tmp_dir}/test", "wb") as handler:
+                handler.write(b"\x01\x02\x03\x04")
 
-        self.assertEqual("d78f8bb992a56a597f6c7a1fb918bb78271367eb", hash1)
-        self.assertEqual("12dada1fff4d4787ade3333147202c3b443e376f", hash2)
-        self.assertEqual(2, hashlib.sha1.call_count)
+            hash2 = FileHasher.get_local_file_hash(f"{tmp_dir}/test")
+
+            assert "d78f8bb992a56a597f6c7a1fb918bb78271367eb" == hash1
+            assert "12dada1fff4d4787ade3333147202c3b443e376f" == hash2
+            assert 2 == hashlib.sha1.call_count

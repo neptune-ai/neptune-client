@@ -78,27 +78,11 @@ def _raise_legacy_client_expected(*args, **kwargs):
     raise NeptunePossibleLegacyUsageException()
 
 
-create_experiment = (
-    get_experiment
-) = (
-    append_tag
-) = (
-    append_tags
-) = (
-    remove_tag
-) = (
-    set_property
-) = (
-    remove_property
-) = (
+create_experiment = get_experiment = append_tag = append_tags = remove_tag = set_property = remove_property = (
     send_metric
-) = (
-    log_metric
-) = (
-    send_text
-) = (
-    log_text
-) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
+) = log_metric = send_text = log_text = send_image = log_image = send_artifact = delete_artifacts = log_artifact = (
+    stop
+) = _raise_legacy_client_expected
 
 
 warn_once(

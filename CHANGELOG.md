@@ -15,6 +15,9 @@
 - Cache dependencies check ([#1675](https://github.com/neptune-ai/neptune-client/pull/1675))
 - Remove deprecation warning in `fetch_runs_table()` ([#1686](https://github.com/neptune-ai/neptune-client/pull/1686))
 
+### Changes
+- Minor updates to made package compatible with Python 3.11 and 3.12 ([#1678](https://github.com/neptune-ai/neptune-client/pull/1678))
+
 
 ## neptune 1.9.1
 

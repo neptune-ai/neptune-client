@@ -35,8 +35,8 @@ class TestGPUGauges(unittest.TestCase):
 
         patcher = patch("neptune.common.hardware.gpu.gpu_monitor.nvmlDeviceGetHandleByIndex")
         nvmlDeviceGetHandleByIndex = patcher.start()
-        nvmlDeviceGetHandleByIndex.side_effect = (
-            lambda card_index: self.gpu_card_handle if card_index == self.card_index else None
+        nvmlDeviceGetHandleByIndex.side_effect = lambda card_index: (
+            self.gpu_card_handle if card_index == self.card_index else None
         )
         self.addCleanup(patcher.stop)
 
