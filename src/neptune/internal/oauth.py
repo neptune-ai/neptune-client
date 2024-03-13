@@ -26,7 +26,7 @@ from oauthlib.oauth2 import (
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
-from neptune.common.backends.utils import with_api_exceptions_handler
+from neptune.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.exceptions import NeptuneInvalidApiTokenException
 from neptune.internal.utils.utils import update_session_proxies
 

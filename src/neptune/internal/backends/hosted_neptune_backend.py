@@ -40,7 +40,6 @@ from bravado.exception import (
 
 from neptune.api.dtos import FileEntry
 from neptune.api.searching_entries import iter_over_pages
-from neptune.common.backends.utils import with_api_exceptions_handler
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
@@ -111,6 +110,7 @@ from neptune.internal.backends.utils import (
     MissingApiClient,
     build_operation_url,
     ssl_verify,
+    with_api_exceptions_handler,
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials

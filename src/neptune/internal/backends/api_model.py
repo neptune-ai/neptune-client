@@ -40,6 +40,7 @@ __all__ = [
     "FloatSeriesAttribute",
     "StringSeriesAttribute",
     "StringSetAttribute",
+    "MultipartConfig",
 ]
 
 from dataclasses import dataclass
@@ -55,12 +56,28 @@ from typing import (
 
 from packaging import version
 
-from neptune.common.backends.api_model import MultipartConfig
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import (
     SysId,
     UniqueId,
 )
+
+
+@dataclass(frozen=True)
+class MultipartConfig:
+    min_chunk_size: int
+    max_chunk_size: int
+    max_chunk_count: int
+    max_single_part_size: int
+
+    @staticmethod
+    def get_default() -> "MultipartConfig":
+        return MultipartConfig(
+            min_chunk_size=5242880,
+            max_chunk_size=1073741824,
+            max_chunk_count=1000,
+            max_single_part_size=5242880,
+        )
 
 
 @dataclass
