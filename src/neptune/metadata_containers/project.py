@@ -352,7 +352,7 @@ class Project(MetadataContainer):
                 If `None`, both trashed and not-trashed models are retrieved.
             columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
-                If `None`, all the columns of the models table are included, up to a maximum of 10,000 columns.
+                If `None`, all the columns of the models table are included, up to a maximum of 10 000 columns.
             limit: How many entries to return at most. If `None`, all entries are returned.
             sort_by: Name of the field to sort the results by.
                 The field must represent a simple type (string, float, datetime, integer, or Boolean).
