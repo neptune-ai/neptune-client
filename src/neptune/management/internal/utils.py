@@ -17,7 +17,7 @@ import re
 from enum import Enum
 from typing import Optional
 
-from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.internal.utils.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.management.exceptions import (
     ConflictingWorkspaceName,
     InvalidProjectName,

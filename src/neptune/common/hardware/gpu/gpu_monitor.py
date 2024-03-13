@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.common.warnings import (
+from neptune.internal.warnings import (
     NeptuneWarning,
     warn_once,
 )

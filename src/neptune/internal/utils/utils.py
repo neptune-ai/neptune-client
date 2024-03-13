@@ -25,8 +25,8 @@ import sys
 import numpy as np
 import pandas as pd
 
-from neptune.common import envs
-from neptune.common.exceptions import (
+from neptune.internal import envs
+from neptune.internal.exceptions import (
     FileNotFound,
     InvalidNotebookPath,
     NeptuneIncorrectProjectQualifiedNameException,
@@ -34,9 +34,9 @@ from neptune.common.exceptions import (
     NotADirectory,
     NotAFile,
 )
-from neptune.common.git_info import GitInfo
-from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.internal.utils.git_info import GitInfo
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = get_logger()
 

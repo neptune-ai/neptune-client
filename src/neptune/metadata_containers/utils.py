@@ -27,10 +27,6 @@ from typing import (
     Union,
 )
 
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -47,6 +43,10 @@ from neptune.internal.backends.nql import (
 )
 from neptune.internal.utils.iso_dates import parse_iso_date
 from neptune.internal.utils.run_state import RunState
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 
 
 def prepare_nql_query(

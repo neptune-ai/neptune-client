@@ -17,9 +17,9 @@
 import os
 import unittest
 
-from neptune.common.exceptions import NeptuneInvalidApiTokenException
 from neptune.envs import API_TOKEN_ENV_NAME
 from neptune.internal.credentials import Credentials
+from neptune.internal.exceptions import NeptuneInvalidApiTokenException
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
