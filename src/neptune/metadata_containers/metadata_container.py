@@ -43,7 +43,6 @@ from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
-from neptune.common.exceptions import UNIX_STYLES
 from neptune.common.utils import reset_internal_ssl_state
 from neptune.common.warnings import warn_about_unsupported_type
 from neptune.envs import (
@@ -65,6 +64,7 @@ from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.container_type import ContainerType
+from neptune.internal.exceptions import UNIX_STYLES
 from neptune.internal.id_formats import (
     QualifiedName,
     SysId,

@@ -25,10 +25,10 @@ from typing import (
 )
 
 from neptune.common.envs import API_TOKEN_ENV_NAME
-from neptune.common.exceptions import NeptuneInvalidApiTokenException
 from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.exceptions import NeptuneMissingApiTokenException
 from neptune.internal.constants import ANONYMOUS_API_TOKEN_CONTENT
+from neptune.internal.exceptions import NeptuneInvalidApiTokenException
 
 
 @dataclass(frozen=True)

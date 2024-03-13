@@ -50,11 +50,6 @@ from requests import (
 
 from neptune.common.backends.api_model import MultipartConfig
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.exceptions import (
-    InternalClientError,
-    NeptuneException,
-    UploadedFileChanged,
-)
 from neptune.common.hardware.constants import BYTES_IN_ONE_MB
 from neptune.common.storage.datastream import (
     FileChunk,
@@ -81,6 +76,11 @@ from neptune.internal.backends.utils import (
     build_operation_url,
     construct_progress_bar,
     handle_server_raw_response_messages,
+)
+from neptune.internal.exceptions import (
+    InternalClientError,
+    NeptuneException,
+    UploadedFileChanged,
 )
 from neptune.internal.utils import (
     get_absolute_paths,

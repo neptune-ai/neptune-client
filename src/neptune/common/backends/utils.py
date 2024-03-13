@@ -38,7 +38,8 @@ from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import NewConnectionError
 
 from neptune.common.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
-from neptune.common.exceptions import (
+from neptune.common.utils import reset_internal_ssl_state
+from neptune.internal.exceptions import (
     ClientHttpError,
     Forbidden,
     NeptuneAuthTokenExpired,
@@ -47,7 +48,6 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.common.utils import reset_internal_ssl_state
 from neptune.internal.utils.logger import get_logger
 
 _logger = get_logger()

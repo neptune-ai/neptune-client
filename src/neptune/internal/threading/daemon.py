@@ -20,7 +20,7 @@ import functools
 import threading
 from enum import Enum
 
-from neptune.common.exceptions import NeptuneConnectionLostException
+from neptune.internal.exceptions import NeptuneConnectionLostException
 from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()

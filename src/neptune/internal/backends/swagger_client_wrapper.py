@@ -25,13 +25,13 @@ from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
 from neptune.api.requests_utils import ensure_json_response
-from neptune.common.exceptions import (
-    NeptuneAuthTokenExpired,
-    WritingToArchivedProjectException,
-)
 from neptune.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
+)
+from neptune.internal.exceptions import (
+    NeptuneAuthTokenExpired,
+    WritingToArchivedProjectException,
 )
 
 

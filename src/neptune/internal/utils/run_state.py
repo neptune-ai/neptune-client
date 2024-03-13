@@ -17,7 +17,7 @@ __all__ = ["RunState"]
 
 import enum
 
-from neptune.common.exceptions import NeptuneException
+from neptune.internal.exceptions import NeptuneException
 
 
 class RunState(enum.Enum):

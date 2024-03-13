@@ -23,7 +23,6 @@ from neptune import (
     ANONYMOUS_API_TOKEN,
     init_project,
 )
-from neptune.common.exceptions import NeptuneException
 from neptune.common.warnings import (
     NeptuneWarning,
     warned_once,
@@ -41,6 +40,7 @@ from neptune.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.exceptions import NeptuneException
 from neptune.metadata_containers.utils import (
     DATE_FORMAT,
     parse_dates,

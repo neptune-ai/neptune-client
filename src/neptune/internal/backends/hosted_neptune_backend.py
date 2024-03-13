@@ -41,11 +41,6 @@ from bravado.exception import (
 from neptune.api.dtos import FileEntry
 from neptune.api.searching_entries import iter_over_pages
 from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.exceptions import (
-    ClientHttpError,
-    InternalClientError,
-    NeptuneException,
-)
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.common.warnings import (
     NeptuneWarning,
@@ -124,6 +119,11 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
+from neptune.internal.exceptions import (
+    ClientHttpError,
+    InternalClientError,
+    NeptuneException,
+)
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
