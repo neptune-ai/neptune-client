@@ -21,14 +21,14 @@ from unittest.mock import (
 
 import pytest
 
-from neptune.common.warnings import (
-    NeptuneDeprecationWarning,
-    warn_once,
-)
 from neptune.exceptions import NeptuneParametersCollision
 from neptune.internal.utils.deprecation import (
     deprecated,
     deprecated_parameter,
+)
+from neptune.internal.warnings import (
+    NeptuneDeprecationWarning,
+    warn_once,
 )
 
 

@@ -37,8 +37,8 @@ from neptune.attributes import (
     StringSeries,
     StringSet,
 )
-from neptune.common.exceptions import InternalClientError
 from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.exceptions import InternalClientError
 
 if TYPE_CHECKING:
     from neptune.attributes.attribute import Attribute

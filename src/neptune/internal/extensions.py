@@ -27,7 +27,7 @@ if sys.version_info >= (3, 8):
 else:
     from importlib_metadata import entry_points
 
-from neptune.common.warnings import (
+from neptune.internal.warnings import (
     NeptuneWarning,
     warn_once,
 )

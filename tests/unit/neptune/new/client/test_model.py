@@ -23,11 +23,6 @@ from neptune import (
     init_model,
 )
 from neptune.attributes import String
-from neptune.common.exceptions import NeptuneException
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warned_once,
-)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -39,6 +34,11 @@ from neptune.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.exceptions import NeptuneException
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_model
 
