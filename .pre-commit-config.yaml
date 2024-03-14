@@ -27,7 +27,7 @@ repos:
       - id: flake8
         entry: pflake8
         # We use a custom version of flake8 that includes a fix for Python 3.12 compatibility
-        additional_dependencies: ["git+https://github.com/Raalsky/pyproject-flake8.git@b66428e758ea6b2cb89d0d90f1e8ecbbbb133626"]
+        additional_dependencies: ["git+https://github.com/neptune-ai/pyproject-flake8.git@7.0.0"]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.4.1
     hooks:
