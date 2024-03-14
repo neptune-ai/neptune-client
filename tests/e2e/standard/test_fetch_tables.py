@@ -21,8 +21,8 @@ import uuid
 import pytest
 
 import neptune
-from neptune.common.utils import IS_MACOS
 from neptune.exceptions import NeptuneInvalidQueryException
+from neptune.internal.utils.utils import IS_MACOS
 from neptune.objects import Model
 from tests.e2e.base import (
     BaseE2ETest,
