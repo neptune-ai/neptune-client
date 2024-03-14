@@ -91,8 +91,8 @@ from neptune.internal.warnings import (
     warn_once,
 )
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
-from neptune.objects import NeptuneObject
 from neptune.objects.abstract import NeptuneObjectCallback
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import (
     GitRef,
     StringSeries,

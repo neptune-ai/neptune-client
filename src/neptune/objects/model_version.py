@@ -50,8 +50,8 @@ from neptune.internal.operation_processors.offline_operation_processor import Of
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.objects import NeptuneObject
 from neptune.objects.abstract import NeptuneObjectCallback
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
