@@ -105,7 +105,7 @@ __all__ = [
 from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.internal.extensions import load_extensions
 from neptune.internal.patches import apply_patches
-from neptune.metadata_containers import (
+from neptune.objects import (
     Model,
     ModelVersion,
     Project,

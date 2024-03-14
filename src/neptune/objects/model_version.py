@@ -50,8 +50,8 @@ from neptune.internal.operation_processors.offline_operation_processor import Of
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.metadata_containers import MetadataContainer
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
+from neptune.objects import NeptuneObject
+from neptune.objects.abstract import NeptuneObjectCallback
 from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
-class ModelVersion(MetadataContainer):
+class ModelVersion(NeptuneObject):
     """Initializes a ModelVersion object from an existing or new model version.
 
     Before creating model versions, you must first register a model by creating a Model object.

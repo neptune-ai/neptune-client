@@ -36,7 +36,7 @@ from neptune.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 
 class SignalsProcessor(Daemon, SignalsVisitor):
@@ -44,23 +44,23 @@ class SignalsProcessor(Daemon, SignalsVisitor):
         self,
         *,
         period: float,
-        container: "MetadataContainer",
+        container: "NeptuneObject",
         queue: "Queue[Signal]",
         async_lag_threshold: float,
         async_no_progress_threshold: float,
-        async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = None,
-        async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = None,
+        async_lag_callback: Optional[Callable[["NeptuneObject"], None]] = None,
+        async_no_progress_callback: Optional[Callable[["NeptuneObject"], None]] = None,
         callbacks_interval: float = IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL,
         in_async: bool = True,
     ) -> None:
         super().__init__(sleep_time=period, name="CallbacksMonitor")
 
-        self._container: "MetadataContainer" = container
+        self._container: "NeptuneObject" = container
         self._queue: "Queue[Signal]" = queue
         self._async_lag_threshold: float = async_lag_threshold
         self._async_no_progress_threshold: float = async_no_progress_threshold
-        self._async_lag_callback: Optional[Callable[["MetadataContainer"], None]] = async_lag_callback
-        self._async_no_progress_callback: Optional[Callable[["MetadataContainer"], None]] = async_no_progress_callback
+        self._async_lag_callback: Optional[Callable[["NeptuneObject"], None]] = async_lag_callback
+        self._async_no_progress_callback: Optional[Callable[["NeptuneObject"], None]] = async_no_progress_callback
         self._callbacks_interval: float = callbacks_interval
         self._in_async: bool = in_async
 
@@ -119,7 +119,7 @@ class SignalsProcessor(Daemon, SignalsVisitor):
 
 
 def execute_callback(
-    *, callback: Callable[["MetadataContainer"], None], container: "MetadataContainer", in_async: bool
+    *, callback: Callable[["NeptuneObject"], None], container: "NeptuneObject", in_async: bool
 ) -> None:
     if in_async:
         Thread(target=callback, name="CallbackExecution", args=(container,), daemon=True).start()

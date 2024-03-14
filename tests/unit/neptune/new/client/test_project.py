@@ -41,7 +41,7 @@ from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
 )
-from neptune.metadata_containers.utils import (
+from neptune.objects.utils import (
     DATE_FORMAT,
     parse_dates,
     prepare_nql_query,
@@ -163,7 +163,7 @@ def test_parse_dates():
     assert parsed[0].attributes[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
 
 
-@patch("neptune.metadata_containers.utils.warn_once")
+@patch("neptune.objects.utils.warn_once")
 def test_parse_dates_wrong_format(mock_warn_once):
     entries = [
         LeaderboardEntry(
