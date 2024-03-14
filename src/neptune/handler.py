@@ -24,7 +24,6 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    NewType,
     Optional,
     Union,
 )
@@ -62,7 +61,7 @@ from neptune.internal.utils.paths import (
 )
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
-from neptune.metadata_containers.abstract import SupportsNamespaces
+from neptune.objects.abstract import SupportsNamespaces
 from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
@@ -70,9 +69,7 @@ from neptune.typing import ProgressBarType
 from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
-
-    NeptuneObject = NewType("NeptuneObject", MetadataContainer)
+    from neptune.objects import NeptuneObject
 
 
 def validate_path_not_protected(target_path: str, handler: "Handler"):
@@ -99,7 +96,7 @@ class Handler(SupportsNamespaces):
         SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
     }
 
-    def __init__(self, container: "MetadataContainer", path: str):
+    def __init__(self, container: "NeptuneObject", path: str):
         super().__init__()
         self._container = container
         self._path = str(path)
@@ -144,7 +141,7 @@ class Handler(SupportsNamespaces):
         return attr
 
     @property
-    def container(self) -> "MetadataContainer":
+    def container(self) -> "NeptuneObject":
         """Returns the container that the attribute is attached to."""
         return self._container
 

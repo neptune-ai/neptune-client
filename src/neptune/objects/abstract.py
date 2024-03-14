@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["SupportsNamespaces", "NeptuneObject", "NeptuneObjectCallback"]
+__all__ = ["SupportsNamespaces", "AbstractNeptuneObject", "NeptuneObjectCallback"]
 
 from abc import (
     ABC,
@@ -67,9 +67,9 @@ class SupportsNamespaces(ABC):
     def get_root_object(self) -> "SupportsNamespaces": ...
 
 
-class NeptuneObject(SupportsNamespaces, ABC):
+class AbstractNeptuneObject(SupportsNamespaces, ABC):
     @abstractmethod
     def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None: ...
 
 
-NeptuneObjectCallback = Callable[[NeptuneObject], None]
+NeptuneObjectCallback = Callable[[AbstractNeptuneObject], None]

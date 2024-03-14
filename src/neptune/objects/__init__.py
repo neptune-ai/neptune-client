@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 __all__ = [
-    "MetadataContainer",
+    "NeptuneObject",
     "Model",
     "ModelVersion",
     "Project",
     "Run",
 ]
 
-from neptune.metadata_containers.metadata_container import MetadataContainer
-from neptune.metadata_containers.model import Model
-from neptune.metadata_containers.model_version import ModelVersion
-from neptune.metadata_containers.project import Project
-from neptune.metadata_containers.run import Run
+from neptune.objects.model import Model
+from neptune.objects.model_version import ModelVersion
+from neptune.objects.neptune_object import NeptuneObject
+from neptune.objects.project import Project
+from neptune.objects.run import Run

@@ -25,7 +25,7 @@ from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 _logger = get_logger()
 
@@ -36,7 +36,7 @@ class PingBackgroundJob(BackgroundJob):
         self._thread: PingBackgroundJob.ReportingThread = None
         self._started = False
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "NeptuneObject"):
         self._thread = self.ReportingThread(self._period, container)
         self._thread.start()
         self._started = True
@@ -58,7 +58,7 @@ class PingBackgroundJob(BackgroundJob):
         self._thread.join(seconds)
 
     class ReportingThread(Daemon):
-        def __init__(self, period: float, container: "MetadataContainer"):
+        def __init__(self, period: float, container: "NeptuneObject"):
             super().__init__(sleep_time=period, name="NeptunePing")
             self._container = container
 

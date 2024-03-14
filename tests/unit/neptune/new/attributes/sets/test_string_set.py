@@ -32,7 +32,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestStringSet(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
         value = StringSetVal(["ert", "qwe"])
         expected = {"ert", "qwe"}
@@ -51,7 +51,7 @@ class TestStringSet(TestAttributeBase):
                 [call(ClearStringSet(path), wait=False), call(AddStrings(path, expected), wait=wait)]
             )
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign_empty(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -71,7 +71,7 @@ class TestStringSet(TestAttributeBase):
             with self.assertRaises(TypeError):
                 StringSet(MagicMock(), MagicMock()).assign(value)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_add(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -85,7 +85,7 @@ class TestStringSet(TestAttributeBase):
             var.add(["a", "bb", "ccc"], wait=wait)
             processor.enqueue_operation.assert_called_with(AddStrings(path, {"a", "bb", "ccc"}), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_add_single_value(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -99,7 +99,7 @@ class TestStringSet(TestAttributeBase):
             var.add("ccc", wait=wait)
             processor.enqueue_operation.assert_called_with(AddStrings(path, {"ccc"}), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_remove(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -113,7 +113,7 @@ class TestStringSet(TestAttributeBase):
             var.remove(["a", "bb", "ccc"], wait=wait)
             processor.enqueue_operation.assert_called_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_remove_single_value(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor
@@ -127,7 +127,7 @@ class TestStringSet(TestAttributeBase):
             var.remove("bb", wait=wait)
             processor.enqueue_operation.assert_called_with(RemoveStrings(path, {"bb"}), wait=wait)
 
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_clear(self, get_operation_processor):
         processor = MagicMock()
         get_operation_processor.return_value = processor

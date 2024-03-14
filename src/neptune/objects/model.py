@@ -55,9 +55,9 @@ from neptune.internal.init.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.metadata_containers import MetadataContainer
-from neptune.metadata_containers.abstract import NeptuneObjectCallback
-from neptune.metadata_containers.utils import build_raw_query
+from neptune.objects.abstract import NeptuneObjectCallback
+from neptune.objects.neptune_object import NeptuneObject
+from neptune.objects.utils import build_raw_query
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.typing import (
@@ -69,7 +69,7 @@ if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
 
 
-class Model(MetadataContainer):
+class Model(NeptuneObject):
     """Initializes a Model object from an existing or new model.
 
     You can use this to create a new model from code or to perform actions on existing models.
@@ -339,7 +339,7 @@ class Model(MetadataContainer):
             ],
             aggregator=NQLAggregator.AND,
         )
-        return MetadataContainer._fetch_entries(
+        return NeptuneObject._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
             query=nql,

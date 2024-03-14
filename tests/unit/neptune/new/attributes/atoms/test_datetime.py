@@ -30,7 +30,7 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestDatetime(TestAttributeBase):
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
         now = datetime.now()
         value_and_expected = [

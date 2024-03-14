@@ -5,6 +5,7 @@
 - Deleted `neptune.legacy` package ([#1685](https://github.com/neptune-ai/neptune-client/pull/1685))
 - Deleted `neptune.common` package ([#1693](https://github.com/neptune-ai/neptune-client/pull/1693))
 ([#1690](https://github.com/neptune-ai/neptune-client/pull/1690))
+- Renamed `metadata_containers` to `objects` ([#1696](https://github.com/neptune-ai/neptune-client/pull/1696))
 
 ### Features
 - ?

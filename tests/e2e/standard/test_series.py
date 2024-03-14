@@ -20,7 +20,7 @@ from contextlib import contextmanager
 import pytest
 from PIL import Image
 
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 from neptune.types import (
     FileSeries,
     FloatSeries,
@@ -43,7 +43,7 @@ BASIC_SERIES_TYPES = ["strings", "floats", "files"]
 class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_log(self, container: MetadataContainer, series_type: str):
+    def test_log(self, container: NeptuneObject, series_type: str):
         with self.run_then_assert(container, series_type) as (
             namespace,
             values,
@@ -55,35 +55,35 @@ class TestSeries(BaseE2ETest):
 
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_append(self, container: MetadataContainer, series_type: str):
+    def test_append(self, container: NeptuneObject, series_type: str):
         with self.run_then_assert(container, series_type) as (namespace, values, steps, timestamps):
             for value, step, timestamp in zip(values, steps, timestamps):
                 namespace.append(value, step=step, timestamp=timestamp)
 
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_extend(self, container: MetadataContainer, series_type: str):
+    def test_extend(self, container: NeptuneObject, series_type: str):
         with self.run_then_assert(container, series_type) as (namespace, values, steps, timestamps):
             namespace.extend([values[0]], steps=[steps[0]], timestamps=[timestamps[0]])
             namespace.extend(values[1:], steps=steps[1:], timestamps=timestamps[1:])
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_float_series_type_assign(self, container: MetadataContainer):
+    def test_float_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "floats") as (namespace, values, steps, timestamps):
             namespace.assign(FloatSeries(values=values, steps=steps, timestamps=timestamps))
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_string_series_type_assign(self, container: MetadataContainer):
+    def test_string_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "strings") as (namespace, values, steps, timestamps):
             namespace.assign(StringSeries(values=values, steps=steps, timestamps=timestamps))
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_file_series_type_assign(self, container: MetadataContainer):
+    def test_file_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "files") as (namespace, values, steps, timestamps):
             namespace.assign(FileSeries(values=values, steps=steps, timestamps=timestamps))
 
     @contextmanager
-    def run_then_assert(self, container: MetadataContainer, series_type: str):
+    def run_then_assert(self, container: NeptuneObject, series_type: str):
         steps = sorted(random.sample(range(1, 100), 5))
         timestamps = [
             1675876469.0,
