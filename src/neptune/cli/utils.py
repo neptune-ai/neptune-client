@@ -55,7 +55,7 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import Operation
 from neptune.internal.utils.logger import get_logger
-from neptune.metadata_containers.structure_version import StructureVersion
+from neptune.objects.structure_version import StructureVersion
 
 logger = get_logger(with_prefix=False)
 

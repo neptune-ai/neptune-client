@@ -22,11 +22,11 @@ from typing import TextIO
 
 from neptune.internal.threading.daemon import Daemon
 from neptune.logging import Logger as NeptuneLogger
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 
 
 class StdStreamCaptureLogger:
-    def __init__(self, container: MetadataContainer, attribute_name: str, stream: TextIO):
+    def __init__(self, container: NeptuneObject, attribute_name: str, stream: TextIO):
         self._logger = NeptuneLogger(container, attribute_name)
         self.stream = stream
         self._thread_local = threading.local()
@@ -71,7 +71,7 @@ class StdStreamCaptureLogger:
 
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
-    def __init__(self, container: MetadataContainer, attribute_name: str):
+    def __init__(self, container: NeptuneObject, attribute_name: str):
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
@@ -81,7 +81,7 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
-    def __init__(self, container: MetadataContainer, attribute_name: str):
+    def __init__(self, container: NeptuneObject, attribute_name: str):
         super().__init__(container, attribute_name, sys.stderr)
         sys.stderr = self
 

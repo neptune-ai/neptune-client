@@ -39,7 +39,7 @@ from neptune.internal.utils.runningmode import (
     in_notebook,
 )
 from neptune.typing import (
-    NeptuneObject,
+    AbstractNeptuneObject,
     ProgressBarCallback,
 )
 
@@ -70,7 +70,7 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     return StringifyValue(value=value)
 
 
-def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
+def stop_synchronization_callback(neptune_object: AbstractNeptuneObject) -> None:
     """Default callback function that stops a Neptune object's synchronization with the server.
 
     Args:

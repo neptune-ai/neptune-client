@@ -42,7 +42,7 @@ from neptune.constants import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.metadata_containers.structure_version import StructureVersion
+from neptune.objects.structure_version import StructureVersion
 
 if TYPE_CHECKING:
     from neptune.internal.backends.neptune_backend import NeptuneBackend

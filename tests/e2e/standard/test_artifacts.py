@@ -22,7 +22,7 @@ from pathlib import (
 
 import pytest
 
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -36,7 +36,7 @@ from tests.e2e.utils import (
 
 class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_local_creation(self, container: MetadataContainer):
+    def test_local_creation(self, container: NeptuneObject):
         first, second = self.gen_key(), self.gen_key()
         filename = fake.unique.file_name()
 
@@ -53,7 +53,7 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_assignment(self, container: MetadataContainer):
+    def test_assignment(self, container: NeptuneObject):
         first, second = self.gen_key(), self.gen_key()
         filename = fake.unique.file_name()
 
@@ -70,7 +70,7 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_local_download(self, container: MetadataContainer):
+    def test_local_download(self, container: NeptuneObject):
         first, second = self.gen_key(), self.gen_key()
         filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absolute=False)
 
@@ -98,7 +98,7 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_s3_creation(self, container: MetadataContainer, bucket, environment):
+    def test_s3_creation(self, container: NeptuneObject, bucket, environment):
         first, second, prefix = (
             self.gen_key(),
             self.gen_key(),
@@ -124,7 +124,7 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_s3_download(self, container: MetadataContainer, bucket, environment):
+    def test_s3_download(self, container: NeptuneObject, bucket, environment):
         first = self.gen_key()
         prefix = f"{environment.project}/{self.gen_key()}/{type(container).__name__}"
         filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absolute=False)
@@ -156,7 +156,7 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_s3_existing(self, container: MetadataContainer, bucket, environment):
+    def test_s3_existing(self, container: NeptuneObject, bucket, environment):
         first, second, prefix = (
             self.gen_key(),
             self.gen_key(),
@@ -196,7 +196,7 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_local_existing(self, container: MetadataContainer):
+    def test_local_existing(self, container: NeptuneObject):
         first, second = self.gen_key(), self.gen_key()
         filename, filepath = fake.file_name(), fake.file_path(depth=3, absolute=False)
 

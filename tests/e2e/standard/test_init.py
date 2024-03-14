@@ -17,7 +17,7 @@ import pytest
 
 import neptune
 from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
-from neptune.metadata_containers import (
+from neptune.objects import (
     Model,
     Project,
 )

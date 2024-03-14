@@ -37,7 +37,7 @@ from neptune.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 Val = StringSeriesVal
 Data = str
@@ -49,7 +49,7 @@ logger = get_logger()
 class StringSeries(
     Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues], max_batch_size=10, operation_cls=LogOperation
 ):
-    def __init__(self, container: "MetadataContainer", path: List[str]):
+    def __init__(self, container: "NeptuneObject", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 

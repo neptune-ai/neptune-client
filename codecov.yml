@@ -89,7 +89,7 @@ component_management:
         - src/neptune/common/**
         - src/neptune/internal/**
         - src/neptune/logging/**
-        - src/neptune/metadata_containers/**
+        - src/neptune/objects/**
         - src/neptune/new/**
         - src/neptune/types/**
         - src/neptune/vendor/**
