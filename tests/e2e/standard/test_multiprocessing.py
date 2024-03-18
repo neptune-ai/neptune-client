@@ -15,7 +15,7 @@ from tests.e2e.utils import (
 
 @unittest.skipIf(IS_WINDOWS, "Windows does not support fork")
 @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-def test_forking_child_parent_exchange(container_type: str, environment: Environment):
+def test_fork_child_parent_info_exchange(container_type: str, environment: Environment):
     barrier = Barrier(2)
     with initialize_container(container_type=container_type, project=environment.project) as container:
         child_pid = os.fork()

@@ -68,3 +68,23 @@ def test_post_init_trigger_side_effect_called():
 
     # then
     post_trigger_side_effect.assert_called_once()
+
+
+def test_post_trigger_side_effect_setter():
+    # given
+    operation_processor = mock.Mock(spec=OperationProcessor)
+    operation_processor_getter = mock.Mock(return_value=operation_processor)
+    post_trigger_side_effect = mock.Mock()
+    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter)
+
+    # when
+    lazy_wrapper.set_post_trigger_side_effect(post_trigger_side_effect)
+
+    # then
+    assert lazy_wrapper._post_trigger_side_effect is post_trigger_side_effect
+
+    # when
+    lazy_wrapper.start()
+
+    # then
+    post_trigger_side_effect.assert_called_once()
