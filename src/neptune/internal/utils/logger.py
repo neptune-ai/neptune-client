@@ -37,7 +37,7 @@ class GrabbableStdoutHandler(logging.StreamHandler):
     This class is like a StreamHandler using sys.stdout, but always uses
     whatever sys.stdout is currently set to rather than the value of
     sys.stderr at handler construction time.
-    This enables neptune to capture stdout regardless
+    This enables Neptune to capture stdout regardless
     of logging configuration time.
     Based on logging._StderrHandler from standard library.
     """
