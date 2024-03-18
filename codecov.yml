@@ -88,7 +88,6 @@ component_management:
         - src/neptune/cli/**
         - src/neptune/common/**
         - src/neptune/internal/**
-        - src/neptune/logging/**
         - src/neptune/objects/**
         - src/neptune/new/**
         - src/neptune/types/**
