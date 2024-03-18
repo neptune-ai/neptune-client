@@ -477,7 +477,7 @@ class TestTrashObjects(BaseE2ETest):
         # THEN expect none of its versions to be fetched anymore
         self.wait_for_containers([], model.fetch_model_versions_table)
 
-    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=5)
+    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=WAIT_DURATION)
     def wait_for_containers(self, ids: List[str], container_provider: Callable[[], Table]):
         fetched_entries = container_provider().to_pandas()
         actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []
@@ -506,7 +506,7 @@ class TestDeleteFromTrash:
             # then
             self.wait_for_containers_in_trash(0, 0, project)
 
-    @backoff.on_exception(backoff.expo, Exception, max_time=30)
+    @backoff.on_exception(backoff.expo, Exception, max_time=WAIT_DURATION)
     def wait_for_containers_in_trash(self, expected_run_count: int, expected_model_count: int, project: Project):
         trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
         trashed_models = project.fetch_models_table(trashed=True).to_rows()
