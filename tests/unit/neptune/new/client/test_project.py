@@ -42,7 +42,6 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.metadata_containers.utils import (
-    DATE_FORMAT,
     parse_dates,
     prepare_nql_query,
 )
@@ -148,12 +147,12 @@ def test_parse_dates():
                 AttributeWithProperties(
                     "attr1",
                     AttributeType.DATETIME,
-                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                    {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
                 AttributeWithProperties(
                     "attr2",
                     AttributeType.DATETIME,
-                    {"value": datetime(2024, 2, 5, 20, 37, 40, 915000).strftime(DATE_FORMAT)},
+                    {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
             ],
         )
