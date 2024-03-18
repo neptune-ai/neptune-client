@@ -21,7 +21,6 @@ import threading
 from neptune import Run
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
-from neptune.logging import Logger
 from neptune.version import version as neptune_version
 
 INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-python-logger"
@@ -58,13 +57,11 @@ class NeptuneHandler(logging.Handler):
     def __init__(self, *, run: Run, level=logging.NOTSET, path: str = None):
         verify_type("run", run, Run)
         verify_type("level", level, int)
-        if path is None:
-            path = f"{run.monitoring_namespace}/python_logger"
-        verify_type("path", path, str)
+        verify_type("path", path, (str, type(None)))
 
         super().__init__(level=level)
+        self._path = path if path else f"{run.monitoring_namespace}/python_logger"
         self._run = run
-        self._logger = Logger(run, path)
         self._thread_local = threading.local()
 
         self._run[INTEGRATION_VERSION_KEY] = str(neptune_version)
@@ -77,6 +74,6 @@ class NeptuneHandler(logging.Handler):
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)
-                self._logger.log(message)
+                self._run[self._path].append(message)
             finally:
                 self._thread_local.inside_write = False

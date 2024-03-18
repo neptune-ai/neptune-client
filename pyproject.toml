@@ -296,7 +296,6 @@ module = [
     "neptune.internal.utils.uncaught_exception_handler",
     "neptune.internal.websockets.websocket_signals_background_job",
     "neptune.internal.websockets.websockets_factory",
-    "neptune.logging.logger",
     "neptune.management.exceptions",
     "neptune.management.internal.api",
     "neptune.management.internal.dto",
