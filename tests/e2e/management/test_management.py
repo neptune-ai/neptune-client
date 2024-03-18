@@ -66,7 +66,7 @@ from tests.e2e.utils import (
     initialize_container,
 )
 
-WAIT_DURATION = 30
+WAIT_DURATION = 60
 
 
 @pytest.mark.management

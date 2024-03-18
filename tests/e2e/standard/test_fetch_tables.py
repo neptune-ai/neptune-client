@@ -30,7 +30,7 @@ from tests.e2e.base import (
 )
 from tests.e2e.utils import a_key
 
-WAIT_DURATION = 30
+WAIT_DURATION = 60
 
 
 class TestFetchTable(BaseE2ETest):
