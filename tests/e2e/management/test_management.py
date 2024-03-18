@@ -66,6 +66,8 @@ from tests.e2e.utils import (
     initialize_container,
 )
 
+WAIT_DURATION = 30
+
 
 @pytest.mark.management
 class TestManagement(BaseE2ETest):
@@ -492,11 +494,11 @@ class TestDeleteFromTrash:
         run_id_1 = run1["sys/id"].fetch()
         run_id_2 = run2["sys/id"].fetch()
         model_id = model["sys/id"].fetch()
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
             trash_objects(environment.project, [run_id_1, run_id_2, model_id])
-            time.sleep(10)
+            time.sleep(WAIT_DURATION)
 
             # when
             clear_trash(environment.project)
