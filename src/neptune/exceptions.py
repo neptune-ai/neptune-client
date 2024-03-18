@@ -638,7 +638,7 @@ Your version of the Neptune client library ({current_version}) is no longer supp
 In order to update the Neptune client library, run the following command in your terminal:
     {bash}pip install -U neptune{end}
 Or if you are using Conda, run the following instead:
-    {bash}conda update -c conda-forge neptune-client{end}
+    {bash}conda update -c conda-forge neptune{end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
