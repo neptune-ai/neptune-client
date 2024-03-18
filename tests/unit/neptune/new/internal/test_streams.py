@@ -24,17 +24,6 @@ from neptune.internal.streams.std_stream_capture_logger import (
     StdoutCaptureLogger,
     StdStreamCaptureLogger,
 )
-from neptune.logging import Logger as NeptuneLogger
-
-
-class FakeLogger:
-    def __init__(self, event_to_wait: threading.Event, real_logger: NeptuneLogger):
-        self._event_to_wait = event_to_wait
-        self._real_logger = real_logger
-
-    def log(self, data):
-        self._event_to_wait.wait()
-        self._real_logger.log(data)
 
 
 class TestStdStreamCaptureLogger(unittest.TestCase):
@@ -49,7 +38,7 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
             logger.close()
 
             self.assertListEqual(
-                mock_run[attr_name].log.call_args_list,
+                mock_run[attr_name].append.call_args_list,
                 [
                     (("testing",), {}),
                     (("\n",), {}),
@@ -79,7 +68,6 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
 
         logger = StdStreamCaptureLogger(mock_run, attr_name, stream)
         done_waiting = threading.Event()
-        logger._logger = FakeLogger(done_waiting, logger._logger)
 
         # The logger is blocked in background, the main thread is still awake
         logger.write("testing")
@@ -91,7 +79,7 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
         done_waiting.set()
         logger.close()
         self.assertListEqual(
-            mock_run[attr_name].log.call_args_list,
+            mock_run[attr_name].append.call_args_list,
             [
                 (("testing",), {}),
             ],

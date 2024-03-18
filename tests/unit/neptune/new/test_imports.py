@@ -93,7 +93,6 @@ from neptune.exceptions import (
 )
 from neptune.handler import Handler
 from neptune.integrations.python_logger import NeptuneHandler
-from neptune.logging.logger import Logger
 
 # ------------- management ---------------
 from neptune.management.exceptions import (
