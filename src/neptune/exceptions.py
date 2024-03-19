@@ -1169,11 +1169,16 @@ For syntax help, see https://docs.neptune.ai/usage/nql/
 class NeptuneUnsupportedFunctionalityException(NeptuneException):
     def __init__(self):
         message = """
-{h1}
-----NeptuneUnsupportedFunctionalityException----------------------------
-{end}
-You're using neptune 2.0, which is in Beta.
-Some functionality that you tried to use is not supported in the installed version.
-We will gradually add missing features to the Beta. Check that you're on the latest version.
+TODO:
+Nice message that says:
+    1. Model/ModelVersion/Project is not supported in 2.0.0 version yet.
+    2. Points to beta neptune docs website.
+    3. Promises that it will be supported in the future releases
+    4. Informs that you are using beta version which is not yet fully functional.
+    5. Suggests to verify if user is using the latest version of the client.
+
+Notes:
+    1. order is yet to be determined
+    2. name of the exception is subject to change
 """
         super().__init__(message)
