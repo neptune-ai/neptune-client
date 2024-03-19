@@ -17,30 +17,11 @@ __all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake"]
 
 import inspect
 
-import pytest
 from faker import Faker
-
-from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 
 fake = Faker()
 
-AVAILABLE_CONTAINERS = ["project", "run"]
-AVAILABLE_CONTAINERS = [
-    pytest.param("project"),
-    pytest.param("run"),
-    pytest.param(
-        "model",
-        marks=pytest.mark.xfail(
-            reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-        ),
-    ),
-    pytest.param(
-        "model_version",
-        marks=pytest.mark.xfail(
-            reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-        ),
-    ),
-]
+AVAILABLE_CONTAINERS = ["run"]
 
 
 class BaseE2ETest:

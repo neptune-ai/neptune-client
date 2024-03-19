@@ -186,6 +186,7 @@ class TestInitProject(BaseE2ETest):
         assert read_only_project[key].fetch() == val
 
 
+@pytest.skip("ModelVersion is not supported")
 class TestInitModel(BaseE2ETest):
     @pytest.mark.parametrize(
         "container",
