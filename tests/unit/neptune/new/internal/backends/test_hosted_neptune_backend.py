@@ -575,7 +575,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -587,7 +587,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -602,7 +602,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self.assertTrue("minimum required version is >=0.5.14" in str(ex.exception))
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -614,7 +614,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_client_version",
+        "neptune.internal.backends.hosted_client.neptune_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
