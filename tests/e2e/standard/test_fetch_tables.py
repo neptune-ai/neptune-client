@@ -30,6 +30,8 @@ from tests.e2e.base import (
 )
 from tests.e2e.utils import a_key
 
+WAIT_DURATION = 60
+
 
 class TestFetchTable(BaseE2ETest):
     @pytest.mark.parametrize("with_query", [True, False])
@@ -45,7 +47,7 @@ class TestFetchTable(BaseE2ETest):
             run["sys/tags"].add(tag2)
 
         # wait for the cache to fill
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         if with_query:
             kwargs = {"query": f"(sys/tags: stringSet CONTAINS '{tag1}')"}
@@ -68,7 +70,7 @@ class TestFetchTable(BaseE2ETest):
                 pass
 
         # wait for the elasticsearch cache to fill
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         query = "" if with_query else None
         versions_table = sorted(
@@ -105,7 +107,7 @@ class TestFetchTable(BaseE2ETest):
             container.sync()
 
         # wait for the cache to fill
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         containers_as_rows = get_containers_as_rows()
         container1 = next(filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows))
@@ -186,7 +188,7 @@ class TestFetchTable(BaseE2ETest):
             with neptune.init_model_version(model=model_sys_id, name=name, project=environment.project) as mv:
                 mv[key] = val
 
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         for val, expected_names in zip(vals + ["non_existent_val"], [[names[0]], [names[1]], []]):
             model_versions = container.fetch_model_versions_table(
@@ -202,7 +204,7 @@ class TestFetchTable(BaseE2ETest):
         with neptune.init_run(project=environment.project, tags=tag) as run:
             run["some_random_val"] = random_val
 
-            time.sleep(10)
+            time.sleep(WAIT_DURATION)
 
             if with_query:
                 kwargs = {"query": "(sys/state: experimentState = running)"}
@@ -215,7 +217,7 @@ class TestFetchTable(BaseE2ETest):
             assert tag in runs["sys/tags"].values
             assert random_val in runs["some_random_val"].values
 
-        time.sleep(30)
+        time.sleep(WAIT_DURATION)
 
         if with_query:
             kwargs = {"query": "(sys/state: experimentState = idle)"}
@@ -240,7 +242,7 @@ class TestFetchTable(BaseE2ETest):
             run["metrics/accuracy"] = 0.90
             run["some_val"] = "a"
 
-        time.sleep(10)
+        time.sleep(WAIT_DURATION)
         query = "" if with_query else None
 
         # when
@@ -298,7 +300,7 @@ class TestFetchTable(BaseE2ETest):
             for i in range(5):
                 run["metrics/accuracy"].log(0.95)
 
-        time.sleep(30)
+        time.sleep(WAIT_DURATION)
 
         # then
         with pytest.raises(ValueError):
@@ -310,7 +312,7 @@ class TestFetchTable(BaseE2ETest):
         with neptune.init_run(project=environment.project) as run:
             run["some_timestamp"] = datetime.datetime.now()
 
-        time.sleep(30)
+        time.sleep(WAIT_DURATION)
 
         # when
         query = "" if with_query else None
@@ -331,7 +333,7 @@ class TestFetchTable(BaseE2ETest):
         with neptune.init_run(project=environment.project) as run:
             run["some_val"] = "b"
 
-        time.sleep(30)
+        time.sleep(WAIT_DURATION)
 
         # when
         query = "" if with_query else None
@@ -350,7 +352,7 @@ class TestFetchTable(BaseE2ETest):
         with neptune.init_run(project=environment.project, custom_run_id="run2") as run:
             run["key"] = val
 
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         # when
         runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=False).to_pandas()
@@ -364,7 +366,7 @@ class TestFetchTable(BaseE2ETest):
             project=environment.project, ids=runs[runs["sys/custom_run_id"] == "run2"]["sys/id"].item()
         )
 
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=True).to_pandas()
 
@@ -397,7 +399,7 @@ class TestFetchTable(BaseE2ETest):
         with neptune.init_model(project=environment.project, key=a_key(), name="name-2") as model:
             model["key"] = val
 
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         # when
         models = project.fetch_models_table(
@@ -413,7 +415,7 @@ class TestFetchTable(BaseE2ETest):
             project=environment.project, ids=models[models["sys/name"] == "name-1"]["sys/id"].item()
         )
 
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         trashed_vals = [True, False, None]
         expected_model_names = [["name-1"], ["name-2"], ["name-1", "name-2"]]

@@ -66,6 +66,8 @@ from tests.e2e.utils import (
     initialize_container,
 )
 
+WAIT_DURATION = 60
+
 
 @pytest.mark.management
 class TestManagement(BaseE2ETest):
@@ -475,7 +477,7 @@ class TestTrashObjects(BaseE2ETest):
         # THEN expect none of its versions to be fetched anymore
         self.wait_for_containers([], model.fetch_model_versions_table)
 
-    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=5)
+    @backoff.on_exception(partial(backoff.expo, base=4), Exception, max_time=WAIT_DURATION)
     def wait_for_containers(self, ids: List[str], container_provider: Callable[[], Table]):
         fetched_entries = container_provider().to_pandas()
         actual_ids = fetched_entries["sys/id"].tolist() if len(fetched_entries) > 0 else []
@@ -492,11 +494,11 @@ class TestDeleteFromTrash:
         run_id_1 = run1["sys/id"].fetch()
         run_id_2 = run2["sys/id"].fetch()
         model_id = model["sys/id"].fetch()
-        time.sleep(5)
+        time.sleep(WAIT_DURATION)
 
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
             trash_objects(environment.project, [run_id_1, run_id_2, model_id])
-            time.sleep(10)
+            time.sleep(WAIT_DURATION)
 
             # when
             clear_trash(environment.project)
@@ -504,7 +506,7 @@ class TestDeleteFromTrash:
             # then
             self.wait_for_containers_in_trash(0, 0, project)
 
-    @backoff.on_exception(backoff.expo, Exception, max_time=30)
+    @backoff.on_exception(backoff.expo, Exception, max_time=WAIT_DURATION)
     def wait_for_containers_in_trash(self, expected_run_count: int, expected_model_count: int, project: Project):
         trashed_runs = project.fetch_runs_table(trashed=True).to_rows()
         trashed_models = project.fetch_models_table(trashed=True).to_rows()
