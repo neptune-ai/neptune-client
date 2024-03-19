@@ -21,7 +21,7 @@ from faker import Faker
 
 fake = Faker()
 
-AVAILABLE_CONTAINERS = ["project", "run", "model", "model_version"]
+AVAILABLE_CONTAINERS = ["run"]
 
 
 class BaseE2ETest:
