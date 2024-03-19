@@ -48,7 +48,7 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.credentials import Credentials
 from neptune.internal.oauth import NeptuneAuthenticator
-from neptune.version import version as neptune_client_version
+from neptune.version import version as neptune_version
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
@@ -89,7 +89,7 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
     update_session_proxies(http_client.session, proxies)
 
     user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
-        lib_version=neptune_client_version,
+        lib_version=neptune_version,
         system=platform.platform(),
         python_version=platform.python_version(),
     )
@@ -136,7 +136,7 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
 
     client_config = ClientConfig.from_api_response(config)
     if not client_config.version_info:
-        raise NeptuneClientUpgradeRequiredError(neptune_client_version, max_version="0.4.111")
+        raise NeptuneClientUpgradeRequiredError(neptune_version, max_version="0.4.111")
     return client_config
 
 
@@ -148,7 +148,7 @@ def create_http_client_with_auth(
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
 
-    verify_client_version(client_config, neptune_client_version)
+    verify_client_version(client_config, neptune_version)
 
     endpoint_url = None
     if config_api_url != client_config.api_url:
