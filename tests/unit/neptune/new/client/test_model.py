@@ -46,6 +46,7 @@ AN_API_MODEL = api_model()
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@unittest.skip("Model is not supported")
 class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     @staticmethod
     def call_init(**kwargs):

@@ -26,6 +26,7 @@ from neptune.table import (
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
+@unittest.skip("ModelVersion is not supported")
 class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL_VERSION
 
