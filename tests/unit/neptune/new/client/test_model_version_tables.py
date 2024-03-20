@@ -17,7 +17,10 @@
 import unittest
 from typing import List
 
+import pytest
+
 from neptune import init_model
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.container_type import ContainerType
 from neptune.table import (
     Table,
@@ -26,7 +29,7 @@ from neptune.table import (
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
-@unittest.skip("ModelVersion is not supported")
+@pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL_VERSION
 
