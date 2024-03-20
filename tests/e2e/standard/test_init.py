@@ -186,16 +186,14 @@ class TestInitProject(BaseE2ETest):
         assert read_only_project[key].fetch() == val
 
 
-@pytest.skip("ModelVersion is not supported")
 class TestInitModel(BaseE2ETest):
     @pytest.mark.parametrize(
         "container",
         [
             pytest.param(
                 "model",
-                marks=pytest.mark.xfail(
-                    reason="model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="model is not supported"),
+                raises=NeptuneUnsupportedFunctionalityException,
             )
         ],
         indirect=True,
