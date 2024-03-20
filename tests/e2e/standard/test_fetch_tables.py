@@ -191,7 +191,18 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
 
-    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model",
+                marks=pytest.mark.xfail(
+                    reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_fetch_model_versions_table_by_query(self, container, environment):
         model_sys_id = container["sys/id"].fetch()
         key = "some_key"
