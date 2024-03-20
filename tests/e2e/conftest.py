@@ -31,6 +31,7 @@ from neptune.management import (
 )
 from neptune.management.internal.utils import normalize_project_name
 from tests.e2e.utils import (
+    AVAILABLE_CONTAINER_TYPES,
     Environment,
     RawEnvironment,
     a_project_name,
@@ -91,13 +92,19 @@ def environment():
 
 @pytest.fixture(scope="session")
 def container(request, environment):
-    exp = initialize_container(container_type=request.param, project=environment.project)
+    container_type = request.param
+    if container_type not in AVAILABLE_CONTAINER_TYPES:
+        pytest.skip(f"Container type {container_type} is not supported")
+    exp = initialize_container(container_type=container_type, project=environment.project)
     yield exp
     exp.stop()
 
 
 @pytest.fixture(scope="function")
 def container_fn_scope(request, environment):
+    container_type = request.param
+    if container_type not in AVAILABLE_CONTAINER_TYPES:
+        pytest.skip(f"Container type {container_type} is not supported")
     exp = initialize_container(container_type=request.param, project=environment.project)
     yield exp
     exp.stop()
@@ -105,7 +112,11 @@ def container_fn_scope(request, environment):
 
 @pytest.fixture(scope="session")
 def containers_pair(request, environment):
-    container_a_type, container_b_type = request.param
+    container_a_type, container_b_type = request.param.split("-")
+    if container_a_type not in AVAILABLE_CONTAINER_TYPES:
+        pytest.skip(f"Container type {container_a_type} is not supported")
+    if container_b_type not in AVAILABLE_CONTAINER_TYPES:
+        pytest.skip(f"Container type {container_b_type} is not supported")
     container_a = initialize_container(container_type=container_a_type, project=environment.project)
     container_b = initialize_container(container_type=container_b_type, project=environment.project)
 
