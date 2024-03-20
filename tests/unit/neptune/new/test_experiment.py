@@ -20,6 +20,8 @@ import unittest
 from datetime import datetime
 from unittest import mock
 
+import pytest
+
 from neptune import (
     ANONYMOUS_API_TOKEN,
     Run,
@@ -255,7 +257,7 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(expected_exception):
                     exp["series"].log(1)
 
-    @unittest.skip("Model is not supported")
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_protected_paths(self):
         model = init_model(key="MOD", mode="debug")
         model_version = init_model_version(model=model["sys/id"].fetch(), mode="debug")
