@@ -26,7 +26,15 @@ from tests.e2e.base import (
 )
 
 # List of every possible container type pair for instance: "run-run, run-model, model-model_version, ..."
-ALL_CONTAINERS_PAIRS = list(map("-".join, itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS)))
+
+ALL_CONTAINERS_PAIRS = list(
+    map(
+        lambda p: pytest.param(
+            p[0].values + p[1].values, marks=p[0].marks + p[1].marks if p[0].marks != p[1].marks else p[0].marks
+        ),
+        itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS),
+    )
+)
 
 
 class TestCopying(BaseE2ETest):
