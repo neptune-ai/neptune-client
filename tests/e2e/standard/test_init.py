@@ -16,7 +16,10 @@
 import pytest
 
 import neptune
-from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
+from neptune.exceptions import (
+    NeptuneModelKeyAlreadyExistsError,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.objects import (
     Model,
     Project,
@@ -183,9 +186,18 @@ class TestInitProject(BaseE2ETest):
         assert read_only_project[key].fetch() == val
 
 
-@pytest.skip("ModelVersion is not supported")
 class TestInitModel(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model",
+                marks=pytest.mark.skip(reason="model is not supported"),
+                raises=NeptuneUnsupportedFunctionalityException,
+            )
+        ],
+        indirect=True,
+    )
     def test_fail_reused_model_key(self, container: Model, environment):
         with pytest.raises(NeptuneModelKeyAlreadyExistsError):
             model_key = container["sys/id"].fetch().split("-")[1]
