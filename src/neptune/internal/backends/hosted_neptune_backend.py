@@ -1074,8 +1074,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
+        step_size: Optional[int] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
-        default_step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+        default_step_size = step_size or int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         step_size = min(default_step_size, limit) if limit else default_step_size
 
@@ -1084,6 +1085,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         if sort_by == "sys/creation_time":
             sort_by_column_type = AttributeType.DATETIME.value
+        if sort_by == "sys/id":
+            sort_by_column_type = AttributeType.STRING.value
         else:
             sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
             sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
