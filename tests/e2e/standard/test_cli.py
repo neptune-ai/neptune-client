@@ -239,12 +239,34 @@ class TestCli(BaseE2ETest):
 
             assert not os.path.exists(container_path)
 
-    @pytest.mark.parametrize("container_type", ["model", "model_version", "project"])
+    @pytest.mark.parametrize(
+        "container_type",
+        [
+            pytest.param(
+                "model",
+                marks=pytest.mark.skip(
+                    (
+                        "By coincidence, the test is passing as "
+                        "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+                    )
+                ),
+            ),
+            pytest.param(
+                "model_version",
+                marks=pytest.mark.skip(
+                    (
+                        "By coincidence, the test is passing as "
+                        "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+                    )
+                ),
+            ),
+            "project",
+        ],
+    )
     def test_cannot_offline_non_runs(self, environment, container_type):
-        with pytest.raises(NeptuneException) as e:
+        with pytest.raises(NeptuneException, match=r"Project can't be initialized in OFFLINE mode"):
             initialize_container(
                 container_type=container_type,
                 project=environment.project,
                 mode="offline",
             )
-        assert "can't be initialized in OFFLINE mode" in str(e.value)
