@@ -38,7 +38,6 @@ from math import sqrt
 from time import perf_counter
 
 import numpy
-import pytest
 from attr import dataclass
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
@@ -164,11 +163,9 @@ def initialize_container(container_type, project, **extra_args):
         return neptune.init_run(project=project, **extra_args)
 
     if container_type == "model":
-        pytest.skip("model is not supported")
         return neptune.init_model(key=a_key(), project=project, **extra_args)
 
     if container_type == "model_version":
-        pytest.skip("model_version is not supported")
         model = neptune.init_model(key=a_key(), project=project, **extra_args)
         model_sys_id = model["sys/id"].fetch()
         model.stop()
@@ -187,7 +184,6 @@ def reinitialize_container(sys_id: str, container_type: str, project: str, **kwa
         return neptune.init_run(with_id=sys_id, project=project, **kwargs)
 
     if container_type == "model":
-        pytest.skip("Model is not supported")
         return neptune.init_model(with_id=sys_id, project=project, **kwargs)
 
     if container_type == "model_version":

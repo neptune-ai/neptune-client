@@ -537,7 +537,7 @@ class TestDeleteFromTrash:
             time.sleep(10)
 
             # then
-            self.wait_for_containers_in_trash(0, 0, project)
+            self.wait_for_containers_in_trash(expected_run_count=n_runs, expected_model_count=n_models, project=project)
 
     @backoff.on_exception(backoff.expo, Exception, max_time=30)
     def wait_for_containers_in_trash(self, expected_run_count: int, expected_model_count: int, project: Project):
