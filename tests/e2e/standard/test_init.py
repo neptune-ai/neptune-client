@@ -192,8 +192,9 @@ class TestInitModel(BaseE2ETest):
         [
             pytest.param(
                 "model",
-                marks=pytest.mark.skip(reason="model is not supported"),
-                raises=NeptuneUnsupportedFunctionalityException,
+                marks=pytest.mark.skip(
+                    reason="model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
             )
         ],
         indirect=True,
