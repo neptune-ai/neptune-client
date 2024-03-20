@@ -65,6 +65,8 @@ DISABLE_SYSLOG_KWARGS = {
     "capture_hardware_metrics": False,
 }
 
+AVAILABLE_CONTAINER_TYPES = set((ContainerType.RUN, ContainerType.PROJECT))
+
 
 @contextmanager
 def with_check_if_file_appears(filepath):
