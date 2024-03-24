@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.10.0
+## neptune 1.10.0
 
 ### Features
 - Added `get_workspace_status()` method to management API ([#1662](https://github.com/neptune-ai/neptune-client/pull/1662))
