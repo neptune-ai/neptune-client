@@ -1,19 +1,16 @@
-import unittest.mock as mock
+import mock
 
 from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 
 
-def test_lazy_initialization():
-    # given
-    operation_processor = mock.Mock(spec=OperationProcessor)
-    operation_processor_getter = mock.Mock(return_value=operation_processor)
-
+@mock.patch("neptune.internal.operation_processors.lazy_operation_processor_wrapper.get_operation_processor")
+def test_lazy_initialization(get_operation_processor):
     # when
-    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter)
+    lazy_wrapper = LazyOperationProcessorWrapper()
 
     # then
-    operation_processor_getter.assert_not_called()
+    get_operation_processor.assert_not_called()
     assert not lazy_wrapper.evaluated
 
     # when
@@ -21,33 +18,35 @@ def test_lazy_initialization():
     lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
 
     # then
-    operation_processor_getter.assert_called_once()
+    get_operation_processor.assert_called_once()
     assert lazy_wrapper.evaluated
 
 
-def test_call_propagation_to_wrapped():
+@mock.patch("neptune.internal.operation_processors.lazy_operation_processor_wrapper.get_operation_processor")
+def test_call_propagation_to_wrapped(get_operation_processor):
     # given
     operation_processor = mock.Mock(spec=OperationProcessor)
-    operation_processor_getter = mock.Mock(return_value=operation_processor)
-    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter)
+    get_operation_processor.return_value = operation_processor
+    lazy_wrapper = LazyOperationProcessorWrapper(some_kwarg="some")
 
     # when
     arg_mock = mock.Mock()
     lazy_wrapper.enqueue_operation(arg_mock, wait=True)
 
     # then
+    get_operation_processor.assert_called_once_with(some_kwarg="some")
     operation_processor.enqueue_operation.assert_called_once_with(arg_mock, wait=True)
 
     # when
     with mock.patch.object(
         LazyOperationProcessorWrapper, "operation_storage", new_callable=mock.PropertyMock
     ) as operation_storage:
-        lazy_wrapper.operation_storage
+        _ = lazy_wrapper.operation_storage
 
     # then
     operation_storage.assert_called_once()
 
-    for method in ["start", "pause", "resume", "flush", "wait", "stop", "close"]:
+    for method in ["pause", "resume", "flush", "wait", "stop", "close"]:
         # when
         getattr(lazy_wrapper, method)()
 
@@ -55,36 +54,15 @@ def test_call_propagation_to_wrapped():
         getattr(operation_processor, method).assert_called_once()
 
 
-def test_post_init_trigger_side_effect_called():
-
+@mock.patch("neptune.internal.operation_processors.lazy_operation_processor_wrapper.get_operation_processor")
+def test_post_init_trigger_start_called(get_operation_processor):
     # given
     operation_processor = mock.Mock(spec=OperationProcessor)
-    operation_processor_getter = mock.Mock(return_value=operation_processor)
-    post_trigger_side_effect = mock.Mock()
-    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter, post_trigger_side_effect)
+    get_operation_processor.return_value = operation_processor
+    lazy_wrapper = LazyOperationProcessorWrapper()
 
     # when
     lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
 
     # then
-    post_trigger_side_effect.assert_called_once()
-
-
-def test_post_trigger_side_effect_setter():
-    # given
-    operation_processor = mock.Mock(spec=OperationProcessor)
-    operation_processor_getter = mock.Mock(return_value=operation_processor)
-    post_trigger_side_effect = mock.Mock()
-    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter)
-
-    # when
-    lazy_wrapper.set_post_trigger_side_effect(post_trigger_side_effect)
-
-    # then
-    assert lazy_wrapper._post_trigger_side_effect is post_trigger_side_effect
-
-    # when
-    lazy_wrapper.start()
-
-    # then
-    post_trigger_side_effect.assert_called_once()
+    operation_processor.start.assert_called_once()

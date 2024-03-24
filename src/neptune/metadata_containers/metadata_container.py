@@ -24,10 +24,7 @@ import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from functools import (
-    partial,
-    wraps,
-)
+from functools import wraps
 from queue import Queue
 from typing import (
     TYPE_CHECKING,
@@ -246,18 +243,14 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
             self._op_processor.close()
             self._signals_queue = Queue()
             self._op_processor = LazyOperationProcessorWrapper(
-                operation_processor_getter=partial(
-                    get_operation_processor,
-                    mode=self._mode,
-                    container_id=self._id,
-                    container_type=self.container_type,
-                    backend=self._backend,
-                    lock=self._lock,
-                    flush_period=self._flush_period,
-                    queue=self._signals_queue,
-                ),
+                mode=self._mode,
+                container_id=self._id,
+                container_type=self.container_type,
+                backend=self._backend,
+                lock=self._lock,
+                flush_period=self._flush_period,
+                queue=self._signals_queue,
             )
-            self._op_processor.set_post_trigger_side_effect(self._op_processor.start)
 
             # TODO: Every implementation of background job should handle fork by itself.
             jobs = []
