@@ -14,7 +14,7 @@ def test_lazy_initialization():
 
     # then
     operation_processor_getter.assert_not_called()
-    assert not lazy_wrapper.evaluated
+    assert not lazy_wrapper.is_evaluated
 
     # when
     lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
@@ -22,7 +22,7 @@ def test_lazy_initialization():
 
     # then
     operation_processor_getter.assert_called_once()
-    assert lazy_wrapper.evaluated
+    assert lazy_wrapper.is_evaluated
 
 
 def test_call_propagation_to_wrapped():
@@ -47,7 +47,7 @@ def test_call_propagation_to_wrapped():
     # then
     operation_storage.assert_called_once()
 
-    for method in ["start", "pause", "resume", "flush", "wait", "stop", "close"]:
+    for method in ["pause", "resume", "flush", "wait", "stop", "close"]:
         # when
         getattr(lazy_wrapper, method)()
 
@@ -55,16 +55,16 @@ def test_call_propagation_to_wrapped():
         getattr(operation_processor, method).assert_called_once()
 
 
-def test_post_init_trigger_side_effect_called():
+def test_op_processor_started_after_evaluation():
 
     # given
     operation_processor = mock.Mock(spec=OperationProcessor)
     operation_processor_getter = mock.Mock(return_value=operation_processor)
-    post_trigger_side_effect = mock.Mock()
-    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter, post_trigger_side_effect)
+    lazy_wrapper = LazyOperationProcessorWrapper(operation_processor_getter)
 
     # when
-    lazy_wrapper.enqueue_operation(mock.Mock(), wait=False)
+    lazy_wrapper.evaluate()
+    lazy_wrapper.evaluate()
 
     # then
-    post_trigger_side_effect.assert_called_once()
+    operation_processor.start.assert_called_once()

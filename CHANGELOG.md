@@ -10,6 +10,7 @@
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
 - Allow user to control logging level ([#1679](https://github.com/neptune-ai/neptune-client/pull/1679))
+- Fix sending data with forked container ([#1692](https://github.com/neptune-ai/neptune-client/pull/1692))
 
 ### Changes
 - Improve dependency installation checking ([#1670](https://github.com/neptune-ai/neptune-client/pull/1670))
