@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune_tensorflow-keras", suggestion="tensorflow-keras")
+require_installed("neptune_tensorflow_keras", suggestion="tensorflow-keras")
 
 from neptune_tensorflow_keras.impl import *  # noqa: F401,F403,E402
