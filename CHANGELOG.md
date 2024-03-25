@@ -1,3 +1,9 @@
+## neptune 1.10.1
+
+### Fixes
+- Fixed requirement checking for integrations ([#1711](https://github.com/neptune-ai/neptune-client/pull/1711))
+
+
 ## neptune 1.10.0
 
 ### Features

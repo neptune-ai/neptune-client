@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-tensorboard", suggestion="tensorboard")
+require_installed("neptune_tensorboard", suggestion="tensorboard")
 
 from neptune_tensorboard.impl import *  # noqa: F401,F403,E402

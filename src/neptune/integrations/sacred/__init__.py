@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-sacred", suggestion="sacred")
+require_installed("neptune_sacred", suggestion="sacred")
 
 from neptune_sacred.impl import *  # noqa: F401,F403,E402

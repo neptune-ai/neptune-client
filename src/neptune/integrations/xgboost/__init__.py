@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-xgboost", suggestion="xgboost")
+require_installed("neptune_xgboost", suggestion="xgboost")
 
 from neptune_xgboost.impl import *  # noqa: F401,F403,E402

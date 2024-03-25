@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-aws", suggestion="aws")
+require_installed("neptune_aws", suggestion="aws")
 
 from neptune_aws.impl import *  # noqa: F401,F403,E402
