@@ -36,19 +36,26 @@ RT = TypeVar("RT")
 
 def trigger_evaluation(method: Callable[..., RT]) -> Callable[..., RT]:
     def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> RT:
-        if self._operation_processor is None:
-            self._operation_processor = self._operation_processor_getter()
-            if self._post_trigger_side_effect is not None:
-                self._post_trigger_side_effect()
+        self.evaluate()
         return method(self, *args, **kwargs)
 
     return _wrapper
 
 
-def noop_if_not_triggered(method: Callable[..., RT]) -> Callable[..., RT]:
-    def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> RT:
-        if self._operation_processor is not None:
+def noop_if_not_evaluated(method: Callable[..., RT]) -> Callable[..., Optional[RT]]:
+    def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> Optional[RT]:
+        if self.is_evaluated:
             return method(self, *args, **kwargs)
+        return None
+
+    return _wrapper
+
+
+def noop_if_evaluated(method: Callable[..., RT]) -> Callable[..., Optional[RT]]:
+    def _wrapper(self: LazyOperationProcessorWrapper, *args: Any, **kwargs: Any) -> Optional[RT]:
+        if not self.is_evaluated:
+            return method(self, *args, **kwargs)
+        return None
 
     return _wrapper
 
@@ -63,11 +70,13 @@ class LazyOperationProcessorWrapper(OperationProcessor):
         self._post_trigger_side_effect = post_trigger_side_effect
         self._operation_processor: OperationProcessor = None  # type: ignore
 
-    def set_post_trigger_side_effect(self, post_trigger_side_effect: Callable[[], Any]) -> None:
-        self._post_trigger_side_effect = post_trigger_side_effect
+    @noop_if_evaluated
+    def evaluate(self) -> None:
+        self._operation_processor = self._operation_processor_getter()
+        self._operation_processor.start()
 
     @property
-    def evaluated(self) -> bool:
+    def is_evaluated(self) -> bool:
         return self._operation_processor is not None
 
     @trigger_evaluation
@@ -91,26 +100,26 @@ class LazyOperationProcessorWrapper(OperationProcessor):
     def start(self) -> None:
         self._operation_processor.start()
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def pause(self) -> None:
         self._operation_processor.pause()
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def resume(self) -> None:
         self._operation_processor.resume()
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def flush(self) -> None:
         self._operation_processor.flush()
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def wait(self) -> None:
         self._operation_processor.wait()
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def stop(self, seconds: Optional[float] = None) -> None:
         self._operation_processor.stop(seconds=seconds)
 
-    @noop_if_not_triggered
+    @noop_if_not_evaluated
     def close(self) -> None:
         self._operation_processor.close()

@@ -257,8 +257,6 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
                     queue=self._signals_queue,
                 ),
             )
-            self._op_processor.set_post_trigger_side_effect(self._op_processor.start)
-
             # TODO: Every implementation of background job should handle fork by itself.
             jobs = []
             if self._mode == Mode.ASYNC:
