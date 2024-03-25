@@ -20,6 +20,8 @@ import unittest
 from datetime import datetime
 from unittest import mock
 
+import pytest
+
 from neptune import (
     ANONYMOUS_API_TOKEN,
     Run,
@@ -28,7 +30,6 @@ from neptune import (
     init_project,
     init_run,
 )
-from neptune.common.utils import IS_WINDOWS
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -40,9 +41,11 @@ from neptune.exceptions import (
     InactiveRunException,
     MetadataInconsistency,
     NeptuneProtectedPathException,
+    NeptuneUnsupportedFunctionalityException,
 )
 from neptune.internal.operation_processors.factory import get_operation_processor
-from neptune.metadata_containers import (
+from neptune.internal.utils.utils import IS_WINDOWS
+from neptune.objects import (
     Model,
     ModelVersion,
     Project,
@@ -62,7 +65,7 @@ class TestExperiment(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
     @classmethod
-    def get_experiments(cls, flush_period=None):
+    def get_all_experiments(cls, flush_period=None):
         kwargs = {"mode": "debug"}
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
@@ -75,6 +78,17 @@ class TestExperiment(unittest.TestCase):
 
         with init_model(key="MOD", **kwargs) as model:
             yield model
+
+    @classmethod
+    def get_experiments(cls, flush_period=None):
+        gen = iter(cls.get_all_experiments(flush_period))
+        while True:
+            try:
+                yield next(gen)
+            except StopIteration:
+                break
+            except NeptuneUnsupportedFunctionalityException:
+                pass
 
     def test_define(self):
         for exp in self.get_experiments(flush_period=0.5):
@@ -243,6 +257,7 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(expected_exception):
                     exp["series"].log(1)
 
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_protected_paths(self):
         model = init_model(key="MOD", mode="debug")
         model_version = init_model_version(model=model["sys/id"].fetch(), mode="debug")
@@ -263,7 +278,7 @@ class TestExperiment(unittest.TestCase):
             del model_version["sys"]
 
     @unittest.skipIf(IS_WINDOWS, "Windows does not support fork")
-    @mock.patch("neptune.metadata_containers.metadata_container.get_operation_processor", wraps=get_operation_processor)
+    @mock.patch("neptune.objects.neptune_object.get_operation_processor", wraps=get_operation_processor)
     def test_operation_processor_on_fork_lazy_init(self, mock_get_operation_processor):
         mmap_size = 5
         for exp in self.get_experiments():

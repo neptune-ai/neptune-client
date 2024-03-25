@@ -55,11 +55,11 @@ from neptune.types.sets.string_set import StringSet
 from neptune.types.value_visitor import ValueVisitor
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 
 class ValueToAttributeVisitor(ValueVisitor[Attribute]):
-    def __init__(self, container: "MetadataContainer", path: List[str]):
+    def __init__(self, container: "NeptuneObject", path: List[str]):
         self._container = container
         self._path = path
 

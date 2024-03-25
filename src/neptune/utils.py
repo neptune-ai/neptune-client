@@ -39,7 +39,7 @@ from neptune.internal.utils.runningmode import (
     in_notebook,
 )
 from neptune.typing import (
-    NeptuneObject,
+    AbstractNeptuneObject,
     ProgressBarCallback,
 )
 
@@ -60,9 +60,6 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         >>> # (as of 1.0.0) error - tuple is not a supported type
         ... from neptune.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
-
-        For more information, see:
-        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
     """
     if isinstance(value, MutableMapping):
         return {str(k): stringify_unsupported(v) for k, v in value.items()}
@@ -70,7 +67,7 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     return StringifyValue(value=value)
 
 
-def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
+def stop_synchronization_callback(neptune_object: AbstractNeptuneObject) -> None:
     """Default callback function that stops a Neptune object's synchronization with the server.
 
     Args:

@@ -40,17 +40,6 @@ from bravado.exception import (
 
 from neptune.api.dtos import FileEntry
 from neptune.api.searching_entries import iter_over_pages
-from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.exceptions import (
-    ClientHttpError,
-    InternalClientError,
-    NeptuneException,
-)
-from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warn_once,
-)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.exceptions import (
@@ -61,7 +50,6 @@ from neptune.exceptions import (
     MetadataContainerNotFound,
     MetadataInconsistency,
     NeptuneFeatureNotAvailableException,
-    NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
     NeptuneObjectCreationConflict,
     ProjectNotFound,
@@ -122,9 +110,15 @@ from neptune.internal.backends.utils import (
     MissingApiClient,
     build_operation_url,
     ssl_verify,
+    with_api_exceptions_handler,
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
+from neptune.internal.exceptions import (
+    ClientHttpError,
+    InternalClientError,
+    NeptuneException,
+)
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
@@ -142,10 +136,15 @@ from neptune.internal.utils.generic_attribute_mapper import map_attribute_result
 from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
+from neptune.internal.utils.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.management.exceptions import ObjectNotFound
 from neptune.typing import ProgressBarType
-from neptune.version import version as neptune_client_version
+from neptune.version import version as neptune_version
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
@@ -241,9 +240,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **DEFAULT_REQUEST_KWARGS,
             ).response()
             project = response.result
-            project_version = project.version if hasattr(project, "version") else 1
-            if project_version < 2:
-                raise NeptuneLegacyProjectException(project_id)
+
             return Project(
                 id=project.id,
                 name=project.name,
@@ -419,13 +416,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             "projectIdentifier": project_id,
             "parentId": parent_id,
             "type": container_type.to_api(),
-            "cliVersion": str(neptune_client_version),
+            "cliVersion": str(neptune_version),
             **additional_params,
         }
 
         kwargs = {
             "experimentCreationParams": params,
-            "X-Neptune-CliVersion": str(neptune_client_version),
+            "X-Neptune-CliVersion": str(neptune_version),
             **DEFAULT_REQUEST_KWARGS,
         }
 

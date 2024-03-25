@@ -16,6 +16,7 @@
 import os
 import unittest
 
+import pytest
 from mock import patch
 
 from neptune import (
@@ -23,17 +24,13 @@ from neptune import (
     init_model_version,
 )
 from neptune.attributes import String
-from neptune.common.exceptions import NeptuneException
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warned_once,
-)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import (
     NeptuneOfflineModeChangeStageException,
+    NeptuneUnsupportedFunctionalityException,
     NeptuneWrongInitParametersException,
 )
 from neptune.internal.backends.api_model import (
@@ -44,6 +41,11 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
+from neptune.internal.exceptions import NeptuneException
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import (
     api_model,
@@ -54,6 +56,7 @@ AN_API_MODEL = api_model()
 AN_API_MODEL_VERSION = api_model_version()
 
 
+@pytest.mark.xfail(reason="Model version not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
     new=lambda _, container_id, expected_container_type: (
@@ -71,6 +74,12 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.skip(
+        (
+            "By coincidence, the test is passing when it should not. It's caused by the fact that "
+            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+        )
+    )
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
             init_model_version(model="PRO-MOD", mode="offline")
@@ -139,6 +148,12 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             with self.assertRaises(ValueError):
                 exp.change_stage(stage="wrong_stage")
 
+    @pytest.mark.skip(
+        (
+            "By coincidence, the test is passing when it should not. It's caused by the fact that "
+            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+        )
+    )
     def test_change_stage_of_offline_model_version(self):
         # this test will be required when we decide that creating model versions
         # in offline mode is allowed

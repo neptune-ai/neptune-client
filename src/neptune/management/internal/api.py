@@ -51,8 +51,6 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
-from neptune.common.backends.utils import with_api_exceptions_handler
-from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,
@@ -63,8 +61,10 @@ from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrappe
 from neptune.internal.backends.utils import (
     parse_validation_errors,
     ssl_verify,
+    with_api_exceptions_handler,
 )
 from neptune.internal.credentials import Credentials
+from neptune.internal.envs import API_TOKEN_ENV_NAME
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import (
     verify_collection_type,

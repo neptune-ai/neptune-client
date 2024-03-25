@@ -15,13 +15,27 @@
 #
 import pytest
 
-from neptune.exceptions import NeptuneCannotChangeStageManually
-from neptune.metadata_containers import ModelVersion
+from neptune.exceptions import (
+    NeptuneCannotChangeStageManually,
+    NeptuneUnsupportedFunctionalityException,
+)
+from neptune.objects import ModelVersion
 from tests.e2e.base import BaseE2ETest
 
 
 class TestStageTransitions(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["model_version"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model_version",
+                marks=pytest.mark.xfail(
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_transitions(self, container: ModelVersion):
         container["a"] = 14
 
@@ -42,13 +56,35 @@ class TestStageTransitions(BaseE2ETest):
 
         assert container["sys/stage"].fetch() == "none"
 
-    @pytest.mark.parametrize("container", ["model_version"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model_version",
+                marks=pytest.mark.xfail(
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_fail_on_unknown_stage_value(self, container: ModelVersion):
         with pytest.raises(ValueError):
             container.change_stage("unknown")
             container.sync()
 
-    @pytest.mark.parametrize("container", ["model_version"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model_version",
+                marks=pytest.mark.xfail(
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_fail_on_manual(self, container: ModelVersion):
         with pytest.raises(NeptuneCannotChangeStageManually):
             container["sys/stage"] = "staging"

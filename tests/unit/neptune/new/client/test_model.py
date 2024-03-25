@@ -16,6 +16,7 @@
 import os
 import unittest
 
+import pytest
 from mock import patch
 
 from neptune import (
@@ -23,22 +24,25 @@ from neptune import (
     init_model,
 )
 from neptune.attributes import String
-from neptune.common.exceptions import NeptuneException
-from neptune.common.warnings import (
-    NeptuneWarning,
-    warned_once,
-)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import NeptuneWrongInitParametersException
+from neptune.exceptions import (
+    NeptuneUnsupportedFunctionalityException,
+    NeptuneWrongInitParametersException,
+)
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.exceptions import NeptuneException
+from neptune.internal.warnings import (
+    NeptuneWarning,
+    warned_once,
+)
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_model
 
@@ -46,6 +50,7 @@ AN_API_MODEL = api_model()
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     @staticmethod
     def call_init(**kwargs):
@@ -56,6 +61,12 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.skip(
+        reason=(
+            "By coincidence, the test is passing as "
+            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+        )
+    )
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
             init_model(key="MOD", mode="offline")

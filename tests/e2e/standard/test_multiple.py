@@ -42,7 +42,7 @@ def store_in_container(sys_id: str, project: str, container_type: str, destinati
 
 class TestMultiple(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_single_thread(self, container: neptune.metadata_containers.MetadataContainer, environment):
+    def test_single_thread(self, container: neptune.Run, environment):
         sys_id = container["sys/id"].fetch()
         number_of_reinitialized = 5
         namespace = self.gen_key()

@@ -28,7 +28,7 @@ from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.uncaught_exception_handler import instance as traceback_handler
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 _logger = get_logger()
 
@@ -40,7 +40,7 @@ class TracebackJob(BackgroundJob):
         self._path = path
         self._fail_on_exception = fail_on_exception
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "NeptuneObject"):
         if not self._started:
             path = self._path
             fail_on_exception = self._fail_on_exception

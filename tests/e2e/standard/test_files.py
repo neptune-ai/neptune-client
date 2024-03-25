@@ -31,7 +31,7 @@ from neptune.internal.backends.api_model import (
 )
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.types.file_types import FileType
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 from neptune.types import (
     File,
     FileSet,
@@ -60,12 +60,12 @@ from tests.e2e.utils import (
 
 class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_using_new_api(self, container: MetadataContainer):
+    def test_using_new_api(self, container: NeptuneObject):
         assert isinstance(container._backend, HostedNeptuneBackend)
         assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
         assert isinstance(container._backend._client_config.multipart_config, MultipartConfig)
 
-    def _test_upload(self, container: MetadataContainer, file_type: FileType, file_size: int):
+    def _test_upload(self, container: NeptuneObject, file_type: FileType, file_size: int):
         key = self.gen_key()
         extension = fake.file_extension()
         downloaded_filename = fake.file_name()
@@ -97,12 +97,12 @@ class TestUpload(BaseE2ETest):
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     @pytest.mark.parametrize("file_type", list(FileType))
-    def test_single_upload(self, container: MetadataContainer, file_type: FileType):
+    def test_single_upload(self, container: NeptuneObject, file_type: FileType):
         file_size = 100 * SIZE_1KB  # 100 kB, single upload
         self._test_upload(container, file_type, file_size)
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_multipart_upload(self, container: MetadataContainer):
+    def test_multipart_upload(self, container: NeptuneObject):
         file_size = 10 * SIZE_1MB  # 10 MB, multipart
         self._test_upload(container, FileType.IN_MEMORY, file_size)
 
@@ -163,7 +163,7 @@ class TestUpload(BaseE2ETest):
             assert hacked_upload_raw_data.upload_part_iteration == 5
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_replace_float_attribute_with_uploaded_file(self, container: MetadataContainer):
+    def test_replace_float_attribute_with_uploaded_file(self, container: NeptuneObject):
         key = self.gen_key()
         file_size = 100 * SIZE_1KB  # 100 kB
         filename = fake.file_name()
@@ -217,7 +217,7 @@ class TestUpload(BaseE2ETest):
 
 
 class TestFileSet(BaseE2ETest):
-    def _test_fileset(self, container: MetadataContainer, large_file_size: int, small_files_no: int):
+    def _test_fileset(self, container: NeptuneObject, large_file_size: int, small_files_no: int):
         key = self.gen_key()
         large_filename = fake.file_name()
         small_files = [
@@ -285,14 +285,14 @@ class TestFileSet(BaseE2ETest):
                         assert content == expected_content
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_fileset(self, container: MetadataContainer):
+    def test_fileset(self, container: NeptuneObject):
         # 100 kB, single upload for large file
         large_file_size = 100 * SIZE_1KB
         small_files_no = 10
         self._test_fileset(container, large_file_size, small_files_no)
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_fileset_with_multipart(self, container: MetadataContainer):
+    def test_fileset_with_multipart(self, container: NeptuneObject):
         # 10 MB, multipart upload for large file
         large_file_size = 10 * SIZE_1MB
         small_files_no = 100
@@ -311,7 +311,7 @@ class TestFileSet(BaseE2ETest):
             return subpaths
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_fileset_nested_structure(self, container: MetadataContainer):
+    def test_fileset_nested_structure(self, container: NeptuneObject):
         key = self.gen_key()
         possible_paths = self._gen_tree_paths(depth=3)
 
@@ -356,7 +356,7 @@ class TestFileSet(BaseE2ETest):
                         assert content == expected_content
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_reset_fileset(self, container: MetadataContainer):
+    def test_reset_fileset(self, container: NeptuneObject):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
@@ -388,7 +388,7 @@ class TestFileSet(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
-    def test_single_file_override(self, container: MetadataContainer, delete_attribute: bool):
+    def test_single_file_override(self, container: NeptuneObject, delete_attribute: bool):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
@@ -426,7 +426,7 @@ class TestFileSet(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
-    def test_fileset_file_override(self, container: MetadataContainer, delete_attribute: bool):
+    def test_fileset_file_override(self, container: NeptuneObject, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
         content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
@@ -465,7 +465,7 @@ class TestFileSet(BaseE2ETest):
                     assert content == content2
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_list_fileset_files(self, container: MetadataContainer):
+    def test_list_fileset_files(self, container: NeptuneObject):
         key = self.gen_key()
         filename = fake.file_name()
         content = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
@@ -493,31 +493,31 @@ class TestFileSet(BaseE2ETest):
 
 class TestPlotObjectsAssignment(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_pil_image(self, container: MetadataContainer):
+    def test_pil_image(self, container: NeptuneObject):
         pil_image = generate_pil_image()
         container["pil_image"] = pil_image
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_matplotlib_figure(self, container: MetadataContainer):
+    def test_matplotlib_figure(self, container: NeptuneObject):
         figure = generate_matplotlib_figure()
         container["matplotlib_figure"] = figure
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_altair_chart(self, container: MetadataContainer):
+    def test_altair_chart(self, container: NeptuneObject):
         altair_chart = generate_altair_chart()
         container["altair_chart"] = altair_chart
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_brokeh_figure(self, container: MetadataContainer):
+    def test_brokeh_figure(self, container: NeptuneObject):
         brokeh_figure = generate_brokeh_figure()
         container["brokeh_figure"] = brokeh_figure
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_plotly_figure(self, container: MetadataContainer):
+    def test_plotly_figure(self, container: NeptuneObject):
         plotly_figure = generate_plotly_figure()
         container["plotly_figure"] = plotly_figure
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_seaborn_figure(self, container: MetadataContainer):
+    def test_seaborn_figure(self, container: NeptuneObject):
         seaborn_figure = generate_seaborn_figure()
         container["seaborn_figure"] = seaborn_figure

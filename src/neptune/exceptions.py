@@ -66,7 +66,6 @@ __all__ = [
     "NeptuneProtectedPathException",
     "NeptuneCannotChangeStageManually",
     "OperationNotSupported",
-    "NeptuneLegacyProjectException",
     "NeptuneMissingRequirementException",
     "NeptuneLimitExceedException",
     "NeptuneFieldCountLimitExceedException",
@@ -74,8 +73,6 @@ __all__ = [
     "FetchAttributeNotFoundException",
     "ArtifactNotFoundException",
     "PlotlyIncompatibilityException",
-    "NeptunePossibleLegacyUsageException",
-    "NeptuneLegacyIncompatibilityException",
     "NeptuneUnhandledArtifactSchemeException",
     "NeptuneUnhandledArtifactTypeException",
     "NeptuneLocalStorageAccessException",
@@ -92,6 +89,7 @@ __all__ = [
     "NeptuneUserApiInputException",
     "NeptuneMaxDiskUtilizationExceeded",
     "NeptuneInvalidQueryException",
+    "NeptuneUnsupportedFunctionalityException",
 ]
 
 from typing import (
@@ -103,10 +101,17 @@ from urllib.parse import urlparse
 
 from packaging.version import Version
 
-from neptune.common.envs import API_TOKEN_ENV_NAME
-
-# Backward compatibility import
-from neptune.common.exceptions import (
+from neptune.envs import (
+    CUSTOM_RUN_ID_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
+from neptune.internal.backends.api_model import (
+    Project,
+    Workspace,
+)
+from neptune.internal.container_type import ContainerType
+from neptune.internal.envs import API_TOKEN_ENV_NAME
+from neptune.internal.exceptions import (
     STYLES,
     ClientHttpError,
     Forbidden,
@@ -119,15 +124,6 @@ from neptune.common.exceptions import (
     NeptuneSSLVerificationError,
     Unauthorized,
 )
-from neptune.envs import (
-    CUSTOM_RUN_ID_ENV_NAME,
-    PROJECT_ENV_NAME,
-)
-from neptune.internal.backends.api_model import (
-    Project,
-    Workspace,
-)
-from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.utils import replace_patch_version
 from neptune.internal.utils.paths import path_to_str
@@ -643,7 +639,7 @@ Your version of the Neptune client library ({current_version}) is no longer supp
 In order to update the Neptune client library, run the following command in your terminal:
     {bash}pip install -U neptune{end}
 Or if you are using Conda, run the following instead:
-    {bash}conda update -c conda-forge neptune-client{end}
+    {bash}conda update -c conda-forge neptune{end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
@@ -770,25 +766,6 @@ use the {python}.change_stage(){end} method:
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
         super().__init__(f"Operation not supported: {message}")
-
-
-class NeptuneLegacyProjectException(NeptuneException):
-    def __init__(self, project: QualifiedName):
-        message = """
-{h1}
-----NeptuneLegacyProjectException---------------------------------------------------------
-{end}
-Your project "{project}" has not been migrated to the new structure yet.
-Unfortunately the neptune.new Python API is incompatible with projects using the old structure,
-so please use legacy neptune Python API.
-Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon.
-
-You can find documentation for the legacy neptune Python API here:
-    - https://docs-legacy.neptune.ai/index.html
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(project=project, **STYLES))
 
 
 class NeptuneMissingRequirementException(NeptuneException):
@@ -953,53 +930,6 @@ class PlotlyIncompatibilityException(Exception):
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "{}".format(matplotlib_version, plotly_version, details)
         )
-
-
-class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptunePossibleLegacyUsageException----------------------------------------------------------------
-{end}
-It seems you are trying to use the legacy API, but you imported the new one.
-
-Simply update your import statement to:
-    {python}import neptune{end}
-
-You may want to check the legacy API docs:
-    - https://docs-legacy.neptune.ai
-
-If you want to update your code with the new API, we prepared a handy migration guide:
-    - https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew
-
-You can read more about neptune.new in the release blog post:
-    - https://neptune.ai/blog/neptune-new
-
-You may also want to check the following docs page:
-    - https://docs-legacy.neptune.ai/getting-started/integrate-neptune-into-your-codebase.html
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(**STYLES))
-
-
-class NeptuneLegacyIncompatibilityException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneLegacyIncompatibilityException----------------------------------------
-{end}
-It seems you are passing the legacy Experiment object, when a Run object is expected.
-
-What can I do?
-    - Updating your code to the new Python API requires few changes, but to help you with this process we prepared a handy migration guide:
-    https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew
-    - You can read more about neptune.new in the release blog post:
-    https://neptune.ai/blog/neptune-new
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""  # noqa: E501
-        super().__init__(message.format(**STYLES))
 
 
 class NeptuneUnhandledArtifactSchemeException(NeptuneException):
@@ -1232,5 +1162,18 @@ class NeptuneInvalidQueryException(NeptuneException):
         message = f"""
 The provided NQL query is invalid: {nql_query}.
 For syntax help, see https://docs.neptune.ai/usage/nql/
+"""
+        super().__init__(message)
+
+
+class NeptuneUnsupportedFunctionalityException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneUnsupportedFunctionalityException----------------------------
+{end}
+You're using neptune 2.0, which is in Beta.
+Some functionality that you tried to use is not supported in the installed version.
+We will gradually add missing features to the Beta. Check that you're on the latest version.
 """
         super().__init__(message)

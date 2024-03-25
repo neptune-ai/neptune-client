@@ -23,13 +23,13 @@ from typing import (
 )
 
 from neptune.attributes import constants as attr_consts
-from neptune.common.storage.storage_utils import normalize_file_name
-from neptune.common.utils import is_ipython
+from neptune.internal.storage import normalize_file_name
 from neptune.internal.utils import (
     does_paths_share_common_drive,
     get_absolute_paths,
     get_common_root,
 )
+from neptune.internal.utils.utils import is_ipython
 from neptune.vendor.lib_programname import (
     empty_path,
     get_path_executed_script,

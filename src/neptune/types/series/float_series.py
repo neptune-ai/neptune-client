@@ -25,13 +25,13 @@ from typing import (
     Union,
 )
 
-from neptune.common.warnings import (
-    NeptuneUnsupportedValue,
-    warn_once,
-)
 from neptune.internal.types.stringify_value import extract_if_stringify_value
 from neptune.internal.types.utils import is_unsupported_float
 from neptune.internal.utils import is_collection
+from neptune.internal.warnings import (
+    NeptuneUnsupportedValue,
+    warn_once,
+)
 from neptune.types.series.series import Series
 
 if TYPE_CHECKING:

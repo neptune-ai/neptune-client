@@ -35,19 +35,19 @@ from neptune.attributes.file_set import (
     FileSet,
     FileSetVal,
 )
-from neptune.common.utils import IS_WINDOWS
 from neptune.internal.operation import (
     UploadFile,
     UploadFileSet,
 )
 from neptune.internal.types.file_types import FileType
+from neptune.internal.utils.utils import IS_WINDOWS
 from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
         def get_tmp_uploaded_file_name(tmp_upload_dir):
             """Get tmp file to uploaded from `upload_path`
@@ -110,7 +110,7 @@ class TestFile(TestAttributeBase):
                 File(MagicMock(), MagicMock()).assign(value)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_save(self, get_operation_processor):
         value_and_expected = [("some/path", os.getcwd() + "/some/path")]
 
@@ -130,7 +130,7 @@ class TestFile(TestAttributeBase):
                 )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch("neptune.metadata_containers.metadata_container.get_operation_processor")
+    @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_save_files(self, get_operation_processor):
         value_and_expected = [("some/path/*", [os.getcwd() + "/some/path/*"])]
 

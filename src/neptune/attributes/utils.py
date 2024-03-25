@@ -37,12 +37,12 @@ from neptune.attributes import (
     StringSeries,
     StringSet,
 )
-from neptune.common.exceptions import InternalClientError
 from neptune.internal.backends.api_model import AttributeType
+from neptune.internal.exceptions import InternalClientError
 
 if TYPE_CHECKING:
     from neptune.attributes.attribute import Attribute
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 _attribute_type_to_attr_class_map = {
     AttributeType.FLOAT: Float,
@@ -65,7 +65,7 @@ _attribute_type_to_attr_class_map = {
 
 def create_attribute_from_type(
     attribute_type: AttributeType,
-    container: "MetadataContainer",
+    container: "NeptuneObject",
     path: List[str],
 ) -> "Attribute":
     try:

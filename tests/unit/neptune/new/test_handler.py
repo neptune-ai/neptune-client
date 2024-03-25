@@ -44,10 +44,6 @@ from neptune.attributes.atoms.integer import Integer
 from neptune.attributes.atoms.string import String
 from neptune.attributes.series import FileSeries
 from neptune.attributes.sets.string_set import StringSet
-from neptune.common.warnings import (
-    NeptuneUnsupportedType,
-    warned_once,
-)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -55,6 +51,10 @@ from neptune.envs import (
 from neptune.exceptions import (
     FileNotFound,
     NeptuneUserApiInputException,
+)
+from neptune.internal.warnings import (
+    NeptuneUnsupportedType,
+    warned_once,
 )
 from neptune.types import File as FileVal
 from neptune.types.atoms.artifact import Artifact

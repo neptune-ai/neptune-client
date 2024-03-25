@@ -18,7 +18,7 @@ import random
 
 import pytest
 
-from neptune.metadata_containers import MetadataContainer
+from neptune.objects import NeptuneObject
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -26,13 +26,21 @@ from tests.e2e.base import (
 )
 
 # List of every possible container type pair for instance: "run-run, run-model, model-model_version, ..."
-ALL_CONTAINERS_PAIRS = list(map("-".join, itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS)))
+
+ALL_CONTAINERS_PAIRS = list(
+    map(
+        lambda p: pytest.param(
+            p[0].values + p[1].values, marks=p[0].marks + p[1].marks if p[0].marks != p[1].marks else p[0].marks
+        ),
+        itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS),
+    )
+)
 
 
 class TestCopying(BaseE2ETest):
     @pytest.mark.parametrize("containers_pair", ALL_CONTAINERS_PAIRS, indirect=True)
     @pytest.mark.parametrize("value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()])
-    def test_copy(self, containers_pair: (MetadataContainer, MetadataContainer), value):
+    def test_copy(self, containers_pair: (NeptuneObject, NeptuneObject), value):
         container_a, container_b = containers_pair
 
         src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()

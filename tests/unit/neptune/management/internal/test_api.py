@@ -26,10 +26,10 @@ from bravado.exception import HTTPNotFound
 from bravado.response import BravadoResponse
 
 from neptune import ANONYMOUS_API_TOKEN
-from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.envs import API_TOKEN_ENV_NAME
 from neptune.management import (
     clear_trash,
     delete_objects_from_trash,

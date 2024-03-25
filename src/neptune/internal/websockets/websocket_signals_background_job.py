@@ -30,15 +30,15 @@ from neptune.attributes.constants import (
     SIGNAL_TYPE_STOP,
     SYSTEM_FAILED_ATTRIBUTE_PATH,
 )
-from neptune.common.websockets.reconnecting_websocket import ReconnectingWebsocket
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils import process_killer
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 logger = get_logger()
 
@@ -49,7 +49,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread: "Optional[WebsocketSignalsBackgroundJob._ListenerThread]" = None
         self._started = False
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "NeptuneObject"):
         self._thread = self._ListenerThread(container, self._ws_factory.create())
         self._thread.start()
         self._started = True
@@ -74,7 +74,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     class _ListenerThread(Daemon):
-        def __init__(self, container: "MetadataContainer", ws_client: ReconnectingWebsocket):
+        def __init__(self, container: "NeptuneObject", ws_client: ReconnectingWebsocket):
             super().__init__(sleep_time=0, name="NeptuneWebhooks")
             self._container = container
             self._ws_client = ws_client

@@ -39,17 +39,17 @@ from typing import (
 )
 
 from neptune.cli.utils import get_qualified_name
-from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
 from neptune.internal.container_type import ContainerType
+from neptune.internal.exceptions import NeptuneConnectionLostException
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.utils import get_container_dir
 from neptune.internal.utils.logger import get_logger
-from neptune.metadata_containers.structure_version import StructureVersion
+from neptune.objects.structure_version import StructureVersion
 
 if TYPE_CHECKING:
     from neptune.internal.backends.api_model import (

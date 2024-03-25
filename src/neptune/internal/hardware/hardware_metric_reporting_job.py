@@ -24,22 +24,22 @@ from typing import (
     Optional,
 )
 
-from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
-from neptune.common.hardware.gauges.gauge_mode import GaugeMode
-from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
-from neptune.common.hardware.metrics.reports.metric_reporter import MetricReporter
-from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
-from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
-from neptune.common.hardware.system.system_monitor import SystemMonitor
-from neptune.common.utils import in_docker
 from neptune.internal.background_job import BackgroundJob
+from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
+from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
+from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
+from neptune.internal.hardware.metrics.reports.metric_reporter import MetricReporter
+from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import get_logger
+from neptune.internal.utils.utils import in_docker
 from neptune.types.series import FloatSeries
 
 if TYPE_CHECKING:
-    from neptune.metadata_containers import MetadataContainer
+    from neptune.objects import NeptuneObject
 
 _logger = get_logger()
 
@@ -52,7 +52,7 @@ class HardwareMetricReportingJob(BackgroundJob):
         self._gauges_in_resource: Dict[str, int] = dict()
         self._attribute_namespace = attribute_namespace
 
-    def start(self, container: "MetadataContainer"):
+    def start(self, container: "NeptuneObject"):
         gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
         system_resource_info = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
@@ -104,7 +104,7 @@ class HardwareMetricReportingJob(BackgroundJob):
             self,
             outer: "HardwareMetricReportingJob",
             period: float,
-            container: "MetadataContainer",
+            container: "NeptuneObject",
             metric_reporter: MetricReporter,
         ):
             super().__init__(sleep_time=period, name="NeptuneReporting")
