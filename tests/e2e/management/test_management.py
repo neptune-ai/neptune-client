@@ -509,12 +509,18 @@ class TestDeleteFromTrash:
     @pytest.mark.parametrize(
         ("n_runs", "n_models"),
         [
-            (2, 0),
+            pytest.param(
+                2,
+                0,
+                marks=pytest.mark.xfail(
+                    reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            ),
             pytest.param(
                 2,
                 1,
                 marks=pytest.mark.xfail(
-                    reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                    reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
                 ),
             ),
         ],

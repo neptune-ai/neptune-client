@@ -25,7 +25,10 @@ from typing import (
 from typing_extensions import Literal
 
 from neptune.envs import CONNECTION_MODE
-from neptune.exceptions import InactiveProjectException
+from neptune.exceptions import (
+    InactiveProjectException,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
@@ -149,6 +152,8 @@ class Project(NeptuneObject):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
+        raise NeptuneUnsupportedFunctionalityException
+
         verify_type("mode", mode, (str, type(None)))
 
         # make mode proper Enum instead of string

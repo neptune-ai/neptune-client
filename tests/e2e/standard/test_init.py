@@ -144,6 +144,7 @@ class TestInitRun(BaseE2ETest):
                 assert "some-content" in fp.read()
 
 
+@pytest.mark.xfail(reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestInitProject(BaseE2ETest):
     def test_resuming_project(self, environment):
         exp = neptune.init_project(project=environment.project)
