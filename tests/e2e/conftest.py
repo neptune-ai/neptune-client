@@ -105,7 +105,7 @@ def container_fn_scope(request, environment):
 
 @pytest.fixture(scope="session")
 def containers_pair(request, environment):
-    container_a_type, container_b_type = request.param.split("-")
+    container_a_type, container_b_type = request.param
     container_a = initialize_container(container_type=container_a_type, project=environment.project)
     container_b = initialize_container(container_type=container_b_type, project=environment.project)
 

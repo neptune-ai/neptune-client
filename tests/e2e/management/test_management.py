@@ -28,6 +28,7 @@ from neptune import (
     Project,
     init_model_version,
 )
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.container_type import ContainerType
 from neptune.management import (
     ProjectVisibility,
@@ -436,6 +437,25 @@ class TestTrashObjects(BaseE2ETest):
         with pytest.raises(ProjectNotFound):
             trash_objects("org/non-existent-project", ["RUN-1", "RUN-2", "RUN-3"])
 
+    def test_trash_runs(self, project, environment):
+        run1_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
+        run2_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
+        # wait for elastic index to refresh
+        self.wait_for_containers([run1_id, run2_id], project.fetch_runs_table)
+
+        # WHEN trash one run and one model
+        trash_objects(environment.project, [run1_id])
+
+        # THEN trashed runs are not fetched
+        self.wait_for_containers([run2_id], project.fetch_runs_table)
+
+        # WHEN trash the other run
+        trash_objects(environment.project, [run2_id])
+
+        # THEN no runs are fetched
+        self.wait_for_containers([], project.fetch_runs_table)
+
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_trash_runs_and_models(self, project, environment):
         # WITH runs and models
         run1_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
@@ -454,6 +474,7 @@ class TestTrashObjects(BaseE2ETest):
         # AND trashed models are not fetched
         self.wait_for_containers([model2_id], project.fetch_models_table)
 
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_trash_model_version(self, environment):
         # WITH model
         model = initialize_container(ContainerType.MODEL, project=environment.project)
@@ -484,22 +505,36 @@ class TestTrashObjects(BaseE2ETest):
 
 @pytest.mark.management
 class TestDeleteFromTrash:
-    def test_delete_from_trash(self, environment):
+
+    @pytest.mark.parametrize(
+        ("n_runs", "n_models"),
+        [
+            (2, 0),
+            pytest.param(
+                2,
+                1,
+                marks=pytest.mark.xfail(
+                    reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            ),
+        ],
+    )
+    def test_delete_from_trash(self, environment, n_runs: int, n_models: int):
         # given
-        run1 = initialize_container(ContainerType.RUN, project=environment.project)
-        run2 = initialize_container(ContainerType.RUN, project=environment.project)
-        model = initialize_container(ContainerType.MODEL, project=environment.project)
-        run_id_1 = run1["sys/id"].fetch()
-        run_id_2 = run2["sys/id"].fetch()
-        model_id = model["sys/id"].fetch()
+        runs = [initialize_container(ContainerType.RUN, project=environment.project) for _ in range(n_runs)]
+        models = [initialize_container(ContainerType.MODEL, project=environment.project) for _ in range(n_models)]
+
+        run_ids = [run["sys/id"].fetch() for run in runs]
+        model_ids = [model["sys/id"].fetch() for model in models]
         time.sleep(5)
 
         with initialize_container(ContainerType.PROJECT, project=environment.project) as project:
-            trash_objects(environment.project, [run_id_1, run_id_2, model_id])
+            trash_objects(environment.project, run_ids + model_ids)
             time.sleep(10)
 
             # when
             clear_trash(environment.project)
+            time.sleep(10)
 
             # then
             self.wait_for_containers_in_trash(0, 0, project)

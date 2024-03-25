@@ -89,6 +89,7 @@ __all__ = [
     "NeptuneUserApiInputException",
     "NeptuneMaxDiskUtilizationExceeded",
     "NeptuneInvalidQueryException",
+    "NeptuneUnsupportedFunctionalityException",
 ]
 
 from typing import (
@@ -1161,5 +1162,18 @@ class NeptuneInvalidQueryException(NeptuneException):
         message = f"""
 The provided NQL query is invalid: {nql_query}.
 For syntax help, see https://docs.neptune.ai/usage/nql/
+"""
+        super().__init__(message)
+
+
+class NeptuneUnsupportedFunctionalityException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneUnsupportedFunctionalityException----------------------------
+{end}
+You're using neptune 2.0, which is in Beta.
+Some functionality that you tried to use is not supported in the installed version.
+We will gradually add missing features to the Beta. Check that you're on the latest version.
 """
         super().__init__(message)

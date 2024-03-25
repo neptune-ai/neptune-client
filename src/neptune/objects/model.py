@@ -33,6 +33,7 @@ from neptune.exceptions import (
     NeptuneMissingRequiredInitParameter,
     NeptuneModelKeyAlreadyExistsError,
     NeptuneObjectCreationConflict,
+    NeptuneUnsupportedFunctionalityException,
 )
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.nql import (
@@ -181,6 +182,9 @@ class Model(NeptuneObject):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
+        # not yet supported by the backend
+        raise NeptuneUnsupportedFunctionalityException
+
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("key", key, (str, type(None)))

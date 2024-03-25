@@ -16,6 +16,7 @@
 import os
 import unittest
 
+import pytest
 from mock import patch
 
 from neptune import (
@@ -27,7 +28,10 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import NeptuneWrongInitParametersException
+from neptune.exceptions import (
+    NeptuneUnsupportedFunctionalityException,
+    NeptuneWrongInitParametersException,
+)
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -46,6 +50,7 @@ AN_API_MODEL = api_model()
 
 
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+@pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     @staticmethod
     def call_init(**kwargs):
@@ -56,6 +61,12 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.skip(
+        reason=(
+            "By coincidence, the test is passing as "
+            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+        )
+    )
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
             init_model(key="MOD", mode="offline")
