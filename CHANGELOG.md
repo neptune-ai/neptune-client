@@ -18,8 +18,6 @@
 - Improve datetime parsing in `fetch_*_table()` ([#1680](https://github.com/neptune-ai/neptune-client/pull/1680))
 - Remove deprecation warning in `fetch_runs_table()` ([#1686](https://github.com/neptune-ai/neptune-client/pull/1686))
 - Make sleep dur in some e2e tests consistent (#[1700](https://github.com/neptune-ai/neptune-client/pull/1700))
-
-### Changes
 - Minor updates to made package compatible with Python 3.11 and 3.12 ([#1678](https://github.com/neptune-ai/neptune-client/pull/1678))
 
 
