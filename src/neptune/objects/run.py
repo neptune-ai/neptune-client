@@ -20,9 +20,11 @@ import threading
 from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
+    Callable,
     List,
     Optional,
     Tuple,
+    TypeVar,
     Union,
 )
 
@@ -102,6 +104,21 @@ from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
+
+
+T = TypeVar("T")
+
+
+def temporarily_disabled(func: Callable[..., T]) -> Callable[..., T]:
+    def wrapper(*_, **__):
+        if func.__name__ == "_get_background_jobs":
+            return []
+        elif func.__name__ == "_write_initial_attributes":
+            return None
+        elif func.__name__ == "_write_initial_monitoring_attributes":
+            return None
+
+    return wrapper
 
 
 class Run(NeptuneObject):
@@ -425,6 +442,7 @@ class Run(NeptuneObject):
                 checkpoint_id=checkpoint_id,
             )
 
+    @temporarily_disabled
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
@@ -448,6 +466,7 @@ class Run(NeptuneObject):
 
         return background_jobs
 
+    @temporarily_disabled
     def _write_initial_monitoring_attributes(self) -> None:
         if self._hostname is not None:
             self[f"{self._monitoring_namespace}/hostname"] = self._hostname
@@ -460,6 +479,7 @@ class Run(NeptuneObject):
         if self._tid is not None:
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
 
+    @temporarily_disabled
     def _write_initial_attributes(self):
         if self._name is not None:
             self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
