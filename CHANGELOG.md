@@ -10,6 +10,7 @@
 - Deleted `neptune.logging` package ([#1698](https://github.com/neptune-ai/neptune-client/pull/1698))
 - Disabled `Model` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1701))
 - Disabled `ModelVersion` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1708))
+- Disabled `Project` ([#1709](https://github.com/neptune-ai/neptune-client/pull/1709))
 
 ### Features
 - ?
