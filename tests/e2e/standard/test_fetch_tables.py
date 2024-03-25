@@ -21,7 +21,10 @@ import uuid
 import pytest
 
 import neptune
-from neptune.exceptions import NeptuneInvalidQueryException
+from neptune.exceptions import (
+    NeptuneInvalidQueryException,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.utils.utils import IS_MACOS
 from neptune.objects import Model
 from tests.e2e.base import (
@@ -59,6 +62,7 @@ class TestFetchTable(BaseE2ETest):
         assert len(runs) == 1
         assert runs[0].get_attribute_value("sys/id") == run_id1
 
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @pytest.mark.parametrize("with_query", [True, False])
     @pytest.mark.parametrize("container_fn_scope", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container_fn_scope: Model, environment, with_query: bool):
@@ -156,6 +160,7 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_runs_as_rows)
 
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_fetch_models_table(self, environment, project):
         def init_run():
             return neptune.init_model(project=environment.project, key=a_key())
@@ -165,7 +170,18 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_models_as_rows)
 
-    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model",
+                marks=pytest.mark.xfail(
+                    reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_fetch_model_versions_table(self, container: Model, environment):
         model_sys_id = container["sys/id"].fetch()
 
@@ -177,7 +193,18 @@ class TestFetchTable(BaseE2ETest):
 
         self._test_fetch_from_container(init_run, get_model_versions_as_rows)
 
-    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        [
+            pytest.param(
+                "model",
+                marks=pytest.mark.xfail(
+                    reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                ),
+            )
+        ],
+        indirect=True,
+    )
     def test_fetch_model_versions_table_by_query(self, container, environment):
         model_sys_id = container["sys/id"].fetch()
         key = "some_key"
@@ -389,6 +416,7 @@ class TestFetchTable(BaseE2ETest):
         with pytest.raises(NeptuneInvalidQueryException):
             next(iter(runs_table))
 
+    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
     def test_fetch_models_raw_query_trashed(self, environment, project):
         # given
