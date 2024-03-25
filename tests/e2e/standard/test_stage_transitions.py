@@ -30,7 +30,7 @@ class TestStageTransitions(BaseE2ETest):
             pytest.param(
                 "model_version",
                 marks=pytest.mark.xfail(
-                    reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
                 ),
             )
         ],
@@ -62,7 +62,7 @@ class TestStageTransitions(BaseE2ETest):
             pytest.param(
                 "model_version",
                 marks=pytest.mark.xfail(
-                    reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
                 ),
             )
         ],
@@ -79,7 +79,7 @@ class TestStageTransitions(BaseE2ETest):
             pytest.param(
                 "model_version",
                 marks=pytest.mark.xfail(
-                    reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
+                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
                 ),
             )
         ],
