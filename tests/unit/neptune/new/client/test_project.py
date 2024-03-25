@@ -17,6 +17,7 @@ import os
 import unittest
 from datetime import datetime
 
+import pytest
 from mock import patch
 
 from neptune import (
@@ -27,7 +28,10 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import NeptuneMissingProjectNameException
+from neptune.exceptions import (
+    NeptuneMissingProjectNameException,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -48,6 +52,7 @@ from neptune.objects.utils import (
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
+@pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
@@ -69,6 +74,12 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
         if PROJECT_ENV_NAME in os.environ:
             del os.environ[PROJECT_ENV_NAME]
 
+    @pytest.mark.skip(
+        (
+            "By coincidence, the test is passing as "
+            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
+        )
+    )
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
             with init_project(project=self.PROJECT_NAME, mode="offline"):

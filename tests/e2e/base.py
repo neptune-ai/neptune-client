@@ -26,8 +26,8 @@ fake = Faker()
 
 AVAILABLE_CONTAINERS = ["project", "run"]
 AVAILABLE_CONTAINERS = [
-    pytest.param("project"),
     pytest.param("run"),
+    pytest.param("project", marks=pytest.mark.xfail(reason="Project not supported", strict=True)),
     pytest.param(
         "model",
         marks=pytest.mark.xfail(

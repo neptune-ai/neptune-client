@@ -18,9 +18,11 @@ import unittest
 from datetime import datetime
 from typing import List
 
+import pytest
 from mock import patch
 
 from neptune import init_project
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
@@ -35,6 +37,7 @@ from neptune.table import (
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
+@pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.RUN
 
@@ -51,7 +54,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
             with self.subTest(state):
                 try:
                     self.get_table(state=state)
-                except Exception as e:
+                except ValueError as e:
                     self.fail(e)
 
     @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
