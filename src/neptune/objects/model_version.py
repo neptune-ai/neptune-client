@@ -34,6 +34,7 @@ from neptune.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneMissingRequiredInitParameter,
     NeptuneOfflineModeChangeStageException,
+    NeptuneUnsupportedFunctionalityException,
 )
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
@@ -176,6 +177,9 @@ class ModelVersion(NeptuneObject):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ) -> None:
+
+        raise NeptuneUnsupportedFunctionalityException
+
         verify_type("with_id", with_id, (str, type(None)))
         verify_type("name", name, (str, type(None)))
         verify_type("model", model, (str, type(None)))
