@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-pytorch", suggestion="pytorch")
+require_installed("neptune_pytorch", suggestion="pytorch")
 
 from neptune_pytorch.impl import *  # noqa: F401,F403,E402

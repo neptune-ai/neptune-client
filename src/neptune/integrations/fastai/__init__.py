@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-fastai", suggestion="fastai")
+require_installed("neptune_fastai", suggestion="fastai")
 
 from neptune_fastai.impl import *  # noqa: F401,F403,E402

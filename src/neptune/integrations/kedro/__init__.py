@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# mypy: ignore-errors
+
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("kedro-neptune", suggestion="kedro")
+require_installed("kedro_neptune", suggestion="kedro")
 
-from kedro_neptune.impl import *  # noqa: F401,F403,E402
+from kedro_neptune import *  # noqa: F401,F403,E402

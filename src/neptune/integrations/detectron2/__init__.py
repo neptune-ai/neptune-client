@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-detectron2", suggestion="detectron2")
+require_installed("neptune_detectron2", suggestion="detectron2")
 
 from neptune_detectron2.impl import *  # noqa: F401,F403,E402

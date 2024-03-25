@@ -15,6 +15,6 @@
 #
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("neptune-optuna", suggestion="optuna")
+require_installed("neptune_optuna", suggestion="optuna")
 
 from neptune_optuna.impl import *  # noqa: F401,F403,E402
