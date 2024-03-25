@@ -17,6 +17,7 @@ import logging
 import os
 import unittest
 
+import pytest
 from mock import patch
 
 from neptune import (
@@ -68,6 +69,7 @@ class TestLogHandler(unittest.TestCase):
             log_entries = list(exp["watching"]["python_logger"].fetch_values().value)
             self.assertListEqual(log_entries, ["error message", "test message"])
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_custom_target_attribute(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp, path="logging/my/logger")

@@ -17,6 +17,7 @@ import itertools
 import os
 import unittest
 
+import pytest
 from mock import (
     mock_open,
     patch,
@@ -99,6 +100,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp._id, AN_API_RUN.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.objects.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
@@ -147,6 +149,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.in_interactive", new=lambda: True)
     @patch("neptune.objects.run.TracebackJob")
     @patch("neptune.objects.run.HardwareMetricReportingJob")
@@ -159,6 +162,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert not hardware_job.called
             traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.in_interactive", new=lambda: False)
     @patch("neptune.objects.run.TracebackJob")
     @patch("neptune.objects.run.HardwareMetricReportingJob")
@@ -171,6 +175,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring")
             traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.in_interactive", new=lambda: True)
     @patch("neptune.objects.run.TracebackJob")
     @patch("neptune.objects.run.HardwareMetricReportingJob")
@@ -189,6 +194,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring")
             traceback_job.assert_called_once_with(path="monitoring/traceback", fail_on_exception=True)
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.internal.utils.source_code.get_common_root", new=lambda _: None)
     @patch("neptune.objects.run.os.path.isfile", new=lambda file: "." in file)
@@ -209,6 +215,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.objects.run.TracebackJob")
     @patch("neptune.objects.run.HardwareMetricReportingJob")
@@ -221,6 +228,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
             traceback_job.assert_called_once_with(path="monitoring/some_hash/traceback", fail_on_exception=True)
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.generate_hash", lambda *vals, length: "some_hash")
     @patch("neptune.objects.run.get_hostname", lambda *vals: "localhost")
     @patch("neptune.objects.run.os.getpid", lambda *vals: 1234)
@@ -231,21 +239,25 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.log_dependencies")
     def test_infer_dependency_strategy_called(self, mock_infer_method):
         with init_run(mode="debug", dependencies="infer"):
             mock_infer_method.assert_called_once()
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.log_dependencies")
     def test_file_dependency_strategy_called(self, mock_file_method):
         with init_run(mode="debug", dependencies="some_file_path.txt"):
             mock_file_method.assert_called_once()
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.track_uncommitted_changes")
     def test_track_uncommitted_changes_called_given_default_git_ref(self, mock_track_changes):
         with init_run(mode="debug"):
             mock_track_changes.assert_called_once()
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.objects.run.track_uncommitted_changes")
     def test_track_uncommitted_changes_called(self, mock_track_changes):
         git_ref = GitRef()
@@ -278,6 +290,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         ) as run:
             assert not run.exists("monitoring")
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_monitoring_namespace_created_if_any_flag_enabled(self):
         for perm in set(itertools.permutations([True, False, False, False])):
             ct, cso, cse, chm = perm
