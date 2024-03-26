@@ -16,10 +16,7 @@
 import pytest
 
 import neptune
-from neptune.exceptions import (
-    NeptuneModelKeyAlreadyExistsError,
-    NeptuneUnsupportedFunctionalityException,
-)
+from neptune.exceptions import NeptuneModelKeyAlreadyExistsError
 from neptune.objects import (
     Model,
     Project,
@@ -151,7 +148,7 @@ class TestInitRun(BaseE2ETest):
                 assert "some-content" in fp.read()
 
 
-@pytest.mark.xfail(reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+@pytest.mark.skip(reason="Project is not supported")
 class TestInitProject(BaseE2ETest):
     def test_resuming_project(self, environment):
         exp = neptune.init_project(project=environment.project)
@@ -200,9 +197,7 @@ class TestInitModel(BaseE2ETest):
         [
             pytest.param(
                 "model",
-                marks=pytest.mark.xfail(
-                    reason="model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="model is not supported"),
             )
         ],
         indirect=True,

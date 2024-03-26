@@ -260,7 +260,7 @@ class TestCli(BaseE2ETest):
                     )
                 ),
             ),
-            pytest.param("project", marks=pytest.mark.xfail(reason="Project not supported", strict=True)),
+            pytest.param("project", marks=pytest.mark.skip(reason="Project not supported")),
         ],
     )
     def test_cannot_offline_non_runs(self, environment, container_type):

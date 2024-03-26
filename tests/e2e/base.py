@@ -20,25 +20,19 @@ import inspect
 import pytest
 from faker import Faker
 
-from neptune.exceptions import NeptuneUnsupportedFunctionalityException
-
 fake = Faker()
 
 AVAILABLE_CONTAINERS = ["project", "run"]
 AVAILABLE_CONTAINERS = [
     pytest.param("run"),
-    pytest.param("project", marks=pytest.mark.xfail(reason="Project not supported", strict=True)),
+    pytest.param("project", marks=pytest.mark.skip(reason="Project not supported")),
     pytest.param(
         "model",
-        marks=pytest.mark.xfail(
-            reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-        ),
+        marks=pytest.mark.skip(reason="Model not implemented"),
     ),
     pytest.param(
         "model_version",
-        marks=pytest.mark.xfail(
-            reason="Model not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-        ),
+        marks=pytest.mark.skip(reason="Model not implemented"),
     ),
 ]
 

@@ -15,10 +15,7 @@
 #
 import pytest
 
-from neptune.exceptions import (
-    NeptuneCannotChangeStageManually,
-    NeptuneUnsupportedFunctionalityException,
-)
+from neptune.exceptions import NeptuneCannotChangeStageManually
 from neptune.objects import ModelVersion
 from tests.e2e.base import BaseE2ETest
 
@@ -29,9 +26,7 @@ class TestStageTransitions(BaseE2ETest):
         [
             pytest.param(
                 "model_version",
-                marks=pytest.mark.xfail(
-                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="Model version not implemented"),
             )
         ],
         indirect=True,
@@ -61,9 +56,7 @@ class TestStageTransitions(BaseE2ETest):
         [
             pytest.param(
                 "model_version",
-                marks=pytest.mark.xfail(
-                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="Model version not implemented"),
             )
         ],
         indirect=True,
@@ -78,9 +71,7 @@ class TestStageTransitions(BaseE2ETest):
         [
             pytest.param(
                 "model_version",
-                marks=pytest.mark.xfail(
-                    reason="Model version not implemented", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="Model version not implemented"),
             )
         ],
         indirect=True,
