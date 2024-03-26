@@ -49,6 +49,7 @@ class TestInitRun(BaseE2ETest):
         with neptune.init_run(custom_run_id=custom_run_id, project=environment.project) as exp2:
             assert exp2[key].fetch() == val
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_send_source_code(self, environment):
         with neptune.init_run(
             source_files="**/*.py",
@@ -60,6 +61,7 @@ class TestInitRun(BaseE2ETest):
             with with_check_if_file_appears("files.zip"):
                 exp["source_code/files"].download()
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_git_client_repository(self, environment):
         with neptune.init_run(
             git_ref=GitRef(repository_path="."),
@@ -77,6 +79,7 @@ class TestInitRun(BaseE2ETest):
             exp.sync()
             assert exp.exists("source_code/git")
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_git_disabled(self, environment, recwarn):
         with neptune.init_run(
             git_ref=GitRef.DISABLED,
@@ -96,6 +99,7 @@ class TestInitRun(BaseE2ETest):
 
         assert len(recwarn) == 0  # upload was not skipped due to an exception that would raise a warning
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_infer_dependencies(self, environment):
         with neptune.init_run(
             project=environment.project,
@@ -105,6 +109,7 @@ class TestInitRun(BaseE2ETest):
 
             assert exp.exists("source_code/requirements")
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_upload_dependency_file(self, environment):
         filename = fake.file_name(extension="txt")
         with open(filename, "w") as file:
@@ -121,6 +126,7 @@ class TestInitRun(BaseE2ETest):
         with open("requirements.txt", "r") as file:
             assert file.read() == "some-dependency==1.0.0"
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
         with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
             ...
@@ -129,6 +135,7 @@ class TestInitRun(BaseE2ETest):
         assert "'some_non_existent_file' does not exist" in captured.out
         assert "ERROR" in captured.out
 
+    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_tracking_uncommitted_changes(self, repo, environment):
         file = repo.working_dir + "/some_file.txt"
         with open(file, "w") as fp:

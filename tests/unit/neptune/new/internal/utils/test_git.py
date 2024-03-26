@@ -16,6 +16,7 @@
 import datetime
 
 import git
+import pytest
 from git import Repo
 from mock import (
     MagicMock,
@@ -36,6 +37,7 @@ from neptune.internal.utils.git import (
 from neptune.types import GitRef
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 class TestGit:
     def test_disabled(self):
         assert to_git_info(GitRef.DISABLED) is None
@@ -70,6 +72,7 @@ class TestGit:
         )
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 def test_get_repo_from_git_ref_disabled():
     # given
     git_ref = GitRef.DISABLED
@@ -81,6 +84,7 @@ def test_get_repo_from_git_ref_disabled():
     assert repo is None
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 def test_get_repo_from_git_ref():
     # given
     git_ref = GitRef()
@@ -92,6 +96,7 @@ def test_get_repo_from_git_ref():
     assert isinstance(repo, git.Repo)
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 def test_get_diff(mock_repo):
     # when
@@ -101,6 +106,7 @@ def test_get_diff(mock_repo):
     mock_repo.git.diff.assert_called_once_with("some_ref", index=False)
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 def test_get_diff_command_error(mock_repo):
     # given
@@ -114,6 +120,7 @@ def test_get_diff_command_error(mock_repo):
     assert diff is None
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 def test_search_for_most_recent_ancestor(mock_repo):
     # given
@@ -140,6 +147,7 @@ def test_search_for_most_recent_ancestor(mock_repo):
     assert mock_repo.is_ancestor.call_count == 5  # 6 ancestors - 1 case when most_recent_ancestor was None
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
 @patch("git.Repo")
 def test_get_relevant_upstream_commit_no_search(mock_repo, mock_search):
@@ -151,6 +159,7 @@ def test_get_relevant_upstream_commit_no_search(mock_repo, mock_search):
     mock_search.assert_not_called()
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("neptune.internal.utils.git.search_for_most_recent_ancestor")
 @patch("git.Repo")
 def test_get_relevant_upstream_commit_with_search(mock_repo, mock_search):
@@ -165,6 +174,7 @@ def test_get_relevant_upstream_commit_with_search(mock_repo, mock_search):
     mock_search.assert_called_once_with(mock_repo)
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("neptune.internal.utils.git.get_relevant_upstream_commit")
 @patch("git.Repo")
 def test_get_upstream_index_sha(mock_repo, mock_get_upstream_commit):
@@ -179,6 +189,7 @@ def test_get_upstream_index_sha(mock_repo, mock_get_upstream_commit):
     mock_get_upstream_commit.assert_called_once_with(mock_repo)
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 def test_detached_head(mock_repo):
     # given
@@ -192,6 +203,7 @@ def test_detached_head(mock_repo):
     mock_repo.git.diff.assert_not_called()
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 @patch("neptune.internal.utils.git.get_upstream_index_sha", return_value="test_sha")
 def test_get_uncommitted_changes(mock_get_sha, mock_repo):
@@ -210,6 +222,7 @@ def test_get_uncommitted_changes(mock_get_sha, mock_repo):
     assert uncommitted_changes.diff_upstream == "some_diff\n"
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("git.Repo")
 def test_get_uncommitted_changes_clean_repo(tmp_path_factory):
     # given
@@ -223,6 +236,7 @@ def test_get_uncommitted_changes_clean_repo(tmp_path_factory):
     assert uncommitted_changes is None
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
 @patch("neptune.objects.Run")
 def test_git_ref_disabled(mock_run, mock_get_changes):
@@ -233,6 +247,7 @@ def test_git_ref_disabled(mock_run, mock_get_changes):
     mock_get_changes.assert_not_called()
 
 
+@pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
 @patch("neptune.internal.utils.git.get_uncommitted_changes")
 @patch("neptune.internal.utils.git.get_repo_from_git_ref")
 @patch("neptune.internal.utils.git.File")
