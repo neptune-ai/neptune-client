@@ -5,7 +5,7 @@ from multiprocessing import Barrier
 
 import pytest
 
-from neptune.common.utils import IS_WINDOWS
+from neptune.internal.utils.utils import IS_WINDOWS
 from tests.e2e.base import AVAILABLE_CONTAINERS
 from tests.e2e.utils import (
     Environment,
