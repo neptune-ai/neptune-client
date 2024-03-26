@@ -52,7 +52,6 @@ from neptune.objects.utils import (
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
-@pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
@@ -74,27 +73,24 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
         if PROJECT_ENV_NAME in os.environ:
             del os.environ[PROJECT_ENV_NAME]
 
-    @pytest.mark.skip(
-        (
-            "By coincidence, the test is passing as "
-            "NeptuneUnsupportedFunctionalityException is subclass of NeptuneException"
-        )
-    )
     def test_offline_mode(self):
         with self.assertRaises(NeptuneException):
             with init_project(project=self.PROJECT_NAME, mode="offline"):
                 pass
 
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_no_project_name(self):
         with self.assertRaises(NeptuneMissingProjectNameException):
             with init_project(mode="async"):
                 pass
 
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_inexistent_project(self):
         with self.assertRaises(NeptuneMissingProjectNameException):
             with init_project(mode="async"):
                 pass
 
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_project_name_env_var(self):
         os.environ[PROJECT_ENV_NAME] = self.PROJECT_NAME
 
@@ -119,6 +115,30 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
             self.assertEqual(42, project["some/variable"].fetch())
             self.assertNotIn(str(project._id), os.listdir(".neptune"))
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_async_mode(self):
+        super().test_async_mode()
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_sync_mode(self):
+        super().test_sync_mode()
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_async_mode_stop_on_dead(self):
+        super().test_async_mode_stop_on_dead()
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_async_mode_wait_on_dead(self):
+        super().test_async_mode_wait_on_dead()
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_async_mode_die_during_wait(self):
+        super().test_async_mode_die_during_wait()
+
+    @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    def test_clean_data_on_stop(self):
+        super().test_clean_data_on_stop()
 
 
 def test_prepare_nql_query():

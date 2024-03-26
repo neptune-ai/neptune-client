@@ -224,25 +224,14 @@ class TestFetchTable(BaseE2ETest):
             ).to_rows()
             assert sorted([mv.get_attribute_value("sys/name") for mv in model_versions]) == sorted(expected_names)
 
+    @pytest.mark.skip("Tags are temporarily disabled - will be brought back in 2.0.0")
     @pytest.mark.parametrize("with_query", [True, False])
     def test_fetch_runs_table_by_state(self, environment, project, with_query):
         tag = str(uuid.uuid4())
         random_val = random.random()
+
         with neptune.init_run(project=environment.project, tags=tag) as run:
             run["some_random_val"] = random_val
-
-            time.sleep(WAIT_DURATION)
-
-            if with_query:
-                kwargs = {"query": "(sys/state: experimentState = running)"}
-            else:
-                kwargs = {"state": "active"}
-            runs = project.fetch_runs_table(**kwargs).to_pandas()
-            runs = project.fetch_runs_table(**kwargs, progress_bar=False).to_pandas()
-
-            assert not runs.empty
-            assert tag in runs["sys/tags"].values
-            assert random_val in runs["some_random_val"].values
 
         time.sleep(WAIT_DURATION)
 

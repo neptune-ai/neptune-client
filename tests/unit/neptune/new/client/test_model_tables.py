@@ -17,10 +17,7 @@
 import unittest
 from typing import List
 
-import pytest
-
 from neptune import init_project
-from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.container_type import ContainerType
 from neptune.table import (
     Table,
@@ -29,7 +26,6 @@ from neptune.table import (
 from tests.unit.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
-@pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestModelTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL
 

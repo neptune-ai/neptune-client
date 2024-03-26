@@ -152,7 +152,8 @@ class Project(NeptuneObject):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        raise NeptuneUnsupportedFunctionalityException
+        if mode in {Mode.ASYNC.value, Mode.SYNC.value}:
+            raise NeptuneUnsupportedFunctionalityException
 
         verify_type("mode", mode, (str, type(None)))
 
