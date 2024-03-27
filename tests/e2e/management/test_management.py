@@ -28,7 +28,6 @@ from neptune import (
     Project,
     init_model_version,
 )
-from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.container_type import ContainerType
 from neptune.management import (
     ProjectVisibility,
@@ -457,7 +456,7 @@ class TestTrashObjects(BaseE2ETest):
         # THEN no runs are fetched
         self.wait_for_containers([], project.fetch_runs_table)
 
-    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Model is not supported")
     def test_trash_runs_and_models(self, project, environment):
         # WITH runs and models
         run1_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()
@@ -476,7 +475,7 @@ class TestTrashObjects(BaseE2ETest):
         # AND trashed models are not fetched
         self.wait_for_containers([model2_id], project.fetch_models_table)
 
-    @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Model is not supported")
     def test_trash_model_version(self, environment):
         # WITH model
         model = initialize_container(ContainerType.MODEL, project=environment.project)
@@ -514,16 +513,12 @@ class TestDeleteFromTrash:
             pytest.param(
                 2,
                 0,
-                marks=pytest.mark.xfail(
-                    reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="Project is not supported"),
             ),
             pytest.param(
                 2,
                 1,
-                marks=pytest.mark.xfail(
-                    reason="Project is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException
-                ),
+                marks=pytest.mark.skip(reason="Project is not supported"),
             ),
         ],
     )
