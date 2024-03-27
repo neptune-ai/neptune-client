@@ -13,7 +13,7 @@
 - Disabled `Project` ([#1709](https://github.com/neptune-ai/neptune-client/pull/1709))
 
 ### Changes
-- Stop sending `X-Neptune-LegacyClient` header ([#????](???))
+- Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
 
 ### Features
 - ?
