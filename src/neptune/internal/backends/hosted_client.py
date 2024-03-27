@@ -61,6 +61,7 @@ DEFAULT_REQUEST_KWARGS = {
     "_request_options": {
         "connect_timeout": CONNECT_TIMEOUT,
         "timeout": REQUEST_TIMEOUT,
+        "headers": {},
     }
 }
 
