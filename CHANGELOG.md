@@ -18,6 +18,9 @@
 ### Features
 - ?
 
+### Fixes
+- Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
+
 
 ## neptune 1.10.0
 
