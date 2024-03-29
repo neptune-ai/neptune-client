@@ -34,11 +34,12 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
-        additional_dependencies: [ types-click ]
+        additional_dependencies: [ types-click, mypy-protobuf ]
 exclude: |
   (?x)(
      ^tests/unit/data/|
-     ^.github/license_header\.txt
+     ^.github/license_header\.txt|
+     ^src/neptune/api/proto/
   )
 default_language_version:
     python: python3

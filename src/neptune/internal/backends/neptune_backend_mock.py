@@ -514,6 +514,15 @@ class NeptuneBackendMock(NeptuneBackend):
     ) -> str:
         return f"offline/{model_version_id}"
 
+    def get_attribute_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        filter_types: Optional[List[str]] = None,
+        use_proto: bool = False,
+    ) -> List[Attribute]:
+        return []
+
     def _get_attribute_values(self, value_dict, path_prefix: List[str]):
         assert isinstance(value_dict, dict)
         for k, value in value_dict.items():

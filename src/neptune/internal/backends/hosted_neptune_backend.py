@@ -54,6 +54,7 @@ from neptune.api.models import (
     StringSeriesField,
     StringSetField,
 )
+from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -1117,6 +1118,57 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+    def get_attribute_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        filter_types: Optional[List[str]] = None,
+        use_proto: bool = False,
+    ) -> List[FieldDefinition]:
+        params = {
+            "experimentIdentifier": container_id,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+
+        try:
+            if use_proto:
+                result = self.leaderboard_client.api.queryAttributeDefinitionsProto(**params).response().result
+                result = ProtoAttributesSearchResultDTO.FromString(result)
+            else:
+                result = self.leaderboard_client.api.queryAttributeDefinitions(**params).response().result
+
+            attributes = result.entries
+
+            if filter_types is not None:
+                attributes = [attr for attr in attributes if attr.type in filter_types]
+
+            return [FieldDefinition(attr.name, FieldType(attr.type)) for attr in attributes]
+        except HTTPNotFound as e:
+            raise ContainerUUIDNotFound(
+                container_id=container_id,
+                container_type=container_type,
+            ) from e
+
+    def get_attributes_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str]
+    ) -> Any:
+        params = {
+            "holderIdentifier": container_id,
+            "holderType": "experiment",
+            "attributeQuery": {
+                "attributePathsFilter": paths,
+            },
+            **DEFAULT_REQUEST_KWARGS,
+        }
+
+        try:
+            return self.leaderboard_client.api.getAttributesWithPathsFilter(**params).response().result
+        except HTTPNotFound as e:
+            raise ContainerUUIDNotFound(
+                container_id=container_id,
+                container_type=container_type,
+            ) from e
 
 
 def _get_column_type_from_entries(entries: List[Any], column: str) -> str:

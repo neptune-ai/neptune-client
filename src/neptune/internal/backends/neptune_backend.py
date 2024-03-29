@@ -295,6 +295,16 @@ class NeptuneBackend:
     ) -> str:
         pass
 
+    # WARN: Used in Neptune Fetcher
+    @abc.abstractmethod
+    def get_attribute_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        filter_types: Optional[List[str]] = None,
+        use_proto: bool = False,
+    ) -> List[Attribute]: ...
+
     @abc.abstractmethod
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
