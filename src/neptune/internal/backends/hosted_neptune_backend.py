@@ -59,10 +59,10 @@ from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     ArtifactAttribute,
-    AttributeDefinition,
     AttributeType,
     BoolAttribute,
     DatetimeAttribute,
+    FieldDefinition,
     FileAttribute,
     FloatAttribute,
     FloatPointValue,
@@ -682,9 +682,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise NeptuneLimitExceedException(reason=e.response.json().get("title", "Unknown reason")) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[AttributeDefinition]:
-        def to_attribute(attr) -> AttributeDefinition:
-            return AttributeDefinition(attr.name, AttributeType(attr.type))
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[FieldDefinition]:
+        def to_attribute(attr) -> FieldDefinition:
+            return FieldDefinition(attr.name, AttributeType(attr.type))
 
         params = {
             "experimentId": container_id,

@@ -34,8 +34,8 @@ from neptune.envs import (
 )
 from neptune.exceptions import MissingFieldException
 from neptune.internal.backends.api_model import (
-    AttributeDefinition,
     AttributeType,
+    FieldDefinition,
     IntAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
@@ -68,7 +68,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [AttributeDefinition("some/variable", AttributeType.INT)],
+        new=lambda _, _uuid, _type: [FieldDefinition("some/variable", AttributeType.INT)],
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
@@ -93,7 +93,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [AttributeDefinition("test", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [FieldDefinition("test", AttributeType.STRING)],
     )
     def test_resume(self):
         with init_run(flush_period=0.5, with_id="whatever") as exp:

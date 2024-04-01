@@ -34,8 +34,8 @@ from neptune.exceptions import (
     NeptuneWrongInitParametersException,
 )
 from neptune.internal.backends.api_model import (
-    AttributeDefinition,
     AttributeType,
+    FieldDefinition,
     IntAttribute,
     StringAttribute,
 )
@@ -87,8 +87,8 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
-            AttributeDefinition("some/variable", AttributeType.INT),
-            AttributeDefinition("sys/model_id", AttributeType.STRING),
+            FieldDefinition("some/variable", AttributeType.INT),
+            FieldDefinition("sys/model_id", AttributeType.STRING),
         ],
     )
     @patch(
@@ -115,8 +115,8 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
-            AttributeDefinition("test", AttributeType.STRING),
-            AttributeDefinition("sys/model_id", AttributeType.STRING),
+            FieldDefinition("test", AttributeType.STRING),
+            FieldDefinition("sys/model_id", AttributeType.STRING),
         ],
     )
     @patch(

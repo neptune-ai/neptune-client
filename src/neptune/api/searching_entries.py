@@ -36,7 +36,7 @@ from typing_extensions import (
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
@@ -161,7 +161,7 @@ def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
         id=entry["experimentId"],
         attributes=[
-            AttributeWithProperties(
+            Field(
                 path=attr["name"],
                 type=AttributeType(attr["type"]),
                 properties=attr.__getitem__(f"{attr['type']}Properties"),
@@ -172,7 +172,7 @@ def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     )
 
 
-def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[AttributeWithProperties]:
+def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[Field]:
     return next((attr for attr in entry.attributes if attr.path == path), None)
 
 

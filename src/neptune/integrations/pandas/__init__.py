@@ -30,7 +30,7 @@ import pandas as pd
 
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 from neptune.internal.utils.logger import get_logger
@@ -43,7 +43,7 @@ logger = get_logger()
 
 
 def to_pandas(table: Table) -> pd.DataFrame:
-    def make_attribute_value(attribute: AttributeWithProperties) -> Any:
+    def make_attribute_value(attribute: Field) -> Any:
         _type = attribute.type
         _properties = attribute.properties
         if _type == AttributeType.RUN_STATE:

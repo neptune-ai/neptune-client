@@ -23,7 +23,7 @@ from mock import patch
 from neptune import init_project
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
@@ -68,7 +68,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
             LeaderboardEntry(
                 id="123",
                 attributes=[
-                    AttributeWithProperties(
+                    Field(
                         "sys/creation_time",
                         AttributeType.DATETIME,
                         {"value": "2024-02-05T20:37:40.915000Z"},

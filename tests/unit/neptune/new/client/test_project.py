@@ -33,9 +33,9 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
 )
 from neptune.internal.backends.api_model import (
-    AttributeDefinition,
     AttributeType,
-    AttributeWithProperties,
+    Field,
+    FieldDefinition,
     IntAttribute,
     LeaderboardEntry,
 )
@@ -54,7 +54,7 @@ from tests.unit.neptune.new.client.abstract_experiment_test_mixin import Abstrac
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [AttributeDefinition("test", AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [FieldDefinition("test", AttributeType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
@@ -175,12 +175,12 @@ def test_parse_dates():
         yield LeaderboardEntry(
             id="test",
             attributes=[
-                AttributeWithProperties(
+                Field(
                     "attr1",
                     AttributeType.DATETIME,
                     {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
-                AttributeWithProperties(
+                Field(
                     "attr2",
                     AttributeType.DATETIME,
                     {"value": "2024-02-05T20:37:40.915000Z"},
@@ -199,7 +199,7 @@ def test_parse_dates_wrong_format(mock_warn_once):
         LeaderboardEntry(
             id="test",
             attributes=[
-                AttributeWithProperties(
+                Field(
                     "attr1",
                     AttributeType.DATETIME,
                     {"value": "07-02-2024"},  # different format than expected

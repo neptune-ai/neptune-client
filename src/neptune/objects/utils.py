@@ -29,7 +29,7 @@ from typing import (
 
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 from neptune.internal.backends.nql import (
@@ -146,7 +146,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
             entry.id,
             attributes=[
                 (
-                    AttributeWithProperties(
+                    Field(
                         attribute.path,
                         attribute.type,
                         {

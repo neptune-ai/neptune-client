@@ -25,9 +25,9 @@ from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ArtifactAttribute,
-    AttributeDefinition,
     BoolAttribute,
     DatetimeAttribute,
+    FieldDefinition,
     FileAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
@@ -47,7 +47,7 @@ from neptune.typing import ProgressBarType
 class OfflineNeptuneBackend(NeptuneBackendMock):
     WORKSPACE_NAME = "offline"
 
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[AttributeDefinition]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[FieldDefinition]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:

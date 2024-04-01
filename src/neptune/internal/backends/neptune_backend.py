@@ -31,10 +31,10 @@ from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     ArtifactAttribute,
-    AttributeDefinition,
     AttributeType,
     BoolAttribute,
     DatetimeAttribute,
+    FieldDefinition,
     FileAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
@@ -146,7 +146,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[AttributeDefinition]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[FieldDefinition]:
         pass
 
     @abc.abstractmethod

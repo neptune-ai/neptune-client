@@ -34,7 +34,7 @@ from neptune.api.searching_entries import (
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 
@@ -67,14 +67,14 @@ def test__to_leaderboard_entry():
     # then
     assert result.id == "foo"
     assert result.attributes == [
-        AttributeWithProperties(
+        Field(
             path="plugh",
             type=AttributeType.FLOAT,
             properties={
                 "value": 1.0,
             },
         ),
-        AttributeWithProperties(
+        Field(
             path="sys/id",
             type=AttributeType.STRING,
             properties={
@@ -255,7 +255,7 @@ def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -
     return [
         LeaderboardEntry(
             id=experiment_id,
-            attributes=[AttributeWithProperties(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
+            attributes=[Field(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
         )
         for value in values
     ]

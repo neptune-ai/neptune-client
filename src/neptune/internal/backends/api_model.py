@@ -21,8 +21,8 @@ __all__ = [
     "VersionInfo",
     "ClientConfig",
     "AttributeType",
-    "AttributeDefinition",
-    "AttributeWithProperties",
+    "FieldDefinition",
+    "Field",
     "LeaderboardEntry",
     "StringPointValue",
     "ImageSeriesValues",
@@ -218,13 +218,13 @@ class AttributeType(Enum):
 
 
 @dataclass
-class AttributeDefinition:
+class FieldDefinition:
     path: str
     type: AttributeType
 
 
 @dataclass
-class AttributeWithProperties:
+class Field:
     path: str
     type: AttributeType
     properties: Any
@@ -233,7 +233,7 @@ class AttributeWithProperties:
 @dataclass
 class LeaderboardEntry:
     id: str
-    attributes: List[AttributeWithProperties]
+    attributes: List[Field]
 
 
 @dataclass

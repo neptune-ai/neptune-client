@@ -27,7 +27,7 @@ from neptune.exceptions import MetadataInconsistency
 from neptune.integrations.pandas import to_pandas
 from neptune.internal.backends.api_model import (
     AttributeType,
-    AttributeWithProperties,
+    Field,
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -53,7 +53,7 @@ class TableEntry:
         backend: NeptuneBackend,
         container_type: ContainerType,
         _id: str,
-        attributes: List[AttributeWithProperties],
+        attributes: List[Field],
     ):
         self._backend = backend
         self._container_type = container_type
