@@ -29,7 +29,7 @@ from neptune.envs import (
 )
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.backends.api_model import (
-    Attribute,
+    AttributeDefinition,
     AttributeType,
     AttributeWithProperties,
     LeaderboardEntry,
@@ -43,7 +43,7 @@ from neptune.table import (
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [Attribute(path="test", type=AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [AttributeDefinition(path="test", type=AttributeType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class AbstractTablesTestMixin:

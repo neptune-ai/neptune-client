@@ -33,7 +33,7 @@ from neptune.exceptions import (
     NeptuneWrongInitParametersException,
 )
 from neptune.internal.backends.api_model import (
-    Attribute,
+    AttributeDefinition,
     AttributeType,
     IntAttribute,
 )
@@ -77,7 +77,7 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
+        new=lambda _, _uuid, _type: [AttributeDefinition("some/variable", AttributeType.INT)],
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
@@ -102,7 +102,7 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [AttributeDefinition("test", AttributeType.STRING)],
     )
     def test_resume(self):
         with init_model(flush_period=0.5, with_id="whatever") as exp:

@@ -21,7 +21,7 @@ __all__ = [
     "VersionInfo",
     "ClientConfig",
     "AttributeType",
-    "Attribute",
+    "AttributeDefinition",
     "AttributeWithProperties",
     "LeaderboardEntry",
     "StringPointValue",
@@ -218,7 +218,7 @@ class AttributeType(Enum):
 
 
 @dataclass
-class Attribute:
+class AttributeDefinition:
     path: str
     type: AttributeType
 

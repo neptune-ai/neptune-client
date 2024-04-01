@@ -47,7 +47,7 @@ from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     ArtifactAttribute,
-    Attribute,
+    AttributeDefinition,
     AttributeType,
     BoolAttribute,
     DatetimeAttribute,
@@ -311,7 +311,7 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             run.pop(op.path)
 
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[AttributeDefinition]:
         run = self._get_container(container_id, container_type)
         return list(self._generate_attributes(None, run.get_structure()))
 
@@ -321,7 +321,7 @@ class NeptuneBackendMock(NeptuneBackend):
             if isinstance(value_or_dict, dict):
                 yield from self._generate_attributes(new_path, value_or_dict)
             else:
-                yield Attribute(
+                yield AttributeDefinition(
                     new_path,
                     value_or_dict.accept(self._attribute_type_converter_value_visitor),
                 )
@@ -597,7 +597,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError
 
-        def copy_value(self, source_type: Type[Attribute], source_path: List[str]) -> AttributeType:
+        def copy_value(self, source_type: Type[AttributeDefinition], source_path: List[str]) -> AttributeType:
             raise NotImplementedError
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):

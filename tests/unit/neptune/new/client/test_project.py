@@ -33,7 +33,7 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
 )
 from neptune.internal.backends.api_model import (
-    Attribute,
+    AttributeDefinition,
     AttributeType,
     AttributeWithProperties,
     IntAttribute,
@@ -54,7 +54,7 @@ from tests.unit.neptune.new.client.abstract_experiment_test_mixin import Abstrac
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [AttributeDefinition("test", AttributeType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
