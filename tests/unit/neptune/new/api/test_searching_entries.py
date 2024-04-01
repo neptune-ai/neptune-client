@@ -66,7 +66,7 @@ def test__to_leaderboard_entry():
 
     # then
     assert result.id == "foo"
-    assert result.attributes == [
+    assert result.fields == [
         Field(
             path="plugh",
             type=AttributeType.FLOAT,
@@ -255,7 +255,7 @@ def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -
     return [
         LeaderboardEntry(
             id=experiment_id,
-            attributes=[Field(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
+            fields=[Field(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
         )
         for value in values
     ]

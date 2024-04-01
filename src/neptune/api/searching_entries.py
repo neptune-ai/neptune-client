@@ -160,7 +160,7 @@ def get_single_page(
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
     return LeaderboardEntry(
         id=entry["experimentId"],
-        attributes=[
+        fields=[
             Field(
                 path=attr["name"],
                 type=AttributeType(attr["type"]),
@@ -173,7 +173,7 @@ def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
 
 
 def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[Field]:
-    return next((attr for attr in entry.attributes if attr.path == path), None)
+    return next((attr for attr in entry.fields if attr.path == path), None)
 
 
 def iter_over_pages(

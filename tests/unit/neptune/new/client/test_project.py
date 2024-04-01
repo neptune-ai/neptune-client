@@ -174,7 +174,7 @@ def test_parse_dates():
     def entries_generator():
         yield LeaderboardEntry(
             id="test",
-            attributes=[
+            fields=[
                 Field(
                     "attr1",
                     AttributeType.DATETIME,
@@ -189,8 +189,8 @@ def test_parse_dates():
         )
 
     parsed = list(parse_dates(entries_generator()))
-    assert parsed[0].attributes[0].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
-    assert parsed[0].attributes[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
+    assert parsed[0].fields[0].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
+    assert parsed[0].fields[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
 
 
 @patch("neptune.objects.utils.warn_once")
@@ -198,7 +198,7 @@ def test_parse_dates_wrong_format(mock_warn_once):
     entries = [
         LeaderboardEntry(
             id="test",
-            attributes=[
+            fields=[
                 Field(
                     "attr1",
                     AttributeType.DATETIME,
@@ -209,7 +209,7 @@ def test_parse_dates_wrong_format(mock_warn_once):
     ]
 
     parsed = list(parse_dates(entries))
-    assert parsed[0].attributes[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
+    assert parsed[0].fields[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
     mock_warn_once.assert_called_once_with(
         "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
         exception=NeptuneWarning,

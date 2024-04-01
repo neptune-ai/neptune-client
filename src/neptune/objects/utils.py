@@ -144,7 +144,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
     try:
         return LeaderboardEntry(
             entry.id,
-            attributes=[
+            fields=[
                 (
                     Field(
                         attribute.path,
@@ -157,7 +157,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                     if attribute.type == AttributeType.DATETIME
                     else attribute
                 )
-                for attribute in entry.attributes
+                for attribute in entry.fields
             ],
         )
     except ValueError:

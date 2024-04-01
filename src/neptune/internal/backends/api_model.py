@@ -233,7 +233,7 @@ class Field:
 @dataclass
 class LeaderboardEntry:
     id: str
-    attributes: List[Field]
+    fields: List[Field]
 
 
 @dataclass

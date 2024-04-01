@@ -194,7 +194,7 @@ class Table:
             backend=self._backend,
             container_type=self._container_type,
             _id=entry.id,
-            attributes=entry.attributes,
+            attributes=entry.fields,
         )
 
     def to_pandas(self) -> "pandas.DataFrame":

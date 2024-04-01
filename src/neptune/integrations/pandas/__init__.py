@@ -80,7 +80,7 @@ def to_pandas(table: Table) -> pd.DataFrame:
 
     def make_row(entry: LeaderboardEntry) -> Dict[str, Any]:
         row: Dict[str, Union[str, float, datetime]] = dict()
-        for attr in entry.attributes:
+        for attr in entry.fields:
             value = make_attribute_value(attr)
             if value is not None:
                 row[attr.path] = value

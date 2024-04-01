@@ -67,7 +67,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
         new=lambda *args, **kwargs: [
             LeaderboardEntry(
                 id="123",
-                attributes=[
+                fields=[
                     Field(
                         "sys/creation_time",
                         AttributeType.DATETIME,

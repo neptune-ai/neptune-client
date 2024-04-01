@@ -694,10 +694,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
 
             attribute_type_names = [at.value for at in AttributeType]
-            accepted_attributes = [attr for attr in experiment.attributes if attr.type in attribute_type_names]
+            accepted_attributes = [attr for attr in experiment.fields if attr.type in attribute_type_names]
 
             # Notify about ignored attrs
-            ignored_attributes = set(attr.type for attr in experiment.attributes) - set(
+            ignored_attributes = set(attr.type for attr in experiment.fields) - set(
                 attr.type for attr in accepted_attributes
             )
             if ignored_attributes:
@@ -1028,7 +1028,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
             return [
                 (attr.name, attr.type, map_attribute_result_to_value(attr))
-                for attr in result.attributes
+                for attr in result.fields
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound as e:
