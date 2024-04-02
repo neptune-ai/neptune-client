@@ -11,6 +11,7 @@
 - Disabled `Model` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1701))
 - Disabled `ModelVersion` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1708))
 - Disabled `Project` ([#1709](https://github.com/neptune-ai/neptune-client/pull/1709))
+- Disabled `neptune command-line tool` ([#????](???))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
