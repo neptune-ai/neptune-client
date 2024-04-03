@@ -24,6 +24,7 @@ from click.testing import CliRunner
 import neptune
 from neptune.cli import sync
 from neptune.cli.commands import clear
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.exceptions import NeptuneException
 from neptune.types import File
 from tests.e2e.base import (
@@ -41,6 +42,7 @@ from tests.e2e.utils import (
 runner = CliRunner()
 
 
+@pytest.mark.xfail(reason="cli commands are disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestCli(BaseE2ETest):
     SYNCHRONIZED_SYSID_RE = r"[\w-]+/[\w-]+/([\w-]+)"
 
@@ -104,7 +106,7 @@ class TestCli(BaseE2ETest):
                 assert container[key].fetch() == original_value
 
             # run neptune sync
-            result = runner.invoke(sync, ["--path", tmp])
+            result = runner.invoke(sync, ["--path", tmp], catch_exceptions=False)
             assert result.exit_code == 0
 
             with reinitialize_container(container_sys_id, container_type, project=environment.project) as container:
@@ -138,7 +140,7 @@ class TestCli(BaseE2ETest):
             run.stop()
 
             # run asynchronously
-            result = runner.invoke(sync, ["--path", tmp, "-p", environment.project])
+            result = runner.invoke(sync, ["--path", tmp, "-p", environment.project], catch_exceptions=False)
             assert result.exit_code == 0
 
             # we'll have to parse sync output to determine short_id
@@ -175,7 +177,7 @@ class TestCli(BaseE2ETest):
             assert os.path.exists(container_path)
             assert os.path.exists(offline_container_path)
 
-            result = runner.invoke(clear, args=["--path", tmp], input="y")
+            result = runner.invoke(clear, args=["--path", tmp], input="y", catch_exceptions=False)
 
             assert result.exit_code == 0
 
@@ -208,7 +210,7 @@ class TestCli(BaseE2ETest):
 
             assert os.path.exists(container_path)
 
-            result = runner.invoke(clear, args=["--path", tmp], input="y")
+            result = runner.invoke(clear, args=["--path", tmp], input="y", catch_exceptions=False)
             assert result.exit_code == 0
 
             assert not os.path.exists(container_path)
@@ -234,7 +236,7 @@ class TestCli(BaseE2ETest):
 
             assert os.path.exists(container_path)
 
-            result = runner.invoke(sync, args=["--path", tmp])
+            result = runner.invoke(sync, args=["--path", tmp], catch_exceptions=False)
             assert result.exit_code == 0
 
             assert not os.path.exists(container_path)

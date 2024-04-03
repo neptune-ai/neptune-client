@@ -28,6 +28,7 @@ from neptune.cli.clear import ClearRunner
 from neptune.cli.path_option import path_option
 from neptune.cli.status import StatusRunner
 from neptune.cli.sync import SyncRunner
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.credentials import Credentials
 
@@ -52,6 +53,7 @@ def status(path: Path) -> None:
     neptune status --path foo/bar
     """
 
+    raise NeptuneUnsupportedFunctionalityException
     backend = HostedNeptuneBackend(Credentials.from_token())
 
     StatusRunner.status(backend=backend, path=path)
@@ -127,6 +129,7 @@ def sync(
     neptune sync --project workspace/project --offline-only
     """
 
+    raise NeptuneUnsupportedFunctionalityException
     backend = HostedNeptuneBackend(Credentials.from_token())
 
     if offline_only:
@@ -159,6 +162,8 @@ def clear(path: Path) -> None:
     # Clear junk metadata from directory "foo/bar"
     neptune clear --path foo/bar
     """
+
+    raise NeptuneUnsupportedFunctionalityException
     backend = HostedNeptuneBackend(Credentials.from_token())
 
     ClearRunner.clear(backend=backend, path=path)
