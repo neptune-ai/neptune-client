@@ -97,7 +97,6 @@ from neptune.objects.abstract import (
     AbstractNeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.objects.utils import parse_dates
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -684,8 +683,6 @@ class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
             ascending=ascending,
             progress_bar=progress_bar,
         )
-
-        leaderboard_entries = parse_dates(leaderboard_entries)
 
         return Table(
             backend=self._backend,

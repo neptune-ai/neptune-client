@@ -39,10 +39,7 @@ from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
 )
-from neptune.objects.utils import (
-    parse_dates,
-    prepare_nql_query,
-)
+from neptune.objects.utils import prepare_nql_query
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 

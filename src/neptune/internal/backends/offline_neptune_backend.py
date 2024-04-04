@@ -20,7 +20,7 @@ from typing import (
     Optional,
 )
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (

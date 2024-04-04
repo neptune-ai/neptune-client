@@ -59,8 +59,7 @@ class FieldToValueVisitor(FieldVisitor[Any]):
         return field.value
 
     def visit_datetime(self, field: DatetimeField) -> datetime:
-        # TODO: Datetime
-        ...
+        return field.value
 
     def visit_file(self, field: FileField) -> None:
         raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")

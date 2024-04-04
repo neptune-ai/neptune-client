@@ -685,9 +685,6 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_attributes(self, container_id: str, container_type: ContainerType) -> List[FieldDefinition]:
-        def to_attribute(attr) -> FieldDefinition:
-            return FieldDefinition(attr.name, FieldType(attr.type))
-
         params = {
             "experimentId": container_id,
             **DEFAULT_REQUEST_KWARGS,
@@ -696,10 +693,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
 
             attribute_type_names = [at.value for at in FieldType]
-            accepted_attributes = [attr for attr in experiment.fields if attr.type in attribute_type_names]
+            accepted_attributes = [attr for attr in experiment.attributes if attr.type in attribute_type_names]
 
             # Notify about ignored attrs
-            ignored_attributes = set(attr.type for attr in experiment.fields) - set(
+            ignored_attributes = set(attr.type for attr in experiment.attributes) - set(
                 attr.type for attr in accepted_attributes
             )
             if ignored_attributes:
@@ -708,7 +705,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     ignored_attributes,
                 )
 
-            return [to_attribute(attr) for attr in accepted_attributes if attr.type in attribute_type_names]
+            return [FieldDefinition.from_dict(field) for field in accepted_attributes if field.type in attribute_type_names]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
                 container_id=container_id,
@@ -1030,7 +1027,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
             return [
                 (attr.name, attr.type, map_attribute_result_to_value(attr))
-                for attr in result.fields
+                for attr in result.attributes
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound as e:

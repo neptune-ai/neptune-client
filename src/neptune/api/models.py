@@ -55,6 +55,9 @@ from typing import (
     List,
 )
 
+from neptune.internal.utils.iso_dates import parse_iso_date
+from neptune.internal.warnings import warn_once, NeptuneWarning
+
 Ret = TypeVar("Ret")
 
 
@@ -94,9 +97,8 @@ class Field(abc.ABC):
     type: FieldType = dataclass_field(init=False, default=None)
     _registry: ClassVar[Dict[str, Type[Field]]] = {t.value: {} for t in FieldType}
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, field_type: FieldType, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        field_type: Optional[FieldType] = kwargs.get('type', None)
         if field_type is not None:
             cls.type = field_type
             cls._registry[field_type.value] = cls
@@ -107,7 +109,7 @@ class Field(abc.ABC):
 
     @staticmethod
     def from_dict(field: Dict[str, Any]) -> Field:
-        field_type = field["type"].value
+        field_type = field["type"]
         return Field._registry[field_type].from_dict(field[f"{field_type}Properties"])
 
 
@@ -163,7 +165,7 @@ class FieldVisitor(Generic[Ret], abc.ABC):
 
 
 @dataclass
-class FloatField(Field, type=FieldType.FLOAT):
+class FloatField(Field, field_type=FieldType.FLOAT):
     value: float
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -176,7 +178,7 @@ class FloatField(Field, type=FieldType.FLOAT):
 
 
 @dataclass
-class IntField(Field, type=FieldType.INT):
+class IntField(Field, field_type=FieldType.INT):
     value: int
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -189,7 +191,7 @@ class IntField(Field, type=FieldType.INT):
 
 
 @dataclass
-class BoolField(Field, type=FieldType.BOOL):
+class BoolField(Field, field_type=FieldType.BOOL):
     value: bool
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -202,7 +204,7 @@ class BoolField(Field, type=FieldType.BOOL):
 
 
 @dataclass
-class StringField(Field, type=FieldType.STRING):
+class StringField(Field, field_type=FieldType.STRING):
     value: str
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -215,7 +217,7 @@ class StringField(Field, type=FieldType.STRING):
 
 
 @dataclass
-class DatetimeField(Field, type=FieldType.DATETIME):
+class DatetimeField(Field, field_type=FieldType.DATETIME):
     value: datetime
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -223,12 +225,12 @@ class DatetimeField(Field, type=FieldType.DATETIME):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> DatetimeField:
-        # TODO: parse datetime
-        return DatetimeField(path=data["attributeName"], value=data["value"])
+        # TODO: what if none
+        return DatetimeField(path=data["attributeName"], value=parse_iso_date(data["value"]))
 
 
 @dataclass
-class FileField(Field, type=FieldType.FILE):
+class FileField(Field, field_type=FieldType.FILE):
     name: str
     ext: str
     size: int
@@ -239,7 +241,7 @@ class FileField(Field, type=FieldType.FILE):
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> FileField:
         return FileField(
-            path=data["path"],
+            path=data["attributeName"],
             name=data["name"],
             ext=data["ext"],
             size=int(data["size"])
@@ -247,7 +249,7 @@ class FileField(Field, type=FieldType.FILE):
 
 
 @dataclass
-class FileSetField(Field, type=FieldType.FILE_SET):
+class FileSetField(Field, field_type=FieldType.FILE_SET):
     size: int
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -259,7 +261,7 @@ class FileSetField(Field, type=FieldType.FILE_SET):
 
 
 @dataclass
-class FloatSeriesField(Field, type=FieldType.FLOAT_SERIES):
+class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
     last: Optional[float]
 
     def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
@@ -272,7 +274,7 @@ class FloatSeriesField(Field, type=FieldType.FLOAT_SERIES):
 
 
 @dataclass
-class StringSeriesField(Field, type=FieldType.STRING_SERIES):
+class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
     last: Optional[str]
 
     def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
@@ -285,7 +287,7 @@ class StringSeriesField(Field, type=FieldType.STRING_SERIES):
 
 
 @dataclass
-class ImageSeriesField(Field, type=FieldType.IMAGE_SERIES):
+class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
     last_step: Optional[float]
 
     def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
@@ -298,7 +300,7 @@ class ImageSeriesField(Field, type=FieldType.IMAGE_SERIES):
 
 
 @dataclass
-class StringSetField(Field, type=FieldType.STRING_SET):
+class StringSetField(Field, field_type=FieldType.STRING_SET):
     values: Set[str]
 
     def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
@@ -310,7 +312,7 @@ class StringSetField(Field, type=FieldType.STRING_SET):
 
 
 @dataclass
-class GitRefField(Field, type=FieldType.GIT_REF):
+class GitRefField(Field, field_type=FieldType.GIT_REF):
     commit_id: Optional[str]
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -323,7 +325,7 @@ class GitRefField(Field, type=FieldType.GIT_REF):
 
 
 @dataclass
-class ObjectStateField(Field, type=FieldType.OBJECT_STATE):
+class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
     value: str
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -335,7 +337,7 @@ class ObjectStateField(Field, type=FieldType.OBJECT_STATE):
 
 
 @dataclass
-class NotebookRefField(Field, type=FieldType.NOTEBOOK_REF):
+class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
     notebook_name: Optional[str]
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -348,11 +350,15 @@ class NotebookRefField(Field, type=FieldType.NOTEBOOK_REF):
 
 
 @dataclass
-class ArtifactField(Field, type=FieldType.ARTIFACT):
+class ArtifactField(Field, field_type=FieldType.ARTIFACT):
     hash: str
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_artifact(self)
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> ArtifactField:
+        return ArtifactField(path=data["attributeName"], hash=str(data["hash"]))
 
 
 @dataclass
@@ -376,6 +382,7 @@ class LeaderboardEntriesSearchResult:
     @staticmethod
     def from_dict(result: Dict[str, Any]) -> LeaderboardEntriesSearchResult:
         return LeaderboardEntriesSearchResult(
+            # TODO: Use generator instead
             entries=[LeaderboardEntry.from_dict(entry) for entry in result["entries"]],
             matching_item_count=result["matchingItemCount"],
         )
@@ -385,3 +392,7 @@ class LeaderboardEntriesSearchResult:
 class FieldDefinition:
     path: str
     type: FieldType
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> FieldDefinition:
+        return FieldDefinition(path=data["name"], type=FieldType(data["type"]))

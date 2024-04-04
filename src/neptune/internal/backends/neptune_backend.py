@@ -25,7 +25,7 @@ from typing import (
     Union,
 )
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
