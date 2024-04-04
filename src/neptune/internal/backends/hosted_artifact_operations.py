@@ -263,7 +263,7 @@ def get_artifact_attribute(
     }
     try:
         result = swagger_client.api.getArtifactAttribute(**params).response().result
-        return ArtifactField(hash=result.hash)
+        return ArtifactField(path=path_to_str(path), hash=result.hash)
     except HTTPNotFound:
         raise FetchAttributeNotFoundException(path_to_str(path))
 

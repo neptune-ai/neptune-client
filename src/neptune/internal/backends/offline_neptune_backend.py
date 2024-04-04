@@ -28,8 +28,19 @@ from neptune.internal.backends.api_model import (
     ImageSeriesValues,
     StringSeriesValues,
 )
-from neptune.api.models import FloatField, IntField, BoolField, FileField, StringField, DatetimeField, ArtifactField, \
-    FloatSeriesField, StringSeriesField, StringSetField, FieldDefinition
+from neptune.api.models import (
+    FloatField,
+    IntField,
+    BoolField,
+    FileField,
+    StringField,
+    DatetimeField,
+    ArtifactField,
+    FloatSeriesField,
+    StringSeriesField,
+    StringSetField,
+    FieldDefinition,
+)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.typing import ProgressBarType

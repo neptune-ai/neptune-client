@@ -36,8 +36,21 @@ from neptune.internal.backends.api_model import (
     StringSeriesValues,
     Workspace,
 )
-from neptune.api.models import FloatField, IntField, BoolField, FileField, StringField, DatetimeField, ArtifactField, \
-    FloatSeriesField, StringSeriesField, StringSetField, FieldType, FieldDefinition, LeaderboardEntry
+from neptune.api.models import (
+    FloatField,
+    IntField,
+    BoolField,
+    FileField,
+    StringField,
+    DatetimeField,
+    ArtifactField,
+    FloatSeriesField,
+    StringSeriesField,
+    StringSetField,
+    FieldType,
+    FieldDefinition,
+    LeaderboardEntry,
+)
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
