@@ -29,7 +29,6 @@ from mock import (
 from neptune.api.searching_entries import (
     get_single_page,
     iter_over_pages,
-    to_leaderboard_entry,
 )
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.api.models import Field, StringField, FieldType, LeaderboardEntry

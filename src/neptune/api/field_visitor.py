@@ -59,6 +59,7 @@ class FieldToValueVisitor(FieldVisitor[Any]):
         return field.value
 
     def visit_datetime(self, field: DatetimeField) -> datetime:
+        # TODO: Datetime
         ...
 
     def visit_file(self, field: FileField) -> None:
@@ -83,6 +84,7 @@ class FieldToValueVisitor(FieldVisitor[Any]):
         return field.commit_id
 
     def visit_object_state(self, field: ObjectStateField) -> str:
+        # TODO: Refactor not to use RunState
         return RunState.from_api(field.value).value
 
     def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:

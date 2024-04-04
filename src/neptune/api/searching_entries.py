@@ -27,6 +27,7 @@ from typing import (
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
 from bravado.exception import HTTPBadRequest  # type: ignore
+from neptune.api.field_visitor import FieldToValueVisitor
 from typing_extensions import (
     Literal,
     TypeAlias,
@@ -170,7 +171,6 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
-    # TODO: Refactor
     data = get_single_page(
         limit=0,
         offset=0,
@@ -201,13 +201,10 @@ def iter_over_pages(
 
         while True:
             if last_page:
-                page_attribute = find_attribute(entry=last_page[-1], path=sort_by)
-
-                if not page_attribute:
+                searching_after_filed = find_attribute(entry=last_page[-1], path=sort_by)
+                if not searching_after_filed:
                     raise ValueError(f"Cannot find attribute {sort_by} in last page")
-
-                # TODO: Refactor
-                searching_after = page_attribute.properties["value"]
+                searching_after = field_to_value_visitor.visit(searching_after_filed)
 
             for offset in range(0, max_offset, step_size):
                 local_limit = min(step_size, max_offset - offset)
