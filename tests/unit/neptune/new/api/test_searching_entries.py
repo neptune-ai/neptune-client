@@ -32,11 +32,7 @@ from neptune.api.searching_entries import (
     to_leaderboard_entry,
 )
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, StringField, FieldType, LeaderboardEntry
 
 
 def test__to_leaderboard_entry():
@@ -65,18 +61,18 @@ def test__to_leaderboard_entry():
     result = to_leaderboard_entry(entry=entry)
 
     # then
-    assert result.id == "foo"
+    assert result.object_id == "foo"
     assert result.fields == [
         Field(
             path="plugh",
-            type=AttributeType.FLOAT,
+            type=FieldType.FLOAT,
             properties={
                 "value": 1.0,
             },
         ),
         Field(
             path="sys/id",
-            type=AttributeType.STRING,
+            type=FieldType.STRING,
             properties={
                 "value": "TEST-123",
             },
@@ -254,8 +250,8 @@ def test__iter_over_pages__limit(get_single_page, entries_from_page):
 def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> List[LeaderboardEntry]:
     return [
         LeaderboardEntry(
-            id=experiment_id,
-            fields=[Field(path="sys/id", type=AttributeType.STRING, properties={"value": value})],
+            object_id=experiment_id,
+            fields=[StringField(path="sys/id", value=value)],
         )
         for value in values
     ]

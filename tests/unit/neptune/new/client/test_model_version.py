@@ -33,12 +33,7 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
     NeptuneWrongInitParametersException,
 )
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    FieldDefinition,
-    IntAttribute,
-    StringAttribute,
-)
+from neptune.api.models import IntField, StringField, FieldType, FieldDefinition
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
@@ -87,17 +82,17 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
-            FieldDefinition("some/variable", AttributeType.INT),
-            FieldDefinition("sys/model_id", AttributeType.STRING),
+            FieldDefinition("some/variable", FieldType.INT),
+            FieldDefinition("sys/model_id", FieldType.STRING),
         ],
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntAttribute(42),
+        new=lambda _, _uuid, _type, _path: IntField(42),
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
+        new=lambda _, _uuid, _type, _path: StringField("MDL"),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
@@ -115,13 +110,13 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [
-            FieldDefinition("test", AttributeType.STRING),
-            FieldDefinition("sys/model_id", AttributeType.STRING),
+            FieldDefinition("test", FieldType.STRING),
+            FieldDefinition("sys/model_id", FieldType.STRING),
         ],
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
+        new=lambda _, _uuid, _type, _path: StringField("MDL"),
     )
     def test_resume(self):
         with init_model_version(flush_period=0.5, with_id="whatever") as exp:

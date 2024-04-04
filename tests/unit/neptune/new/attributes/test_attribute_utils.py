@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
-from neptune.internal.backends.api_model import AttributeType
+from neptune.api.models import FieldType
 
 
 class TestAttributeUtils(unittest.TestCase):
@@ -28,6 +28,6 @@ class TestAttributeUtils(unittest.TestCase):
         self.assertTrue(
             all(
                 isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute)
-                for attr_type in AttributeType
+                for attr_type in FieldType
             )
         )

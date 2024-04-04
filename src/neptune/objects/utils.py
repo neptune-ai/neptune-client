@@ -27,11 +27,7 @@ from typing import (
     Union,
 )
 
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, FieldType, LeaderboardEntry
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -143,7 +139,7 @@ def parse_dates(leaderboard_entries: Iterable[LeaderboardEntry]) -> Generator[Le
 def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
     try:
         return LeaderboardEntry(
-            entry.id,
+            entry.object_id,
             fields=[
                 (
                     Field(
@@ -154,7 +150,7 @@ def _parse_entry(entry: LeaderboardEntry) -> LeaderboardEntry:
                             "value": parse_iso_date(attribute.properties["value"]),
                         },
                     )
-                    if attribute.type == AttributeType.DATETIME
+                    if attribute.type == FieldType.DATETIME
                     else attribute
                 )
                 for attribute in entry.fields

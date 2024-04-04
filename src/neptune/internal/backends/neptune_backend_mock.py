@@ -34,7 +34,7 @@ from typing import (
 )
 from zipfile import ZipFile
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
@@ -46,26 +46,28 @@ from neptune.exceptions import (
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    ArtifactAttribute,
-    AttributeType,
-    BoolAttribute,
-    DatetimeAttribute,
-    FieldDefinition,
-    FileAttribute,
-    FloatAttribute,
     FloatPointValue,
-    FloatSeriesAttribute,
     FloatSeriesValues,
     ImageSeriesValues,
-    IntAttribute,
-    LeaderboardEntry,
     Project,
-    StringAttribute,
     StringPointValue,
-    StringSeriesAttribute,
     StringSeriesValues,
-    StringSetAttribute,
     Workspace,
+)
+from neptune.api.models import (
+    FloatField,
+    IntField,
+    BoolField,
+    FileField,
+    StringField,
+    DatetimeField,
+    ArtifactField,
+    FloatSeriesField,
+    StringSeriesField,
+    StringSetField,
+    FieldType,
+    FieldDefinition,
+    LeaderboardEntry,
 )
 from neptune.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -370,21 +372,22 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source, upload_entry.target_path)
 
-    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         val = self._get_attribute(container_id, container_type, path, Float)
-        return FloatAttribute(val.value)
+        return FloatField(path=path_to_str(path), value=val.value)
 
-    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntField:
         val = self._get_attribute(container_id, container_type, path, Integer)
-        return IntAttribute(val.value)
+        return IntField(path=path_to_str(path), value=val.value)
 
-    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
         val = self._get_attribute(container_id, container_type, path, Boolean)
-        return BoolAttribute(val.value)
+        return BoolField(path=path_to_str(path), value=val.value)
 
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         val = self._get_attribute(container_id, container_type, path, File)
-        return FileAttribute(
+        return FileField(
+            path=path_to_str(path),
             name=os.path.basename(val.path) if val.file_type is FileType.LOCAL_FILE else "",
             ext=val.extension or "",
             size=0,
@@ -392,42 +395,42 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_string_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringAttribute:
+    ) -> StringField:
         val = self._get_attribute(container_id, container_type, path, String)
-        return StringAttribute(val.value)
+        return StringField(path=path_to_str(path), value=val.value)
 
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeAttribute:
+    ) -> DatetimeField:
         val = self._get_attribute(container_id, container_type, path, Datetime)
-        return DatetimeAttribute(val.value)
+        return DatetimeField(path=path_to_str(path), value=val.value)
 
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactAttribute:
+    ) -> ArtifactField:
         val = self._get_attribute(container_id, container_type, path, Artifact)
-        return ArtifactAttribute(val.hash)
+        return ArtifactField(path=path_to_str(path), hash=val.hash)
 
     def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         return self._artifacts[(project_id, artifact_hash)]
 
     def get_float_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatSeriesAttribute:
+    ) -> FloatSeriesField:
         val = self._get_attribute(container_id, container_type, path, FloatSeries)
-        return FloatSeriesAttribute(val.values[-1] if val.values else None)
+        return FloatSeriesField(path=path_to_str(path), last=val.values[-1] if val.values else None)
 
     def get_string_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSeriesAttribute:
+    ) -> StringSeriesField:
         val = self._get_attribute(container_id, container_type, path, StringSeries)
-        return StringSeriesAttribute(val.values[-1] if val.values else None)
+        return StringSeriesField(path=path_to_str(path), last=val.values[-1] if val.values else None)
 
     def get_string_set_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSetAttribute:
+    ) -> StringSetField:
         val = self._get_attribute(container_id, container_type, path, StringSet)
-        return StringSetAttribute(set(val.values))
+        return StringSetField(path=path_to_str(path), values=set(val.values))
 
     def _get_attribute(
         self,
@@ -528,7 +531,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> List[Tuple[str, AttributeType, Any]]:
+    ) -> List[Tuple[str, FieldType, Any]]:
         run = self._get_container(container_id, container_type)
         values = self._get_attribute_values(run.get(path), path)
         namespace_prefix = path_to_str(path)
@@ -554,50 +557,50 @@ class NeptuneBackendMock(NeptuneBackend):
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
-    class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
-        def visit_float(self, _: Float) -> AttributeType:
-            return AttributeType.FLOAT
+    class AttributeTypeConverterValueVisitor(ValueVisitor[FieldType]):
+        def visit_float(self, _: Float) -> FieldType:
+            return FieldType.FLOAT
 
-        def visit_integer(self, _: Integer) -> AttributeType:
-            return AttributeType.INT
+        def visit_integer(self, _: Integer) -> FieldType:
+            return FieldType.INT
 
-        def visit_boolean(self, _: Boolean) -> AttributeType:
-            return AttributeType.BOOL
+        def visit_boolean(self, _: Boolean) -> FieldType:
+            return FieldType.BOOL
 
-        def visit_string(self, _: String) -> AttributeType:
-            return AttributeType.STRING
+        def visit_string(self, _: String) -> FieldType:
+            return FieldType.STRING
 
-        def visit_datetime(self, _: Datetime) -> AttributeType:
-            return AttributeType.DATETIME
+        def visit_datetime(self, _: Datetime) -> FieldType:
+            return FieldType.DATETIME
 
-        def visit_file(self, _: File) -> AttributeType:
-            return AttributeType.FILE
+        def visit_file(self, _: File) -> FieldType:
+            return FieldType.FILE
 
-        def visit_file_set(self, _: FileSet) -> AttributeType:
-            return AttributeType.FILE_SET
+        def visit_file_set(self, _: FileSet) -> FieldType:
+            return FieldType.FILE_SET
 
-        def visit_float_series(self, _: FloatSeries) -> AttributeType:
-            return AttributeType.FLOAT_SERIES
+        def visit_float_series(self, _: FloatSeries) -> FieldType:
+            return FieldType.FLOAT_SERIES
 
-        def visit_string_series(self, _: StringSeries) -> AttributeType:
-            return AttributeType.STRING_SERIES
+        def visit_string_series(self, _: StringSeries) -> FieldType:
+            return FieldType.STRING_SERIES
 
-        def visit_image_series(self, _: FileSeries) -> AttributeType:
-            return AttributeType.IMAGE_SERIES
+        def visit_image_series(self, _: FileSeries) -> FieldType:
+            return FieldType.IMAGE_SERIES
 
-        def visit_string_set(self, _: StringSet) -> AttributeType:
-            return AttributeType.STRING_SET
+        def visit_string_set(self, _: StringSet) -> FieldType:
+            return FieldType.STRING_SET
 
-        def visit_git_ref(self, _: GitRef) -> AttributeType:
-            return AttributeType.GIT_REF
+        def visit_git_ref(self, _: GitRef) -> FieldType:
+            return FieldType.GIT_REF
 
-        def visit_artifact(self, _: Artifact) -> AttributeType:
-            return AttributeType.ARTIFACT
+        def visit_artifact(self, _: Artifact) -> FieldType:
+            return FieldType.ARTIFACT
 
-        def visit_namespace(self, _: Namespace) -> AttributeType:
+        def visit_namespace(self, _: Namespace) -> FieldType:
             raise NotImplementedError
 
-        def copy_value(self, source_type: Type[FieldDefinition], source_path: List[str]) -> AttributeType:
+        def copy_value(self, source_type: Type[FieldDefinition], source_path: List[str]) -> FieldType:
             raise NotImplementedError
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):

@@ -21,11 +21,7 @@ from typing import List
 from mock import patch
 
 from neptune import init_project
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, FieldType, LeaderboardEntry
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.table import (
@@ -66,11 +62,11 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.search_leaderboard_entries",
         new=lambda *args, **kwargs: [
             LeaderboardEntry(
-                id="123",
+                object_id="123",
                 fields=[
                     Field(
                         "sys/creation_time",
-                        AttributeType.DATETIME,
+                        FieldType.DATETIME,
                         {"value": "2024-02-05T20:37:40.915000Z"},
                     )
                 ],

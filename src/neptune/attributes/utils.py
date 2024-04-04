@@ -37,7 +37,7 @@ from neptune.attributes import (
     StringSeries,
     StringSet,
 )
-from neptune.internal.backends.api_model import AttributeType
+from neptune.api.models import FieldType
 from neptune.internal.exceptions import InternalClientError
 
 if TYPE_CHECKING:
@@ -45,26 +45,26 @@ if TYPE_CHECKING:
     from neptune.objects import NeptuneObject
 
 _attribute_type_to_attr_class_map = {
-    AttributeType.FLOAT: Float,
-    AttributeType.INT: Integer,
-    AttributeType.BOOL: Boolean,
-    AttributeType.STRING: String,
-    AttributeType.DATETIME: Datetime,
-    AttributeType.FILE: File,
-    AttributeType.FILE_SET: FileSet,
-    AttributeType.FLOAT_SERIES: FloatSeries,
-    AttributeType.STRING_SERIES: StringSeries,
-    AttributeType.IMAGE_SERIES: FileSeries,
-    AttributeType.STRING_SET: StringSet,
-    AttributeType.GIT_REF: GitRef,
-    AttributeType.RUN_STATE: RunState,
-    AttributeType.NOTEBOOK_REF: NotebookRef,
-    AttributeType.ARTIFACT: Artifact,
+    FieldType.FLOAT: Float,
+    FieldType.INT: Integer,
+    FieldType.BOOL: Boolean,
+    FieldType.STRING: String,
+    FieldType.DATETIME: Datetime,
+    FieldType.FILE: File,
+    FieldType.FILE_SET: FileSet,
+    FieldType.FLOAT_SERIES: FloatSeries,
+    FieldType.STRING_SERIES: StringSeries,
+    FieldType.IMAGE_SERIES: FileSeries,
+    FieldType.STRING_SET: StringSet,
+    FieldType.GIT_REF: GitRef,
+    FieldType.OBJECT_STATE: RunState,
+    FieldType.NOTEBOOK_REF: NotebookRef,
+    FieldType.ARTIFACT: Artifact,
 }
 
 
 def create_attribute_from_type(
-    attribute_type: AttributeType,
+    attribute_type: FieldType,
     container: "NeptuneObject",
     path: List[str],
 ) -> "Attribute":

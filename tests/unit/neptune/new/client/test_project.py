@@ -32,13 +32,7 @@ from neptune.exceptions import (
     NeptuneMissingProjectNameException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    FieldDefinition,
-    IntAttribute,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, IntField, FieldType, FieldDefinition, LeaderboardEntry
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.exceptions import NeptuneException
 from neptune.internal.warnings import (
@@ -54,7 +48,7 @@ from tests.unit.neptune.new.client.abstract_experiment_test_mixin import Abstrac
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [FieldDefinition("test", AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [FieldDefinition("test", FieldType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
@@ -100,7 +94,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntAttribute(42),
+        new=lambda _, _uuid, _type, _path: IntField(42),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
@@ -173,16 +167,16 @@ def test_prepare_nql_query():
 def test_parse_dates():
     def entries_generator():
         yield LeaderboardEntry(
-            id="test",
+            object_id="test",
             fields=[
                 Field(
                     "attr1",
-                    AttributeType.DATETIME,
+                    FieldType.DATETIME,
                     {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
                 Field(
                     "attr2",
-                    AttributeType.DATETIME,
+                    FieldType.DATETIME,
                     {"value": "2024-02-05T20:37:40.915000Z"},
                 ),
             ],
@@ -197,11 +191,11 @@ def test_parse_dates():
 def test_parse_dates_wrong_format(mock_warn_once):
     entries = [
         LeaderboardEntry(
-            id="test",
+            object_id="test",
             fields=[
                 Field(
                     "attr1",
-                    AttributeType.DATETIME,
+                    FieldType.DATETIME,
                     {"value": "07-02-2024"},  # different format than expected
                 )
             ],

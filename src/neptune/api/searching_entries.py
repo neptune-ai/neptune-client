@@ -34,11 +34,7 @@ from typing_extensions import (
 )
 
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, FieldType, LeaderboardEntry, LeaderboardEntriesSearchResult
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.nql import (
     NQLAggregator,
@@ -58,7 +54,7 @@ if TYPE_CHECKING:
     from neptune.internal.id_formats import UniqueId
 
 
-SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in AttributeType}
+SUPPORTED_ATTRIBUTE_TYPES = {item.value for item in FieldType}
 
 SORT_BY_COLUMN_TYPE: TypeAlias = Literal["string", "datetime", "integer", "boolean", "float"]
 
@@ -98,7 +94,7 @@ def get_single_page(
     searching_after: Optional[str],
 ) -> Any:
     normalized_query = query or NQLEmptyQuery()
-    sort_by_column_type = sort_by_column_type if sort_by_column_type else AttributeType.STRING.value
+    sort_by_column_type = sort_by_column_type if sort_by_column_type else FieldType.STRING.value
     if sort_by and searching_after:
         sort_by_as_nql = NQLQueryAttribute(
             name=sort_by,
@@ -119,7 +115,7 @@ def get_single_page(
                 "aggregationMode": "none",
                 "sortBy": {
                     "name": sort_by,
-                    "type": sort_by_column_type if sort_by_column_type else AttributeType.STRING.value,
+                    "type": sort_by_column_type if sort_by_column_type else FieldType.STRING.value,
                 },
             }
         }
@@ -158,18 +154,17 @@ def get_single_page(
 
 
 def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
-    return LeaderboardEntry(
-        id=entry["experimentId"],
-        fields=[
-            Field(
-                path=attr["name"],
-                type=AttributeType(attr["type"]),
-                properties=attr.__getitem__(f"{attr['type']}Properties"),
-            )
-            for attr in entry["attributes"]
-            if attr["type"] in SUPPORTED_ATTRIBUTE_TYPES
-        ],
-    )
+    # return LeaderboardEntry(
+    #     fields=[
+    #         Field(
+    #             path=attr["name"],
+    #             type=FieldType(attr["type"]),
+    #             properties=attr.__getitem__(f"{attr['type']}Properties"),
+    #         )
+    #         for attr in entry["attributes"]
+    #         if attr["type"] in SUPPORTED_ATTRIBUTE_TYPES
+    #     ],
+    # )
 
 
 def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[Field]:
@@ -190,6 +185,7 @@ def iter_over_pages(
     searching_after = None
     last_page = None
 
+    # TODO: Refactor
     total = get_single_page(
         limit=0,
         offset=0,
@@ -222,12 +218,14 @@ def iter_over_pages(
                 if not page_attribute:
                     raise ValueError(f"Cannot find attribute {sort_by} in last page")
 
+                # TODO: Refactor
                 searching_after = page_attribute.properties["value"]
 
             for offset in range(0, max_offset, step_size):
                 local_limit = min(step_size, max_offset - offset)
                 if extracted_records + local_limit > limit:
                     local_limit = limit - extracted_records
+
                 result = get_single_page(
                     limit=local_limit,
                     offset=offset,
@@ -240,6 +238,7 @@ def iter_over_pages(
 
                 # fetch the item count everytime a new page is started (except for the very fist page)
                 if offset == 0 and last_page is not None:
+                    # TODO: Refactor
                     total += result.get("matchingItemCount", 0)
 
                 total = min(total, limit)
@@ -259,5 +258,6 @@ def iter_over_pages(
                 last_page = page
 
 
+# TODO: Refactor
 def _entries_from_page(single_page: Dict[str, Any]) -> List[LeaderboardEntry]:
-    return list(map(to_leaderboard_entry, single_page.get("entries", [])))
+    return LeaderboardEntriesSearchResult.from_dict(single_page).entries

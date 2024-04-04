@@ -30,25 +30,14 @@ from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    ArtifactAttribute,
-    AttributeType,
-    BoolAttribute,
-    DatetimeAttribute,
-    FieldDefinition,
-    FileAttribute,
-    FloatAttribute,
-    FloatSeriesAttribute,
     FloatSeriesValues,
     ImageSeriesValues,
-    IntAttribute,
-    LeaderboardEntry,
     Project,
-    StringAttribute,
-    StringSeriesAttribute,
     StringSeriesValues,
-    StringSetAttribute,
     Workspace,
 )
+from neptune.api.models import FloatField, IntField, BoolField, FileField, StringField, DatetimeField, ArtifactField, \
+    FloatSeriesField, StringSeriesField, StringSetField, FieldType, FieldDefinition, LeaderboardEntry
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
@@ -172,37 +161,37 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         pass
 
     @abc.abstractmethod
-    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntField:
         pass
 
     @abc.abstractmethod
-    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
         pass
 
     @abc.abstractmethod
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         pass
 
     @abc.abstractmethod
     def get_string_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringAttribute:
+    ) -> StringField:
         pass
 
     @abc.abstractmethod
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeAttribute:
+    ) -> DatetimeField:
         pass
 
     @abc.abstractmethod
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactAttribute:
+    ) -> ArtifactField:
         pass
 
     @abc.abstractmethod
@@ -212,19 +201,19 @@ class NeptuneBackend:
     @abc.abstractmethod
     def get_float_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatSeriesAttribute:
+    ) -> FloatSeriesField:
         pass
 
     @abc.abstractmethod
     def get_string_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSeriesAttribute:
+    ) -> StringSeriesField:
         pass
 
     @abc.abstractmethod
     def get_string_set_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSetAttribute:
+    ) -> StringSetField:
         pass
 
     @abc.abstractmethod
@@ -298,7 +287,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> List[Tuple[str, AttributeType, Any]]:
+    ) -> List[Tuple[str, FieldType, Any]]:
         pass
 
     @abc.abstractmethod

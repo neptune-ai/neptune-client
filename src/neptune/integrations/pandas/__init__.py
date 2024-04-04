@@ -20,81 +20,113 @@ __all__ = ["to_pandas"]
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
-    Any,
     Dict,
     Tuple,
     Union,
+    Optional,
 )
 
 import pandas as pd
 
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
+from neptune.api.models import (
     LeaderboardEntry,
+    FieldVisitor,
+    FloatField,
+    IntField,
+    BoolField,
+    StringField,
+    DatetimeField,
+    FloatSeriesField,
+    StringSeriesField,
+    ImageSeriesField,
+    FileField,
+    FileSetField,
+    GitRefField,
+    NotebookRefField,
+    ArtifactField,
+    StringSetField,
+    ObjectStateField,
 )
-from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.run_state import RunState
 
 if TYPE_CHECKING:
     from neptune.table import Table
 
-logger = get_logger()
+PANDAS_AVAILABLE_TYPES = Union[str, float, int, bool, datetime, None]
+
+
+class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
+
+    def visit_float(self, field: FloatField) -> float:
+        return field.value
+
+    def visit_int(self, field: IntField) -> int:
+        return field.value
+
+    def visit_bool(self, field: BoolField) -> bool:
+        return field.value
+
+    def visit_string(self, field: StringField) -> str:
+        return field.value
+
+    def visit_datetime(self, field: DatetimeField) -> datetime:
+        return field.value
+
+    def visit_file(self, field: FileField) -> None:
+        return None
+
+    def visit_string_set(self, field: StringSetField) -> Optional[str]:
+        return ",".join(field.values)
+
+    def visit_float_series(self, field: FloatSeriesField) -> Optional[float]:
+        return field.last
+
+    def visit_string_series(self, field: StringSeriesField) -> Optional[str]:
+        return field.last
+
+    def visit_image_series(self, field: ImageSeriesField) -> None:
+        return None
+
+    def visit_file_set(self, field: FileSetField) -> None:
+        return None
+
+    def visit_git_ref(self, field: GitRefField) -> str:
+        return field.commit_id
+
+    def visit_object_state(self, field: ObjectStateField) -> str:
+        return RunState.from_api(field.value).value
+
+    def visit_notebook_ref(self, field: NotebookRefField) -> str:
+        return field.notebook_name
+
+    def visit_artifact(self, field: ArtifactField) -> str:
+        return field.hash
+
+
+def make_row(entry: LeaderboardEntry, to_value_visitor: FieldVisitor) -> Dict[str, PANDAS_AVAILABLE_TYPES]:
+    row: Dict[str, PANDAS_AVAILABLE_TYPES] = dict()
+
+    for field in entry.fields:
+        value = to_value_visitor.visit(field)
+        if value is not None:
+            row[field.path] = value
+
+    return row
+
+
+def sort_key(field: str) -> Tuple[int, str]:
+    domain = field.split("/")[0]
+    if domain == "sys":
+        return 0, field
+    if domain == "monitoring":
+        return 2, field
+    return 1, field
 
 
 def to_pandas(table: Table) -> pd.DataFrame:
-    def make_attribute_value(attribute: Field) -> Any:
-        _type = attribute.type
-        _properties = attribute.properties
-        if _type == AttributeType.RUN_STATE:
-            return RunState.from_api(_properties.get("value")).value
-        if _type in (
-            AttributeType.FLOAT,
-            AttributeType.INT,
-            AttributeType.BOOL,
-            AttributeType.STRING,
-            AttributeType.DATETIME,
-        ):
-            return _properties.get("value")
-        if _type == AttributeType.FLOAT_SERIES:
-            return _properties.get("last")
-        if _type == AttributeType.STRING_SERIES:
-            return _properties.get("last")
-        if _type == AttributeType.IMAGE_SERIES:
-            return None
-        if _type == AttributeType.FILE or _type == AttributeType.FILE_SET:
-            return None
-        if _type == AttributeType.STRING_SET:
-            return ",".join(_properties.get("values"))
-        if _type == AttributeType.GIT_REF:
-            return _properties.get("commit", {}).get("commitId")
-        if _type == AttributeType.NOTEBOOK_REF:
-            return _properties.get("notebookName")
-        if _type == AttributeType.ARTIFACT:
-            return _properties.get("hash")
-        logger.error(
-            "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
-            _type,
-        )
-        return None
 
-    def make_row(entry: LeaderboardEntry) -> Dict[str, Any]:
-        row: Dict[str, Union[str, float, datetime]] = dict()
-        for attr in entry.fields:
-            value = make_attribute_value(attr)
-            if value is not None:
-                row[attr.path] = value
-        return row
-
-    def sort_key(attr: str) -> Tuple[int, str]:
-        domain = attr.split("/")[0]
-        if domain == "sys":
-            return 0, attr
-        if domain == "monitoring":
-            return 2, attr
-        return 1, attr
-
-    rows = dict((n, make_row(entry)) for (n, entry) in enumerate(table._entries))
+    to_value_visitor = FieldToPandasValueVisitor()
+    rows = dict((n, make_row(entry, to_value_visitor)) for (n, entry) in enumerate(table._entries))
 
     df = pd.DataFrame.from_dict(data=rows, orient="index")
     df = df.reindex(sorted(df.columns, key=sort_key), axis="columns")

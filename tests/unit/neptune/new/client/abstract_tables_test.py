@@ -28,12 +28,7 @@ from neptune.envs import (
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    Field,
-    FieldDefinition,
-    LeaderboardEntry,
-)
+from neptune.api.models import Field, FieldType, FieldDefinition, LeaderboardEntry
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.table import (
     Table,
@@ -43,7 +38,7 @@ from neptune.table import (
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [FieldDefinition(path="test", type=AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [FieldDefinition(path="test", type=FieldType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class AbstractTablesTestMixin:
@@ -69,23 +64,23 @@ class AbstractTablesTestMixin:
     @staticmethod
     def build_attributes_leaderboard(now: datetime):
         attributes = []
-        attributes.append(Field("run/state", AttributeType.RUN_STATE, {"value": "idle"}))
-        attributes.append(Field("float", AttributeType.FLOAT, {"value": 12.5}))
-        attributes.append(Field("string", AttributeType.STRING, {"value": "some text"}))
-        attributes.append(Field("datetime", AttributeType.DATETIME, {"value": now}))
-        attributes.append(Field("float/series", AttributeType.FLOAT_SERIES, {"last": 8.7}))
-        attributes.append(Field("string/series", AttributeType.STRING_SERIES, {"last": "last text"}))
-        attributes.append(Field("string/set", AttributeType.STRING_SET, {"values": ["a", "b"]}))
+        attributes.append(Field("run/state", FieldType.OBJECT_STATE, {"value": "idle"}))
+        attributes.append(Field("float", FieldType.FLOAT, {"value": 12.5}))
+        attributes.append(Field("string", FieldType.STRING, {"value": "some text"}))
+        attributes.append(Field("datetime", FieldType.DATETIME, {"value": now}))
+        attributes.append(Field("float/series", FieldType.FLOAT_SERIES, {"last": 8.7}))
+        attributes.append(Field("string/series", FieldType.STRING_SERIES, {"last": "last text"}))
+        attributes.append(Field("string/set", FieldType.STRING_SET, {"values": ["a", "b"]}))
         attributes.append(
             Field(
                 "git/ref",
-                AttributeType.GIT_REF,
+                FieldType.GIT_REF,
                 {"commit": {"commitId": "abcdef0123456789"}},
             )
         )
-        attributes.append(Field("file", AttributeType.FILE, None))
-        attributes.append(Field("file/set", AttributeType.FILE_SET, None))
-        attributes.append(Field("image/series", AttributeType.IMAGE_SERIES, None))
+        attributes.append(Field("file", FieldType.FILE, None))
+        attributes.append(Field("file/set", FieldType.FILE_SET, None))
+        attributes.append(Field("image/series", FieldType.IMAGE_SERIES, None))
         return attributes
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")

@@ -51,9 +51,9 @@ from neptune.exceptions import MetadataInconsistency
 from neptune.handler import Handler
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    AttributeType,
     Project,
 )
+from neptune.api.models import FieldType
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
@@ -630,7 +630,7 @@ class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
-    def _define_attribute(self, _path: List[str], _type: AttributeType):
+    def _define_attribute(self, _path: List[str], _type: FieldType):
         attr = create_attribute_from_type(_type, self, _path)
         self._structure.set(_path, attr)
 

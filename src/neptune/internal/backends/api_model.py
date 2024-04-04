@@ -20,38 +20,20 @@ __all__ = [
     "OptionalFeatures",
     "VersionInfo",
     "ClientConfig",
-    "AttributeType",
-    "FieldDefinition",
-    "Field",
-    "LeaderboardEntry",
     "StringPointValue",
     "ImageSeriesValues",
     "StringSeriesValues",
     "FloatPointValue",
     "FloatSeriesValues",
-    "FloatAttribute",
-    "IntAttribute",
-    "BoolAttribute",
-    "FileAttribute",
-    "StringAttribute",
-    "DatetimeAttribute",
-    "ArtifactAttribute",
     "ArtifactModel",
-    "FloatSeriesAttribute",
-    "StringSeriesAttribute",
-    "StringSetAttribute",
     "MultipartConfig",
 ]
 
 from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
 from typing import (
-    Any,
     FrozenSet,
     List,
     Optional,
-    Set,
 )
 
 from packaging import version
@@ -199,43 +181,6 @@ class ClientConfig:
         )
 
 
-class AttributeType(Enum):
-    FLOAT = "float"
-    INT = "int"
-    BOOL = "bool"
-    STRING = "string"
-    DATETIME = "datetime"
-    FILE = "file"
-    FILE_SET = "fileSet"
-    FLOAT_SERIES = "floatSeries"
-    STRING_SERIES = "stringSeries"
-    IMAGE_SERIES = "imageSeries"
-    STRING_SET = "stringSet"
-    GIT_REF = "gitRef"
-    RUN_STATE = "experimentState"
-    NOTEBOOK_REF = "notebookRef"
-    ARTIFACT = "artifact"
-
-
-@dataclass
-class FieldDefinition:
-    path: str
-    type: AttributeType
-
-
-@dataclass
-class Field:
-    path: str
-    type: AttributeType
-    properties: Any
-
-
-@dataclass
-class LeaderboardEntry:
-    id: str
-    fields: List[Field]
-
-
 @dataclass
 class StringPointValue:
     timestampMillis: int
@@ -268,59 +213,7 @@ class FloatSeriesValues:
 
 
 @dataclass
-class FloatAttribute:
-    value: float
-
-
-@dataclass
-class IntAttribute:
-    value: int
-
-
-@dataclass
-class BoolAttribute:
-    value: bool
-
-
-@dataclass
-class FileAttribute:
-    name: str
-    ext: str
-    size: int
-
-
-@dataclass
-class StringAttribute:
-    value: str
-
-
-@dataclass
-class DatetimeAttribute:
-    value: datetime
-
-
-@dataclass
-class ArtifactAttribute:
-    hash: str
-
-
-@dataclass
 class ArtifactModel:
     received_metadata: bool
     hash: str
     size: int
-
-
-@dataclass
-class FloatSeriesAttribute:
-    last: Optional[float]
-
-
-@dataclass
-class StringSeriesAttribute:
-    last: Optional[str]
-
-
-@dataclass
-class StringSetAttribute:
-    values: Set[str]

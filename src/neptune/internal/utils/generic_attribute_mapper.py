@@ -15,7 +15,7 @@
 #
 __all__ = ["NoValue", "atomic_attribute_types_map", "map_attribute_result_to_value"]
 
-from neptune.internal.backends.api_model import AttributeType
+from neptune.api.models import FieldType
 
 
 class NoValue:
@@ -27,30 +27,30 @@ LAST_VALUE = "last"
 VALUES = "values"
 
 atomic_attribute_types_map = {
-    AttributeType.FLOAT.value: "floatProperties",
-    AttributeType.INT.value: "intProperties",
-    AttributeType.BOOL.value: "boolProperties",
-    AttributeType.STRING.value: "stringProperties",
-    AttributeType.DATETIME.value: "datetimeProperties",
-    AttributeType.RUN_STATE.value: "experimentStateProperties",
-    AttributeType.NOTEBOOK_REF.value: "notebookRefProperties",
+    FieldType.FLOAT.value: "floatProperties",
+    FieldType.INT.value: "intProperties",
+    FieldType.BOOL.value: "boolProperties",
+    FieldType.STRING.value: "stringProperties",
+    FieldType.DATETIME.value: "datetimeProperties",
+    FieldType.OBJECT_STATE.value: "experimentStateProperties",
+    FieldType.NOTEBOOK_REF.value: "notebookRefProperties",
 }
 
 value_series_attribute_types_map = {
-    AttributeType.FLOAT_SERIES.value: "floatSeriesProperties",
-    AttributeType.STRING_SERIES.value: "stringSeriesProperties",
+    FieldType.FLOAT_SERIES.value: "floatSeriesProperties",
+    FieldType.STRING_SERIES.value: "stringSeriesProperties",
 }
 
 value_set_attribute_types_map = {
-    AttributeType.STRING_SET.value: "stringSetProperties",
+    FieldType.STRING_SET.value: "stringSetProperties",
 }
 
 # TODO: nicer mapping?
 _unmapped_attribute_types_map = {
-    AttributeType.FILE_SET.value: "fileSetProperties",  # TODO: return size?
-    AttributeType.FILE.value: "fileProperties",  # TODO: name? size?
-    AttributeType.IMAGE_SERIES.value: "imageSeriesProperties",  # TODO: return last step?
-    AttributeType.GIT_REF.value: "gitRefProperties",  # TODO: commit? branch?
+    FieldType.FILE_SET.value: "fileSetProperties",  # TODO: return size?
+    FieldType.FILE.value: "fileProperties",  # TODO: name? size?
+    FieldType.IMAGE_SERIES.value: "imageSeriesProperties",  # TODO: return last step?
+    FieldType.GIT_REF.value: "gitRefProperties",  # TODO: commit? branch?
 }
 
 

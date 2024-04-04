@@ -33,11 +33,7 @@ from neptune.envs import (
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import MissingFieldException
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    FieldDefinition,
-    IntAttribute,
-)
+from neptune.api.models import IntField, FieldType, FieldDefinition
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.internal.warnings import (
@@ -68,11 +64,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [FieldDefinition("some/variable", AttributeType.INT)],
+        new=lambda _, _uuid, _type: [FieldDefinition("some/variable", FieldType.INT)],
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntAttribute(42),
+        new=lambda _, _uuid, _type, _path: IntField(42),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
@@ -93,7 +89,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [FieldDefinition("test", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [FieldDefinition("test", FieldType.STRING)],
     )
     def test_resume(self):
         with init_run(flush_period=0.5, with_id="whatever") as exp:
