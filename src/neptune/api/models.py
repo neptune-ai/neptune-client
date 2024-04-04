@@ -45,7 +45,7 @@ from dataclasses import (
     dataclass,
     field as dataclass_field,
 )
-from typing import TypeVar, Generic, Dict
+from typing import TypeVar, Generic, Dict, Type, ClassVar
 from datetime import datetime
 from enum import Enum
 from typing import (
@@ -92,11 +92,14 @@ class FieldType(Enum):
 class Field(abc.ABC):
     path: str
     type: FieldType = dataclass_field(init=False, default=None)
+    _registry: ClassVar[Dict[str, Type[Field]]] = {t.value: {} for t in FieldType}
 
     def __init_subclass__(cls, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        # TODO: remove this when we have proper type hints
-        cls.type = kwargs.get('type', None)
+        field_type: Optional[FieldType] = kwargs.get('type', None)
+        if field_type is not None:
+            cls.type = field_type
+            cls._registry[field_type.value] = cls
 
     @abc.abstractmethod
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
@@ -104,7 +107,8 @@ class Field(abc.ABC):
 
     @staticmethod
     def from_dict(field: Dict[str, Any]) -> Field:
-        raise NotImplementedError()
+        field_type = field["type"].value
+        return Field._registry[field_type].from_dict(field[f"{field_type}Properties"])
 
 
 class FieldVisitor(Generic[Ret], abc.ABC):
@@ -360,7 +364,7 @@ class LeaderboardEntry:
     def from_dict(data: Dict[str, Any]) -> LeaderboardEntry:
         return LeaderboardEntry(
             object_id=data["experimentId"],
-            fields=[]  # TODO: map fields
+            fields=[Field.from_dict(field) for field in data["attributes"]]
         )
 
 

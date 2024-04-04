@@ -20,32 +20,16 @@ from typing import (
     Any,
     Generator,
     List,
-    Optional, Set,
+    Optional,
 )
-from datetime import datetime
 
+from neptune.api.field_visitor import FieldToValueVisitor
 from neptune.exceptions import MetadataInconsistency
 from neptune.integrations.pandas import to_pandas
 from neptune.api.models import (
     Field,
     FieldType,
     LeaderboardEntry,
-    FieldVisitor,
-    FloatField,
-    IntField,
-    BoolField,
-    StringField,
-    DatetimeField,
-    FileField,
-    FileSetField,
-    FloatSeriesField,
-    StringSeriesField,
-    ImageSeriesField,
-    StringSetField,
-    GitRefField,
-    ObjectStateField,
-    NotebookRefField,
-    ArtifactField
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
@@ -54,7 +38,6 @@ from neptune.internal.utils.paths import (
     join_paths,
     parse_path,
 )
-from neptune.internal.utils.run_state import RunState
 from neptune.typing import ProgressBarType
 
 if TYPE_CHECKING:
@@ -62,54 +45,6 @@ if TYPE_CHECKING:
 
 
 logger = get_logger()
-
-
-class FieldToValueVisitor(FieldVisitor[Any]):
-
-    def visit_float(self, field: FloatField) -> float:
-        return field.value
-
-    def visit_int(self, field: IntField) -> int:
-        return field.value
-
-    def visit_bool(self, field: BoolField) -> bool:
-        return field.value
-
-    def visit_string(self, field: StringField) -> str:
-        return field.value
-
-    def visit_datetime(self, field: DatetimeField) -> datetime:
-        ...
-
-    def visit_file(self, field: FileField) -> None:
-        raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
-
-    def visit_file_set(self, field: FileSetField) -> None:
-        raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
-
-    def visit_float_series(self, field: FloatSeriesField) -> Optional[float]:
-        return field.last
-
-    def visit_string_series(self, field: StringSeriesField) -> Optional[str]:
-        return field.last
-
-    def visit_image_series(self, field: ImageSeriesField) -> None:
-        raise MetadataInconsistency("Cannot get value for image series.")
-
-    def visit_string_set(self, field: StringSetField) -> Set[str]:
-        return field.values
-
-    def visit_git_ref(self, field: GitRefField) -> Optional[str]:
-        return field.commit_id
-
-    def visit_object_state(self, field: ObjectStateField) -> str:
-        return RunState.from_api(field.value).value
-
-    def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
-        return field.notebook_name
-
-    def visit_artifact(self, field: ArtifactField) -> str:
-        return field.hash
 
 
 class TableEntry:

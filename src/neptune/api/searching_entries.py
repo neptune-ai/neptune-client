@@ -21,7 +21,6 @@ from typing import (
     Dict,
     Generator,
     Iterable,
-    List,
     Optional,
 )
 
@@ -153,20 +152,6 @@ def get_single_page(
         raise e
 
 
-def to_leaderboard_entry(entry: Dict[str, Any]) -> LeaderboardEntry:
-    # return LeaderboardEntry(
-    #     fields=[
-    #         Field(
-    #             path=attr["name"],
-    #             type=FieldType(attr["type"]),
-    #             properties=attr.__getitem__(f"{attr['type']}Properties"),
-    #         )
-    #         for attr in entry["attributes"]
-    #         if attr["type"] in SUPPORTED_ATTRIBUTE_TYPES
-    #     ],
-    # )
-
-
 def find_attribute(*, entry: LeaderboardEntry, path: str) -> Optional[Field]:
     return next((attr for attr in entry.fields if attr.path == path), None)
 
@@ -186,7 +171,7 @@ def iter_over_pages(
     last_page = None
 
     # TODO: Refactor
-    total = get_single_page(
+    data = get_single_page(
         limit=0,
         offset=0,
         sort_by=sort_by,
@@ -194,7 +179,8 @@ def iter_over_pages(
         sort_by_column_type=sort_by_column_type,
         searching_after=None,
         **kwargs,
-    ).get("matchingItemCount", 0)
+    )
+    total = LeaderboardEntriesSearchResult.from_dict(data).matching_item_count
 
     limit = limit if limit is not None else NoLimit()
 
@@ -203,6 +189,8 @@ def iter_over_pages(
     progress_bar = False if total <= step_size else progress_bar  # disable progress bar if only one page is fetched
 
     extracted_records = 0
+
+    field_to_value_visitor = FieldToValueVisitor()
 
     with construct_progress_bar(progress_bar, "Fetching table...") as bar:
         # beginning of the first page
@@ -226,7 +214,7 @@ def iter_over_pages(
                 if extracted_records + local_limit > limit:
                     local_limit = limit - extracted_records
 
-                result = get_single_page(
+                data = get_single_page(
                     limit=local_limit,
                     offset=offset,
                     sort_by=sort_by,
@@ -235,15 +223,15 @@ def iter_over_pages(
                     ascending=ascending,
                     **kwargs,
                 )
+                result = LeaderboardEntriesSearchResult.from_dict(data)
 
                 # fetch the item count everytime a new page is started (except for the very fist page)
                 if offset == 0 and last_page is not None:
-                    # TODO: Refactor
-                    total += result.get("matchingItemCount", 0)
+                    total += result.matching_item_count
 
                 total = min(total, limit)
 
-                page = _entries_from_page(result)
+                page = result.entries
                 extracted_records += len(page)
                 bar.update(by=len(page), total=total)
 
@@ -256,8 +244,3 @@ def iter_over_pages(
                     return
 
                 last_page = page
-
-
-# TODO: Refactor
-def _entries_from_page(single_page: Dict[str, Any]) -> List[LeaderboardEntry]:
-    return LeaderboardEntriesSearchResult.from_dict(single_page).entries
