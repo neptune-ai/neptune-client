@@ -56,7 +56,7 @@ from typing import (
 )
 
 from neptune.internal.utils.iso_dates import parse_iso_date
-from neptune.internal.warnings import warn_once, NeptuneWarning
+from neptune.internal.utils.run_state import RunState
 
 Ret = TypeVar("Ret")
 
@@ -333,7 +333,8 @@ class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> ObjectStateField:
-        return ObjectStateField(path=data["attributeName"], value=str(data["value"]))
+        value = RunState.from_api(str(data["value"])).value
+        return ObjectStateField(path=data["attributeName"], value=value)
 
 
 @dataclass

@@ -1081,7 +1081,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         if sort_by == "sys/creation_time":
             sort_by_column_type = FieldType.DATETIME.value
-        if sort_by == "sys/id":
+        elif sort_by == "sys/id":
             sort_by_column_type = FieldType.STRING.value
         else:
             sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)

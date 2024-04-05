@@ -41,7 +41,6 @@ from neptune.api.models import (
     NotebookRefField,
     ArtifactField
 )
-from neptune.internal.utils.run_state import RunState
 
 
 class FieldToValueVisitor(FieldVisitor[Any]):
@@ -83,8 +82,7 @@ class FieldToValueVisitor(FieldVisitor[Any]):
         return field.commit_id
 
     def visit_object_state(self, field: ObjectStateField) -> str:
-        # TODO: Refactor not to use RunState
-        return RunState.from_api(field.value).value
+        return field.value
 
     def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
         return field.notebook_name

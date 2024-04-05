@@ -47,7 +47,6 @@ from neptune.api.models import (
     StringSetField,
     ObjectStateField,
 )
-from neptune.internal.utils.run_state import RunState
 
 if TYPE_CHECKING:
     from neptune.table import Table
@@ -94,7 +93,7 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
         return field.commit_id
 
     def visit_object_state(self, field: ObjectStateField) -> str:
-        return RunState.from_api(field.value).value
+        return field.value
 
     def visit_notebook_ref(self, field: NotebookRefField) -> str:
         return field.notebook_name
