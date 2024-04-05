@@ -39,6 +39,7 @@ from neptune.envs import (
 )
 from neptune.exceptions import MissingFieldException
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.utils.paths import path_to_str
 from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.internal.warnings import (
     NeptuneWarning,
@@ -72,7 +73,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntField(42),
+        new=lambda _, _uuid, _type, _path: IntField(value=42, path=path_to_str(_path)),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):

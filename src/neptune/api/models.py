@@ -473,8 +473,7 @@ class LeaderboardEntriesSearchResult:
     @staticmethod
     def from_dict(result: Dict[str, Any]) -> LeaderboardEntriesSearchResult:
         return LeaderboardEntriesSearchResult(
-            # TODO: Use generator instead
-            entries=[LeaderboardEntry.from_dict(entry) for entry in result["entries"]],
+            entries=[LeaderboardEntry.from_dict(entry) for entry in result.get("entries", [])],
             matching_item_count=result["matchingItemCount"],
         )
 

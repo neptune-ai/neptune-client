@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 
 
 def test_file_entry_from_dto():

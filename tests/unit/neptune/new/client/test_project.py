@@ -15,7 +15,6 @@
 #
 import os
 import unittest
-from datetime import datetime
 
 import pytest
 from mock import patch
@@ -25,11 +24,9 @@ from neptune import (
     init_project,
 )
 from neptune.api.models import (
-    Field,
     FieldDefinition,
     FieldType,
     IntField,
-    LeaderboardEntry,
 )
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
@@ -41,6 +38,7 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.exceptions import NeptuneException
+from neptune.internal.utils.paths import path_to_str
 from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
@@ -97,7 +95,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntField(42),
+        new=lambda _, _uuid, _type, _path: IntField(value=42, path=path_to_str(_path)),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
@@ -165,49 +163,3 @@ def test_prepare_nql_query():
         trashed=None,
     )
     assert len(query.items) == 0
-
-
-def test_parse_dates():
-    def entries_generator():
-        yield LeaderboardEntry(
-            object_id="test",
-            fields=[
-                Field(
-                    "attr1",
-                    FieldType.DATETIME,
-                    {"value": "2024-02-05T20:37:40.915000Z"},
-                ),
-                Field(
-                    "attr2",
-                    FieldType.DATETIME,
-                    {"value": "2024-02-05T20:37:40.915000Z"},
-                ),
-            ],
-        )
-
-    parsed = list(parse_dates(entries_generator()))
-    assert parsed[0].fields[0].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
-    assert parsed[0].fields[1].properties["value"] == datetime(2024, 2, 5, 20, 37, 40, 915000)
-
-
-@patch("neptune.objects.utils.warn_once")
-def test_parse_dates_wrong_format(mock_warn_once):
-    entries = [
-        LeaderboardEntry(
-            object_id="test",
-            fields=[
-                Field(
-                    "attr1",
-                    FieldType.DATETIME,
-                    {"value": "07-02-2024"},  # different format than expected
-                )
-            ],
-        )
-    ]
-
-    parsed = list(parse_dates(entries))
-    assert parsed[0].fields[0].properties["value"] == "07-02-2024"  # should be left unchanged due to ValueError
-    mock_warn_once.assert_called_once_with(
-        "Date parsing failed. The date format is incorrect. Returning as string instead of datetime.",
-        exception=NeptuneWarning,
-    )

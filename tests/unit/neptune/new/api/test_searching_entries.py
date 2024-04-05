@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 from typing import (
-    List,
+    Any,
+    Dict,
     Sequence,
 )
 
@@ -27,8 +28,8 @@ from mock import (
 )
 
 from neptune.api.models import (
-    Field,
-    FieldType,
+    FloatField,
+    LeaderboardEntriesSearchResult,
     LeaderboardEntry,
     StringField,
 )
@@ -48,6 +49,8 @@ def test__to_leaderboard_entry():
                 "name": "plugh",
                 "type": "float",
                 "floatProperties": {
+                    "attributeName": "plugh",
+                    "attributeType": "float",
                     "value": 1.0,
                 },
             },
@@ -55,6 +58,8 @@ def test__to_leaderboard_entry():
                 "name": "sys/id",
                 "type": "string",
                 "stringProperties": {
+                    "attributeName": "sys/id",
+                    "attributeType": "string",
                     "value": "TEST-123",
                 },
             },
@@ -62,37 +67,25 @@ def test__to_leaderboard_entry():
     }
 
     # when
-    result = to_leaderboard_entry(entry=entry)
+    result = LeaderboardEntry.from_dict(entry)
 
     # then
     assert result.object_id == "foo"
     assert result.fields == [
-        Field(
-            path="plugh",
-            type=FieldType.FLOAT,
-            properties={
-                "value": 1.0,
-            },
-        ),
-        Field(
-            path="sys/id",
-            type=FieldType.STRING,
-            properties={
-                "value": "TEST-123",
-            },
-        ),
+        FloatField(path="plugh", value=1.0),
+        StringField(path="sys/id", value="TEST-123"),
     ]
 
 
-@patch("neptune.api.searching_entries._entries_from_page")
-@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 9})
-def test__iter_over_pages__single_pagination(get_single_page, entries_from_page):
+@patch("neptune.api.searching_entries.get_single_page")
+def test__iter_over_pages__single_pagination(get_single_page_mock):
     # given
-    entries_from_page.side_effect = [
+    get_single_page_mock.side_effect = [
+        {"matchingItemCount": 9},
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
-        [],
+        generate_leaderboard_entries(values=[]),
     ]
 
     # when
@@ -101,33 +94,38 @@ def test__iter_over_pages__single_pagination(get_single_page, entries_from_page)
             step_size=3,
             limit=None,
             sort_by="sys/id",
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             ascending=False,
             progress_bar=None,
         )
     )
 
     # then
-    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
-    assert get_single_page.mock_calls == [
+    assert (
+        result
+        == LeaderboardEntriesSearchResult.from_dict(
+            generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
+        ).entries
+    )
+    assert get_single_page_mock.mock_calls == [
         # total checking
-        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=6, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=9, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
+        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=6, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=9, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
     ]
 
 
-@patch("neptune.api.searching_entries._entries_from_page")
-@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 9})
-def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_page):
+@patch("neptune.api.searching_entries.get_single_page")
+def test__iter_over_pages__multiple_search_after(get_single_page_mock):
     # given
-    entries_from_page.side_effect = [
+    get_single_page_mock.side_effect = [
+        {"matchingItemCount": 9},
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
-        [],
+        generate_leaderboard_entries(values=[]),
     ]
 
     # when
@@ -136,7 +134,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_p
             step_size=3,
             limit=None,
             sort_by="sys/id",
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             ascending=False,
             progress_bar=None,
             max_offset=6,
@@ -144,22 +142,29 @@ def test__iter_over_pages__multiple_search_after(get_single_page, entries_from_p
     )
 
     # then
-    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
-    assert get_single_page.mock_calls == [
+    assert (
+        result
+        == LeaderboardEntriesSearchResult.from_dict(
+            generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
+        ).entries
+    )
+    assert get_single_page_mock.mock_calls == [
         # total checking
-        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after="f"),
-        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after="f"),
+        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after="f"),
+        call(limit=3, offset=3, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after="f"),
     ]
 
 
-@patch("neptune.api.searching_entries._entries_from_page")
-@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 1})
-def test__iter_over_pages__empty(get_single_page, entries_from_page):
+@patch("neptune.api.searching_entries.get_single_page")
+def test__iter_over_pages__empty(get_single_page_mock):
     # given
-    entries_from_page.side_effect = [[]]
+    get_single_page_mock.side_effect = [
+        {"matchingItemCount": 0},
+        generate_leaderboard_entries(values=[]),
+    ]
 
     # when
     result = list(
@@ -167,7 +172,7 @@ def test__iter_over_pages__empty(get_single_page, entries_from_page):
             step_size=3,
             limit=None,
             sort_by="sys/id",
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             ascending=False,
             progress_bar=None,
         )
@@ -175,21 +180,21 @@ def test__iter_over_pages__empty(get_single_page, entries_from_page):
 
     # then
     assert result == []
-    assert get_single_page.mock_calls == [
+    assert get_single_page_mock.mock_calls == [
         # total checking
-        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
+        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(limit=3, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
     ]
 
 
-@patch("neptune.api.searching_entries._entries_from_page")
-@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 1})
-def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page):
+@patch("neptune.api.searching_entries.get_single_page")
+def test__iter_over_pages__max_server_offset(get_single_page_mock):
     # given
-    entries_from_page.side_effect = [
+    get_single_page_mock.side_effect = [
+        {"matchingItemCount": 5},
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e"]),
-        [],
+        generate_leaderboard_entries(values=[]),
     ]
 
     # when
@@ -198,7 +203,7 @@ def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page)
             step_size=3,
             limit=None,
             sort_by="sys/id",
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             ascending=False,
             progress_bar=None,
             max_offset=5,
@@ -206,28 +211,33 @@ def test__iter_over_pages__max_server_offset(get_single_page, entries_from_page)
     )
 
     # then
-    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
-    assert get_single_page.mock_calls == [
+    assert (
+        result
+        == LeaderboardEntriesSearchResult.from_dict(
+            generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
+        ).entries
+    )
+    assert get_single_page_mock.mock_calls == [
         # total checking
-        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(offset=3, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after="e"),
+        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(offset=3, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(offset=0, limit=3, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after="e"),
     ]
 
 
-@patch("neptune.api.searching_entries._entries_from_page")
-@patch("neptune.api.searching_entries.get_single_page", return_value={"matchingItemCount": 5})
-def test__iter_over_pages__limit(get_single_page, entries_from_page):
+@patch("neptune.api.searching_entries.get_single_page")
+def test__iter_over_pages__limit(get_single_page_mock):
     # since the limiting itself takes place in an external service, we can't test the results
     # we can only test if the limit is properly passed to the external service call
 
     # given
-    entries_from_page.side_effect = [
+    get_single_page_mock.side_effect = [
+        {"matchingItemCount": 5},
         generate_leaderboard_entries(values=["a", "b"]),
         generate_leaderboard_entries(values=["c", "d"]),
         generate_leaderboard_entries(values=["e"]),
-        [],
+        generate_leaderboard_entries(values=[]),
     ]
 
     # when
@@ -236,29 +246,42 @@ def test__iter_over_pages__limit(get_single_page, entries_from_page):
             step_size=2,
             limit=4,
             sort_by="sys/id",
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             ascending=False,
             progress_bar=None,
         )
     )
 
     # then
-    assert get_single_page.mock_calls == [
+    assert get_single_page_mock.mock_calls == [
         # total checking
-        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(offset=0, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
-        call(offset=2, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type=None, searching_after=None),
+        call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(offset=0, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
+        call(offset=2, limit=2, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
     ]
 
 
-def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> List[LeaderboardEntry]:
-    return [
-        LeaderboardEntry(
-            object_id=experiment_id,
-            fields=[StringField(path="sys/id", value=value)],
-        )
-        for value in values
-    ]
+def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> Dict[str, Any]:
+    return {
+        "matchingItemCount": len(values),
+        "entries": [
+            {
+                "experimentId": f"{experiment_id}-{value}",
+                "attributes": [
+                    {
+                        "name": "sys/id",
+                        "type": "string",
+                        "stringProperties": {
+                            "attributeName": "sys/id",
+                            "attributeType": "string",
+                            "value": value,
+                        },
+                    },
+                ],
+            }
+            for value in values
+        ],
+    }
 
 
 @patch("neptune.api.searching_entries.construct_request")

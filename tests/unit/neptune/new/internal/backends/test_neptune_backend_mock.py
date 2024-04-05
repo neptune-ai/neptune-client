@@ -137,6 +137,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
     def test_get_float_series_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
@@ -144,7 +147,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogFloats(
-                            ["x"],
+                            path,
                             [
                                 LogFloats.ValueType(5, None, time()),
                                 LogFloats.ValueType(3, None, time()),
@@ -158,7 +161,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogFloats(
-                            ["x"],
+                            path,
                             [
                                 LogFloats.ValueType(2, None, time()),
                                 LogFloats.ValueType(9, None, time()),
@@ -169,13 +172,16 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_float_series_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_float_series_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(FloatSeriesField(9), ret)
+                self.assertEqual(FloatSeriesField(last=9, path="x"), ret)
 
     def test_get_string_series_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
@@ -183,7 +189,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogStrings(
-                            ["x"],
+                            path,
                             [
                                 LogStrings.ValueType("adf", None, time()),
                                 LogStrings.ValueType("sdg", None, time()),
@@ -197,7 +203,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogStrings(
-                            ["x"],
+                            path,
                             [
                                 LogStrings.ValueType("dfh", None, time()),
                                 LogStrings.ValueType("qwe", None, time()),
@@ -208,27 +214,30 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_string_series_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_string_series_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(StringSeriesField("qwe"), ret)
+                self.assertEqual(StringSeriesField(last="qwe", path="x"), ret)
 
     def test_get_string_set_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
                     container_id,
                     container_type,
-                    [AddStrings(["x"], {"abcx", "qwe"})],
+                    [AddStrings(path, {"abcx", "qwe"})],
                     operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
-                ret = self.backend.get_string_set_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_string_set_attribute(container_id, container_type, path)
 
                 # then
-        self.assertEqual(StringSetField({"abcx", "qwe"}), ret)
+        self.assertEqual(StringSetField(values={"abcx", "qwe"}, path="x"), ret)
 
     def test_get_string_series_values(self):
         # given
