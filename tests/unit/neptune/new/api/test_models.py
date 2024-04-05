@@ -25,6 +25,7 @@ from neptune.api.models import (
     Field,
     FieldDefinition,
     FieldType,
+    FileEntry,
     FileField,
     FileSetField,
     FloatField,
@@ -1470,3 +1471,23 @@ def test__all_field_types__have_class(field_type):
     # then
     assert field_class is not None
     assert field_class.type == field_type
+
+
+def test__file_entry__from_model():
+    # given
+    now = datetime.datetime.now()
+
+    # and
+    model = Mock(
+        size=100,
+        mtime=now,
+        fileType="file",
+    )
+    model.name = "mock_name"
+
+    entry = FileEntry.from_dto(model)
+
+    assert entry.name == "mock_name"
+    assert entry.size == 100
+    assert entry.mtime == now
+    assert entry.file_type == "file"
