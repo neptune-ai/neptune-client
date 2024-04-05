@@ -935,7 +935,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.leaderboard_client.api.getStringSetAttribute(**params)
+            result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
             return StringSetField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
