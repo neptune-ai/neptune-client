@@ -1,3 +1,8 @@
+## neptune 1.10.2
+
+### Fixes
+- Added `setuptools` to dependencies for `python >= 3.12` ([#1723](https://github.com/neptune-ai/neptune-client/pull/1723))
+
 ## neptune 1.10.1
 
 ### Fixes
