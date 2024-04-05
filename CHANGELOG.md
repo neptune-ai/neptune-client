@@ -1,3 +1,9 @@
+## neptune 1.10.2
+
+### Fixes
+- Fixed `PTL` integration requirement check ([#1719](https://github.com/neptune-ai/neptune-client/pull/1719))
+
+
 ## neptune 1.10.1
 
 ### Fixes
