@@ -206,10 +206,10 @@ def iter_over_pages(
 
         while True:
             if last_page:
-                searching_after_filed = find_attribute(entry=last_page[-1], path=sort_by)
-                if not searching_after_filed:
+                searching_after_field = find_attribute(entry=last_page[-1], path=sort_by)
+                if not searching_after_field:
                     raise ValueError(f"Cannot find attribute {sort_by} in last page")
-                searching_after = field_to_value_visitor.visit(searching_after_filed)
+                searching_after = field_to_value_visitor.visit(searching_after_field)
 
             for offset in range(0, max_offset, step_size):
                 local_limit = min(step_size, max_offset - offset)
