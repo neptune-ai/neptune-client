@@ -17,7 +17,7 @@ __all__ = ["NeptuneLogger"]
 
 from neptune.internal.utils.requirement_check import require_installed
 
-require_installed("pytorch-lightning")
+require_installed("pytorch_lightning")
 
 
 from pytorch_lightning.loggers import NeptuneLogger  # noqa: F401,F403,E402
