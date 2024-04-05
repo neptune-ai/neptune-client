@@ -22,6 +22,7 @@ future = ">=0.17.1"
 # Utility
 packaging = "*"
 click = ">=7.0"
+setuptools = { version= "*", python = ">=3.12" }
 
 # Networking
 bravado = "^11.0.0"
