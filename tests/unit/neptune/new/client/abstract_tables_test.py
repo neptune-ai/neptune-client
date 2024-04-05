@@ -24,7 +24,7 @@ from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
 from neptune.api.models import (
-    DatetimeField,
+    DateTimeField,
     FieldDefinition,
     FieldType,
     FileField,
@@ -83,7 +83,7 @@ class AbstractTablesTestMixin:
             ObjectStateField(path="run/state", value="Inactive"),
             FloatField(path="float", value=12.5),
             StringField(path="string", value="some text"),
-            DatetimeField(path="datetime", value=now),
+            DateTimeField(path="datetime", value=now),
             FloatSeriesField(path="float/series", last=8.7),
             StringSeriesField(path="string/series", last="last text"),
             StringSetField(path="string/set", values={"a", "b"}),

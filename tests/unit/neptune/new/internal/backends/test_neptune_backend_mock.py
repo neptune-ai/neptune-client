@@ -22,7 +22,7 @@ from pathlib import Path
 from time import time
 
 from neptune.api.models import (
-    DatetimeField,
+    DateTimeField,
     FloatField,
     FloatSeriesField,
     StringField,
@@ -133,7 +133,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 ret = self.backend.get_datetime_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(DatetimeField(path="x", value=now), ret)
+                self.assertEqual(DateTimeField(path="x", value=now), ret)
 
     def test_get_float_series_attribute(self):
         # given

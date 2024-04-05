@@ -28,7 +28,7 @@ from typing import (
 from neptune.api.models import (
     ArtifactField,
     BoolField,
-    DatetimeField,
+    DateTimeField,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -196,7 +196,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeField:
+    ) -> DateTimeField:
         pass
 
     @abc.abstractmethod

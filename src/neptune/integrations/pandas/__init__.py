@@ -31,7 +31,7 @@ import pandas as pd
 from neptune.api.models import (
     ArtifactField,
     BoolField,
-    DatetimeField,
+    DateTimeField,
     FieldVisitor,
     FileField,
     FileSetField,
@@ -68,7 +68,7 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
     def visit_string(self, field: StringField) -> str:
         return field.value
 
-    def visit_datetime(self, field: DatetimeField) -> datetime:
+    def visit_datetime(self, field: DateTimeField) -> datetime:
         return field.value
 
     def visit_file(self, field: FileField) -> None:

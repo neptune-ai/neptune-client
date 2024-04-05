@@ -27,7 +27,7 @@ __all__ = (
     "IntField",
     "BoolField",
     "StringField",
-    "DatetimeField",
+    "DateTimeField",
     "FileField",
     "FileSetField",
     "FloatSeriesField",
@@ -137,7 +137,7 @@ class FieldVisitor(Generic[Ret], abc.ABC):
     def visit_string(self, field: StringField) -> Ret: ...
 
     @abc.abstractmethod
-    def visit_datetime(self, field: DatetimeField) -> Ret: ...
+    def visit_datetime(self, field: DateTimeField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_file(self, field: FileField) -> Ret: ...
@@ -179,7 +179,6 @@ class FloatField(Field, field_type=FieldType.FLOAT):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> FloatField:
-        # TODO: Map only if not null
         return FloatField(path=data["attributeName"], value=float(data["value"]))
 
     @staticmethod
@@ -196,7 +195,6 @@ class IntField(Field, field_type=FieldType.INT):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> IntField:
-        # TODO: Map only if not null
         return IntField(path=data["attributeName"], value=int(data["value"]))
 
     @staticmethod
@@ -213,7 +211,6 @@ class BoolField(Field, field_type=FieldType.BOOL):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> BoolField:
-        # TODO: Map only if not null
         return BoolField(path=data["attributeName"], value=bool(data["value"]))
 
     @staticmethod
@@ -230,7 +227,6 @@ class StringField(Field, field_type=FieldType.STRING):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> StringField:
-        # TODO: Map only if not null
         return StringField(path=data["attributeName"], value=str(data["value"]))
 
     @staticmethod
@@ -239,21 +235,21 @@ class StringField(Field, field_type=FieldType.STRING):
 
 
 @dataclass
-class DatetimeField(Field, field_type=FieldType.DATETIME):
+class DateTimeField(Field, field_type=FieldType.DATETIME):
     value: datetime
 
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_datetime(self)
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> DatetimeField:
+    def from_dict(data: Dict[str, Any]) -> DateTimeField:
         # TODO: what if none
         # TODO: Exceptions
-        return DatetimeField(path=data["attributeName"], value=parse_iso_date(data["value"]))
+        return DateTimeField(path=data["attributeName"], value=parse_iso_date(data["value"]))
 
     @staticmethod
-    def from_model(model: Any) -> DatetimeField:
-        return DatetimeField(path=model.attributeName, value=parse_iso_date(model.value))
+    def from_model(model: Any) -> DateTimeField:
+        return DateTimeField(path=model.attributeName, value=parse_iso_date(model.value))
 
 
 @dataclass

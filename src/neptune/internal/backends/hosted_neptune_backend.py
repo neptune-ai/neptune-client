@@ -41,7 +41,7 @@ from bravado.exception import (
 from neptune.api.models import (
     ArtifactField,
     BoolField,
-    DatetimeField,
+    DateTimeField,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -850,7 +850,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeField:
+    ) -> DateTimeField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -858,7 +858,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
-            return DatetimeField.from_model(result)
+            return DateTimeField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 

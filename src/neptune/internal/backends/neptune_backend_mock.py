@@ -37,7 +37,7 @@ from zipfile import ZipFile
 from neptune.api.models import (
     ArtifactField,
     BoolField,
-    DatetimeField,
+    DateTimeField,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -399,9 +399,9 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeField:
+    ) -> DateTimeField:
         val = self._get_attribute(container_id, container_type, path, Datetime)
-        return DatetimeField(path=path_to_str(path), value=val.value)
+        return DateTimeField(path=path_to_str(path), value=val.value)
 
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
