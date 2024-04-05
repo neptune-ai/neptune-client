@@ -42,6 +42,7 @@ from neptune.exceptions import (
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
+from neptune.internal.utils.paths import path_to_str
 from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
@@ -93,11 +94,11 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntField(42),
+        new=lambda _, _uuid, _type, _path: IntField(path=path_to_str(_path), value=42),
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringField("MDL"),
+        new=lambda _, _uuid, _type, _path: StringField(path=path_to_str(_path), value="MDL"),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
@@ -121,7 +122,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringField("MDL"),
+        new=lambda _, _uuid, _type, _path: StringField(path=path_to_str(_path), value="MDL"),
     )
     def test_resume(self):
         with init_model_version(flush_period=0.5, with_id="whatever") as exp:

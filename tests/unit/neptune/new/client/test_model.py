@@ -39,6 +39,7 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.exceptions import NeptuneException
+from neptune.internal.utils.paths import path_to_str
 from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
@@ -81,7 +82,7 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _type, _path: IntField(42),
+        new=lambda _, _uuid, _type, _path: IntField(path=path_to_str(_path), value=42),
     )
     @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
