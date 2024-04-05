@@ -105,6 +105,10 @@ class Field(abc.ABC):
         cls.type = field_type
         cls._registry[field_type.value] = cls
 
+    @classmethod
+    def by_type(cls, field_type: FieldType) -> Type[Field]:
+        return cls._registry[field_type.value]
+
     @abc.abstractmethod
     def accept(self, visitor: FieldVisitor[Ret]) -> Ret: ...
 
@@ -116,7 +120,7 @@ class Field(abc.ABC):
     @staticmethod
     def from_model(model: Any) -> Field:
         field_type = str(model.type)
-        return Field._registry[field_type].from_model(model.__getattribute__(f"{field_type}_properties"))
+        return Field._registry[field_type].from_model(model.__getattribute__(f"{field_type}Properties"))
 
 
 class FieldVisitor(Generic[Ret], abc.ABC):
@@ -243,8 +247,6 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> DateTimeField:
-        # TODO: what if none
-        # TODO: Exceptions
         return DateTimeField(path=data["attributeName"], value=parse_iso_date(data["value"]))
 
     @staticmethod
@@ -263,7 +265,6 @@ class FileField(Field, field_type=FieldType.FILE):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> FileField:
-        # TODO: Map to str if not null name and ext
         return FileField(path=data["attributeName"], name=data["name"], ext=data["ext"], size=int(data["size"]))
 
     @staticmethod
@@ -296,10 +297,8 @@ class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> FloatSeriesField:
-        # TODO: last is optional so map to float if present
-        # TODO: Last may not be present at all
-        # TODO: Ensure that it's same as previously (last vs lastStep)
-        return FloatSeriesField(path=data["attributeName"], last=data.get("last", None))
+        last = float(data["last"]) if "last" in data else None
+        return FloatSeriesField(path=data["attributeName"], last=last)
 
     @staticmethod
     def from_model(model: Any) -> FloatSeriesField:
@@ -315,10 +314,8 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> StringSeriesField:
-        # TODO: last is optional so map to str if present
-        # TODO: Last may not be present at all
-        # TODO: Ensure that it's same as previously (last vs lastStep)
-        return StringSeriesField(path=data["attributeName"], last=data.get("last", ""))
+        last = str(data["last"]) if "last" in data else None
+        return StringSeriesField(path=data["attributeName"], last=last)
 
     @staticmethod
     def from_model(model: Any) -> StringSeriesField:
@@ -334,8 +331,8 @@ class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> ImageSeriesField:
-        # TODO: last_step is optional so map to float if present
-        return ImageSeriesField(path=data["attributeName"], last_step=data["lastStep"])
+        last_step = float(data["lastStep"]) if "lastStep" in data else None
+        return ImageSeriesField(path=data["attributeName"], last_step=last_step)
 
     @staticmethod
     def from_model(model: Any) -> ImageSeriesField:
@@ -351,7 +348,7 @@ class StringSetField(Field, field_type=FieldType.STRING_SET):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> StringSetField:
-        return StringSetField(path=data["attributeName"], values=set(map(str, data.get("values", []))))
+        return StringSetField(path=data["attributeName"], values=set(map(str, data["values"])))
 
     @staticmethod
     def from_model(model: Any) -> StringSetField:
@@ -360,12 +357,12 @@ class StringSetField(Field, field_type=FieldType.STRING_SET):
 
 @dataclass
 class GitCommit:
-    commit_id: str
+    commit_id: Optional[str]
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> GitCommit:
-        # TODO: commit and commit_id is optional so map to str if present
-        return GitCommit(commit_id=str(data["commitId"]))
+        commit_id = str(data["commitId"]) if "commitId" in data else None
+        return GitCommit(commit_id=commit_id)
 
     @staticmethod
     def from_model(model: Any) -> GitCommit:
@@ -399,7 +396,6 @@ class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> ObjectStateField:
-        # TODO: value is optional so map to str if present
         value = RunState.from_api(str(data["value"])).value
         return ObjectStateField(path=data["attributeName"], value=value)
 
@@ -418,8 +414,8 @@ class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> NotebookRefField:
-        # TODO: notebook_name is optional so map to str if present
-        return NotebookRefField(path=data["attributeName"], notebook_name=data.get("notebookName", None))
+        notebook_name = str(data["notebookName"]) if "notebookName" in data else None
+        return NotebookRefField(path=data["attributeName"], notebook_name=notebook_name)
 
     @staticmethod
     def from_model(model: Any) -> NotebookRefField:
@@ -435,7 +431,6 @@ class ArtifactField(Field, field_type=FieldType.ARTIFACT):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> ArtifactField:
-        # TODO: hash is optional so map to str if present
         return ArtifactField(path=data["attributeName"], hash=str(data["hash"]))
 
     @staticmethod
