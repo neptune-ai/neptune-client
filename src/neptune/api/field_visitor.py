@@ -79,7 +79,7 @@ class FieldToValueVisitor(FieldVisitor[Any]):
         return field.values
 
     def visit_git_ref(self, field: GitRefField) -> Optional[str]:
-        return field.commit_id
+        return field.commit.commit_id if field.commit is not None else None
 
     def visit_object_state(self, field: ObjectStateField) -> str:
         return field.value

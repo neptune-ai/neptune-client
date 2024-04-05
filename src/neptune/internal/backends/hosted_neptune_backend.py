@@ -706,7 +706,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 )
 
             return [
-                FieldDefinition.from_dict(field) for field in accepted_attributes if field.type in attribute_type_names
+                FieldDefinition.from_model(field) for field in accepted_attributes if field.type in attribute_type_names
             ]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
@@ -791,7 +791,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
-            return FloatField.from_dict(result)
+            return FloatField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -804,7 +804,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getIntAttribute(**params).response().result
-            return IntField.from_dict(result)
+            return IntField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -817,7 +817,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
-            return BoolField.from_dict(result)
+            return BoolField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -830,7 +830,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFileAttribute(**params).response().result
-            return FileField.from_dict(result)
+            return FileField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -843,7 +843,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringAttribute(**params).response().result
-            return StringField.from_dict(result)
+            return StringField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -858,7 +858,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
-            return DatetimeField.from_dict(result)
+            return DatetimeField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -906,7 +906,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
-            return FloatSeriesField.from_dict(result)
+            return FloatSeriesField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -921,7 +921,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
-            return StringSeriesField.from_dict(result)
+            return StringSeriesField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -935,8 +935,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
-            return StringSetField.from_dict(result)
+            result = self.leaderboard_client.api.getStringSetAttribute(**params)
+            return StringSetField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
