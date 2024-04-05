@@ -24,6 +24,13 @@ from neptune import (
     ANONYMOUS_API_TOKEN,
     init_project,
 )
+from neptune.api.models import (
+    Field,
+    FieldDefinition,
+    FieldType,
+    IntField,
+    LeaderboardEntry,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -32,7 +39,6 @@ from neptune.exceptions import (
     NeptuneMissingProjectNameException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.api.models import Field, IntField, FieldType, FieldDefinition, LeaderboardEntry
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.exceptions import NeptuneException
 from neptune.internal.warnings import (

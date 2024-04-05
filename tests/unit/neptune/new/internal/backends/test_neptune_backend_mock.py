@@ -21,6 +21,14 @@ import uuid
 from pathlib import Path
 from time import time
 
+from neptune.api.models import (
+    DatetimeField,
+    FloatField,
+    FloatSeriesField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
@@ -32,8 +40,6 @@ from neptune.internal.backends.api_model import (
     StringPointValue,
     StringSeriesValues,
 )
-from neptune.api.models import FloatField, StringField, DatetimeField, FloatSeriesField, StringSeriesField, \
-    StringSetField
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import (

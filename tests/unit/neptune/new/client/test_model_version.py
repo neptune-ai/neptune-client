@@ -23,6 +23,12 @@ from neptune import (
     ANONYMOUS_API_TOKEN,
     init_model_version,
 )
+from neptune.api.models import (
+    FieldDefinition,
+    FieldType,
+    IntField,
+    StringField,
+)
 from neptune.attributes import String
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
@@ -33,7 +39,6 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
     NeptuneWrongInitParametersException,
 )
-from neptune.api.models import IntField, StringField, FieldType, FieldDefinition
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException

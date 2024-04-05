@@ -21,31 +21,31 @@ from datetime import datetime
 from typing import (
     TYPE_CHECKING,
     Dict,
+    Optional,
     Tuple,
     Union,
-    Optional,
 )
 
 import pandas as pd
 
 from neptune.api.models import (
-    LeaderboardEntry,
-    FieldVisitor,
-    FloatField,
-    IntField,
+    ArtifactField,
     BoolField,
-    StringField,
     DatetimeField,
-    FloatSeriesField,
-    StringSeriesField,
-    ImageSeriesField,
+    FieldVisitor,
     FileField,
     FileSetField,
+    FloatField,
+    FloatSeriesField,
     GitRefField,
+    ImageSeriesField,
+    IntField,
+    LeaderboardEntry,
     NotebookRefField,
-    ArtifactField,
-    StringSetField,
     ObjectStateField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
 )
 
 if TYPE_CHECKING:
@@ -89,13 +89,13 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
     def visit_file_set(self, field: FileSetField) -> None:
         return None
 
-    def visit_git_ref(self, field: GitRefField) -> str:
+    def visit_git_ref(self, field: GitRefField) -> Optional[str]:
         return field.commit_id
 
     def visit_object_state(self, field: ObjectStateField) -> str:
         return field.value
 
-    def visit_notebook_ref(self, field: NotebookRefField) -> str:
+    def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
         return field.notebook_name
 
     def visit_artifact(self, field: ArtifactField) -> str:

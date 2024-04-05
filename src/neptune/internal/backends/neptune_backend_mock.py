@@ -34,7 +34,22 @@ from typing import (
 )
 from zipfile import ZipFile
 
-from neptune.api.models import FileEntry
+from neptune.api.models import (
+    ArtifactField,
+    BoolField,
+    DatetimeField,
+    FieldDefinition,
+    FieldType,
+    FileEntry,
+    FileField,
+    FloatField,
+    FloatSeriesField,
+    IntField,
+    LeaderboardEntry,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
@@ -53,21 +68,6 @@ from neptune.internal.backends.api_model import (
     StringPointValue,
     StringSeriesValues,
     Workspace,
-)
-from neptune.api.models import (
-    FloatField,
-    IntField,
-    BoolField,
-    FileField,
-    StringField,
-    DatetimeField,
-    ArtifactField,
-    FloatSeriesField,
-    StringSeriesField,
-    StringSetField,
-    FieldType,
-    FieldDefinition,
-    LeaderboardEntry,
 )
 from neptune.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.internal.backends.neptune_backend import NeptuneBackend
@@ -393,9 +393,7 @@ class NeptuneBackendMock(NeptuneBackend):
             size=0,
         )
 
-    def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringField:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         val = self._get_attribute(container_id, container_type, path, String)
         return StringField(path=path_to_str(path), value=val.value)
 

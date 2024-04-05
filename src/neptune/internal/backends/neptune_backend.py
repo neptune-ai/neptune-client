@@ -25,7 +25,22 @@ from typing import (
     Union,
 )
 
-from neptune.api.models import FileEntry
+from neptune.api.models import (
+    ArtifactField,
+    BoolField,
+    DatetimeField,
+    FieldDefinition,
+    FieldType,
+    FileEntry,
+    FileField,
+    FloatField,
+    FloatSeriesField,
+    IntField,
+    LeaderboardEntry,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
@@ -35,21 +50,6 @@ from neptune.internal.backends.api_model import (
     Project,
     StringSeriesValues,
     Workspace,
-)
-from neptune.api.models import (
-    FloatField,
-    IntField,
-    BoolField,
-    FileField,
-    StringField,
-    DatetimeField,
-    ArtifactField,
-    FloatSeriesField,
-    StringSeriesField,
-    StringSetField,
-    FieldType,
-    FieldDefinition,
-    LeaderboardEntry,
 )
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
@@ -190,9 +190,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringField:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         pass
 
     @abc.abstractmethod

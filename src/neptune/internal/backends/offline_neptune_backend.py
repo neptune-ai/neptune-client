@@ -20,26 +20,26 @@ from typing import (
     Optional,
 )
 
-from neptune.api.models import FileEntry
+from neptune.api.models import (
+    ArtifactField,
+    BoolField,
+    DatetimeField,
+    FieldDefinition,
+    FileEntry,
+    FileField,
+    FloatField,
+    FloatSeriesField,
+    IntField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     FloatSeriesValues,
     ImageSeriesValues,
     StringSeriesValues,
-)
-from neptune.api.models import (
-    FloatField,
-    IntField,
-    BoolField,
-    FileField,
-    StringField,
-    DatetimeField,
-    ArtifactField,
-    FloatSeriesField,
-    StringSeriesField,
-    StringSetField,
-    FieldDefinition,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
@@ -64,9 +64,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringField:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         raise NeptuneOfflineModeFetchException
 
     def get_datetime_attribute(

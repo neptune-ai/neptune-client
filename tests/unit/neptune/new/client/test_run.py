@@ -27,13 +27,17 @@ from neptune import (
     ANONYMOUS_API_TOKEN,
     init_run,
 )
+from neptune.api.models import (
+    FieldDefinition,
+    FieldType,
+    IntField,
+)
 from neptune.attributes.atoms import String
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import MissingFieldException
-from neptune.api.models import IntField, FieldType, FieldDefinition
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.internal.warnings import (

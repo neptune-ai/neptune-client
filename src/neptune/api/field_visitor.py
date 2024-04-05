@@ -13,34 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ('FieldToValueVisitor',)
+__all__ = ("FieldToValueVisitor",)
 
+from datetime import datetime
 from typing import (
     Any,
     Optional,
     Set,
 )
-from datetime import datetime
 
-from neptune.exceptions import MetadataInconsistency
 from neptune.api.models import (
-    FieldVisitor,
-    FloatField,
-    IntField,
+    ArtifactField,
     BoolField,
-    StringField,
     DatetimeField,
+    FieldVisitor,
     FileField,
     FileSetField,
+    FloatField,
     FloatSeriesField,
-    StringSeriesField,
-    ImageSeriesField,
-    StringSetField,
     GitRefField,
-    ObjectStateField,
+    ImageSeriesField,
+    IntField,
     NotebookRefField,
-    ArtifactField
+    ObjectStateField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
 )
+from neptune.exceptions import MetadataInconsistency
 
 
 class FieldToValueVisitor(FieldVisitor[Any]):

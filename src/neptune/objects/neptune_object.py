@@ -39,6 +39,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.models import FieldType
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
@@ -53,7 +54,6 @@ from neptune.internal.backends.api_model import (
     ApiExperiment,
     Project,
 )
-from neptune.api.models import FieldType
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery

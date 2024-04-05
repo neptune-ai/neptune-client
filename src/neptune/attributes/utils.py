@@ -20,6 +20,7 @@ from typing import (
     List,
 )
 
+from neptune.api.models import FieldType
 from neptune.attributes import (
     Artifact,
     Boolean,
@@ -37,7 +38,6 @@ from neptune.attributes import (
     StringSeries,
     StringSet,
 )
-from neptune.api.models import FieldType
 from neptune.internal.exceptions import InternalClientError
 
 if TYPE_CHECKING:

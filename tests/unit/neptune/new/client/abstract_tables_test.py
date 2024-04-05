@@ -23,12 +23,17 @@ import pytest
 from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
+from neptune.api.models import (
+    Field,
+    FieldDefinition,
+    FieldType,
+    LeaderboardEntry,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import MetadataInconsistency
-from neptune.api.models import Field, FieldType, FieldDefinition, LeaderboardEntry
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.table import (
     Table,

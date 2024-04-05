@@ -24,13 +24,13 @@ from typing import (
 )
 
 from neptune.api.field_visitor import FieldToValueVisitor
-from neptune.exceptions import MetadataInconsistency
-from neptune.integrations.pandas import to_pandas
 from neptune.api.models import (
     Field,
     FieldType,
     LeaderboardEntry,
 )
+from neptune.exceptions import MetadataInconsistency
+from neptune.integrations.pandas import to_pandas
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.utils.logger import get_logger

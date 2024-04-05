@@ -27,14 +27,19 @@ from typing import (
 from bravado.client import construct_request  # type: ignore
 from bravado.config import RequestConfig  # type: ignore
 from bravado.exception import HTTPBadRequest  # type: ignore
-from neptune.api.field_visitor import FieldToValueVisitor
 from typing_extensions import (
     Literal,
     TypeAlias,
 )
 
+from neptune.api.field_visitor import FieldToValueVisitor
+from neptune.api.models import (
+    Field,
+    FieldType,
+    LeaderboardEntriesSearchResult,
+    LeaderboardEntry,
+)
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.api.models import Field, FieldType, LeaderboardEntry, LeaderboardEntriesSearchResult
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.nql import (
     NQLAggregator,

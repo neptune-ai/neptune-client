@@ -41,18 +41,20 @@ __all__ = (
 )
 
 import abc
-from dataclasses import (
-    dataclass,
-    field as dataclass_field,
-)
-from typing import TypeVar, Generic, Dict, Type, ClassVar
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from datetime import datetime
 from enum import Enum
 from typing import (
     Any,
+    ClassVar,
+    Dict,
+    Generic,
+    List,
     Optional,
     Set,
-    List,
+    Type,
+    TypeVar,
 )
 
 from neptune.internal.utils.iso_dates import parse_iso_date
@@ -94,18 +96,16 @@ class FieldType(Enum):
 @dataclass
 class Field(abc.ABC):
     path: str
-    type: FieldType = dataclass_field(init=False, default=None)
-    _registry: ClassVar[Dict[str, Type[Field]]] = {t.value: {} for t in FieldType}
+    type: FieldType = dataclass_field(init=False)
+    _registry: ClassVar[Dict[str, Type[Field]]] = {}
 
-    def __init_subclass__(cls, field_type: FieldType, **kwargs) -> None:
-        super().__init_subclass__(**kwargs)
-        if field_type is not None:
-            cls.type = field_type
-            cls._registry[field_type.value] = cls
+    def __init_subclass__(cls, *args: Any, field_type: FieldType, **kwargs: Any) -> None:
+        super().__init_subclass__(*args, **kwargs)
+        cls.type = field_type
+        cls._registry[field_type.value] = cls
 
     @abc.abstractmethod
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        ...
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret: ...
 
     @staticmethod
     def from_dict(field: Dict[str, Any]) -> Field:
@@ -118,50 +118,50 @@ class FieldVisitor(Generic[Ret], abc.ABC):
     def visit(self, field: Field) -> Ret:
         return field.accept(self)
 
-    def visit_float(self, field: FloatField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_float(self, field: FloatField) -> Ret: ...
 
-    def visit_int(self, field: IntField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_int(self, field: IntField) -> Ret: ...
 
-    def visit_bool(self, field: BoolField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_bool(self, field: BoolField) -> Ret: ...
 
-    def visit_string(self, field: StringField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_string(self, field: StringField) -> Ret: ...
 
-    def visit_datetime(self, field: DatetimeField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_datetime(self, field: DatetimeField) -> Ret: ...
 
-    def visit_file(self, field: FileField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_file(self, field: FileField) -> Ret: ...
 
-    def visit_file_set(self, field: FileSetField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_file_set(self, field: FileSetField) -> Ret: ...
 
-    def visit_float_series(self, field: FloatSeriesField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_float_series(self, field: FloatSeriesField) -> Ret: ...
 
-    def visit_string_series(self, field: StringSeriesField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_string_series(self, field: StringSeriesField) -> Ret: ...
 
-    def visit_image_series(self, field: ImageSeriesField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_image_series(self, field: ImageSeriesField) -> Ret: ...
 
-    def visit_string_set(self, field: StringSetField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_string_set(self, field: StringSetField) -> Ret: ...
 
-    def visit_git_ref(self, field: GitRefField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_git_ref(self, field: GitRefField) -> Ret: ...
 
-    def visit_object_state(self, field: ObjectStateField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_object_state(self, field: ObjectStateField) -> Ret: ...
 
-    def visit_notebook_ref(self, field: NotebookRefField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_notebook_ref(self, field: NotebookRefField) -> Ret: ...
 
-    def visit_artifact(self, field: ArtifactField) -> Ret:
-        ...
+    @abc.abstractmethod
+    def visit_artifact(self, field: ArtifactField) -> Ret: ...
 
 
 @dataclass
@@ -240,12 +240,7 @@ class FileField(Field, field_type=FieldType.FILE):
 
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> FileField:
-        return FileField(
-            path=data["attributeName"],
-            name=data["name"],
-            ext=data["ext"],
-            size=int(data["size"])
-        )
+        return FileField(path=data["attributeName"], name=data["name"], ext=data["ext"], size=int(data["size"]))
 
 
 @dataclass
@@ -370,8 +365,7 @@ class LeaderboardEntry:
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> LeaderboardEntry:
         return LeaderboardEntry(
-            object_id=data["experimentId"],
-            fields=[Field.from_dict(field) for field in data["attributes"]]
+            object_id=data["experimentId"], fields=[Field.from_dict(field) for field in data["attributes"]]
         )
 
 

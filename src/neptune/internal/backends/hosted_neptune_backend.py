@@ -38,6 +38,22 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.api.models import (
+    ArtifactField,
+    BoolField,
+    DatetimeField,
+    FieldDefinition,
+    FieldType,
+    FileEntry,
+    FileField,
+    FloatField,
+    FloatSeriesField,
+    IntField,
+    LeaderboardEntry,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -65,22 +81,6 @@ from neptune.internal.backends.api_model import (
     StringPointValue,
     StringSeriesValues,
     Workspace,
-)
-from neptune.api.models import (
-    FloatField,
-    IntField,
-    BoolField,
-    FileField,
-    StringField,
-    DatetimeField,
-    ArtifactField,
-    FloatSeriesField,
-    StringSeriesField,
-    StringSetField,
-    FieldType,
-    FieldDefinition,
-    LeaderboardEntry,
-    FileEntry,
 )
 from neptune.internal.backends.hosted_artifact_operations import (
     get_artifact_attribute,
@@ -705,7 +705,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                     ignored_attributes,
                 )
 
-            return [FieldDefinition.from_dict(field) for field in accepted_attributes if field.type in attribute_type_names]
+            return [
+                FieldDefinition.from_dict(field) for field in accepted_attributes if field.type in attribute_type_names
+            ]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
                 container_id=container_id,
@@ -833,9 +835,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringField:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),

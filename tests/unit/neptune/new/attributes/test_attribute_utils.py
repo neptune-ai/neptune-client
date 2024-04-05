@@ -16,9 +16,9 @@
 import unittest
 from unittest.mock import MagicMock
 
+from neptune.api.models import FieldType
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
-from neptune.api.models import FieldType
 
 
 class TestAttributeUtils(unittest.TestCase):
@@ -27,7 +27,6 @@ class TestAttributeUtils(unittest.TestCase):
         # ... and this reflection is class based on `Attribute`
         self.assertTrue(
             all(
-                isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute)
-                for attr_type in FieldType
+                isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute) for attr_type in FieldType
             )
         )

@@ -21,7 +21,11 @@ from typing import List
 from mock import patch
 
 from neptune import init_project
-from neptune.api.models import Field, FieldType, LeaderboardEntry
+from neptune.api.models import (
+    Field,
+    FieldType,
+    LeaderboardEntry,
+)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
 from neptune.table import (
