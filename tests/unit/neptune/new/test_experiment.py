@@ -20,6 +20,8 @@ import unittest
 from datetime import datetime
 from unittest import mock
 
+import pytest
+
 from neptune import (
     ANONYMOUS_API_TOKEN,
     Run,
@@ -110,6 +112,7 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(MetadataInconsistency):
                     exp.define("some/path/value", {})
 
+    @pytest.mark.skip(reason="Field deletion is disabled")
     def test_pop(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
@@ -119,6 +122,7 @@ class TestExperiment(unittest.TestCase):
                 self.assertTrue("num" in exp.get_structure()["some"]["path"])
                 self.assertTrue("text" not in exp.get_structure()["some"]["path"])
 
+    @pytest.mark.skip(reason="Field deletion is disabled")
     def test_pop_namespace(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
@@ -243,6 +247,7 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(expected_exception):
                     exp["series"].log(1)
 
+    @pytest.mark.skip(reason="Field deletion is disabled")
     def test_protected_paths(self):
         model = init_model(key="MOD", mode="debug")
         model_version = init_model_version(model=model["sys/id"].fetch(), mode="debug")
