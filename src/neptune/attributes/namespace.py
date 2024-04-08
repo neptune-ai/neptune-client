@@ -31,6 +31,7 @@ from typing import (
 )
 
 from neptune.attributes.attribute import Attribute
+from neptune.exceptions import NeptuneFeatureNotAvailableException
 from neptune.internal.container_structure import ContainerStructure
 from neptune.internal.utils.generic_attribute_mapper import (
     NoValue,
@@ -66,7 +67,7 @@ class Namespace(Attribute, MutableMapping):
         self._attributes[k] = v
 
     def __delitem__(self, k: str) -> None:
-        del self._attributes[k]
+        raise NeptuneFeatureNotAvailableException(missing_feature="deleting fields")
 
     def __getitem__(self, k: str) -> Attribute:
         return self._attributes[k]

@@ -1116,7 +1116,7 @@ or Neptune support directly (support@neptune.ai) about the upcoming updates.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
-        self.message = message.format(missing_feature=missing_feature, **STYLES)
+        message = message.format(missing_feature=missing_feature, **STYLES)
         super().__init__(message)
 
 
