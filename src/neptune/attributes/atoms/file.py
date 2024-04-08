@@ -18,6 +18,7 @@ __all__ = ["File"]
 from typing import Optional
 
 from neptune.attributes.atoms.atom import Atom
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import UploadFile
 from neptune.internal.utils import verify_type
 from neptune.types.atoms.file import File as FileVal
@@ -26,6 +27,7 @@ from neptune.typing import ProgressBarType
 
 class File(Atom):
     def assign(self, value: FileVal, *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         verify_type("value", value, FileVal)
 
         operation = UploadFile.of_file(
@@ -38,6 +40,7 @@ class File(Atom):
             self._enqueue_operation(operation, wait=wait)
 
     def upload(self, value, *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         self.assign(FileVal.create_from(value), wait=wait)
 
     def download(
@@ -45,9 +48,11 @@ class File(Atom):
         destination: Optional[str] = None,
         progress_bar: Optional[ProgressBarType] = None,
     ) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file(self._container_id, self._container_type, self._path, destination, progress_bar)
 
     def fetch_extension(self) -> str:
+        raise NeptuneUnsupportedFunctionalityException
         val = self._backend.get_file_attribute(self._container_id, self._container_type, self._path)
         return val.ext

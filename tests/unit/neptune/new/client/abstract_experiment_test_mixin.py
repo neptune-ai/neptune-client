@@ -24,6 +24,8 @@ from unittest.mock import (
     patch,
 )
 
+import pytest
+
 from neptune.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
@@ -136,6 +138,7 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(AttributeError):
                 exp["non/existing/path"].foo()
 
+    @pytest.mark.skip(reason="File functionality disabled")
     def test_wrong_per_type_function(self):
         with self.call_init(mode="debug") as exp:
             exp["some/path"] = "foo"

@@ -15,12 +15,14 @@
 #
 import os
 
+import pytest
 from mock import (
     MagicMock,
     patch,
 )
 
 from neptune.attributes.file_set import FileSet
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     DeleteFiles,
     UploadFileSet,
@@ -28,6 +30,7 @@ from neptune.internal.operation import (
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestFileSet(TestAttributeBase):
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
