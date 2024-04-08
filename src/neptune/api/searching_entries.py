@@ -146,6 +146,7 @@ def get_single_page(
     http_client = client.swagger_spec.http_client
 
     try:
+        # TODO: Allow to fetch using protocol buffers
         return (
             http_client.request(request_params, operation=None, request_config=request_config)
             .response()

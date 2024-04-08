@@ -1124,7 +1124,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         filter_types: Optional[List[str]] = None,
-        use_proto: bool = False,
+        use_proto: bool = False,  # TODO: Use environment variable instead
     ) -> List[FieldDefinition]:
         params = {
             "experimentIdentifier": container_id,
@@ -1132,6 +1132,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
+            # TODO: Rework as we should call `from_model`/`from_proto` on the result
             if use_proto:
                 result = self.leaderboard_client.api.queryAttributeDefinitionsProto(**params).response().result
                 result = ProtoAttributesSearchResultDTO.FromString(result)

@@ -44,7 +44,10 @@ __all__ = (
 import abc
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
-from datetime import datetime
+from datetime import (
+    datetime,
+    timezone,
+)
 from enum import Enum
 from typing import (
     Any,
@@ -58,6 +61,19 @@ from typing import (
     TypeVar,
 )
 
+from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributeDefinitionDTO
+from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
+    ProtoAttributeDTO,
+    ProtoAttributesDTO,
+    ProtoBoolAttributeDTO,
+    ProtoDatetimeAttributeDTO,
+    ProtoFloatAttributeDTO,
+    ProtoFloatSeriesAttributeDTO,
+    ProtoIntAttributeDTO,
+    ProtoLeaderboardEntriesSearchResultDTO,
+    ProtoStringAttributeDTO,
+    ProtoStringSetAttributeDTO,
+)
 from neptune.internal.utils.iso_dates import parse_iso_date
 from neptune.internal.utils.run_state import RunState
 
@@ -121,6 +137,11 @@ class Field(abc.ABC):
     def from_model(model: Any) -> Field:
         field_type = str(model.type)
         return Field._registry[field_type].from_model(model.__getattribute__(f"{field_type}Properties"))
+
+    @staticmethod
+    def from_proto(data: Any) -> Field:
+        # TODO: Implement
+        raise NotImplementedError()
 
 
 class FieldVisitor(Generic[Ret], abc.ABC):
@@ -189,6 +210,10 @@ class FloatField(Field, field_type=FieldType.FLOAT):
     def from_model(model: Any) -> FloatField:
         return FloatField(path=model.attributeName, value=model.value)
 
+    @staticmethod
+    def from_proto(data: ProtoFloatAttributeDTO) -> Field:
+        return FloatField(path=data.attribute_name, value=data.value)
+
 
 @dataclass
 class IntField(Field, field_type=FieldType.INT):
@@ -204,6 +229,10 @@ class IntField(Field, field_type=FieldType.INT):
     @staticmethod
     def from_model(model: Any) -> IntField:
         return IntField(path=model.attributeName, value=model.value)
+
+    @staticmethod
+    def from_proto(data: ProtoIntAttributeDTO) -> IntField:
+        return IntField(path=data.attribute_name, value=data.value)
 
 
 @dataclass
@@ -221,6 +250,10 @@ class BoolField(Field, field_type=FieldType.BOOL):
     def from_model(model: Any) -> BoolField:
         return BoolField(path=model.attributeName, value=model.value)
 
+    @staticmethod
+    def from_proto(data: ProtoBoolAttributeDTO) -> BoolField:
+        return BoolField(path=data.attribute_name, value=data.value)
+
 
 @dataclass
 class StringField(Field, field_type=FieldType.STRING):
@@ -237,6 +270,10 @@ class StringField(Field, field_type=FieldType.STRING):
     def from_model(model: Any) -> StringField:
         return StringField(path=model.attributeName, value=model.value)
 
+    @staticmethod
+    def from_proto(data: ProtoStringAttributeDTO) -> StringField:
+        return StringField(path=data.attribute_name, value=data.value)
+
 
 @dataclass
 class DateTimeField(Field, field_type=FieldType.DATETIME):
@@ -252,6 +289,11 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
     @staticmethod
     def from_model(model: Any) -> DateTimeField:
         return DateTimeField(path=model.attributeName, value=parse_iso_date(model.value))
+
+    @staticmethod
+    def from_proto(data: ProtoDatetimeAttributeDTO) -> DateTimeField:
+        # TODO: Ensure that the timestamp is in UTC
+        return DateTimeField(path=data.attribute_name, value=datetime.fromtimestamp(data.value, tz=timezone.utc))
 
 
 @dataclass
@@ -271,6 +313,11 @@ class FileField(Field, field_type=FieldType.FILE):
     def from_model(model: Any) -> FileField:
         return FileField(path=model.attributeName, name=model.name, ext=model.ext, size=model.size)
 
+    @staticmethod
+    def from_proto(data: Any) -> FileField:
+        # TODO: implement
+        raise NotImplementedError()
+
 
 @dataclass
 class FileSetField(Field, field_type=FieldType.FILE_SET):
@@ -286,6 +333,11 @@ class FileSetField(Field, field_type=FieldType.FILE_SET):
     @staticmethod
     def from_model(model: Any) -> FileSetField:
         return FileSetField(path=model.attributeName, size=model.size)
+
+    @staticmethod
+    def from_proto(data: Any) -> FileSetField:
+        # TODO: implement
+        raise NotImplementedError()
 
 
 @dataclass
@@ -304,6 +356,11 @@ class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
     def from_model(model: Any) -> FloatSeriesField:
         return FloatSeriesField(path=model.attributeName, last=model.last)
 
+    @staticmethod
+    def from_proto(data: ProtoFloatSeriesAttributeDTO) -> FloatSeriesField:
+        last = data.last if data.HasField("last") else None
+        return FloatSeriesField(path=data.attribute_name, last=last)
+
 
 @dataclass
 class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
@@ -320,6 +377,11 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
     @staticmethod
     def from_model(model: Any) -> StringSeriesField:
         return StringSeriesField(path=model.attributeName, last=model.last)
+
+    @staticmethod
+    def from_proto(data: Any) -> StringSeriesField:
+        # TODO: implement
+        raise NotImplementedError()
 
 
 @dataclass
@@ -338,6 +400,11 @@ class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
     def from_model(model: Any) -> ImageSeriesField:
         return ImageSeriesField(path=model.attributeName, last_step=model.lastStep)
 
+    @staticmethod
+    def from_proto(data: Any) -> ImageSeriesField:
+        # TODO: implement
+        raise NotImplementedError()
+
 
 @dataclass
 class StringSetField(Field, field_type=FieldType.STRING_SET):
@@ -354,6 +421,10 @@ class StringSetField(Field, field_type=FieldType.STRING_SET):
     def from_model(model: Any) -> StringSetField:
         return StringSetField(path=model.attributeName, values=set(model.values))
 
+    @staticmethod
+    def from_proto(data: ProtoStringSetAttributeDTO) -> StringSetField:
+        return StringSetField(path=data.attribute_name, values=set(data.value))
+
 
 @dataclass
 class GitCommit:
@@ -367,6 +438,11 @@ class GitCommit:
     @staticmethod
     def from_model(model: Any) -> GitCommit:
         return GitCommit(commit_id=model.commitId)
+
+    @staticmethod
+    def from_proto(data: Any) -> GitCommit:
+        # TODO: implement
+        raise NotImplementedError()
 
 
 @dataclass
@@ -386,6 +462,11 @@ class GitRefField(Field, field_type=FieldType.GIT_REF):
         commit = GitCommit.from_model(model.commit) if model.commit is not None else None
         return GitRefField(path=model.attributeName, commit=commit)
 
+    @staticmethod
+    def from_proto(data: ProtoAttributeDTO) -> GitRefField:
+        # TODO: implement
+        raise NotImplementedError()
+
 
 @dataclass
 class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
@@ -404,6 +485,11 @@ class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
         value = RunState.from_api(str(model.value)).value
         return ObjectStateField(path=model.attributeName, value=value)
 
+    @staticmethod
+    def from_proto(data: Any) -> ObjectStateField:
+        # TODO: implement
+        raise NotImplementedError()
+
 
 @dataclass
 class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
@@ -421,6 +507,11 @@ class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
     def from_model(model: Any) -> NotebookRefField:
         return NotebookRefField(path=model.attributeName, notebook_name=model.notebookName)
 
+    @staticmethod
+    def from_proto(data: Any) -> NotebookRefField:
+        # TODO: implement
+        raise NotImplementedError()
+
 
 @dataclass
 class ArtifactField(Field, field_type=FieldType.ARTIFACT):
@@ -436,6 +527,11 @@ class ArtifactField(Field, field_type=FieldType.ARTIFACT):
     @staticmethod
     def from_model(model: Any) -> ArtifactField:
         return ArtifactField(path=model.attributeName, hash=model.hash)
+
+    @staticmethod
+    def from_proto(data: Any) -> ArtifactField:
+        # TODO: implement
+        raise NotImplementedError()
 
 
 @dataclass
@@ -453,6 +549,12 @@ class LeaderboardEntry:
     def from_model(model: Any) -> LeaderboardEntry:
         return LeaderboardEntry(
             object_id=model.experimentId, fields=[Field.from_model(field) for field in model.attributes]
+        )
+
+    @staticmethod
+    def from_proto(data: ProtoAttributesDTO) -> LeaderboardEntry:
+        return LeaderboardEntry(
+            object_id=data.experiment_id, fields=[Field.from_proto(field) for field in data.attributes]
         )
 
 
@@ -475,6 +577,13 @@ class LeaderboardEntriesSearchResult:
             matching_item_count=result.matchingItemCount,
         )
 
+    @staticmethod
+    def from_proto(data: ProtoLeaderboardEntriesSearchResultDTO) -> LeaderboardEntriesSearchResult:
+        return LeaderboardEntriesSearchResult(
+            entries=[LeaderboardEntry.from_proto(entry) for entry in data.entries],
+            matching_item_count=data.matching_item_count,
+        )
+
 
 @dataclass
 class FieldDefinition:
@@ -488,3 +597,7 @@ class FieldDefinition:
     @staticmethod
     def from_model(model: Any) -> FieldDefinition:
         return FieldDefinition(path=model.name, type=FieldType(model.type))
+
+    @staticmethod
+    def from_proto(data: ProtoAttributeDefinitionDTO) -> FieldDefinition:
+        return FieldDefinition(path=data.name, type=FieldType(data.type))
