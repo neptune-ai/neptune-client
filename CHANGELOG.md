@@ -16,6 +16,7 @@
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
 - Use `tqdm.auto` ([#1717](https://github.com/neptune-ai/neptune-client/pull/1717))
+- Fields DTO conversion reworked ([#1722](https://github.com/neptune-ai/neptune-client/pull/1722))
 
 ### Features
 - ?

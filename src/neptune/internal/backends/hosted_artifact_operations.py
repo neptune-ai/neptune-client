@@ -30,6 +30,7 @@ from typing import (
 
 from bravado.exception import HTTPNotFound
 
+from neptune.api.models import ArtifactField
 from neptune.exceptions import (
     ArtifactNotFoundException,
     ArtifactUploadingError,
@@ -42,10 +43,7 @@ from neptune.internal.artifacts.types import (
     ArtifactDriversMap,
     ArtifactFileData,
 )
-from neptune.internal.backends.api_model import (
-    ArtifactAttribute,
-    ArtifactModel,
-)
+from neptune.internal.backends.api_model import ArtifactModel
 from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.operation import (
@@ -254,7 +252,7 @@ def get_artifact_attribute(
     parent_identifier: str,
     path: List[str],
     default_request_params: Dict,
-) -> ArtifactAttribute:
+) -> ArtifactField:
     requests_params = add_artifact_version_to_request_params(default_request_params)
     params = {
         "experimentId": parent_identifier,
@@ -263,7 +261,7 @@ def get_artifact_attribute(
     }
     try:
         result = swagger_client.api.getArtifactAttribute(**params).response().result
-        return ArtifactAttribute(hash=result.hash)
+        return ArtifactField.from_model(result)
     except HTTPNotFound:
         raise FetchAttributeNotFoundException(path_to_str(path))
 

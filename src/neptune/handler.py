@@ -28,7 +28,7 @@ from typing import (
     Union,
 )
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 from neptune.attributes import File
 from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH

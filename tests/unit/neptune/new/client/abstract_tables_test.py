@@ -23,17 +23,28 @@ import pytest
 from mock import patch
 
 from neptune import ANONYMOUS_API_TOKEN
+from neptune.api.models import (
+    DateTimeField,
+    FieldDefinition,
+    FieldType,
+    FileField,
+    FileSetField,
+    FloatField,
+    FloatSeriesField,
+    GitCommit,
+    GitRefField,
+    ImageSeriesField,
+    LeaderboardEntry,
+    ObjectStateField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.backends.api_model import (
-    Attribute,
-    AttributeType,
-    AttributeWithProperties,
-    LeaderboardEntry,
-)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.table import (
     Table,
@@ -43,7 +54,7 @@ from neptune.table import (
 
 @patch(
     "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [Attribute(path="test", type=AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [FieldDefinition(path="test", type=FieldType.STRING)],
 )
 @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class AbstractTablesTestMixin:
@@ -67,26 +78,20 @@ class AbstractTablesTestMixin:
             del os.environ[PROJECT_ENV_NAME]
 
     @staticmethod
-    def build_attributes_leaderboard(now: datetime):
-        attributes = []
-        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, {"value": "idle"}))
-        attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, {"value": 12.5}))
-        attributes.append(AttributeWithProperties("string", AttributeType.STRING, {"value": "some text"}))
-        attributes.append(AttributeWithProperties("datetime", AttributeType.DATETIME, {"value": now}))
-        attributes.append(AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, {"last": 8.7}))
-        attributes.append(AttributeWithProperties("string/series", AttributeType.STRING_SERIES, {"last": "last text"}))
-        attributes.append(AttributeWithProperties("string/set", AttributeType.STRING_SET, {"values": ["a", "b"]}))
-        attributes.append(
-            AttributeWithProperties(
-                "git/ref",
-                AttributeType.GIT_REF,
-                {"commit": {"commitId": "abcdef0123456789"}},
-            )
-        )
-        attributes.append(AttributeWithProperties("file", AttributeType.FILE, None))
-        attributes.append(AttributeWithProperties("file/set", AttributeType.FILE_SET, None))
-        attributes.append(AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None))
-        return attributes
+    def build_fields_leaderboard(now: datetime):
+        return [
+            ObjectStateField(path="run/state", value="Inactive"),
+            FloatField(path="float", value=12.5),
+            StringField(path="string", value="some text"),
+            DateTimeField(path="datetime", value=now),
+            FloatSeriesField(path="float/series", last=8.7),
+            StringSeriesField(path="string/series", last="last text"),
+            StringSetField(path="string/set", values={"a", "b"}),
+            GitRefField(path="git/ref", commit=GitCommit(commit_id="abcdef0123456789")),
+            FileField(path="file", size=0, name="file.txt", ext="txt"),
+            FileSetField(path="file/set", size=0),
+            ImageSeriesField(path="image/series", last_step=None),
+        ]
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_with_columns_filter(self, search_leaderboard_entries):
@@ -102,11 +107,11 @@ class AbstractTablesTestMixin:
     def test_get_table_as_pandas(self, search_leaderboard_entries):
         # given
         now = datetime.now()
-        attributes = self.build_attributes_leaderboard(now)
+        fields = self.build_fields_leaderboard(now)
 
         # and
-        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
-        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        empty_entry = LeaderboardEntry(object_id=str(uuid.uuid4()), fields=[])
+        filled_entry = LeaderboardEntry(object_id=str(uuid.uuid4()), fields=fields)
         search_leaderboard_entries.return_value = [empty_entry, filled_entry]
 
         # when
@@ -119,7 +124,7 @@ class AbstractTablesTestMixin:
         self.assertEqual(now, df["datetime"][1])
         self.assertEqual(8.7, df["float/series"][1])
         self.assertEqual("last text", df["string/series"][1])
-        self.assertEqual("a,b", df["string/set"][1])
+        self.assertEqual({"a", "b"}, set(df["string/set"][1].split(",")))
         self.assertEqual("abcdef0123456789", df["git/ref"][1])
 
         with self.assertRaises(KeyError):
@@ -133,11 +138,11 @@ class AbstractTablesTestMixin:
     def test_get_table_as_rows(self, search_leaderboard_entries):
         # given
         now = datetime.now()
-        attributes = self.build_attributes_leaderboard(now)
+        fields = self.build_fields_leaderboard(now)
 
         # and
-        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
-        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        empty_entry = LeaderboardEntry(object_id=str(uuid.uuid4()), fields=[])
+        filled_entry = LeaderboardEntry(object_id=str(uuid.uuid4()), fields=fields)
         search_leaderboard_entries.return_value = [empty_entry, filled_entry]
 
         # and
@@ -173,10 +178,10 @@ class AbstractTablesTestMixin:
         # given
         exp_id = str(uuid.uuid4())
         now = datetime.now()
-        attributes = self.build_attributes_leaderboard(now)
+        fields = self.build_fields_leaderboard(now)
 
         # and
-        search_leaderboard_entries.return_value = [LeaderboardEntry(exp_id, attributes)]
+        search_leaderboard_entries.return_value = [LeaderboardEntry(object_id=exp_id, fields=fields)]
 
         # when
         table_entry = self.get_table_entries(table=self.get_table())[0]

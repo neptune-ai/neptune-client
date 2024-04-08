@@ -21,22 +21,24 @@ import uuid
 from pathlib import Path
 from time import time
 
+from neptune.api.models import (
+    DateTimeField,
+    FloatField,
+    FloatSeriesField,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
 )
 from neptune.internal.backends.api_model import (
-    DatetimeAttribute,
-    FloatAttribute,
     FloatPointValue,
-    FloatSeriesAttribute,
     FloatSeriesValues,
-    StringAttribute,
     StringPointValue,
-    StringSeriesAttribute,
     StringSeriesValues,
-    StringSetAttribute,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
@@ -78,36 +80,38 @@ class TestNeptuneBackendMock(unittest.TestCase):
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 digit = random.randint(1, 10**4)
+                path = ["x"]
                 self.backend.execute_operations(
                     container_id,
                     container_type,
-                    operations=[AssignFloat(["x"], digit)],
+                    operations=[AssignFloat(path, digit)],
                     operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
-                ret = self.backend.get_float_attribute(container_id, container_type, path=["x"])
+                ret = self.backend.get_float_attribute(container_id, container_type, path=path)
 
                 # then
-                self.assertEqual(FloatAttribute(digit), ret)
+                self.assertEqual(FloatField(path="x", value=digit), ret)
 
     def test_get_string_attribute(self):
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 # given
                 text = a_string()
+                path = ["x"]
                 self.backend.execute_operations(
                     container_id,
                     container_type,
-                    operations=[AssignString(["x"], text)],
+                    operations=[AssignString(path, text)],
                     operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
-                ret = self.backend.get_string_attribute(container_id, container_type, path=["x"])
+                ret = self.backend.get_string_attribute(container_id, container_type, path=path)
 
                 # then
-                self.assertEqual(StringAttribute(text), ret)
+                self.assertEqual(StringField(path="x", value=text), ret)
 
     def test_get_datetime_attribute(self):
         for container_id, container_type in self.ids_with_types:
@@ -115,21 +119,27 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 # given
                 now = datetime.datetime.now()
                 now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
+                path = ["x"]
+
+                # and
                 self.backend.execute_operations(
                     container_id,
                     container_type,
-                    [AssignDatetime(["x"], now)],
+                    [AssignDatetime(path, now)],
                     operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
-                ret = self.backend.get_datetime_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_datetime_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(DatetimeAttribute(now), ret)
+                self.assertEqual(DateTimeField(path="x", value=now), ret)
 
     def test_get_float_series_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
@@ -137,7 +147,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogFloats(
-                            ["x"],
+                            path,
                             [
                                 LogFloats.ValueType(5, None, time()),
                                 LogFloats.ValueType(3, None, time()),
@@ -151,7 +161,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogFloats(
-                            ["x"],
+                            path,
                             [
                                 LogFloats.ValueType(2, None, time()),
                                 LogFloats.ValueType(9, None, time()),
@@ -162,13 +172,16 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_float_series_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_float_series_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(FloatSeriesAttribute(9), ret)
+                self.assertEqual(FloatSeriesField(last=9, path="x"), ret)
 
     def test_get_string_series_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
@@ -176,7 +189,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogStrings(
-                            ["x"],
+                            path,
                             [
                                 LogStrings.ValueType("adf", None, time()),
                                 LogStrings.ValueType("sdg", None, time()),
@@ -190,7 +203,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     container_type,
                     [
                         LogStrings(
-                            ["x"],
+                            path,
                             [
                                 LogStrings.ValueType("dfh", None, time()),
                                 LogStrings.ValueType("qwe", None, time()),
@@ -201,27 +214,30 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_string_series_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_string_series_attribute(container_id, container_type, path)
 
                 # then
-                self.assertEqual(StringSeriesAttribute("qwe"), ret)
+                self.assertEqual(StringSeriesField(last="qwe", path="x"), ret)
 
     def test_get_string_set_attribute(self):
         # given
+        path = ["x"]
+
+        # and
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
                     container_id,
                     container_type,
-                    [AddStrings(["x"], {"abcx", "qwe"})],
+                    [AddStrings(path, {"abcx", "qwe"})],
                     operation_storage=self.dummy_operation_storage,
                 )
 
                 # when
-                ret = self.backend.get_string_set_attribute(container_id, container_type, ["x"])
+                ret = self.backend.get_string_set_attribute(container_id, container_type, path)
 
                 # then
-        self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
+        self.assertEqual(StringSetField(values={"abcx", "qwe"}, path="x"), ret)
 
     def test_get_string_series_values(self):
         # given

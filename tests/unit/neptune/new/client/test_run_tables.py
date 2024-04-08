@@ -21,9 +21,8 @@ from typing import List
 from mock import patch
 
 from neptune import init_project
-from neptune.internal.backends.api_model import (
-    AttributeType,
-    AttributeWithProperties,
+from neptune.api.models import (
+    DateTimeField,
     LeaderboardEntry,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
@@ -66,12 +65,11 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.search_leaderboard_entries",
         new=lambda *args, **kwargs: [
             LeaderboardEntry(
-                id="123",
-                attributes=[
-                    AttributeWithProperties(
-                        "sys/creation_time",
-                        AttributeType.DATETIME,
-                        {"value": "2024-02-05T20:37:40.915000Z"},
+                object_id="123",
+                fields=[
+                    DateTimeField(
+                        path="sys/creation_time",
+                        value=datetime(2024, 2, 5, 20, 37, 40, 915000),
                     )
                 ],
             )

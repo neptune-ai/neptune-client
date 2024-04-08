@@ -39,6 +39,7 @@ from typing import (
     Union,
 )
 
+from neptune.api.models import FieldType
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
@@ -51,7 +52,6 @@ from neptune.exceptions import MetadataInconsistency
 from neptune.handler import Handler
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    AttributeType,
     Project,
 )
 from neptune.internal.backends.factory import get_backend
@@ -97,7 +97,6 @@ from neptune.objects.abstract import (
     AbstractNeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.objects.utils import parse_dates
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -630,7 +629,7 @@ class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
-    def _define_attribute(self, _path: List[str], _type: AttributeType):
+    def _define_attribute(self, _path: List[str], _type: FieldType):
         attr = create_attribute_from_type(_type, self, _path)
         self._structure.set(_path, attr)
 
@@ -684,8 +683,6 @@ class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
             ascending=ascending,
             progress_bar=progress_bar,
         )
-
-        leaderboard_entries = parse_dates(leaderboard_entries)
 
         return Table(
             backend=self._backend,

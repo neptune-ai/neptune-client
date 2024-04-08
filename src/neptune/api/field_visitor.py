@@ -13,20 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from __future__ import annotations
-
-__all__ = ["to_pandas"]
+__all__ = ("FieldToValueVisitor",)
 
 from datetime import datetime
 from typing import (
-    TYPE_CHECKING,
-    Dict,
+    Any,
     Optional,
-    Tuple,
-    Union,
+    Set,
 )
-
-import pandas as pd
 
 from neptune.api.models import (
     ArtifactField,
@@ -40,21 +34,16 @@ from neptune.api.models import (
     GitRefField,
     ImageSeriesField,
     IntField,
-    LeaderboardEntry,
     NotebookRefField,
     ObjectStateField,
     StringField,
     StringSeriesField,
     StringSetField,
 )
-
-if TYPE_CHECKING:
-    from neptune.table import Table
-
-PANDAS_AVAILABLE_TYPES = Union[str, float, int, bool, datetime, None]
+from neptune.exceptions import MetadataInconsistency
 
 
-class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
+class FieldToValueVisitor(FieldVisitor[Any]):
 
     def visit_float(self, field: FloatField) -> float:
         return field.value
@@ -72,10 +61,10 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
         return field.value
 
     def visit_file(self, field: FileField) -> None:
-        return None
+        raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
 
-    def visit_string_set(self, field: StringSetField) -> Optional[str]:
-        return ",".join(field.values)
+    def visit_file_set(self, field: FileSetField) -> None:
+        raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
 
     def visit_float_series(self, field: FloatSeriesField) -> Optional[float]:
         return field.last
@@ -84,10 +73,10 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
         return field.last
 
     def visit_image_series(self, field: ImageSeriesField) -> None:
-        return None
+        raise MetadataInconsistency("Cannot get value for image series.")
 
-    def visit_file_set(self, field: FileSetField) -> None:
-        return None
+    def visit_string_set(self, field: StringSetField) -> Set[str]:
+        return field.values
 
     def visit_git_ref(self, field: GitRefField) -> Optional[str]:
         return field.commit.commit_id if field.commit is not None else None
@@ -100,34 +89,3 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
 
     def visit_artifact(self, field: ArtifactField) -> str:
         return field.hash
-
-
-def make_row(entry: LeaderboardEntry, to_value_visitor: FieldVisitor) -> Dict[str, PANDAS_AVAILABLE_TYPES]:
-    row: Dict[str, PANDAS_AVAILABLE_TYPES] = dict()
-
-    for field in entry.fields:
-        value = to_value_visitor.visit(field)
-        if value is not None:
-            row[field.path] = value
-
-    return row
-
-
-def sort_key(field: str) -> Tuple[int, str]:
-    domain = field.split("/")[0]
-    if domain == "sys":
-        return 0, field
-    if domain == "monitoring":
-        return 2, field
-    return 1, field
-
-
-def to_pandas(table: Table) -> pd.DataFrame:
-
-    to_value_visitor = FieldToPandasValueVisitor()
-    rows = dict((n, make_row(entry, to_value_visitor)) for (n, entry) in enumerate(table._entries))
-
-    df = pd.DataFrame.from_dict(data=rows, orient="index")
-    df = df.reindex(sorted(df.columns, key=sort_key), axis="columns")
-
-    return df

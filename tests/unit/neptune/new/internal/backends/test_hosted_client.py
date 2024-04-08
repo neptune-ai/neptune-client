@@ -32,7 +32,7 @@ from mock import (
     patch,
 )
 
-from neptune.internal.backends.api_model import AttributeType
+from neptune.api.models import FieldType
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
@@ -545,15 +545,15 @@ def test__get_column_type_from_entries():
     # when
     test_cases = [
         {"entries": [], "exc": ValueError},
-        {"entries": [DTO(type="float")], "result": AttributeType.FLOAT.value},
-        {"entries": [DTO(type="string")], "result": AttributeType.STRING.value},
+        {"entries": [DTO(type="float")], "result": FieldType.FLOAT.value},
+        {"entries": [DTO(type="string")], "result": FieldType.STRING.value},
         {"entries": [DTO(type="float"), DTO(type="floatSeries")], "exc": ValueError},
-        {"entries": [DTO(type="float"), DTO(type="int")], "result": AttributeType.FLOAT.value},
-        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="datetime")], "result": AttributeType.STRING.value},
-        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="string")], "result": AttributeType.STRING.value},
+        {"entries": [DTO(type="float"), DTO(type="int")], "result": FieldType.FLOAT.value},
+        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="datetime")], "result": FieldType.STRING.value},
+        {"entries": [DTO(type="float"), DTO(type="int"), DTO(type="string")], "result": FieldType.STRING.value},
         {
             "entries": [DTO(type="float"), DTO(type="int"), DTO(type="string", name="test_column_different")],
-            "result": AttributeType.FLOAT.value,
+            "result": FieldType.FLOAT.value,
         },
     ]
 

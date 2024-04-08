@@ -38,7 +38,22 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import (
+    ArtifactField,
+    BoolField,
+    DateTimeField,
+    FieldDefinition,
+    FieldType,
+    FileEntry,
+    FileField,
+    FloatField,
+    FloatSeriesField,
+    IntField,
+    LeaderboardEntry,
+    StringField,
+    StringSeriesField,
+    StringSetField,
+)
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -58,26 +73,13 @@ from neptune.exceptions import (
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    ArtifactAttribute,
-    Attribute,
-    AttributeType,
-    BoolAttribute,
-    DatetimeAttribute,
-    FileAttribute,
-    FloatAttribute,
     FloatPointValue,
-    FloatSeriesAttribute,
     FloatSeriesValues,
     ImageSeriesValues,
-    IntAttribute,
-    LeaderboardEntry,
     OptionalFeatures,
     Project,
-    StringAttribute,
     StringPointValue,
-    StringSeriesAttribute,
     StringSeriesValues,
-    StringSetAttribute,
     Workspace,
 )
 from neptune.internal.backends.hosted_artifact_operations import (
@@ -155,21 +157,12 @@ if TYPE_CHECKING:
 _logger = get_logger()
 
 ATOMIC_ATTRIBUTE_TYPES = {
-    AttributeType.INT.value,
-    AttributeType.FLOAT.value,
-    AttributeType.STRING.value,
-    AttributeType.BOOL.value,
-    AttributeType.DATETIME.value,
-    AttributeType.RUN_STATE.value,
-}
-
-ATOMIC_ATTRIBUTE_TYPES = {
-    AttributeType.INT.value,
-    AttributeType.FLOAT.value,
-    AttributeType.STRING.value,
-    AttributeType.BOOL.value,
-    AttributeType.DATETIME.value,
-    AttributeType.RUN_STATE.value,
+    FieldType.INT.value,
+    FieldType.FLOAT.value,
+    FieldType.STRING.value,
+    FieldType.BOOL.value,
+    FieldType.DATETIME.value,
+    FieldType.OBJECT_STATE.value,
 }
 
 
@@ -682,10 +675,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise NeptuneLimitExceedException(reason=e.response.json().get("title", "Unknown reason")) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
-        def to_attribute(attr) -> Attribute:
-            return Attribute(attr.name, AttributeType(attr.type))
-
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[FieldDefinition]:
         params = {
             "experimentId": container_id,
             **DEFAULT_REQUEST_KWARGS,
@@ -693,7 +683,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
 
-            attribute_type_names = [at.value for at in AttributeType]
+            attribute_type_names = [at.value for at in FieldType]
             accepted_attributes = [attr for attr in experiment.attributes if attr.type in attribute_type_names]
 
             # Notify about ignored attrs
@@ -706,7 +696,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                     ignored_attributes,
                 )
 
-            return [to_attribute(attr) for attr in accepted_attributes if attr.type in attribute_type_names]
+            return [
+                FieldDefinition.from_model(field) for field in accepted_attributes if field.type in attribute_type_names
+            ]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
                 container_id=container_id,
@@ -782,7 +774,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     @with_api_exceptions_handler
-    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -790,12 +782,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
-            return FloatAttribute(result.value)
+            return FloatField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -803,12 +795,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getIntAttribute(**params).response().result
-            return IntAttribute(result.value)
+            return IntField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -816,12 +808,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
-            return BoolAttribute(result.value)
+            return BoolField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -829,14 +821,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFileAttribute(**params).response().result
-            return FileAttribute(name=result.name, ext=result.ext, size=result.size)
+            return FileField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringAttribute:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -844,14 +834,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringAttribute(**params).response().result
-            return StringAttribute(result.value)
+            return StringField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> DatetimeAttribute:
+    ) -> DateTimeField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -859,13 +849,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
-            return DatetimeAttribute(result.value)
+            return DateTimeField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     def get_artifact_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactAttribute:
+    ) -> ArtifactField:
         return get_artifact_attribute(
             swagger_client=self.leaderboard_client,
             parent_identifier=container_id,
@@ -899,7 +889,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_float_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatSeriesAttribute:
+    ) -> FloatSeriesField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -907,14 +897,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
-            return FloatSeriesAttribute(result.last)
+            return FloatSeriesField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSeriesAttribute:
+    ) -> StringSeriesField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -922,14 +912,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
-            return StringSeriesAttribute(result.last)
+            return StringSeriesField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_set_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> StringSetAttribute:
+    ) -> StringSetField:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
@@ -937,7 +927,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
-            return StringSetAttribute(set(result.values))
+            return StringSetField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -1016,7 +1006,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> List[Tuple[str, AttributeType, Any]]:
+    ) -> List[Tuple[str, FieldType, Any]]:
         params = {
             "experimentId": container_id,
         }
@@ -1081,9 +1071,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
         if sort_by == "sys/creation_time":
-            sort_by_column_type = AttributeType.DATETIME.value
-        if sort_by == "sys/id":
-            sort_by_column_type = AttributeType.STRING.value
+            sort_by_column_type = FieldType.DATETIME.value
+        elif sort_by == "sys/id":
+            sort_by_column_type = FieldType.STRING.value
         else:
             sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
             sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
@@ -1147,11 +1137,11 @@ def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
             )
         types.add(entry.type)
 
-    if types == {AttributeType.INT.value, AttributeType.FLOAT.value}:
-        return AttributeType.FLOAT.value
+    if types == {FieldType.INT.value, FieldType.FLOAT.value}:
+        return FieldType.FLOAT.value
 
     warn_once(
         f"Column {column} contains more than one simple data type. Sorting result might be inaccurate.",
         exception=NeptuneWarning,
     )
-    return AttributeType.STRING.value
+    return FieldType.STRING.value

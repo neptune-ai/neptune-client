@@ -23,7 +23,7 @@ from typing import (
     Union,
 )
 
-from neptune.api.dtos import FileEntry
+from neptune.api.models import FileEntry
 from neptune.attributes.attribute import Attribute
 from neptune.internal.operation import (
     DeleteFiles,
