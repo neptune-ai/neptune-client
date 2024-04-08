@@ -292,7 +292,7 @@ class FileSetField(Field, field_type=FieldType.FILE_SET):
 class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
     last: Optional[float]
 
-    def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_float_series(self)
 
     @staticmethod
@@ -309,7 +309,7 @@ class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
 class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
     last: Optional[str]
 
-    def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_string_series(self)
 
     @staticmethod
@@ -326,7 +326,7 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
 class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
     last_step: Optional[float]
 
-    def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_image_series(self)
 
     @staticmethod
@@ -343,7 +343,7 @@ class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
 class StringSetField(Field, field_type=FieldType.STRING_SET):
     values: Set[str]
 
-    def accept(self, visitor: "FieldVisitor[Ret]") -> Ret:
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
         return visitor.visit_string_set(self)
 
     @staticmethod

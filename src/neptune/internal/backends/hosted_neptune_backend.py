@@ -165,15 +165,6 @@ ATOMIC_ATTRIBUTE_TYPES = {
     FieldType.OBJECT_STATE.value,
 }
 
-ATOMIC_ATTRIBUTE_TYPES = {
-    FieldType.INT.value,
-    FieldType.FLOAT.value,
-    FieldType.STRING.value,
-    FieldType.BOOL.value,
-    FieldType.DATETIME.value,
-    FieldType.OBJECT_STATE.value,
-}
-
 
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
