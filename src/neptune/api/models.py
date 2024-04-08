@@ -97,7 +97,7 @@ class FieldType(Enum):
 @dataclass
 class Field(abc.ABC):
     path: str
-    type: FieldType = dataclass_field(init=False)
+    type: ClassVar[FieldType] = dataclass_field(init=False)
     _registry: ClassVar[Dict[str, Type[Field]]] = {}
 
     def __init_subclass__(cls, *args: Any, field_type: FieldType, **kwargs: Any) -> None:
