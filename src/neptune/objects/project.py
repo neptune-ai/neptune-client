@@ -44,8 +44,10 @@ from neptune.internal.utils import (
     verify_type,
     verify_value,
 )
-from neptune.objects.abstract import NeptuneObjectCallback
-from neptune.objects.neptune_object import NeptuneObject
+from neptune.objects.neptune_object import (
+    NeptuneObject,
+    NeptuneObjectCallback,
+)
 from neptune.objects.utils import (
     build_raw_query,
     prepare_nql_query,

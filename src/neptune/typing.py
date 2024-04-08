@@ -15,8 +15,6 @@
 #
 __all__ = [
     "SupportsNamespaces",
-    "AbstractNeptuneObject",
-    "NeptuneObjectCallback",
     "ProgressBarCallback",
     "ProgressBarType",
 ]
@@ -32,11 +30,7 @@ from typing import (
 
 from typing_extensions import TypeAlias
 
-from neptune.objects.abstract import (
-    AbstractNeptuneObject,
-    NeptuneObjectCallback,
-    SupportsNamespaces,
-)
+from neptune.objects.abstract import SupportsNamespaces
 
 
 class ProgressBarCallback(contextlib.AbstractContextManager):
