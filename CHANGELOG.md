@@ -10,6 +10,9 @@
 ### Fixes
 - Fixed requirement checking for integrations ([#1711](https://github.com/neptune-ai/neptune-client/pull/1711))
 
+### Changes
+- Stop initializing `sys/name` as `"Untitled"` by default ([#1720](https://github.com/neptune-ai/neptune-client/pull/1720))
+
 
 ## neptune 1.10.0
 
