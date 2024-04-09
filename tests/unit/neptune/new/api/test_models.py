@@ -281,10 +281,10 @@ def test__datetime_field__from_model():
 
 def test__datetime_field__from_proto():
     # given
-    at = datetime.datetime(2024, 1, 1, 0, 12, 34, tzinfo=datetime.timezone.utc)
+    at = datetime.datetime(2024, 1, 1, 0, 12, 34, 123000, tzinfo=datetime.timezone.utc)
 
     proto = ProtoDatetimeAttributeDTO(
-        attribute_name="some/datetime", attribute_type="datetime", value=int(at.timestamp())
+        attribute_name="some/datetime", attribute_type="datetime", value=int(at.timestamp() * 1000)
     )
 
     # when
@@ -1221,7 +1221,7 @@ def test__field__from_model__datetime():
 
 def test__field__from_proto__datetime():
     # given
-    at = datetime.datetime(2021, 1, 1, 0, 12, 34, tzinfo=datetime.timezone.utc)
+    at = datetime.datetime(2021, 1, 1, 0, 12, 34, 123000, tzinfo=datetime.timezone.utc)
 
     # and
     proto = ProtoAttributeDTO(
@@ -1230,7 +1230,7 @@ def test__field__from_proto__datetime():
         datetime_properties=ProtoDatetimeAttributeDTO(
             attribute_name="some/datetime",
             attribute_type="datetime",
-            value=int(at.timestamp()),
+            value=int(at.timestamp() * 1000),
         ),
     )
 

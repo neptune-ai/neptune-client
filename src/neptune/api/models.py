@@ -137,7 +137,7 @@ class Field(abc.ABC):
     @staticmethod
     def from_model(model: Any) -> Field:
         field_type = str(model.type)
-        return Field._registry[field_type].from_model(model[f"{field_type}Properties"])
+        return Field._registry[field_type].from_model(model.__getattr__(f"{field_type}Properties"))
 
     @staticmethod
     def from_proto(data: Any) -> Field:
