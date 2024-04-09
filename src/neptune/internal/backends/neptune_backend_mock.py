@@ -38,6 +38,7 @@ from neptune.api.models import (
     ArtifactField,
     BoolField,
     DateTimeField,
+    Field,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -514,6 +515,14 @@ class NeptuneBackendMock(NeptuneBackend):
     ) -> str:
         return f"offline/{model_version_id}"
 
+    def get_fields_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        use_proto: Optional[bool] = None,
+    ) -> List[FieldDefinition]:
+        return []
+
     def _get_attribute_values(self, value_dict, path_prefix: List[str]):
         assert isinstance(value_dict, dict)
         for k, value in value_dict.items():
@@ -552,6 +561,7 @@ class NeptuneBackendMock(NeptuneBackend):
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
+        use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
@@ -787,3 +797,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 file_type="file",
             )
         ]
+
+    def get_fields_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
+    ) -> List[Field]:
+        return []

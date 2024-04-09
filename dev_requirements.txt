@@ -16,6 +16,7 @@ pytest-xdist
 vega_datasets
 backoff
 altair
+icecream
 bokeh
 matplotlib
 seaborn
@@ -23,6 +24,7 @@ plotly
 tensorflow
 torch
 typing_extensions>=4.6.0
+grpcio-tools
 
 # e2e
 scikit-learn

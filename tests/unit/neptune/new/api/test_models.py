@@ -41,6 +41,18 @@ from neptune.api.models import (
     StringSeriesField,
     StringSetField,
 )
+from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
+    ProtoAttributeDTO,
+    ProtoAttributesDTO,
+    ProtoBoolAttributeDTO,
+    ProtoDatetimeAttributeDTO,
+    ProtoFloatAttributeDTO,
+    ProtoFloatSeriesAttributeDTO,
+    ProtoIntAttributeDTO,
+    ProtoLeaderboardEntriesSearchResultDTO,
+    ProtoStringAttributeDTO,
+    ProtoStringSetAttributeDTO,
+)
 
 
 def test__float_field__from_dict():
@@ -61,6 +73,22 @@ def test__float_field__from_model():
 
     # when
     result = FloatField.from_model(model)
+
+    # then
+    assert result.path == "some/float"
+    assert result.value == 18.5
+
+
+def test__float_field__from_proto():
+    # given
+    proto = ProtoFloatAttributeDTO(
+        attribute_name="some/float",
+        attribute_type="float",
+        value=18.5,
+    )
+
+    # when
+    result = FloatField.from_proto(proto)
 
     # then
     assert result.path == "some/float"
@@ -91,6 +119,22 @@ def test__int_field__from_model():
     assert result.value == 18
 
 
+def test__int_field__from_proto():
+    # given
+    proto = ProtoIntAttributeDTO(
+        attribute_name="some/int",
+        attribute_type="int",
+        value=18,
+    )
+
+    # when
+    result = IntField.from_proto(proto)
+
+    # then
+    assert result.path == "some/int"
+    assert result.value == 18
+
+
 def test__string_field__from_dict():
     # given
     data = {"attributeType": "string", "attributeName": "some/string", "value": "hello"}
@@ -109,6 +153,22 @@ def test__string_field__from_model():
 
     # when
     result = StringField.from_model(model)
+
+    # then
+    assert result.path == "some/string"
+    assert result.value == "hello"
+
+
+def test__string_field__from_proto():
+    # given
+    proto = ProtoStringAttributeDTO(
+        attribute_name="some/string",
+        attribute_type="string",
+        value="hello",
+    )
+
+    # when
+    result = StringField.from_proto(proto)
 
     # then
     assert result.path == "some/string"
@@ -139,6 +199,22 @@ def test__string_field__from_model__empty():
     assert result.value == ""
 
 
+def test__string_field__from_proto__empty():
+    # given
+    proto = ProtoStringAttributeDTO(
+        attribute_name="some/string",
+        attribute_type="string",
+        value="",
+    )
+
+    # when
+    result = StringField.from_proto(proto)
+
+    # then
+    assert result.path == "some/string"
+    assert result.value == ""
+
+
 def test__bool_field__from_dict():
     # given
     data = {"attributeType": "bool", "attributeName": "some/bool", "value": True}
@@ -157,6 +233,22 @@ def test__bool_field__from_model():
 
     # when
     result = BoolField.from_model(model)
+
+    # then
+    assert result.path == "some/bool"
+    assert result.value is True
+
+
+def test__bool_field__from_proto():
+    # given
+    proto = ProtoBoolAttributeDTO(
+        attribute_name="some/bool",
+        attribute_type="bool",
+        value=True,
+    )
+
+    # when
+    result = BoolField.from_proto(proto)
 
     # then
     assert result.path == "some/bool"
@@ -185,6 +277,22 @@ def test__datetime_field__from_model():
     # then
     assert result.path == "some/datetime"
     assert result.value == datetime.datetime(2024, 1, 1, 0, 12, 34, 567890)
+
+
+def test__datetime_field__from_proto():
+    # given
+    at = datetime.datetime(2024, 1, 1, 0, 12, 34, 123000, tzinfo=datetime.timezone.utc)
+
+    proto = ProtoDatetimeAttributeDTO(
+        attribute_name="some/datetime", attribute_type="datetime", value=int(at.timestamp() * 1000)
+    )
+
+    # when
+    result = DateTimeField.from_proto(proto)
+
+    # then
+    assert result.path == "some/datetime"
+    assert result.value == at
 
 
 def test__float_series_field__from_dict():
@@ -244,6 +352,38 @@ def test__float_series_field__from_model__no_last():
 
     # when
     result = FloatSeriesField.from_model(model)
+
+    # then
+    assert result.path == "some/floatSeries"
+    assert result.last is None
+
+
+def test__float_series_field__from_proto():
+    # given
+    proto = ProtoFloatSeriesAttributeDTO(
+        attribute_name="some/floatSeries",
+        attribute_type="floatSeries",
+        last=19.5,
+    )
+
+    # when
+    result = FloatSeriesField.from_proto(proto)
+
+    # then
+    assert result.path == "some/floatSeries"
+    assert result.last == 19.5
+
+
+def test__float_series_field__from_proto__no_last():
+    # given
+    proto = ProtoFloatSeriesAttributeDTO(
+        attribute_name="some/floatSeries",
+        attribute_type="floatSeries",
+        last=None,
+    )
+
+    # when
+    result = FloatSeriesField.from_proto(proto)
 
     # then
     assert result.path == "some/floatSeries"
@@ -313,6 +453,15 @@ def test__string_series_field__from_model__no_last():
     assert result.last is None
 
 
+def test__string_series_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        StringSeriesField.from_proto(proto)
+
+
 def test__image_series_field__from_dict():
     # given
     data = {
@@ -374,6 +523,15 @@ def test__image_series_field__from_model__no_last_step():
     # then
     assert result.path == "some/imageSeries"
     assert result.last_step is None
+
+
+def test__image_series_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        ImageSeriesField.from_proto(proto)
 
 
 def test__string_set_field__from_dict():
@@ -440,6 +598,38 @@ def test__string_set_field__from_model__empty():
     assert result.values == set()
 
 
+def test__string_set_field__from_proto():
+    # given
+    proto = ProtoStringSetAttributeDTO(
+        attribute_name="some/stringSet",
+        attribute_type="stringSet",
+        value=["hello", "world"],
+    )
+
+    # when
+    result = StringSetField.from_proto(proto)
+
+    # then
+    assert result.path == "some/stringSet"
+    assert result.values == {"hello", "world"}
+
+
+def test__string_set_field__from_proto__empty():
+    # given
+    proto = ProtoStringSetAttributeDTO(
+        attribute_name="some/stringSet",
+        attribute_type="stringSet",
+        value=[],
+    )
+
+    # when
+    result = StringSetField.from_proto(proto)
+
+    # then
+    assert result.path == "some/stringSet"
+    assert result.values == set()
+
+
 def test__file_field__from_dict():
     # given
     data = {
@@ -480,6 +670,15 @@ def test__file_field__from_model():
     assert result.ext == "txt"
 
 
+def test__file_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        FileField.from_proto(proto)
+
+
 @pytest.mark.parametrize("state,expected", [("running", "Active"), ("idle", "Inactive")])
 def test__object_state_field__from_dict(state, expected):
     # given
@@ -504,6 +703,16 @@ def test__object_state_field__from_model(state, expected):
     # then
     assert result.path == "sys/state"
     assert result.value == expected
+
+
+@pytest.mark.parametrize("state,expected", [("running", "Active"), ("idle", "Inactive")])
+def test__object_state_field__from_proto(state, expected):
+    # given
+    model = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        ObjectStateField.from_proto(model)
 
 
 def test__file_set_field__from_dict():
@@ -536,6 +745,15 @@ def test__file_set_field__from_model():
     # then
     assert result.path == "some/fileSet"
     assert result.size == 3072
+
+
+def test__file_set_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        FileSetField.from_proto(proto)
 
 
 def test__notebook_ref_field__from_dict():
@@ -599,6 +817,24 @@ def test__notebook_ref_field__from_model__no_notebook_name():
     # then
     assert result.path == "some/notebookRef"
     assert result.notebook_name is None
+
+
+def test__notebook_ref_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        NotebookRefField.from_proto(proto)
+
+
+def test__notebook_ref_field__from_proto__no_notebook_name():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        NotebookRefField.from_proto(proto)
 
 
 def test__git_ref_field__from_dict():
@@ -668,6 +904,24 @@ def test__git_ref_field__from_model__no_commit():
     assert result.commit is None
 
 
+def test__git_ref_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        GitRefField.from_proto(proto)
+
+
+def test__git_ref_field__from_proto__no_commit():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        GitRefField.from_proto(proto)
+
+
 def test__artifact_field__from_dict():
     # given
     data = {
@@ -698,6 +952,15 @@ def test__artifact_field__from_model():
     # then
     assert result.path == "some/artifact"
     assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
+
+
+def test__artifact_field__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        ArtifactField.from_proto(proto)
 
 
 def test__field__from_dict__float():
@@ -734,6 +997,27 @@ def test__field__from_model__float():
     assert result.value == 18.5
 
 
+def test__field__from_proto__float():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/float",
+        type="float",
+        float_properties=ProtoFloatAttributeDTO(
+            attribute_name="some/float",
+            attribute_type="float",
+            value=18.5,
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
+
+    # then
+    assert result.path == "some/float"
+    assert isinstance(result, FloatField)
+    assert result.value == 18.5
+
+
 def test__field__from_dict__int():
     # given
     data = {
@@ -759,6 +1043,27 @@ def test__field__from_model__int():
 
     # when
     result = Field.from_model(model)
+
+    # then
+    assert result.path == "some/int"
+    assert isinstance(result, IntField)
+    assert result.value == 18
+
+
+def test__field__from_proto__int():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/int",
+        type="int",
+        int_properties=ProtoIntAttributeDTO(
+            attribute_name="some/int",
+            attribute_type="int",
+            value=18,
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
 
     # then
     assert result.path == "some/int"
@@ -800,6 +1105,27 @@ def test__field__from_model__string():
     assert result.value == "hello"
 
 
+def test__field__from_proto__string():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/string",
+        type="string",
+        string_properties=ProtoStringAttributeDTO(
+            attribute_name="some/string",
+            attribute_type="string",
+            value="hello",
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
+
+    # then
+    assert result.path == "some/string"
+    assert isinstance(result, StringField)
+    assert result.value == "hello"
+
+
 def test__field__from_dict__bool():
     # given
     data = {
@@ -825,6 +1151,27 @@ def test__field__from_model__bool():
 
     # when
     result = Field.from_model(model)
+
+    # then
+    assert result.path == "some/bool"
+    assert isinstance(result, BoolField)
+    assert result.value is True
+
+
+def test__field__from_proto__bool():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/bool",
+        type="bool",
+        bool_properties=ProtoBoolAttributeDTO(
+            attribute_name="some/bool",
+            attribute_type="bool",
+            value=True,
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
 
     # then
     assert result.path == "some/bool"
@@ -872,6 +1219,30 @@ def test__field__from_model__datetime():
     assert result.value == datetime.datetime(2024, 1, 1, 0, 12, 34, 567890)
 
 
+def test__field__from_proto__datetime():
+    # given
+    at = datetime.datetime(2021, 1, 1, 0, 12, 34, 123000, tzinfo=datetime.timezone.utc)
+
+    # and
+    proto = ProtoAttributeDTO(
+        name="some/datetime",
+        type="datetime",
+        datetime_properties=ProtoDatetimeAttributeDTO(
+            attribute_name="some/datetime",
+            attribute_type="datetime",
+            value=int(at.timestamp() * 1000),
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
+
+    # then
+    assert result.path == "some/datetime"
+    assert isinstance(result, DateTimeField)
+    assert result.value == at
+
+
 def test__field__from_dict__float_series():
     # given
     data = {
@@ -899,6 +1270,27 @@ def test__field__from_model__float_series():
 
     # when
     result = Field.from_model(model)
+
+    # then
+    assert result.path == "some/floatSeries"
+    assert isinstance(result, FloatSeriesField)
+    assert result.last == 19.5
+
+
+def test__field__from_proto__float_series():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/floatSeries",
+        type="floatSeries",
+        float_series_properties=ProtoFloatSeriesAttributeDTO(
+            attribute_name="some/floatSeries",
+            attribute_type="floatSeries",
+            last=19.5,
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
 
     # then
     assert result.path == "some/floatSeries"
@@ -944,6 +1336,15 @@ def test__field__from_model__string_series():
     assert result.last == "hello"
 
 
+def test__field__from_proto__string_series():
+    # given
+    proto = Mock(name="some/stringSeries", type="stringSeries", string_series_properties=Mock())
+
+    # when
+    with pytest.raises(NotImplementedError):
+        Field.from_proto(proto)
+
+
 def test__field__from_dict__image_series():
     # given
     data = {
@@ -982,6 +1383,15 @@ def test__field__from_model__image_series():
     assert result.last_step == 15.0
 
 
+def test__field__from_proto__image_series():
+    # given
+    proto = Mock(name="some/imageSeries", type="imageSeries", image_series_properties=Mock())
+
+    # when
+    with pytest.raises(NotImplementedError):
+        Field.from_proto(proto)
+
+
 def test__field__from_dict__string_set():
     # given
     data = {
@@ -1013,6 +1423,27 @@ def test__field__from_model__string_set():
 
     # when
     result = Field.from_model(model)
+
+    # then
+    assert result.path == "some/stringSet"
+    assert isinstance(result, StringSetField)
+    assert result.values == {"hello", "world"}
+
+
+def test__field__from_proto__string_set():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/stringSet",
+        type="stringSet",
+        string_set_properties=ProtoStringSetAttributeDTO(
+            attribute_name="some/stringSet",
+            attribute_type="stringSet",
+            value=["hello", "world"],
+        ),
+    )
+
+    # when
+    result = Field.from_proto(proto)
 
     # then
     assert result.path == "some/stringSet"
@@ -1065,6 +1496,15 @@ def test__field__from_model__file():
     assert result.ext == "txt"
 
 
+def test__field__from_proto__file():
+    # given
+    proto = Mock(name="some/file", type="file", file_properties=Mock())
+
+    # then
+    with pytest.raises(NotImplementedError):
+        FileField.from_proto(proto)
+
+
 def test__field__from_dict__object_state():
     # given
     data = {
@@ -1103,6 +1543,15 @@ def test__field__from_model__object_state():
     assert result.value == "Active"
 
 
+def test__field__from_proto__object_state():
+    # given
+    proto = Mock(name="sys/state", type="experimentState", experiment_state_properties=Mock())
+
+    # when
+    with pytest.raises(NotImplementedError):
+        Field.from_proto(proto)
+
+
 def test__field__from_dict__file_set():
     # given
     data = {
@@ -1135,6 +1584,15 @@ def test__field__from_model__file_set():
     assert result.path == "some/fileSet"
     assert isinstance(result, FileSetField)
     assert result.size == 3072
+
+
+def test__field__from_proto__file_set():
+    # given
+    proto = Mock(name="some/fileSet", type="fileSet", file_set_properties=Mock())
+
+    # then
+    with pytest.raises(NotImplementedError):
+        FileSetField.from_proto(proto)
 
 
 def test__field__from_dict__notebook_ref():
@@ -1177,6 +1635,15 @@ def test__field__from_model__notebook_ref():
     assert result.notebook_name == "Data Processing.ipynb"
 
 
+def test__field__from_proto__notebook_ref():
+    # given
+    proto = Mock(name="some/notebookRef", type="notebookRef", notebook_ref_properties=Mock())
+
+    # then
+    with pytest.raises(NotImplementedError):
+        NotebookRefField.from_proto(proto)
+
+
 def test__field__from_dict__git_ref():
     # given
     data = {
@@ -1213,6 +1680,15 @@ def test__field__from_model__git_ref():
     assert result.path == "some/gitRef"
     assert isinstance(result, GitRefField)
     assert result.commit.commit_id == "b2d7f8a"
+
+
+def test__field__from_proto__git_ref():
+    # given
+    proto = Mock(name="some/gitRef", type="gitRef", git_ref_properties=Mock())
+
+    # then
+    with pytest.raises(NotImplementedError):
+        GitRefField.from_proto(proto)
 
 
 def test__field__from_dict__artifact():
@@ -1255,6 +1731,15 @@ def test__field__from_model__artifact():
     assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
 
 
+def test__field__from_proto__artifact():
+    # given
+    proto = Mock(name="some/artifact", type="artifact", artifact_properties=Mock())
+
+    # then
+    with pytest.raises(NotImplementedError):
+        ArtifactField.from_proto(proto)
+
+
 def test__field_definition__from_dict():
     # given
     data = {
@@ -1279,6 +1764,21 @@ def test__field_definition__from_model():
 
     # when
     result = FieldDefinition.from_model(model)
+
+    # then
+    assert result.path == "some/float"
+    assert result.type == FieldType.FLOAT
+
+
+def test__field_definition__from_proto():
+    # given
+    proto = ProtoAttributeDTO(
+        name="some/float",
+        type="float",
+    )
+
+    # when
+    result = FieldDefinition.from_proto(proto)
 
     # then
     assert result.path == "some/float"
@@ -1352,6 +1852,62 @@ def test__leaderboard_entry__from_model():
 
     # when
     result = LeaderboardEntry.from_model(model)
+
+    # then
+    assert result.object_id == "some-id"
+    assert len(result.fields) == 3
+
+    float_field = result.fields[0]
+    assert isinstance(float_field, FloatField)
+    assert float_field.path == "some/float"
+    assert float_field.value == 18.5
+
+    int_field = result.fields[1]
+    assert isinstance(int_field, IntField)
+    assert int_field.path == "some/int"
+
+    string_field = result.fields[2]
+    assert isinstance(string_field, StringField)
+    assert string_field.path == "some/string"
+
+
+def test__leaderboard_entry__from_proto():
+    # given
+    proto = ProtoAttributesDTO(
+        experiment_id="some-id",
+        attributes=[
+            ProtoAttributeDTO(
+                name="some/float",
+                type="float",
+                float_properties=ProtoFloatAttributeDTO(
+                    attribute_name="some/float",
+                    attribute_type="float",
+                    value=18.5,
+                ),
+            ),
+            ProtoAttributeDTO(
+                name="some/int",
+                type="int",
+                int_properties=ProtoIntAttributeDTO(
+                    attribute_name="some/int",
+                    attribute_type="int",
+                    value=18,
+                ),
+            ),
+            ProtoAttributeDTO(
+                name="some/string",
+                type="string",
+                string_properties=ProtoStringAttributeDTO(
+                    attribute_name="some/string",
+                    attribute_type="string",
+                    value="hello",
+                ),
+            ),
+        ],
+    )
+
+    # when
+    result = LeaderboardEntry.from_proto(proto)
 
     # then
     assert result.object_id == "some-id"
@@ -1447,6 +2003,60 @@ def test__leaderboard_entries_search_result__from_model():
 
     # when
     result = LeaderboardEntriesSearchResult.from_model(model)
+
+    # then
+    assert result.matching_item_count == 2
+    assert len(result.entries) == 2
+
+    entry_1 = result.entries[0]
+    assert entry_1.object_id == "some-id-1"
+    assert len(entry_1.fields) == 1
+    assert isinstance(entry_1.fields[0], FloatField)
+
+    entry_2 = result.entries[1]
+    assert entry_2.object_id == "some-id-2"
+    assert len(entry_2.fields) == 1
+    assert isinstance(entry_2.fields[0], IntField)
+
+
+def test__leaderboard_entries_search_result__from_proto():
+    # given
+    proto = ProtoLeaderboardEntriesSearchResultDTO(
+        matching_item_count=2,
+        entries=[
+            ProtoAttributesDTO(
+                experiment_id="some-id-1",
+                attributes=[
+                    ProtoAttributeDTO(
+                        name="some/float",
+                        type="float",
+                        float_properties=ProtoFloatAttributeDTO(
+                            attribute_name="some/float",
+                            attribute_type="float",
+                            value=18.5,
+                        ),
+                    ),
+                ],
+            ),
+            ProtoAttributesDTO(
+                experiment_id="some-id-2",
+                attributes=[
+                    ProtoAttributeDTO(
+                        name="some/int",
+                        type="int",
+                        int_properties=ProtoIntAttributeDTO(
+                            attribute_name="some/int",
+                            attribute_type="int",
+                            value=18,
+                        ),
+                    ),
+                ],
+            ),
+        ],
+    )
+
+    # when
+    result = LeaderboardEntriesSearchResult.from_proto(proto)
 
     # then
     assert result.matching_item_count == 2

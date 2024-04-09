@@ -13,11 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import (
-    Any,
-    Dict,
-    Sequence,
-)
+from typing import Sequence
 
 import pytest
 from bravado.exception import HTTPBadRequest
@@ -38,6 +34,8 @@ from neptune.api.searching_entries import (
     iter_over_pages,
 )
 from neptune.exceptions import NeptuneInvalidQueryException
+from neptune.internal.backends.nql import RawNQLQuery
+from neptune.internal.id_formats import UniqueId
 
 
 def test__to_leaderboard_entry():
@@ -81,7 +79,7 @@ def test__to_leaderboard_entry():
 def test__iter_over_pages__single_pagination(get_single_page_mock):
     # given
     get_single_page_mock.side_effect = [
-        {"matchingItemCount": 9},
+        LeaderboardEntriesSearchResult(matching_item_count=9, entries=[]),
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
@@ -101,12 +99,7 @@ def test__iter_over_pages__single_pagination(get_single_page_mock):
     )
 
     # then
-    assert (
-        result
-        == LeaderboardEntriesSearchResult.from_dict(
-            generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
-        ).entries
-    )
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"]).entries
     assert get_single_page_mock.mock_calls == [
         # total checking
         call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
@@ -121,7 +114,7 @@ def test__iter_over_pages__single_pagination(get_single_page_mock):
 def test__iter_over_pages__multiple_search_after(get_single_page_mock):
     # given
     get_single_page_mock.side_effect = [
-        {"matchingItemCount": 9},
+        LeaderboardEntriesSearchResult(matching_item_count=9, entries=[]),
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e", "f"]),
         generate_leaderboard_entries(values=["g", "h", "j"]),
@@ -142,12 +135,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page_mock):
     )
 
     # then
-    assert (
-        result
-        == LeaderboardEntriesSearchResult.from_dict(
-            generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"])
-        ).entries
-    )
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e", "f", "g", "h", "j"]).entries
     assert get_single_page_mock.mock_calls == [
         # total checking
         call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
@@ -162,7 +150,7 @@ def test__iter_over_pages__multiple_search_after(get_single_page_mock):
 def test__iter_over_pages__empty(get_single_page_mock):
     # given
     get_single_page_mock.side_effect = [
-        {"matchingItemCount": 0},
+        LeaderboardEntriesSearchResult(matching_item_count=0, entries=[]),
         generate_leaderboard_entries(values=[]),
     ]
 
@@ -191,7 +179,7 @@ def test__iter_over_pages__empty(get_single_page_mock):
 def test__iter_over_pages__max_server_offset(get_single_page_mock):
     # given
     get_single_page_mock.side_effect = [
-        {"matchingItemCount": 5},
+        LeaderboardEntriesSearchResult(matching_item_count=5, entries=[]),
         generate_leaderboard_entries(values=["a", "b", "c"]),
         generate_leaderboard_entries(values=["d", "e"]),
         generate_leaderboard_entries(values=[]),
@@ -211,12 +199,7 @@ def test__iter_over_pages__max_server_offset(get_single_page_mock):
     )
 
     # then
-    assert (
-        result
-        == LeaderboardEntriesSearchResult.from_dict(
-            generate_leaderboard_entries(values=["a", "b", "c", "d", "e"])
-        ).entries
-    )
+    assert result == generate_leaderboard_entries(values=["a", "b", "c", "d", "e"]).entries
     assert get_single_page_mock.mock_calls == [
         # total checking
         call(limit=0, offset=0, sort_by="sys/id", ascending=False, sort_by_column_type="string", searching_after=None),
@@ -233,7 +216,7 @@ def test__iter_over_pages__limit(get_single_page_mock):
 
     # given
     get_single_page_mock.side_effect = [
-        {"matchingItemCount": 5},
+        LeaderboardEntriesSearchResult(matching_item_count=5, entries=[]),
         generate_leaderboard_entries(values=["a", "b"]),
         generate_leaderboard_entries(values=["c", "d"]),
         generate_leaderboard_entries(values=["e"]),
@@ -261,27 +244,19 @@ def test__iter_over_pages__limit(get_single_page_mock):
     ]
 
 
-def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> Dict[str, Any]:
-    return {
-        "matchingItemCount": len(values),
-        "entries": [
-            {
-                "experimentId": f"{experiment_id}-{value}",
-                "attributes": [
-                    {
-                        "name": "sys/id",
-                        "type": "string",
-                        "stringProperties": {
-                            "attributeName": "sys/id",
-                            "attributeType": "string",
-                            "value": value,
-                        },
-                    },
+def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -> LeaderboardEntriesSearchResult:
+    return LeaderboardEntriesSearchResult(
+        matching_item_count=len(values),
+        entries=[
+            LeaderboardEntry(
+                object_id=f"{experiment_id}-{value}",
+                fields=[
+                    StringField(path="sys/id", value=value),
                 ],
-            }
+            )
             for value in values
         ],
-    }
+    )
 
 
 @patch("neptune.api.searching_entries.construct_request")
@@ -296,15 +271,15 @@ def test_get_single_page_error_handling(construct_request_mock):
     # then
     with pytest.raises(NeptuneInvalidQueryException):
         get_single_page(
-            project_id="id",
+            project_id=UniqueId("id"),
             attributes_filter={},
             types=None,
-            query="invalid_query",
+            query=RawNQLQuery("invalid_query"),
             limit=0,
             offset=0,
             sort_by="sys/id",
             ascending=False,
-            sort_by_column_type=None,
+            sort_by_column_type="string",
             searching_after=None,
             client=failing_clinet,
         )

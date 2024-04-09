@@ -42,6 +42,7 @@ from neptune.api.models import (
     ArtifactField,
     BoolField,
     DateTimeField,
+    Field,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -54,9 +55,14 @@ from neptune.api.models import (
     StringSeriesField,
     StringSetField,
 )
+from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
+from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
+from neptune.envs import (
+    NEPTUNE_FETCH_TABLE_STEP_SIZE,
+    NEPTUNE_USE_PROTOCOL_BUFFERS,
+)
 from neptune.exceptions import (
     AmbiguousProjectName,
     ContainerUUIDNotFound,
@@ -171,6 +177,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.credentials = credentials
         self.proxies = proxies
         self.missing_features = []
+        self.use_proto = os.getenv(NEPTUNE_USE_PROTOCOL_BUFFERS, "False").lower() in {"true", "1", "y"}
 
         http_client, client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
@@ -1062,7 +1069,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
         step_size: Optional[int] = None,
+        use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
         default_step_size = step_size or int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         step_size = min(default_step_size, limit) if limit else default_step_size
@@ -1091,6 +1100,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
                 progress_bar=progress_bar,
+                use_proto=use_proto,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
@@ -1117,6 +1127,61 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+    def get_fields_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        use_proto: Optional[bool] = None,
+    ) -> List[FieldDefinition]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
+
+        params = {
+            "experimentIdentifier": container_id,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+
+        try:
+            if use_proto:
+                result = self.leaderboard_client.api.queryAttributeDefinitionsProto(**params).response().result
+                data = ProtoAttributesSearchResultDTO.FromString(result)
+                return [FieldDefinition.from_proto(field_def) for field_def in data.entries]
+            else:
+                data = self.leaderboard_client.api.queryAttributeDefinitions(**params).response().result
+                return [FieldDefinition.from_model(field_def) for field_def in data.entries]
+        except HTTPNotFound as e:
+            raise ContainerUUIDNotFound(
+                container_id=container_id,
+                container_type=container_type,
+            ) from e
+
+    def get_fields_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
+    ) -> List[Field]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
+
+        params = {
+            "holderIdentifier": container_id,
+            "holderType": "experiment",
+            "attributeQuery": {
+                "attributePathsFilter": paths,
+            },
+            **DEFAULT_REQUEST_KWARGS,
+        }
+
+        try:
+            if use_proto:
+                result = self.leaderboard_client.api.getAttributesWithPathsFilterProto(**params).response().result
+                data = ProtoAttributesDTO.FromString(result)
+                return [Field.from_proto(field) for field in data.attributes]
+            else:
+                data = self.leaderboard_client.api.getAttributesWithPathsFilter(**params).response().result
+                return [Field.from_model(field) for field in data.attributes]
+        except HTTPNotFound as e:
+            raise ContainerUUIDNotFound(
+                container_id=container_id,
+                container_type=container_type,
+            ) from e
 
 
 def _get_column_type_from_entries(entries: List[Any], column: str) -> str:
