@@ -59,7 +59,10 @@ from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttribute
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
+from neptune.envs import (
+    NEPTUNE_FETCH_TABLE_STEP_SIZE,
+    NEPTUNE_USE_PROTOCOL_BUFFERS,
+)
 from neptune.exceptions import (
     AmbiguousProjectName,
     ContainerUUIDNotFound,
@@ -174,6 +177,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.credentials = credentials
         self.proxies = proxies
         self.missing_features = []
+        self.use_proto = os.getenv(NEPTUNE_USE_PROTOCOL_BUFFERS, "False").lower() in {"true", "1", "y"}
 
         http_client, client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
@@ -1065,8 +1069,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
         step_size: Optional[int] = None,
-        use_proto: Optional[bool] = False,
+        use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
         default_step_size = step_size or int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
         step_size = min(default_step_size, limit) if limit else default_step_size
@@ -1127,8 +1132,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         container_id: str,
         container_type: ContainerType,
-        use_proto: Optional[bool] = False,  # TODO: Use environment variable instead
+        use_proto: Optional[bool] = None,
     ) -> List[FieldDefinition]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
+
         params = {
             "experimentIdentifier": container_id,
             **DEFAULT_REQUEST_KWARGS,
@@ -1149,8 +1156,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             ) from e
 
     def get_fields_with_paths_filter(
-        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
     ) -> List[Field]:
+        use_proto = use_proto if use_proto is not None else self.use_proto
+
         params = {
             "holderIdentifier": container_id,
             "holderType": "experiment",

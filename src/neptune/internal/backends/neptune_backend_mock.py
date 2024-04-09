@@ -519,7 +519,7 @@ class NeptuneBackendMock(NeptuneBackend):
         self,
         container_id: str,
         container_type: ContainerType,
-        use_proto: Optional[bool] = False,
+        use_proto: Optional[bool] = None,
     ) -> List[FieldDefinition]:
         return []
 
@@ -561,7 +561,7 @@ class NeptuneBackendMock(NeptuneBackend):
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
-        use_proto: Optional[bool] = False,
+        use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         """Non relevant for mock"""
 
@@ -799,6 +799,6 @@ class NeptuneBackendMock(NeptuneBackend):
         ]
 
     def get_fields_with_paths_filter(
-        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
     ) -> List[Field]:
         return []

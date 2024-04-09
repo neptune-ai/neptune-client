@@ -146,7 +146,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_fields_with_paths_filter(
-        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
     ) -> List[Field]:
         raise NeptuneOfflineModeFetchException
 
@@ -154,7 +154,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         self,
         container_id: str,
         container_type: ContainerType,
-        use_proto: Optional[bool] = False,
+        use_proto: Optional[bool] = None,
     ) -> List[FieldDefinition]:
         raise NeptuneOfflineModeFetchException
 
@@ -168,6 +168,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
-        use_proto: Optional[bool] = False,
+        use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
         raise NeptuneOfflineModeFetchException

@@ -98,7 +98,7 @@ def get_single_page(
     types: Optional[Iterable[str]],
     query: Optional["NQLQuery"],
     searching_after: Optional[str],
-    use_proto: Optional[bool] = False,
+    use_proto: Optional[bool] = None,
 ) -> LeaderboardEntriesSearchResult:
     normalized_query = query or NQLEmptyQuery()
     sort_by_column_type = sort_by_column_type if sort_by_column_type else FieldType.STRING.value
