@@ -325,7 +325,6 @@ class FileField(Field, field_type=FieldType.FILE):
 
     @staticmethod
     def from_proto(data: Any) -> FileField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -346,7 +345,6 @@ class FileSetField(Field, field_type=FieldType.FILE_SET):
 
     @staticmethod
     def from_proto(data: Any) -> FileSetField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -390,7 +388,6 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
 
     @staticmethod
     def from_proto(data: Any) -> StringSeriesField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -412,7 +409,6 @@ class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
 
     @staticmethod
     def from_proto(data: Any) -> ImageSeriesField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -451,7 +447,6 @@ class GitCommit:
 
     @staticmethod
     def from_proto(data: Any) -> GitCommit:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -474,7 +469,6 @@ class GitRefField(Field, field_type=FieldType.GIT_REF):
 
     @staticmethod
     def from_proto(data: ProtoAttributeDTO) -> GitRefField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -497,7 +491,6 @@ class ObjectStateField(Field, field_type=FieldType.OBJECT_STATE):
 
     @staticmethod
     def from_proto(data: Any) -> ObjectStateField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -519,7 +512,6 @@ class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
 
     @staticmethod
     def from_proto(data: Any) -> NotebookRefField:
-        # TODO: implement
         raise NotImplementedError()
 
 
@@ -540,7 +532,6 @@ class ArtifactField(Field, field_type=FieldType.ARTIFACT):
 
     @staticmethod
     def from_proto(data: Any) -> ArtifactField:
-        # TODO: implement
         raise NotImplementedError()
 
 
