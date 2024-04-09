@@ -42,6 +42,7 @@ from neptune.api.models import (
     ArtifactField,
     BoolField,
     DateTimeField,
+    Field,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -55,6 +56,7 @@ from neptune.api.models import (
     StringSetField,
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
+from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
@@ -1119,12 +1121,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
 
-    def get_attribute_definitions(
+    def get_fields_definitions(
         self,
         container_id: str,
         container_type: ContainerType,
-        filter_types: Optional[List[str]] = None,
-        use_proto: bool = False,  # TODO: Use environment variable instead
+        use_proto: Optional[bool] = False,  # TODO: Use environment variable instead
     ) -> List[FieldDefinition]:
         params = {
             "experimentIdentifier": container_id,
@@ -1132,28 +1133,22 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            # TODO: Rework as we should call `from_model`/`from_proto` on the result
             if use_proto:
                 result = self.leaderboard_client.api.queryAttributeDefinitionsProto(**params).response().result
-                result = ProtoAttributesSearchResultDTO.FromString(result)
+                data = ProtoAttributesSearchResultDTO.FromString(result)
+                return [FieldDefinition.from_proto(field_def) for field_def in data.entries]
             else:
-                result = self.leaderboard_client.api.queryAttributeDefinitions(**params).response().result
-
-            attributes = result.entries
-
-            if filter_types is not None:
-                attributes = [attr for attr in attributes if attr.type in filter_types]
-
-            return [FieldDefinition(attr.name, FieldType(attr.type)) for attr in attributes]
+                data = self.leaderboard_client.api.queryAttributeDefinitions(**params).response().result
+                return [FieldDefinition.from_model(field_def) for field_def in data.entries]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
                 container_id=container_id,
                 container_type=container_type,
             ) from e
 
-    def get_attributes_with_paths_filter(
-        self, container_id: str, container_type: ContainerType, paths: List[str]
-    ) -> Any:
+    def get_fields_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+    ) -> List[Field]:
         params = {
             "holderIdentifier": container_id,
             "holderType": "experiment",
@@ -1164,7 +1159,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            return self.leaderboard_client.api.getAttributesWithPathsFilter(**params).response().result
+            if use_proto:
+                result = self.leaderboard_client.api.getAttributesWithPathsFilterProto(**params).response().result
+                data = ProtoAttributesDTO.FromString(result)
+                return [Field.from_proto(field) for field in data.attributes]
+            else:
+                data = self.leaderboard_client.api.getAttributesWithPathsFilter(**params).response().result
+                return [Field.from_model(field) for field in data.attributes]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
                 container_id=container_id,

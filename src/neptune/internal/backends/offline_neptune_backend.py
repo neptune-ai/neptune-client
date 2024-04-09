@@ -24,6 +24,7 @@ from neptune.api.models import (
     ArtifactField,
     BoolField,
     DateTimeField,
+    Field,
     FieldDefinition,
     FileEntry,
     FileField,
@@ -137,4 +138,17 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
+        raise NeptuneOfflineModeFetchException
+
+    def get_fields_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+    ) -> List[Field]:
+        raise NeptuneOfflineModeFetchException
+
+    def get_fields_definitions(
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        use_proto: Optional[bool] = False,
+    ) -> List[FieldDefinition]:
         raise NeptuneOfflineModeFetchException

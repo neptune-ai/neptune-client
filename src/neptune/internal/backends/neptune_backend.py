@@ -29,6 +29,7 @@ from neptune.api.models import (
     ArtifactField,
     BoolField,
     DateTimeField,
+    Field,
     FieldDefinition,
     FieldType,
     FileEntry,
@@ -297,13 +298,18 @@ class NeptuneBackend:
 
     # WARN: Used in Neptune Fetcher
     @abc.abstractmethod
-    def get_attribute_definitions(
+    def get_fields_definitions(
         self,
         container_id: str,
         container_type: ContainerType,
-        filter_types: Optional[List[str]] = None,
-        use_proto: bool = False,
-    ) -> List[Attribute]: ...
+        use_proto: Optional[bool] = False,
+    ) -> List[FieldDefinition]: ...
+
+    # WARN: Used in Neptune Fetcher
+    @abc.abstractmethod
+    def get_fields_with_paths_filter(
+        self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = False
+    ) -> List[Field]: ...
 
     @abc.abstractmethod
     def fetch_atom_attribute_values(

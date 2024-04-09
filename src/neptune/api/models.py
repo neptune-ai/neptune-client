@@ -42,6 +42,7 @@ __all__ = (
 )
 
 import abc
+import re
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from datetime import (
@@ -140,8 +141,15 @@ class Field(abc.ABC):
 
     @staticmethod
     def from_proto(data: Any) -> Field:
-        # TODO: Implement
-        raise NotImplementedError()
+        field_type = str(data.type)
+        return Field._registry[field_type].from_proto(data.__getattribute__(f"{camel_to_snake(field_type)}_properties"))
+
+
+def camel_to_snake(name: str) -> str:
+    # Insert an underscore before any uppercase letters and convert the string to lowercase
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    # Handle the case where there are uppercase letters in the middle of the name
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 class FieldVisitor(Generic[Ret], abc.ABC):
@@ -211,7 +219,7 @@ class FloatField(Field, field_type=FieldType.FLOAT):
         return FloatField(path=model.attributeName, value=model.value)
 
     @staticmethod
-    def from_proto(data: ProtoFloatAttributeDTO) -> Field:
+    def from_proto(data: ProtoFloatAttributeDTO) -> FloatField:
         return FloatField(path=data.attribute_name, value=data.value)
 
 
@@ -293,6 +301,7 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
     @staticmethod
     def from_proto(data: ProtoDatetimeAttributeDTO) -> DateTimeField:
         # TODO: Ensure that the timestamp is in UTC
+        # TODO: Ensure that we are supporting seconds and miliseconds
         return DateTimeField(path=data.attribute_name, value=datetime.fromtimestamp(data.value, tz=timezone.utc))
 
 
@@ -553,8 +562,19 @@ class LeaderboardEntry:
 
     @staticmethod
     def from_proto(data: ProtoAttributesDTO) -> LeaderboardEntry:
+        with_proto_support = {
+            FieldType.STRING.value,
+            FieldType.BOOL.value,
+            FieldType.INT.value,
+            FieldType.FLOAT.value,
+            FieldType.DATETIME.value,
+            FieldType.STRING_SET.value,
+            FieldType.FLOAT_SERIES.value,
+        }
+
         return LeaderboardEntry(
-            object_id=data.experiment_id, fields=[Field.from_proto(field) for field in data.attributes]
+            object_id=data.experiment_id,
+            fields=[Field.from_proto(field) for field in data.attributes if str(field.type) in with_proto_support],
         )
 
 

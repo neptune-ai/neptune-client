@@ -39,6 +39,7 @@ from neptune.api.models import (
     LeaderboardEntriesSearchResult,
     LeaderboardEntry,
 )
+from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoLeaderboardEntriesSearchResultDTO
 from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
 from neptune.internal.backends.nql import (
@@ -97,7 +98,8 @@ def get_single_page(
     types: Optional[Iterable[str]],
     query: Optional["NQLQuery"],
     searching_after: Optional[str],
-) -> Any:
+    use_proto: Optional[bool] = False,
+) -> LeaderboardEntriesSearchResult:
     normalized_query = query or NQLEmptyQuery()
     sort_by_column_type = sort_by_column_type if sort_by_column_type else FieldType.STRING.value
     if sort_by and searching_after:
@@ -139,19 +141,25 @@ def get_single_page(
         },
     }
 
-    request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
-    request_config = RequestConfig(request_options, True)
-    request_params = construct_request(client.api.searchLeaderboardEntries, request_options, **params)
-
-    http_client = client.swagger_spec.http_client
-
     try:
-        # TODO: Allow to fetch using protocol buffers
-        return (
-            http_client.request(request_params, operation=None, request_config=request_config)
-            .response()
-            .incoming_response.json()
-        )
+        if use_proto:
+            result = client.api.searchLeaderboardEntriesProto(**params).response().result
+            proto_data = ProtoLeaderboardEntriesSearchResultDTO.FromString(result)
+            return LeaderboardEntriesSearchResult.from_proto(proto_data)
+        else:
+            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
+            request_config = RequestConfig(request_options, True)
+            request_params = construct_request(client.api.searchLeaderboardEntries, request_options, **params)
+
+            http_client = client.swagger_spec.http_client
+
+            json_data = (
+                http_client.request(request_params, operation=None, request_config=request_config)
+                .response()
+                .incoming_response.json()
+            )
+
+            return LeaderboardEntriesSearchResult.from_dict(json_data)
     except HTTPBadRequest as e:
         title = e.response.json().get("title")
         if title == "Syntax error":
@@ -186,7 +194,7 @@ def iter_over_pages(
         searching_after=None,
         **kwargs,
     )
-    total = LeaderboardEntriesSearchResult.from_dict(data).matching_item_count
+    total = data.matching_item_count
 
     limit = limit if limit is not None else NoLimit()
 
@@ -217,7 +225,7 @@ def iter_over_pages(
                 if extracted_records + local_limit > limit:
                     local_limit = limit - extracted_records
 
-                data = get_single_page(
+                result = get_single_page(
                     limit=local_limit,
                     offset=offset,
                     sort_by=sort_by,
@@ -226,7 +234,6 @@ def iter_over_pages(
                     ascending=ascending,
                     **kwargs,
                 )
-                result = LeaderboardEntriesSearchResult.from_dict(data)
 
                 # fetch the item count everytime a new page is started (except for the very fist page)
                 if offset == 0 and last_page is not None:
