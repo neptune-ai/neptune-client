@@ -328,6 +328,7 @@ class NeptuneBackend:
         sort_by: str = "sys/creation_time",
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
+        use_proto: Optional[bool] = False,
     ) -> Generator[LeaderboardEntry, None, None]:
         pass
 

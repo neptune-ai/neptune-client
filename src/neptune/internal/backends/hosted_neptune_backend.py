@@ -1065,6 +1065,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         ascending: bool = False,
         progress_bar: Optional[ProgressBarType] = None,
         step_size: Optional[int] = None,
+        use_proto: Optional[bool] = False,
     ) -> Generator[LeaderboardEntry, None, None]:
         default_step_size = step_size or int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
 
@@ -1094,6 +1095,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 ascending=ascending,
                 sort_by_column_type=sort_by_column_type,
                 progress_bar=progress_bar,
+                use_proto=use_proto,
             )
         except HTTPNotFound:
             raise ProjectNotFound(project_id)

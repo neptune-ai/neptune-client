@@ -137,7 +137,8 @@ class Field(abc.ABC):
     @staticmethod
     def from_model(model: Any) -> Field:
         field_type = str(model.type)
-        return Field._registry[field_type].from_model(model.__getattribute__(f"{field_type}Properties"))
+        print(model)
+        return Field._registry[field_type].from_model(model[f"{field_type}Properties"])
 
     @staticmethod
     def from_proto(data: Any) -> Field:
@@ -300,9 +301,9 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
 
     @staticmethod
     def from_proto(data: ProtoDatetimeAttributeDTO) -> DateTimeField:
-        # TODO: Ensure that the timestamp is in UTC
-        # TODO: Ensure that we are supporting seconds and miliseconds
-        return DateTimeField(path=data.attribute_name, value=datetime.fromtimestamp(data.value, tz=timezone.utc))
+        return DateTimeField(
+            path=data.attribute_name, value=datetime.fromtimestamp(data.value / 1000.0, tz=timezone.utc)
+        )
 
 
 @dataclass

@@ -27,6 +27,7 @@ import matplotlib
 import numpy
 import pandas
 import plotly.express as px
+import pytest
 import seaborn as sns
 from bokeh.plotting import figure
 from matplotlib import pyplot
@@ -136,6 +137,7 @@ class TestImage(unittest.TestCase):
         # and make sure that original image's size was preserved
         self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
 
+    @pytest.mark.skip("Conflicts with protobuf version")
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf
 

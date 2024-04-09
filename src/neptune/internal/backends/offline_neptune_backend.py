@@ -16,6 +16,8 @@
 __all__ = ["OfflineNeptuneBackend"]
 
 from typing import (
+    Generator,
+    Iterable,
     List,
     Optional,
 )
@@ -31,6 +33,7 @@ from neptune.api.models import (
     FloatField,
     FloatSeriesField,
     IntField,
+    LeaderboardEntry,
     StringField,
     StringSeriesField,
     StringSetField,
@@ -43,7 +46,9 @@ from neptune.internal.backends.api_model import (
     StringSeriesValues,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
+from neptune.internal.id_formats import UniqueId
 from neptune.typing import ProgressBarType
 
 
@@ -151,4 +156,18 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         container_type: ContainerType,
         use_proto: Optional[bool] = False,
     ) -> List[FieldDefinition]:
+        raise NeptuneOfflineModeFetchException
+
+    def search_leaderboard_entries(
+        self,
+        project_id: UniqueId,
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
+        columns: Optional[Iterable[str]] = None,
+        limit: Optional[int] = None,
+        sort_by: str = "sys/creation_time",
+        ascending: bool = False,
+        progress_bar: Optional[ProgressBarType] = None,
+        use_proto: Optional[bool] = False,
+    ) -> Generator[LeaderboardEntry, None, None]:
         raise NeptuneOfflineModeFetchException
