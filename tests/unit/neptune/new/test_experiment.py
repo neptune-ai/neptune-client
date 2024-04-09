@@ -124,7 +124,7 @@ class TestExperiment(unittest.TestCase):
                 with self.assertRaises(MetadataInconsistency):
                     exp.define("some/path/value", {})
 
-    @pytest.mark.skip(reason="Field deletion is disabled")
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     def test_pop(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
@@ -134,7 +134,7 @@ class TestExperiment(unittest.TestCase):
                 self.assertTrue("num" in exp.get_structure()["some"]["path"])
                 self.assertTrue("text" not in exp.get_structure()["some"]["path"])
 
-    @pytest.mark.skip(reason="Field deletion is disabled")
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     def test_pop_namespace(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):

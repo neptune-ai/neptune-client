@@ -24,6 +24,7 @@ from zipfile import ZipFile
 
 import pytest
 
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.backends import hosted_file_operations
 from neptune.internal.backends.api_model import (
     MultipartConfig,
@@ -162,6 +163,7 @@ class TestUpload(BaseE2ETest):
             # handling restart + 3 for actual upload
             assert hacked_upload_raw_data.upload_part_iteration == 5
 
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_replace_float_attribute_with_uploaded_file(self, container: NeptuneObject):
         key = self.gen_key()
@@ -386,6 +388,7 @@ class TestFileSet(BaseE2ETest):
                     assert len(content) == len(content2)
                     assert content == content2
 
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_single_file_override(self, container: NeptuneObject, delete_attribute: bool):
@@ -424,6 +427,7 @@ class TestFileSet(BaseE2ETest):
                 assert len(content) == len(content2)
                 assert content == content2
 
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_fileset_file_override(self, container: NeptuneObject, delete_attribute: bool):

@@ -50,6 +50,7 @@ from neptune.envs import (
 )
 from neptune.exceptions import (
     FileNotFound,
+    NeptuneUnsupportedFunctionalityException,
     NeptuneUserApiInputException,
 )
 from neptune.internal.warnings import (
@@ -606,7 +607,7 @@ class TestDelete:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
-    @pytest.mark.skip(reason="Field deletion is disabled")
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     def test_pop(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(3, wait=True)
@@ -615,7 +616,7 @@ class TestDelete:
             ns.pop("num/val", wait=True)
             assert "some" not in exp.get_structure()
 
-    @pytest.mark.skip(reason="Field deletion is disabled")
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     def test_pop_self(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["x"].assign(3, wait=True)
@@ -623,7 +624,7 @@ class TestDelete:
             exp["x"].pop(wait=True)
             assert "x" not in exp.get_structure()
 
-    @pytest.mark.skip(reason="Field deletion is disabled")
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     def test_del(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(3)
