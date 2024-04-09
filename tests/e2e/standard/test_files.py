@@ -388,9 +388,21 @@ class TestFileSet(BaseE2ETest):
                     assert len(content) == len(content2)
                     assert content == content2
 
-    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    @pytest.mark.parametrize("delete_attribute", [True, False])
+    @pytest.mark.parametrize(
+        "delete_attribute",
+        [
+            pytest.param(
+                True,
+                marks=pytest.mark.xfail(
+                    reason="Field deletion disabled",
+                    raises=NeptuneUnsupportedFunctionalityException,
+                    strict=True,
+                ),
+            ),
+            False,
+        ],
+    )
     def test_single_file_override(self, container: NeptuneObject, delete_attribute: bool):
         key = self.gen_key()
         filename1 = fake.file_name()
@@ -427,9 +439,21 @@ class TestFileSet(BaseE2ETest):
                 assert len(content) == len(content2)
                 assert content == content2
 
-    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    @pytest.mark.parametrize("delete_attribute", [True, False])
+    @pytest.mark.parametrize(
+        "delete_attribute",
+        [
+            pytest.param(
+                True,
+                marks=pytest.mark.xfail(
+                    reason="Field deletion disabled",
+                    raises=NeptuneUnsupportedFunctionalityException,
+                    strict=True,
+                ),
+            ),
+            False,
+        ],
+    )
     def test_fileset_file_override(self, container: NeptuneObject, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
