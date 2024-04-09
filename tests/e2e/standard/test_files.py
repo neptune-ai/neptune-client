@@ -40,6 +40,7 @@ from neptune.types import (
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
+    ParametersFactory,
     fake,
 )
 from tests.e2e.plot_utils import (
@@ -59,8 +60,15 @@ from tests.e2e.utils import (
 )
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestUpload(BaseE2ETest):
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    @pytest.mark.parametrize(
+        "container",
+        ParametersFactory.available_containers()
+        .skip("run", reason="Skipped as whole class is expected to fail")
+        .eval(),
+        indirect=True,
+    )
     def test_using_new_api(self, container: NeptuneObject):
         assert isinstance(container._backend, HostedNeptuneBackend)
         assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
@@ -218,6 +226,7 @@ class TestUpload(BaseE2ETest):
         run.stop()
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestFileSet(BaseE2ETest):
     def _test_fileset(self, container: NeptuneObject, large_file_size: int, small_files_no: int):
         key = self.gen_key()
@@ -519,6 +528,7 @@ class TestFileSet(BaseE2ETest):
             assert container[key].list_fileset_files() == []
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestPlotObjectsAssignment(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_pil_image(self, container: NeptuneObject):

@@ -47,7 +47,6 @@ from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
-@pytest.mark.xfail(reason="File functionality disabled")
 class TestFile(TestAttributeBase):
     @pytest.mark.xfail(
         reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
