@@ -26,6 +26,7 @@ from neptune.cli import sync
 from neptune.cli.commands import clear
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.exceptions import NeptuneException
+from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.types import File
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -118,6 +119,7 @@ class TestCli(BaseE2ETest):
     def stop_synchronization_process(container):
         container._op_processor._consumer.interrupt()
 
+    @pytest.mark.skipif(IS_WINDOWS, reason="Disabled functionality raise exception that breaks state of file system")
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
             # create run in offline mode
