@@ -30,8 +30,8 @@ from neptune.types import (
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
-    ParametersFactory,
     fake,
+    make_parameters,
 )
 from tests.e2e.utils import (
     generate_image,
@@ -40,7 +40,7 @@ from tests.e2e.utils import (
 )
 
 BASIC_SERIES_TYPES = (
-    ParametersFactory.custom(["strings", "floats", "files"])
+    make_parameters(["strings", "floats", "files"])
     .xfail("files", reason="File funcitonality disabled", raises=NeptuneUnsupportedFunctionalityException)
     .eval()
 )

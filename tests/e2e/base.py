@@ -13,13 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake", "Parameters", "ParametersFactory"]
+__all__ = [
+    "BaseE2ETest",
+    "AVAILABLE_CONTAINERS",
+    "fake",
+    "Parameters",
+    "available_containers_parameters",
+    "make_parameters",
+]
 
 import inspect
 from typing import (
     Any,
     Callable,
-    Dict,
     List,
     Optional,
     Union,
@@ -47,9 +53,7 @@ AVAILABLE_CONTAINERS = [
 
 
 class Parameters:
-    param_d: Dict[str, Any]
-
-    def __init__(self, params: List[ParameterSet]) -> "Parameters":
+    def __init__(self, params: List[ParameterSet]) -> None:
         self.param_d = {p.values[0]: p for p in params}
 
     def _modify(self, *args: Union[str, str], func: Callable[[str], ParameterSet]) -> "Parameters":
@@ -74,21 +78,12 @@ class Parameters:
         return list(self.param_d.values())
 
 
-class ParametersFactory:
+def available_containers_parameters() -> Parameters:
+    return Parameters(AVAILABLE_CONTAINERS.copy())
 
-    @staticmethod
-    def custom(params: List[Union[str, ParameterSet]]) -> Parameters:
-        normalized = []
-        for p in params:
-            if isinstance(p, str):
-                normalized.append(pytest.param(p))
-            else:
-                normalized.append(p)
-        return Parameters(normalized)
 
-    @staticmethod
-    def available_containers() -> Parameters:
-        return Parameters(AVAILABLE_CONTAINERS.copy())
+def make_parameters(params: List[Union[str, ParameterSet]]) -> Parameters:
+    return [pytest.param(p) if isinstance(p, str) else p for p in params]
 
 
 class BaseE2ETest:

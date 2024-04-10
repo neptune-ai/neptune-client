@@ -40,7 +40,7 @@ from neptune.types import (
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
-    ParametersFactory,
+    available_containers_parameters,
     fake,
 )
 from tests.e2e.plot_utils import (
@@ -64,9 +64,7 @@ from tests.e2e.utils import (
 class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize(
         "container",
-        ParametersFactory.available_containers()
-        .skip("run", reason="Skipped as whole class is expected to fail")
-        .eval(),
+        available_containers_parameters().skip("run", reason="Skipped as whole class is expected to fail").eval(),
         indirect=True,
     )
     def test_using_new_api(self, container: NeptuneObject):
