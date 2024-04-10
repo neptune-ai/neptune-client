@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from mock import (
     MagicMock,
     call,
@@ -23,6 +24,7 @@ from neptune.attributes.sets.string_set import (
     StringSet,
     StringSetVal,
 )
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     AddStrings,
     ClearStringSet,
@@ -99,6 +101,7 @@ class TestStringSet(TestAttributeBase):
             var.add("ccc", wait=wait)
             processor.enqueue_operation.assert_called_with(AddStrings(path, {"ccc"}), wait=wait)
 
+    @pytest.mark.xfail(reason="StringSet remove disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_remove(self, get_operation_processor):
         processor = MagicMock()
@@ -113,6 +116,7 @@ class TestStringSet(TestAttributeBase):
             var.remove(["a", "bb", "ccc"], wait=wait)
             processor.enqueue_operation.assert_called_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait=wait)
 
+    @pytest.mark.xfail(reason="StringSet remove disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_remove_single_value(self, get_operation_processor):
         processor = MagicMock()
@@ -127,6 +131,7 @@ class TestStringSet(TestAttributeBase):
             var.remove("bb", wait=wait)
             processor.enqueue_operation.assert_called_with(RemoveStrings(path, {"bb"}), wait=wait)
 
+    @pytest.mark.xfail(reason="StringSet clear disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_clear(self, get_operation_processor):
         processor = MagicMock()
@@ -141,6 +146,7 @@ class TestStringSet(TestAttributeBase):
             var.clear(wait=wait)
             processor.enqueue_operation.assert_called_with(ClearStringSet(path), wait=wait)
 
+    @pytest.mark.xfail(reason="StringSet remove disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_get(self):
         with self._exp() as exp:
             var = StringSet(exp, self._random_path())

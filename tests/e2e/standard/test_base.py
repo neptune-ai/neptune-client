@@ -154,6 +154,7 @@ class TestStringSet(BaseE2ETest):
             # backends accepts `'sys/tags'` only
             container[random_path].fetch()
 
+    @pytest.mark.xfail(reason="StringSet remove disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_add_and_remove_tags(self, container: NeptuneObject):
         remaining_tag1 = fake.unique.word()

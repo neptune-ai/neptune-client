@@ -22,6 +22,7 @@ from typing import (
 )
 
 from neptune.attributes.sets.set import Set
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     AddStrings,
     ClearStringSet,
@@ -51,11 +52,13 @@ class StringSet(Set):
             self._enqueue_operation(AddStrings(self._path, set(values)), wait=wait)
 
     def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False):
+        raise NeptuneUnsupportedFunctionalityException
         values = self._to_proper_value_type(values)
         with self._container.lock():
             self._enqueue_operation(RemoveStrings(self._path, set(values)), wait=wait)
 
     def clear(self, *, wait: bool = False):
+        raise NeptuneUnsupportedFunctionalityException
         with self._container.lock():
             self._enqueue_operation(ClearStringSet(self._path), wait=wait)
 
