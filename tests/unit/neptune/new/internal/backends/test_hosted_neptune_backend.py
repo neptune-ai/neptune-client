@@ -588,6 +588,18 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     @patch(
         "neptune.internal.backends.hosted_client.neptune_version",
+        Version("2.0.0-alpha4+dev1234"),
+    )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
+    def test_min_compatible_pre_release_version_ok(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory, min_compatible="2.0.0")
+
+        # expect
+        HostedNeptuneBackend(credentials)
+
+    @patch(
+        "neptune.internal.backends.hosted_client.neptune_version",
         Version("0.5.13"),
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
