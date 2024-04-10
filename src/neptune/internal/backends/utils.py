@@ -276,18 +276,26 @@ def create_swagger_client(url: str, http_client: HttpClient) -> SwaggerClient:
 
 
 def verify_client_version(client_config: ClientConfig, version: Version):
+    base_version = Version(f"{version.major}.{version.minor}.{version.micro}")
     version_with_patch_0 = Version(replace_patch_version(str(version)))
-    if client_config.version_info.min_compatible and client_config.version_info.min_compatible > version:
+
+    min_compatible = client_config.version_info.min_compatible
+    max_compatible = client_config.version_info.max_compatible
+    min_recommended = client_config.version_info.min_recommended
+
+    if min_compatible and min_compatible > base_version:
         raise NeptuneClientUpgradeRequiredError(version, min_version=client_config.version_info.min_compatible)
-    if client_config.version_info.max_compatible and client_config.version_info.max_compatible < version_with_patch_0:
+
+    if max_compatible and max_compatible < version_with_patch_0:
         raise NeptuneClientUpgradeRequiredError(version, max_version=client_config.version_info.max_compatible)
-    if client_config.version_info.min_recommended and client_config.version_info.min_recommended > version:
+
+    if min_recommended and min_recommended > version:
         logger.warning(
             "WARNING: Your version of the Neptune client library (%s) is deprecated,"
             " and soon will no longer be supported by the Neptune server."
             " We recommend upgrading to at least version %s.",
             version,
-            client_config.version_info.min_recommended,
+            min_recommended,
         )
 
 
