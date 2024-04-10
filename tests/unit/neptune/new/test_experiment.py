@@ -154,6 +154,7 @@ class TestExperiment(unittest.TestCase):
                 self.assertEqual(handler["num"].fetch(), 3)
                 self.assertEqual(handler["text"].fetch(), "Some text")
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_assign_dict(self):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
