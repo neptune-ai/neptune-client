@@ -335,6 +335,7 @@ class Handler(SupportsNamespaces):
                 elif is_string(first_value):
                     attr = StringSeries(self._container, parse_path(self._path))
                 elif FileVal.is_convertable(first_value):
+                    raise NeptuneUnsupportedFunctionalityException
                     attr = FileSeries(self._container, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
