@@ -75,8 +75,7 @@ def stop_synchronization_callback(neptune_object: "NeptuneObject") -> None:
         >>> import neptune
         >>> from neptune.utils import stop_synchronization_callback
         >>> run = neptune.init_run(
-        ...     async_no_progress_callback =
-
+        ...     async_no_progress_callback = stop_synchronization_callback
         ... )
 
     For more information, see:
