@@ -21,6 +21,7 @@ from datetime import (
 
 import pytest
 
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -57,6 +58,7 @@ class TestAtoms(BaseE2ETest):
         with pytest.raises(AttributeError):
             container[key].fetch()
 
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_delete_atom(self, container: NeptuneObject):
         key = self.gen_key()
@@ -116,6 +118,7 @@ class TestNamespace(BaseE2ETest):
             container[namespace] = {f"{key}": new_value}
             container.sync()
 
+    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_delete_namespace(self, container: NeptuneObject):
         namespace = fake.unique.word()

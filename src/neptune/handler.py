@@ -41,6 +41,7 @@ from neptune.attributes.sets.string_set import StringSet
 from neptune.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
+    NeptuneUnsupportedFunctionalityException,
     NeptuneUserApiInputException,
 )
 from neptune.internal.artifacts.types import ArtifactFileData
@@ -467,8 +468,7 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.add(values, wait=wait)
 
-    @check_protected_paths
-    def pop(self, path: str = None, *, wait: bool = False) -> None:
+    def _delete_item(self, path: str = None, *, wait: bool = False) -> None:
         with self._container.lock():
             handler = self
             if path:
@@ -730,7 +730,11 @@ class Handler(SupportsNamespaces):
             attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
-        self.pop(path)
+        raise NeptuneUnsupportedFunctionalityException()
+
+    @check_protected_paths
+    def pop(self, path: str = None, *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException()
 
 
 class ExtendUtils:
