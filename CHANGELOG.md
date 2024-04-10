@@ -16,6 +16,7 @@
 - Removed `AbstractNeptuneObject` ([#1725](https://github.com/neptune-ai/neptune-client/pull/1725))
 - Disabled artifact-related methods in `Handler` ([#1734](https://github.com/neptune-ai/neptune-client/pull/1734))
 - Removed `boto3` from requirements ([#1743](https://github.com/neptune-ai/neptune-client/pull/1743))
+- Disabled `StringSet` `remove` and `clear` methods ([#1732](https://github.com/neptune-ai/neptune-client/pull/1732))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
