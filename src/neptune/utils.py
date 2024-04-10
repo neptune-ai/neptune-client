@@ -23,6 +23,7 @@ __all__ = [
 
 from types import TracebackType
 from typing import (
+    TYPE_CHECKING,
     Any,
     Mapping,
     MutableMapping,
@@ -34,10 +35,11 @@ from typing import (
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils.logger import get_logger
-from neptune.typing import (
-    AbstractNeptuneObject,
-    ProgressBarCallback,
-)
+from neptune.typing import ProgressBarCallback
+
+if TYPE_CHECKING:
+    from neptune.objects.neptune_object import NeptuneObject
+
 
 logger = get_logger()
 
@@ -63,7 +65,7 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     return StringifyValue(value=value)
 
 
-def stop_synchronization_callback(neptune_object: AbstractNeptuneObject) -> None:
+def stop_synchronization_callback(neptune_object: "NeptuneObject") -> None:
     """Default callback function that stops a Neptune object's synchronization with the server.
 
     Args:

@@ -32,6 +32,7 @@ from queue import Queue
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Dict,
     Iterable,
     List,
@@ -93,10 +94,6 @@ from neptune.internal.utils.uncaught_exception_handler import instance as uncaug
 from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
-from neptune.objects.abstract import (
-    AbstractNeptuneObject,
-    NeptuneObjectCallback,
-)
 from neptune.table import Table
 from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
@@ -105,6 +102,9 @@ from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
+
+
+NeptuneObjectCallback = Callable[["NeptuneObject"], None]
 
 
 def ensure_not_stopped(fun):
@@ -116,7 +116,7 @@ def ensure_not_stopped(fun):
     return inner_fun
 
 
-class NeptuneObject(AbstractContextManager, AbstractNeptuneObject):
+class NeptuneObject(AbstractContextManager):
     container_type: ContainerType
 
     def __init__(
