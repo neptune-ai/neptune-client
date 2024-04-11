@@ -28,6 +28,7 @@
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
 - Added `setuptools` to dependencies for `python >= 3.12` ([#1721](https://github.com/neptune-ai/neptune-client/pull/1721))
 - Fixed compatibility checks with pre-release versions ([#1730](https://github.com/neptune-ai/neptune-client/pull/1730))
+- Added `Accept` and `Accept-Encoding` headers to protocol buffer requests ([#1736](https://github.com/neptune-ai/neptune-client/pull/1736))
 
 
 ## neptune 1.10.0

@@ -259,14 +259,13 @@ def generate_leaderboard_entries(values: Sequence, experiment_id: str = "foo") -
     )
 
 
-@patch("neptune.api.searching_entries.construct_request")
-def test_get_single_page_error_handling(construct_request_mock):
+def test_get_single_page_error_handling():
     # given
     bravado_exception = HTTPBadRequest(response=Mock())
     bravado_exception.response.json.return_value = {"title": "Syntax error"}
 
-    failing_clinet = Mock()
-    failing_clinet.swagger_spec.http_client.request.side_effect = bravado_exception
+    failing_client = Mock()
+    failing_client.api.searchLeaderboardEntries.side_effect = bravado_exception
 
     # then
     with pytest.raises(NeptuneInvalidQueryException):
@@ -281,5 +280,5 @@ def test_get_single_page_error_handling(construct_request_mock):
             ascending=False,
             sort_by_column_type="string",
             searching_after=None,
-            client=failing_clinet,
+            client=failing_client,
         )

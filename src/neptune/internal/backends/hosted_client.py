@@ -15,6 +15,7 @@
 #
 __all__ = [
     "DEFAULT_REQUEST_KWARGS",
+    "DEFAULT_PROTO_REQUEST_KWARGS",
     "create_http_client_with_auth",
     "create_backend_client",
     "create_leaderboard_client",
@@ -62,6 +63,17 @@ DEFAULT_REQUEST_KWARGS = {
         "connect_timeout": CONNECT_TIMEOUT,
         "timeout": REQUEST_TIMEOUT,
         "headers": {},
+    }
+}
+
+DEFAULT_PROTO_REQUEST_KWARGS = {
+    "_request_options": {
+        **DEFAULT_REQUEST_KWARGS["_request_options"],
+        "headers": {
+            **DEFAULT_REQUEST_KWARGS["_request_options"]["headers"],
+            "Accept": "application/x-protobuf,application/json",
+            "Accept-Encoding": "gzip, deflate, br",
+        },
     }
 }
 
