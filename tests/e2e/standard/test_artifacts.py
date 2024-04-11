@@ -22,6 +22,7 @@ from pathlib import (
 
 import pytest
 
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
@@ -34,6 +35,7 @@ from tests.e2e.utils import (
 )
 
 
+@pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_creation(self, container: NeptuneObject):
