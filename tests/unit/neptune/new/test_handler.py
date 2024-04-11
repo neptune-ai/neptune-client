@@ -640,6 +640,7 @@ class TestArtifacts:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_artifacts(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["art1"].track_files("s3://path/to/tracking/file", destination="/some/destination")

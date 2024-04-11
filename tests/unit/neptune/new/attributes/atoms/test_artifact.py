@@ -18,6 +18,7 @@ import tempfile
 import uuid
 from unittest.mock import Mock
 
+import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from mock import (
     MagicMock,
@@ -27,7 +28,10 @@ from mock import (
 
 from neptune import Run
 from neptune.attributes.atoms.artifact import Artifact
-from neptune.exceptions import NeptuneUnhandledArtifactTypeException
+from neptune.exceptions import (
+    NeptuneUnhandledArtifactTypeException,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.artifacts.types import (
     ArtifactDriver,
     ArtifactDriversMap,
@@ -106,10 +110,12 @@ class TestArtifact(TestAttributeBase):
         self.exp.stop()
         self.monkeypatch.undo()
 
+    @pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_fetch_hash(self):
         fetched_hash = self.exp[self.path_str].fetch_hash()
         self.assertEqual(self.artifact_hash, fetched_hash)
 
+    @pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_fetch_files_list(self):
         fetched_hash = self.exp[self.path_str].fetch_files_list()
         self.assertEqual(self.artifact_files, fetched_hash)

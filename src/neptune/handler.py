@@ -19,6 +19,7 @@ from functools import wraps
 from typing import (
     TYPE_CHECKING,
     Any,
+    Callable,
     Collection,
     Dict,
     Iterable,
@@ -71,6 +72,13 @@ from neptune.utils import stringify_unsupported
 
 if TYPE_CHECKING:
     from neptune.objects import NeptuneObject
+
+
+def feature_temporarily_unavailable(_: Callable[[...], Any]) -> Callable[[...], Any]:
+    def wrapper(*_, **__):
+        raise NeptuneUnsupportedFunctionalityException()
+
+    return wrapper
 
 
 def validate_path_not_protected(target_path: str, handler: "Handler"):
@@ -468,25 +476,6 @@ class Handler(SupportsNamespaces):
                 self._container.set_attribute(self._path, attr)
             attr.add(values, wait=wait)
 
-    def _delete_item(self, path: str = None, *, wait: bool = False) -> None:
-        with self._container.lock():
-            handler = self
-            if path:
-                verify_type("path", path, str)
-                handler = self[path]
-                path = join_paths(self._path, path)
-                # extra check: check_protected_paths decorator does not catch flow with non-null path
-                validate_path_not_protected(path, self)
-            else:
-                path = self._path
-
-            attribute = self._container.get_attribute(path)
-            if isinstance(attribute, Namespace):
-                for child_path in list(attribute):
-                    handler.pop(child_path, wait=wait)
-            else:
-                self._container._pop_impl(parse_path(path), wait=wait)
-
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         """Removes the provided tags from the set.
@@ -650,6 +639,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="download_last", destination=destination)
 
+    @feature_temporarily_unavailable
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
 
@@ -666,6 +656,7 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_extension")
 
+    @feature_temporarily_unavailable
     def fetch_files_list(self) -> List[ArtifactFileData]:
         """Fetches the list of files in an artifact and their metadata.
 
@@ -714,6 +705,7 @@ class Handler(SupportsNamespaces):
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)
 
+    @feature_temporarily_unavailable
     @check_protected_paths
     def track_files(self, path: str, *, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
@@ -730,11 +722,28 @@ class Handler(SupportsNamespaces):
             attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
-        raise NeptuneUnsupportedFunctionalityException()
+        self.pop(path)
 
+    @feature_temporarily_unavailable
     @check_protected_paths
     def pop(self, path: str = None, *, wait: bool = False) -> None:
-        raise NeptuneUnsupportedFunctionalityException()
+        with self._container.lock():
+            handler = self
+            if path:
+                verify_type("path", path, str)
+                handler = self[path]
+                path = join_paths(self._path, path)
+                # extra check: check_protected_paths decorator does not catch flow with non-null path
+                validate_path_not_protected(path, self)
+            else:
+                path = self._path
+
+            attribute = self._container.get_attribute(path)
+            if isinstance(attribute, Namespace):
+                for child_path in list(attribute):
+                    handler.pop(child_path, wait=wait)
+            else:
+                self._container._pop_impl(parse_path(path), wait=wait)
 
 
 class ExtendUtils:
