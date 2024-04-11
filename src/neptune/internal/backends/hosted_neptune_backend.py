@@ -95,6 +95,7 @@ from neptune.internal.backends.hosted_artifact_operations import (
     track_to_new_artifact,
 )
 from neptune.internal.backends.hosted_client import (
+    DEFAULT_PROTO_REQUEST_KWARGS,
     DEFAULT_REQUEST_KWARGS,
     create_artifacts_client,
     create_backend_client,
@@ -1138,16 +1139,29 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         params = {
             "experimentIdentifier": container_id,
-            **DEFAULT_REQUEST_KWARGS,
         }
 
         try:
             if use_proto:
-                result = self.leaderboard_client.api.queryAttributeDefinitionsProto(**params).response().result
+                result = (
+                    self.leaderboard_client.api.queryAttributeDefinitionsProto(
+                        **params,
+                        **DEFAULT_PROTO_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
                 data = ProtoAttributesSearchResultDTO.FromString(result)
                 return [FieldDefinition.from_proto(field_def) for field_def in data.entries]
             else:
-                data = self.leaderboard_client.api.queryAttributeDefinitions(**params).response().result
+                data = (
+                    self.leaderboard_client.api.queryAttributeDefinitions(
+                        **params,
+                        **DEFAULT_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
                 return [FieldDefinition.from_model(field_def) for field_def in data.entries]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
@@ -1171,7 +1185,14 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             if use_proto:
-                result = self.leaderboard_client.api.getAttributesWithPathsFilterProto(**params).response().result
+                result = (
+                    self.leaderboard_client.api.getAttributesWithPathsFilterProto(
+                        **params,
+                        **DEFAULT_PROTO_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
                 data = ProtoAttributesDTO.FromString(result)
                 return [Field.from_proto(field) for field in data.attributes]
             else:

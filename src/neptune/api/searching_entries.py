@@ -24,8 +24,6 @@ from typing import (
     Optional,
 )
 
-from bravado.client import construct_request  # type: ignore
-from bravado.config import RequestConfig  # type: ignore
 from bravado.exception import HTTPBadRequest  # type: ignore
 from typing_extensions import (
     Literal,
@@ -41,7 +39,10 @@ from neptune.api.models import (
 )
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoLeaderboardEntriesSearchResultDTO
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
+from neptune.internal.backends.hosted_client import (
+    DEFAULT_PROTO_REQUEST_KWARGS,
+    DEFAULT_REQUEST_KWARGS,
+)
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -143,23 +144,14 @@ def get_single_page(
 
     try:
         if use_proto:
-            result = client.api.searchLeaderboardEntriesProto(**params).response().result
+            result = (
+                client.api.searchLeaderboardEntriesProto(**params, **DEFAULT_PROTO_REQUEST_KWARGS).response().result
+            )
             proto_data = ProtoLeaderboardEntriesSearchResultDTO.FromString(result)
             return LeaderboardEntriesSearchResult.from_proto(proto_data)
         else:
-            request_options = DEFAULT_REQUEST_KWARGS.get("_request_options", {})
-            request_config = RequestConfig(request_options, True)
-            request_params = construct_request(client.api.searchLeaderboardEntries, request_options, **params)
-
-            http_client = client.swagger_spec.http_client
-
-            json_data = (
-                http_client.request(request_params, operation=None, request_config=request_config)
-                .response()
-                .incoming_response.json()
-            )
-
-            return LeaderboardEntriesSearchResult.from_dict(json_data)
+            model_data = client.api.searchLeaderboardEntries(**params, **DEFAULT_REQUEST_KWARGS).response().result
+            return LeaderboardEntriesSearchResult.from_model(model_data)
     except HTTPBadRequest as e:
         title = e.response.json().get("title")
         if title == "Syntax error":
