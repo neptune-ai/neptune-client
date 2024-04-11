@@ -74,7 +74,7 @@ if TYPE_CHECKING:
     from neptune.objects import NeptuneObject
 
 
-def feature_temporarily_unavailable(_: Callable[[...], Any]) -> Callable[[...], Any]:
+def feature_temporarily_unavailable(_: Callable[..., Any]) -> Callable[..., Any]:
     def wrapper(*_, **__):
         raise NeptuneUnsupportedFunctionalityException()
 
