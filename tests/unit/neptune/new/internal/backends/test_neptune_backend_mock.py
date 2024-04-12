@@ -21,6 +21,8 @@ import uuid
 from pathlib import Path
 from time import time
 
+from freezegun import freeze_time
+
 from neptune.api.models import (
     DateTimeField,
     FloatField,
@@ -237,6 +239,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 # then
         self.assertEqual(StringSetField(values={"abcx", "qwe"}, path="x"), ret)
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_get_string_series_values(self):
         # given
         for container_id, container_type in self.ids_with_types:
@@ -280,15 +283,24 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     StringSeriesValues(
                         4,
                         [
-                            StringPointValue(timestamp=42342, step=0, value="adf"),
-                            StringPointValue(timestamp=42342, step=1, value="sdg"),
-                            StringPointValue(timestamp=42342, step=2, value="dfh"),
-                            StringPointValue(timestamp=42342, step=3, value="qwe"),
+                            StringPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=0, value="adf"
+                            ),
+                            StringPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=1, value="sdg"
+                            ),
+                            StringPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=2, value="dfh"
+                            ),
+                            StringPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=3, value="qwe"
+                            ),
                         ],
                     ),
                     ret,
                 )
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_get_float_series_values(self):
         # given
         for container_id, container_type in self.ids_with_types:
@@ -332,10 +344,18 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     FloatSeriesValues(
                         4,
                         [
-                            FloatPointValue(timestamp=42342, step=0, value=5),
-                            FloatPointValue(timestamp=42342, step=1, value=3),
-                            FloatPointValue(timestamp=42342, step=2, value=2),
-                            FloatPointValue(timestamp=42342, step=3, value=9),
+                            FloatPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=0, value=5
+                            ),
+                            FloatPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=1, value=3
+                            ),
+                            FloatPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=2, value=2
+                            ),
+                            FloatPointValue(
+                                timestamp=datetime.datetime(2024, 1, 1, 12, 34, 56, 123456), step=3, value=9
+                            ),
                         ],
                     ),
                     ret,
