@@ -59,6 +59,28 @@ class TestFetchTable(BaseE2ETest):
         assert len(runs) == 1
         assert runs[0].get_attribute_value("sys/id") == run_id1
 
+    def test_fetch_runs_by_group_tag(self, environment, project):
+        tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
+
+        with neptune.init_run(project=environment.project) as run:
+            run_id1 = run["sys/id"].fetch()
+            run["sys/group_tags"].add(tag1)
+            run["sys/group_tags"].add(tag2)
+
+        with neptune.init_run(project=environment.project) as run:
+            run["sys/group_tags"].add(tag2)
+
+        # wait for the cache to fill
+        time.sleep(WAIT_DURATION)
+
+        runs = project.fetch_runs_table(
+            progress_bar=False,
+            query=f"(sys/group_tags: stringSet CONTAINS '{tag1}')",
+        ).to_rows()
+
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("sys/id") == run_id1
+
     @pytest.mark.parametrize("with_query", [True, False])
     @pytest.mark.parametrize("container_fn_scope", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container_fn_scope: Model, environment, with_query: bool):
@@ -210,7 +232,7 @@ class TestFetchTable(BaseE2ETest):
                 kwargs = {"query": "(sys/state: experimentState = running)"}
             else:
                 kwargs = {"state": "active"}
-            runs = project.fetch_runs_table(**kwargs).to_pandas()
+
             runs = project.fetch_runs_table(**kwargs, progress_bar=False).to_pandas()
 
             assert not runs.empty
