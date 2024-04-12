@@ -24,9 +24,7 @@
 - Use `tqdm.auto` ([#1717](https://github.com/neptune-ai/neptune-client/pull/1717))
 - Fields DTO conversion reworked ([#1722](https://github.com/neptune-ai/neptune-client/pull/1722))
 - Added support for Protocol Buffers ([#1728](https://github.com/neptune-ai/neptune-client/pull/1728))
-
-### Features
-- ?
+- Series values DTO conversion reworked with protocol buffer support ([#1738](https://github.com/neptune-ai/neptune-client/pull/1738))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
