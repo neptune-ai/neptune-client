@@ -82,4 +82,4 @@ class FileDependenciesStrategy(DependencyTrackingStrategy):
         if os.path.isfile(self._path):
             run["source_code/requirements"].upload(self._path)
         else:
-            logger.error("[ERROR] File '%s' does not exist - skipping dependency file upload.", self._path)
+            logger.warning("File '%s' does not exist - skipping dependency file upload.", self._path)
