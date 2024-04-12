@@ -38,7 +38,7 @@ class TestDependencyTracking:
         FileDependenciesStrategy(path="non-existent_file_path.txt").log_dependencies(run=MagicMock())
 
         mock_upload.assert_not_called()
-        mock_logger.error.assert_called_once()
+        mock_logger.warning.assert_called_once()
 
     @pytest.mark.parametrize("path", ["valid_file_path.txt", "dir/valid_file_path.txt"])
     @patch("os.path.isfile", return_value=True)
