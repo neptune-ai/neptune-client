@@ -44,11 +44,16 @@ from neptune.api.models import (
     FileEntry,
     FileField,
     FloatField,
+    FloatPointValue,
     FloatSeriesField,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     StringField,
+    StringPointValue,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.core.components.operation_storage import OperationStorage
@@ -62,12 +67,7 @@ from neptune.exceptions import (
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    FloatPointValue,
-    FloatSeriesValues,
-    ImageSeriesValues,
     Project,
-    StringPointValue,
-    StringSeriesValues,
     Workspace,
 )
 from neptune.internal.backends.hosted_file_operations import get_unique_upload_entries
@@ -458,7 +458,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
-            [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
+            [StringPointValue(timestamp=datetime.now(), step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
     def get_float_series_values(
@@ -472,7 +472,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesValues(
             len(val.values),
-            [FloatPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
+            [FloatPointValue(timestamp=datetime.now(), step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
     def get_image_series_values(

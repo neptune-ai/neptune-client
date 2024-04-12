@@ -24,21 +24,19 @@ from time import time
 from neptune.api.models import (
     DateTimeField,
     FloatField,
+    FloatPointValue,
     FloatSeriesField,
+    FloatSeriesValues,
     StringField,
+    StringPointValue,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
-)
-from neptune.internal.backends.api_model import (
-    FloatPointValue,
-    FloatSeriesValues,
-    StringPointValue,
-    StringSeriesValues,
 )
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.container_type import ContainerType
@@ -282,10 +280,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     StringSeriesValues(
                         4,
                         [
-                            StringPointValue(timestampMillis=42342, step=0, value="adf"),
-                            StringPointValue(timestampMillis=42342, step=1, value="sdg"),
-                            StringPointValue(timestampMillis=42342, step=2, value="dfh"),
-                            StringPointValue(timestampMillis=42342, step=3, value="qwe"),
+                            StringPointValue(timestamp=42342, step=0, value="adf"),
+                            StringPointValue(timestamp=42342, step=1, value="sdg"),
+                            StringPointValue(timestamp=42342, step=2, value="dfh"),
+                            StringPointValue(timestamp=42342, step=3, value="qwe"),
                         ],
                     ),
                     ret,
@@ -334,10 +332,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
                     FloatSeriesValues(
                         4,
                         [
-                            FloatPointValue(timestampMillis=42342, step=0, value=5),
-                            FloatPointValue(timestampMillis=42342, step=1, value=3),
-                            FloatPointValue(timestampMillis=42342, step=2, value=2),
-                            FloatPointValue(timestampMillis=42342, step=3, value=9),
+                            FloatPointValue(timestamp=42342, step=0, value=5),
+                            FloatPointValue(timestamp=42342, step=1, value=3),
+                            FloatPointValue(timestamp=42342, step=2, value=2),
+                            FloatPointValue(timestamp=42342, step=3, value=9),
                         ],
                     ),
                     ret,

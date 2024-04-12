@@ -20,11 +20,6 @@ __all__ = [
     "OptionalFeatures",
     "VersionInfo",
     "ClientConfig",
-    "StringPointValue",
-    "ImageSeriesValues",
-    "StringSeriesValues",
-    "FloatPointValue",
-    "FloatSeriesValues",
     "ArtifactModel",
     "MultipartConfig",
 ]
@@ -32,7 +27,6 @@ __all__ = [
 from dataclasses import dataclass
 from typing import (
     FrozenSet,
-    List,
     Optional,
 )
 
@@ -179,37 +173,6 @@ class ClientConfig:
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
         )
-
-
-@dataclass
-class StringPointValue:
-    timestampMillis: int
-    step: float
-    value: str
-
-
-@dataclass
-class ImageSeriesValues:
-    totalItemCount: int
-
-
-@dataclass
-class StringSeriesValues:
-    totalItemCount: int
-    values: List[StringPointValue]
-
-
-@dataclass
-class FloatPointValue:
-    timestampMillis: int
-    step: float
-    value: float
-
-
-@dataclass
-class FloatSeriesValues:
-    totalItemCount: int
-    values: List[FloatPointValue]
 
 
 @dataclass

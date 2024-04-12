@@ -49,10 +49,13 @@ from neptune.api.models import (
     FileField,
     FloatField,
     FloatSeriesField,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     StringField,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
@@ -79,13 +82,8 @@ from neptune.exceptions import (
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    FloatPointValue,
-    FloatSeriesValues,
-    ImageSeriesValues,
     OptionalFeatures,
     Project,
-    StringPointValue,
-    StringSeriesValues,
     Workspace,
 )
 from neptune.internal.backends.hosted_artifact_operations import (
@@ -957,7 +955,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
-            return ImageSeriesValues(result.totalItemCount)
+            return ImageSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -979,10 +977,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
-            return StringSeriesValues(
-                result.totalItemCount,
-                [StringPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
-            )
+            return StringSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -1004,10 +999,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
-            return FloatSeriesValues(
-                result.totalItemCount,
-                [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values],
-            )
+            return FloatSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
