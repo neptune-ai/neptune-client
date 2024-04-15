@@ -1,4 +1,4 @@
-## neptune 1.10.3
+## [UNRELEASED] neptune 1.10.3
 
 ### Changes
 - Neptune now shows a warning instead of an error when the dependency tracking file is not found ([#1739](https://github.com/neptune-ai/neptune-client/pull/1739))
