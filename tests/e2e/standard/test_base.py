@@ -25,6 +25,7 @@ from neptune.metadata_containers import MetadataContainer
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
+    are_group_tags_enabled,
     fake,
 )
 
@@ -173,6 +174,7 @@ class TestStringSet(BaseE2ETest):
             remaining_tag2,
         }
 
+    @pytest.mark.skipif(not are_group_tags_enabled(), reason="Group tags are not enabled")
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_add_and_remove_group_tags(self, container: MetadataContainer):
         remaining_tag1 = fake.unique.word()

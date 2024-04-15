@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake"]
+__all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake", "are_group_tags_enabled"]
 
 import inspect
+import os
 
 from faker import Faker
 
@@ -29,3 +30,10 @@ class BaseE2ETest:
         # Get test name
         caller_name = inspect.stack()[1][3]
         return f"{self.__class__.__name__}/{caller_name}/{fake.unique.slug()}"
+
+
+NEPTUNE_GROUP_TAGS_ENABLED = "NEPTUNE_GROUP_TAGS_ENABLED"
+
+
+def are_group_tags_enabled() -> bool:
+    return os.getenv(NEPTUNE_GROUP_TAGS_ENABLED, "false").lower()[0] in ("t", "y", "1")
