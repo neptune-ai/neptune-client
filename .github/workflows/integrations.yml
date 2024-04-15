@@ -740,3 +740,58 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.airflow.result }}
+
+  fetcher:
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'fetcher (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Install fetcher
+        uses: neptune-ai/neptune-fetcher/.github/actions/install-package@rj/working-directory
+        with:
+          python-version: ${{ matrix.python-version }}
+          working_directory: neptune-fetcher
+
+      - name: Install package
+        uses: ./.github/actions/install-package
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+
+      - name: List dependencies
+        run: |
+          pip list
+        shell: bash
+
+      - name: Test integration
+        uses: neptune-ai/neptune-fetcher/.github/actions/test-integration@rj/working-directory
+        with:
+          working_directory: neptune-fetcher
+
+  fetcher-notify:
+    needs: [ fetcher ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+      - name: Notify
+        uses: ./.github/actions/job-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+          job-status: ${{ needs.fetcher.result }}
