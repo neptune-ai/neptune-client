@@ -32,7 +32,6 @@ swagger-spec-validator = ">=2.7.4"
 protobuf = "^4.0.0"
 
 # Built-in integrations
-boto3 = ">=1.28.0"
 Pillow = ">=1.1.6"
 GitPython = ">=2.0.8"
 psutil = "*"

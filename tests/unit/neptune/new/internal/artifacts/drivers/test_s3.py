@@ -18,9 +18,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import boto3
 import freezegun
-from moto import mock_s3
+import pytest
 
 from neptune.exceptions import NeptuneUnsupportedArtifactFunctionalityException
 from neptune.internal.artifacts.drivers.s3 import S3ArtifactDriver
@@ -31,12 +30,15 @@ from neptune.internal.artifacts.types import (
 )
 from tests.unit.neptune.new.internal.artifacts.utils import md5
 
+mock_s3 = pytest.importorskip("moto.mock_s3")
 
+
+@pytest.mark.skip(reason="boto3 is not installed")
 @mock_s3
 class TestS3ArtifactDrivers(unittest.TestCase):
     def setUp(self):
         self.bucket_name = "kuiper_belt"
-        self.s3 = boto3.client("s3")
+        self.s3 = boto3.client("s3")  # noqa: F821
         self.s3.create_bucket(Bucket=self.bucket_name)
         self.update_time = datetime.datetime(2021, 5, 23, 3, 55, 26)
         with freezegun.freeze_time(self.update_time):

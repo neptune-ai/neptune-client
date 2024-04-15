@@ -35,7 +35,14 @@ from tests.e2e.utils import (
 )
 
 
-@pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+@pytest.mark.xfail(
+    reason="Artifact methods disabled",
+    strict=True,
+    raises=(
+        NeptuneUnsupportedFunctionalityException,
+        ModuleNotFoundError,
+    ),
+)
 class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_creation(self, container: NeptuneObject):

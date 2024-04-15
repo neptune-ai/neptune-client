@@ -34,6 +34,7 @@ __all__ = [
     "NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK",
     "NEPTUNE_USE_PROTOCOL_BUFFERS",
     "NEPTUNE_ASYNC_BATCH_SIZE",
+    "S3_ENDPOINT_URL",
 ]
 
 from neptune.internal.envs import (
