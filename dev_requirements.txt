@@ -4,7 +4,6 @@
 Faker
 freezegun
 mock
-moto[s3]<5.0.0
 munch
 mypy
 pre-commit
