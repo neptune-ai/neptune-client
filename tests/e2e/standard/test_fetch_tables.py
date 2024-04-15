@@ -26,6 +26,7 @@ from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
     BaseE2ETest,
+    are_group_tags_enabled,
     fake,
 )
 from tests.e2e.utils import a_key
@@ -55,6 +56,29 @@ class TestFetchTable(BaseE2ETest):
             kwargs = {"tag": [tag1, tag2]}
 
         runs = project.fetch_runs_table(progress_bar=False, **kwargs).to_rows()
+
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("sys/id") == run_id1
+
+    @pytest.mark.skipif(not are_group_tags_enabled(), reason="Group tags are not enabled")
+    def test_fetch_runs_by_group_tag(self, environment, project):
+        tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
+
+        with neptune.init_run(project=environment.project) as run:
+            run_id1 = run["sys/id"].fetch()
+            run["sys/group_tags"].add(tag1)
+            run["sys/group_tags"].add(tag2)
+
+        with neptune.init_run(project=environment.project) as run:
+            run["sys/group_tags"].add(tag2)
+
+        # wait for the cache to fill
+        time.sleep(WAIT_DURATION)
+
+        runs = project.fetch_runs_table(
+            progress_bar=False,
+            query=f"(sys/group_tags: stringSet CONTAINS '{tag1}')",
+        ).to_rows()
 
         assert len(runs) == 1
         assert runs[0].get_attribute_value("sys/id") == run_id1
@@ -210,7 +234,7 @@ class TestFetchTable(BaseE2ETest):
                 kwargs = {"query": "(sys/state: experimentState = running)"}
             else:
                 kwargs = {"state": "active"}
-            runs = project.fetch_runs_table(**kwargs).to_pandas()
+
             runs = project.fetch_runs_table(**kwargs, progress_bar=False).to_pandas()
 
             assert not runs.empty

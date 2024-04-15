@@ -25,6 +25,7 @@ from neptune.metadata_containers import MetadataContainer
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
+    are_group_tags_enabled,
     fake,
 )
 
@@ -140,6 +141,7 @@ class TestNamespace(BaseE2ETest):
 
 class TestStringSet(BaseE2ETest):
     neptune_tags_path = "sys/tags"
+    neptune_group_tags_path = "sys/group_tags"
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_do_not_accept_non_tag_path(self, container: MetadataContainer):
@@ -168,6 +170,29 @@ class TestStringSet(BaseE2ETest):
         container.sync()
 
         assert container[self.neptune_tags_path].fetch() == {
+            remaining_tag1,
+            remaining_tag2,
+        }
+
+    @pytest.mark.skipif(not are_group_tags_enabled(), reason="Group tags are not enabled")
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_add_and_remove_group_tags(self, container: MetadataContainer):
+        remaining_tag1 = fake.unique.word()
+        remaining_tag2 = fake.unique.word()
+        to_remove_tag1 = fake.unique.word()
+        to_remove_tag2 = fake.unique.word()
+
+        container.sync()
+        if container.exists(self.neptune_group_tags_path):
+            container[self.neptune_group_tags_path].clear()
+        container[self.neptune_group_tags_path].add(remaining_tag1)
+        container[self.neptune_group_tags_path].add([to_remove_tag1, remaining_tag2])
+        container[self.neptune_group_tags_path].remove(to_remove_tag1)
+        container[self.neptune_group_tags_path].remove(to_remove_tag2)  # remove non-existent tag
+
+        container.sync()
+
+        assert container[self.neptune_group_tags_path].fetch() == {
             remaining_tag1,
             remaining_tag2,
         }
