@@ -1180,7 +1180,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             "attributeQuery": {
                 "attributePathsFilter": paths,
             },
-            **DEFAULT_REQUEST_KWARGS,
         }
 
         try:
@@ -1196,7 +1195,14 @@ class HostedNeptuneBackend(NeptuneBackend):
                 data = ProtoAttributesDTO.FromString(result)
                 return [Field.from_proto(field) for field in data.attributes]
             else:
-                data = self.leaderboard_client.api.getAttributesWithPathsFilter(**params).response().result
+                data = (
+                    self.leaderboard_client.api.getAttributesWithPathsFilter(
+                        **params,
+                        **DEFAULT_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
                 return [Field.from_model(field) for field in data.attributes]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
