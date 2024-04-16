@@ -257,8 +257,8 @@ class NeptuneBackend:
         container_id: str,
         container_type: ContainerType,
         path: List[str],
-        from_step: float,
         limit: int,
+        from_step: Optional[float] = None,
     ) -> StringSeriesValues: ...
 
     @abc.abstractmethod
