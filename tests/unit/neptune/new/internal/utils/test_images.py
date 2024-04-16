@@ -42,6 +42,7 @@ from neptune.internal.utils.utils import (
 from tests.unit.neptune.new.utils.logging import format_log
 
 Image = pytest.importorskip("PIL.Image")
+Figure = pytest.importorskip("matplotlib.figure.Figure")
 
 
 @pytest.mark.xfail(reason="Removing PIL from dependencies", raises=ModuleNotFoundError)
