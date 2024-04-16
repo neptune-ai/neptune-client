@@ -179,6 +179,7 @@ class TestBaseAssign:
             assert exp["ns"][5].fetch() == 7
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestUpload:
     @classmethod
     def setUpClass(cls) -> None:
@@ -557,6 +558,9 @@ class TestNamespace:
             with pytest.raises(TypeError):
                 exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_fetch_dict(self):
         now = datetime.now()
 

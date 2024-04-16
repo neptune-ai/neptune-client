@@ -131,6 +131,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with init_run(mode="debug", source_files=["../other_dir/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
+    @pytest.mark.skip(reason="File functionality disabled")
     @patch("neptune.vendor.lib_programname.sys.argv", ["main.py"])
     @patch("neptune.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
