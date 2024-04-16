@@ -72,7 +72,11 @@ class FloatSeries(
         val = self._backend.get_float_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 
-    def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
+    def _fetch_values_from_backend(self, from_step, limit) -> FloatSeriesValues:
         return self._backend.get_float_series_values(
-            self._container_id, self._container_type, self._path, offset, limit
+            container_id=self._container_id,
+            container_type=self._container_type,
+            path=self._path,
+            from_step=from_step,
+            limit=limit
         )

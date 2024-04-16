@@ -965,14 +965,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         path: List[str],
-        offset: int,
+        from_step: float,
         limit: int,
     ) -> StringSeriesValues:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
-            "offset": offset,
+            "skipToStep": from_step,
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
@@ -987,14 +987,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         path: List[str],
-        offset: int,
         limit: int,
+        from_step: Optional[float] = None,
     ) -> FloatSeriesValues:
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
-            "offset": offset,
+            "skipToStep": from_step,
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
