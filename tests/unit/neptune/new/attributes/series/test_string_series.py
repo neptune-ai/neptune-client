@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from mock import (
     MagicMock,
     patch,
 )
 
 from neptune.attributes.series.string_series import StringSeries
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -30,6 +32,7 @@ class TestStringSeries(TestAttributeBase):
             with self.assertRaises(Exception):
                 StringSeries(MagicMock(), MagicMock()).assign(value)
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_get(self):
         with self._exp() as exp:
             var = StringSeries(exp, self._random_path())
@@ -37,6 +40,7 @@ class TestStringSeries(TestAttributeBase):
             var.log("hej!")
             self.assertEqual("hej!", var.fetch_last())
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log(self):
         with self._exp() as exp:
             var = StringSeries(exp, self._random_path())

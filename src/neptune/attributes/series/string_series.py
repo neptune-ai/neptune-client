@@ -24,6 +24,7 @@ from typing import (
 
 from neptune.attributes.series.fetchable_series import FetchableSeries
 from neptune.attributes.series.series import Series
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.backends.api_model import StringSeriesValues
 from neptune.internal.operation import (
     ClearStringLog,
@@ -91,6 +92,7 @@ class StringSeries(
         return str(value.value)
 
     def fetch_last(self) -> str:
+        raise NeptuneUnsupportedFunctionalityException
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 

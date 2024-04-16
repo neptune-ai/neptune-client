@@ -20,6 +20,7 @@ from contextlib import contextmanager
 import pytest
 from PIL import Image
 
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
 from neptune.types import (
     FileSeries,
@@ -40,6 +41,9 @@ from tests.e2e.utils import (
 BASIC_SERIES_TYPES = ["strings", "floats", "files"]
 
 
+@pytest.mark.xfail(
+    reason="fetch_last and download_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+)
 class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
