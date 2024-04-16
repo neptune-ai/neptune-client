@@ -1,9 +1,18 @@
 version: 2
 updates:
+
+  # New `neptune` package
   - package-ecosystem: pip
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # Old `neptune-client` package
+  - package-ecosystem: pip
+    directory: ".github/"
+    schedule:
+      interval: "weekly"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
