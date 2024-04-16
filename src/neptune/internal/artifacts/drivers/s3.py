@@ -20,8 +20,6 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-from botocore.exceptions import NoCredentialsError
-
 from neptune.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
@@ -74,6 +72,8 @@ class S3ArtifactDriver(ArtifactDriver):
 
         stored_files: typing.List[ArtifactFileData] = list()
 
+        from botocore.exceptions import NoCredentialsError
+
         try:
             for remote_object in remote_storage.objects.filter(Prefix=prefix):
                 # If prefix is path to file get only directories
@@ -117,6 +117,9 @@ class S3ArtifactDriver(ArtifactDriver):
         bucket_name, path = url.netloc, url.path.lstrip("/")
 
         remote_storage = get_boto_s3_client()
+
+        from botocore.exceptions import NoCredentialsError
+
         try:
             bucket = remote_storage.Bucket(bucket_name)
             bucket.download_file(path, str(destination))
