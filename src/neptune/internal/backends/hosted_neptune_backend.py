@@ -60,6 +60,7 @@ from neptune.api.models import (
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
+from neptune.api.proto.neptune_pb.api.model.series_values_pb2 import ProtoFloatSeriesValuesDTO
 from neptune.api.searching_entries import iter_over_pages
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.envs import (
@@ -989,17 +990,38 @@ class HostedNeptuneBackend(NeptuneBackend):
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
+        use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues:
+        use_proto = use_proto if use_proto is not None else self.use_proto
+
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "skipToStep": from_step,
-            **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
-            return FloatSeriesValues.from_model(result)
+            if use_proto:
+                result = (
+                    self.leaderboard_client.api.getFloatSeriesValuesProto(
+                        **params,
+                        **DEFAULT_PROTO_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
+                data = ProtoFloatSeriesValuesDTO.FromString(result)
+                return FloatSeriesValues.from_proto(data)
+            else:
+                result = (
+                    self.leaderboard_client.api.getFloatSeriesValues(
+                        **params,
+                        **DEFAULT_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
+                return FloatSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 

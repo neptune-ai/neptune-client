@@ -116,6 +116,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
+        use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 

@@ -269,6 +269,7 @@ class NeptuneBackend:
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
+        use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues: ...
 
     @abc.abstractmethod
