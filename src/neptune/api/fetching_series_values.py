@@ -38,14 +38,14 @@ def fetch_series_values(
 ) -> Iterator[PointValue]:
     first_batch = getter(from_step=None, limit=1)
     data_count = 0
-    total = first_batch.totalItemCount
+    total = first_batch.total
     last_step_value = (first_batch.values[-1].step - 1) if first_batch.values else None
     progress_bar = False if total < step_size else progress_bar
 
     with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
         bar.update(by=data_count, total=total)
 
-        while data_count < first_batch.totalItemCount:
+        while data_count < first_batch.total:
             batch = getter(from_step=last_step_value, limit=step_size)
 
             bar.update(by=len(batch.values), total=total)

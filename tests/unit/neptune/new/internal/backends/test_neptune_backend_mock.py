@@ -274,9 +274,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_string_series_values(
-                    container_id, container_type, path=["x"], limit=100, offset=0
-                )
+                ret = self.backend.get_string_series_values(container_id, container_type, path=["x"], limit=100)
 
                 # then
                 self.assertEqual(
@@ -335,9 +333,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 )
 
                 # when
-                ret = self.backend.get_float_series_values(
-                    container_id, container_type, path=["x"], limit=100, offset=0
-                )
+                ret = self.backend.get_float_series_values(container_id, container_type, path=["x"], limit=100)
 
                 # then
                 self.assertEqual(

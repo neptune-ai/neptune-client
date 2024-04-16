@@ -43,7 +43,7 @@ def make_row(entry: Row, include_timestamp: bool = True) -> Dict[str, Union[str,
     }
 
     if include_timestamp:
-        row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
+        row["timestamp"] = entry.timestamp
 
     return row
 
