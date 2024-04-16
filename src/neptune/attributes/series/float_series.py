@@ -25,7 +25,6 @@ from neptune.api.models import FloatSeriesValues
 from neptune.attributes.series.fetchable_series import FetchableSeries
 from neptune.attributes.series.series import Series
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
-from neptune.internal.backends.api_model import FloatSeriesValues
 from neptune.internal.operation import (
     ClearFloatLog,
     ConfigFloatSeries,
