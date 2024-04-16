@@ -6,20 +6,20 @@ on:
       - "*"
 
 jobs:
-        #  wait-for-green-master:
+        #  wait-for-green-dev-1-x:
         #    runs-on: ubuntu-latest
         #    steps:
         #      - name: Wait for tests to finish
         #        uses: lewagon/wait-on-check-action@v1.3.1
         #        with:
         #          ref: ${{ github.ref }}
-        #          running-workflow-name: 'wait-for-green-master'
+        #          running-workflow-name: 'wait-for-green-dev-1-x'
         #          repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
         #          wait-interval: 60
 
   build-neptune:
     runs-on: ubuntu-latest
-    #    needs: [wait-for-green-master]
+    #    needs: [wait-for-green-dev-1-x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -44,7 +44,7 @@ jobs:
 
   build-neptune-client:
     runs-on: ubuntu-latest
-    #    needs: [wait-for-green-master]
+    #    needs: [wait-for-green-dev-1-x]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore:
-      - master
+      - dev/1.x
 
 jobs:
   test:

@@ -7,7 +7,7 @@ on:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
     branches:
-      - master
+      - dev/1-x
 
 jobs:
   test:
@@ -51,7 +51,7 @@ jobs:
   unit-tests-notify:
     needs: [ test ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/master'
+    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
