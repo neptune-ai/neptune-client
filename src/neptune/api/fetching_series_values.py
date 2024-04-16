@@ -42,6 +42,10 @@ def fetch_series_values(
     last_step_value = (first_batch.values[-1].step - 1) if first_batch.values else None
     progress_bar = False if total < step_size else progress_bar
 
+    if total <= 1:
+        yield from first_batch.values
+        return
+
     with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
         bar.update(by=data_count, total=total)
 
