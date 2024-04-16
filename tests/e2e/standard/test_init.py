@@ -124,7 +124,7 @@ class TestInitRun(BaseE2ETest):
 
         captured = capsys.readouterr()
         assert "'some_non_existent_file' does not exist" in captured.out
-        assert "ERROR" in captured.out
+        assert "[warning]" in captured.out
 
     def test_tracking_uncommitted_changes(self, repo, environment):
         file = repo.working_dir + "/some_file.txt"
