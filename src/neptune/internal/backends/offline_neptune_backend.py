@@ -32,19 +32,17 @@ from neptune.api.models import (
     FileField,
     FloatField,
     FloatSeriesField,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     StringField,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
-from neptune.internal.backends.api_model import (
-    FloatSeriesValues,
-    ImageSeriesValues,
-    StringSeriesValues,
-)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType

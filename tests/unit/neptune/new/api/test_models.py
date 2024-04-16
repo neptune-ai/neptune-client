@@ -30,8 +30,10 @@ from neptune.api.models import (
     FileSetField,
     FloatField,
     FloatSeriesField,
+    FloatSeriesValues,
     GitRefField,
     ImageSeriesField,
+    ImageSeriesValues,
     IntField,
     LeaderboardEntriesSearchResult,
     LeaderboardEntry,
@@ -39,6 +41,7 @@ from neptune.api.models import (
     ObjectStateField,
     StringField,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
@@ -52,6 +55,10 @@ from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
     ProtoLeaderboardEntriesSearchResultDTO,
     ProtoStringAttributeDTO,
     ProtoStringSetAttributeDTO,
+)
+from neptune.api.proto.neptune_pb.api.model.series_values_pb2 import (
+    ProtoFloatPointValueDTO,
+    ProtoFloatSeriesValuesDTO,
 )
 
 
@@ -2101,3 +2108,197 @@ def test__file_entry__from_model():
     assert entry.size == 100
     assert entry.mtime == now
     assert entry.file_type == "file"
+
+
+def test__float_series_values__from_dict():
+    # given
+    data = {
+        "totalItemCount": 3,
+        "values": [
+            {"step": 0.5, "value": 1.0, "timestampMillis": 1612345678901},
+            {"step": 2.5, "value": 2.0, "timestampMillis": 1612345679922},
+            {"step": 5.0, "value": 3.0, "timestampMillis": 1612345680963},
+        ],
+    }
+
+    # when
+    result = FloatSeriesValues.from_dict(data)
+
+    # then
+    assert result.total == 3
+
+    assert result.values[0].step == 0.5
+    assert result.values[0].value == 1.0
+    assert result.values[0].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 58, 901000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[1].step == 2.5
+    assert result.values[1].value == 2.0
+    assert result.values[1].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 59, 922000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[2].step == 5.0
+    assert result.values[2].value == 3.0
+    assert result.values[2].timestamp == datetime.datetime(2021, 2, 3, 9, 48, 00, 963000, tzinfo=datetime.timezone.utc)
+
+
+def test__float_series_values__from_model():
+    # given
+    model = Mock(
+        totalItemCount=3,
+        values=[
+            Mock(step=0.5, value=1.0, timestampMillis=1612345678901),
+            Mock(step=2.5, value=2.0, timestampMillis=1612345679922),
+            Mock(step=5.0, value=3.0, timestampMillis=1612345680963),
+        ],
+    )
+
+    # when
+    result = FloatSeriesValues.from_model(model)
+
+    # then
+    assert result.total == 3
+
+    assert result.values[0].step == 0.5
+    assert result.values[0].value == 1.0
+    assert result.values[0].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 58, 901000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[1].step == 2.5
+    assert result.values[1].value == 2.0
+    assert result.values[1].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 59, 922000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[2].step == 5.0
+    assert result.values[2].value == 3.0
+    assert result.values[2].timestamp == datetime.datetime(2021, 2, 3, 9, 48, 00, 963000, tzinfo=datetime.timezone.utc)
+
+
+def test__float_series_values__from_proto():
+    # given
+    proto = ProtoFloatSeriesValuesDTO(
+        total_item_count=3,
+        values=[
+            ProtoFloatPointValueDTO(step=0.5, value=1.0, timestamp_millis=1612345678901),
+            ProtoFloatPointValueDTO(step=2.5, value=2.0, timestamp_millis=1612345679922),
+            ProtoFloatPointValueDTO(step=5.0, value=3.0, timestamp_millis=1612345680963),
+        ],
+    )
+
+    # when
+    result = FloatSeriesValues.from_proto(proto)
+
+    # then
+    assert result.total == 3
+
+    assert result.values[0].step == 0.5
+    assert result.values[0].value == 1.0
+    assert result.values[0].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 58, 901000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[1].step == 2.5
+    assert result.values[1].value == 2.0
+    assert result.values[1].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 59, 922000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[2].step == 5.0
+    assert result.values[2].value == 3.0
+    assert result.values[2].timestamp == datetime.datetime(2021, 2, 3, 9, 48, 00, 963000, tzinfo=datetime.timezone.utc)
+
+
+def test__string_series_values__from_dict():
+    # given
+    data = {
+        "totalItemCount": 3,
+        "values": [
+            {"step": 0.5, "value": "hello", "timestampMillis": 1612345678901},
+            {"step": 2.5, "value": "world", "timestampMillis": 1612345679922},
+            {"step": 5.0, "value": "!", "timestampMillis": 1612345680963},
+        ],
+    }
+
+    # when
+    result = StringSeriesValues.from_dict(data)
+
+    # then
+    assert result.total == 3
+
+    assert result.values[0].step == 0.5
+    assert result.values[0].value == "hello"
+    assert result.values[0].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 58, 901000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[1].step == 2.5
+    assert result.values[1].value == "world"
+    assert result.values[1].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 59, 922000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[2].step == 5.0
+    assert result.values[2].value == "!"
+    assert result.values[2].timestamp == datetime.datetime(2021, 2, 3, 9, 48, 00, 963000, tzinfo=datetime.timezone.utc)
+
+
+def test__string_series_values__from_model():
+    # given
+    model = Mock(
+        totalItemCount=3,
+        values=[
+            Mock(step=0.5, value="hello", timestampMillis=1612345678901),
+            Mock(step=2.5, value="world", timestampMillis=1612345679922),
+            Mock(step=5.0, value="!", timestampMillis=1612345680963),
+        ],
+    )
+
+    # when
+    result = StringSeriesValues.from_model(model)
+
+    # then
+    assert result.total == 3
+
+    assert result.values[0].step == 0.5
+    assert result.values[0].value == "hello"
+    assert result.values[0].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 58, 901000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[1].step == 2.5
+    assert result.values[1].value == "world"
+    assert result.values[1].timestamp == datetime.datetime(2021, 2, 3, 9, 47, 59, 922000, tzinfo=datetime.timezone.utc)
+
+    assert result.values[2].step == 5.0
+    assert result.values[2].value == "!"
+    assert result.values[2].timestamp == datetime.datetime(2021, 2, 3, 9, 48, 00, 963000, tzinfo=datetime.timezone.utc)
+
+
+def test__string_series_values__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        StringSeriesValues.from_proto(proto)
+
+
+def test__image_series_values__from_dict():
+    # given
+    data = {
+        "totalItemCount": 3,
+    }
+
+    # when
+    result = ImageSeriesValues.from_dict(data)
+
+    # then
+    assert result.total == 3
+
+
+def test__image_series_values__from_model():
+    # given
+    model = Mock(
+        totalItemCount=3,
+    )
+
+    # when
+    result = ImageSeriesValues.from_model(model)
+
+    # then
+    assert result.total == 3
+
+
+def test__image_series_values__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        ImageSeriesValues.from_proto(proto)

@@ -25,15 +25,15 @@ from typing import (
     Union,
 )
 
-from neptune.internal.backends.api_model import (
-    FloatSeriesValues,
-    StringSeriesValues,
+from neptune.api.models import (
+    FloatPointValue,
+    StringPointValue,
 )
 from neptune.internal.backends.utils import construct_progress_bar
 from neptune.internal.utils.paths import path_to_str
 from neptune.typing import ProgressBarType
 
-Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
+Row = TypeVar("Row", StringPointValue, FloatPointValue)
 
 
 class FetchableSeries(Generic[Row]):
@@ -54,19 +54,19 @@ class FetchableSeries(Generic[Row]):
             row["step"] = entry.step
             row["value"] = entry.value
             if include_timestamp:
-                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
+                row["timestamp"] = entry.timestamp
             return row
 
         progress_bar = False if len(data) < limit else progress_bar
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
-            bar.update(by=len(data), total=val.totalItemCount)  # first fetch before the loop
-            while offset < val.totalItemCount:
+            bar.update(by=len(data), total=val.total)  # first fetch before the loop
+            while offset < val.total:
                 batch = self._fetch_values_from_backend(offset, limit)
                 data.extend(batch.values)
                 offset += limit
-                bar.update(by=len(batch.values), total=val.totalItemCount)
+                bar.update(by=len(batch.values), total=val.total)
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 

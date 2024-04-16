@@ -39,6 +39,11 @@ __all__ = (
     "NotebookRefField",
     "ArtifactField",
     "FieldDefinition",
+    "FloatSeriesValues",
+    "FloatPointValue",
+    "StringSeriesValues",
+    "StringPointValue",
+    "ImageSeriesValues",
 )
 
 import abc
@@ -612,3 +617,124 @@ class FieldDefinition:
     @staticmethod
     def from_proto(data: ProtoAttributeDefinitionDTO) -> FieldDefinition:
         return FieldDefinition(path=data.name, type=FieldType(data.type))
+
+
+@dataclass
+class FloatSeriesValues:
+    total: int
+    values: List[FloatPointValue]
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> FloatSeriesValues:
+        return FloatSeriesValues(
+            total=data["totalItemCount"], values=[FloatPointValue.from_dict(value) for value in data["values"]]
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> FloatSeriesValues:
+        return FloatSeriesValues(
+            total=model.totalItemCount, values=[FloatPointValue.from_model(value) for value in model.values]
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> FloatSeriesValues:
+        return FloatSeriesValues(
+            total=data.total_item_count, values=[FloatPointValue.from_proto(value) for value in data.values]
+        )
+
+
+@dataclass
+class FloatPointValue:
+    timestamp: datetime
+    value: float
+    step: float
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> FloatPointValue:
+        return FloatPointValue(
+            timestamp=datetime.fromtimestamp(data["timestampMillis"] / 1000.0, tz=timezone.utc),
+            value=float(data["value"]),
+            step=float(data["step"]),
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> FloatPointValue:
+        return FloatPointValue(
+            timestamp=datetime.fromtimestamp(model.timestampMillis / 1000.0, tz=timezone.utc),
+            value=model.value,
+            step=model.step,
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> FloatPointValue:
+        return FloatPointValue(
+            timestamp=datetime.fromtimestamp(data.timestamp_millis / 1000.0, tz=timezone.utc),
+            value=data.value,
+            step=data.step,
+        )
+
+
+@dataclass
+class StringSeriesValues:
+    total: int
+    values: List[StringPointValue]
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> StringSeriesValues:
+        return StringSeriesValues(
+            total=data["totalItemCount"], values=[StringPointValue.from_dict(value) for value in data["values"]]
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> StringSeriesValues:
+        return StringSeriesValues(
+            total=model.totalItemCount, values=[StringPointValue.from_model(value) for value in model.values]
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> StringSeriesValues:
+        raise NotImplementedError()
+
+
+@dataclass
+class StringPointValue:
+    timestamp: datetime
+    step: float
+    value: str
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> StringPointValue:
+        return StringPointValue(
+            timestamp=datetime.fromtimestamp(data["timestampMillis"] / 1000.0, tz=timezone.utc),
+            value=str(data["value"]),
+            step=float(data["step"]),
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> StringPointValue:
+        return StringPointValue(
+            timestamp=datetime.fromtimestamp(model.timestampMillis / 1000.0, tz=timezone.utc),
+            value=model.value,
+            step=model.step,
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> StringPointValue:
+        raise NotImplementedError()
+
+
+@dataclass
+class ImageSeriesValues:
+    total: int
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> ImageSeriesValues:
+        return ImageSeriesValues(total=data["totalItemCount"])
+
+    @staticmethod
+    def from_model(model: Any) -> ImageSeriesValues:
+        return ImageSeriesValues(total=model.totalItemCount)
+
+    @staticmethod
+    def from_proto(data: Any) -> ImageSeriesValues:
+        raise NotImplementedError()

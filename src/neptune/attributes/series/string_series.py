@@ -22,10 +22,10 @@ from typing import (
     Union,
 )
 
+from neptune.api.models import StringSeriesValues
 from neptune.attributes.series.fetchable_series import FetchableSeries
 from neptune.attributes.series.series import Series
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
-from neptune.internal.backends.api_model import StringSeriesValues
 from neptune.internal.operation import (
     ClearStringLog,
     LogStrings,

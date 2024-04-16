@@ -36,20 +36,20 @@ from neptune.api.models import (
     FileField,
     FloatField,
     FloatSeriesField,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     StringField,
     StringSeriesField,
+    StringSeriesValues,
     StringSetField,
 )
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    FloatSeriesValues,
-    ImageSeriesValues,
     Project,
-    StringSeriesValues,
     Workspace,
 )
 from neptune.internal.backends.nql import NQLQuery

@@ -101,7 +101,7 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
         target_dir = self._get_destination(destination)
         item_count = self._backend.get_image_series_values(
             self._container_id, self._container_type, self._path, 0, 1
-        ).totalItemCount
+        ).total
         for i in range(0, item_count):
             self._backend.download_file_series_by_index(
                 self._container_id, self._container_type, self._path, i, target_dir, progress_bar
@@ -112,7 +112,7 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
         target_dir = self._get_destination(destination)
         item_count = self._backend.get_image_series_values(
             self._container_id, self._container_type, self._path, 0, 1
-        ).totalItemCount
+        ).total
         if item_count > 0:
             self._backend.download_file_series_by_index(
                 self._container_id,

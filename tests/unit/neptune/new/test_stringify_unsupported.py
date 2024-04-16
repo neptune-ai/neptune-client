@@ -24,6 +24,7 @@ from typing import (
     MutableMapping,
 )
 
+from freezegun import freeze_time
 from pytest import (
     fixture,
     raises,
@@ -411,6 +412,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_log__custom_object(self, run):
         with assert_unsupported_warning():
             run["unsupported"].log(Obj())
@@ -423,6 +425,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_log__list_of_custom_objects(self, run):
         with assert_unsupported_warning():
             run["unsupported"].log([Obj(), Obj(), Obj(), Obj(), Obj()])
@@ -441,6 +444,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_log__float(self, run):
         with assert_no_warnings():
             run["stringified"].log(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
@@ -450,6 +454,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_extend__float(self, run):
         with assert_no_warnings():
             run["stringified"].extend(stringify_unsupported([1.0, 2.0, 3.0, 4.0, 5.0]))
@@ -459,6 +464,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_extend__dict(self, run):
         with assert_unsupported_warning():
             run["unsupported"].extend({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
@@ -476,6 +482,7 @@ class TestStringifyUnsupported:
         assert run["regular/zz"].fetch_values().equals(run["stringified/zz"].fetch_values())
         assert run["regular/bb"].fetch_values().equals(run["stringified/bb"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_append__float(self, run):
         with assert_no_warnings():
             run["stringified"].append(stringify_unsupported(1.0))
@@ -487,6 +494,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_append__float_with_steps(self, run):
         with assert_no_warnings():
             run["stringified"].append(stringify_unsupported(1.0), step=5)
@@ -498,6 +506,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_append__custom_object(self, run):
         with assert_unsupported_warning():
             run["unsupported"].append(Obj())
@@ -513,6 +522,7 @@ class TestStringifyUnsupported:
 
         assert run["regular"].fetch_values().equals(run["stringified"].fetch_values())
 
+    @freeze_time("2024-01-01T12:34:56.123456Z")
     def test_append__dict(self, run):
         with assert_no_warnings():
             run["stringified"].append(stringify_unsupported({"zz": 1.0}))
