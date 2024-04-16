@@ -22,6 +22,7 @@ from io import (
 from pathlib import Path
 from unittest.mock import PropertyMock
 
+import pytest
 from mock import (
     MagicMock,
     patch,
@@ -35,6 +36,7 @@ from neptune.attributes.file_set import (
     FileSet,
     FileSetVal,
 )
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     UploadFile,
     UploadFileSet,
@@ -46,6 +48,9 @@ from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeB
 
 
 class TestFile(TestAttributeBase):
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
@@ -103,12 +108,18 @@ class TestFile(TestAttributeBase):
                         operation_factory(path, tmp_uploaded_file), wait=wait
                     )
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_assign_type_error(self):
         values = [55, None, []]
         for value in values:
             with self.assertRaises(TypeError):
                 File(MagicMock(), MagicMock()).assign(value)
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_save(self, get_operation_processor):
@@ -129,6 +140,9 @@ class TestFile(TestAttributeBase):
                     UploadFile(path=path, ext="", file_path=expected), wait=wait
                 )
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_save_files(self, get_operation_processor):
@@ -147,18 +161,27 @@ class TestFile(TestAttributeBase):
                 var.upload_files(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(UploadFileSet(path, expected, False), wait=wait)
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_save_type_error(self):
         values = [55, None, [], FileVal]
         for value in values:
             with self.assertRaises(TypeError):
                 File(MagicMock(), MagicMock()).upload(value)
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_save__files_type_error(self):
         values = [55, None, [55], FileSetVal]
         for value in values:
             with self.assertRaises(TypeError):
                 FileSet(MagicMock(), MagicMock()).upload_files(value)
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_fetch_extension(self):
         value_and_expected_ext = [
             (FileVal("some/file.txt"), "txt"),

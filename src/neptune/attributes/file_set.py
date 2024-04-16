@@ -25,6 +25,7 @@ from typing import (
 
 from neptune.api.models import FileEntry
 from neptune.attributes.attribute import Attribute
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     DeleteFiles,
     UploadFileSet,
@@ -39,6 +40,7 @@ from neptune.typing import ProgressBarType
 
 class FileSet(Attribute):
     def assign(self, value: Union[FileSetVal, str, Iterable[str]], *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         verify_type("value", value, (FileSetVal, str, Iterable))
         if isinstance(value, FileSetVal):
             value = value.file_globs
@@ -49,6 +51,7 @@ class FileSet(Attribute):
         self._enqueue_upload_operation(value, reset=True, wait=wait)
 
     def upload_files(self, globs: Union[str, Iterable[str]], *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         if isinstance(globs, str):
             globs = [globs]
         else:
@@ -56,6 +59,7 @@ class FileSet(Attribute):
         self._enqueue_upload_operation(globs, reset=False, wait=wait)
 
     def delete_files(self, paths: Union[str, Iterable[str]], *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         if isinstance(paths, str):
             paths = [paths]
         else:
@@ -64,6 +68,7 @@ class FileSet(Attribute):
             self._enqueue_operation(DeleteFiles(self._path, set(paths)), wait=wait)
 
     def _enqueue_upload_operation(self, globs: Iterable[str], *, reset: bool, wait: bool):
+        raise NeptuneUnsupportedFunctionalityException
         with self._container.lock():
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
             self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=reset), wait=wait)
@@ -73,9 +78,11 @@ class FileSet(Attribute):
         destination: Optional[str] = None,
         progress_bar: Optional[ProgressBarType] = None,
     ) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         verify_type("destination", destination, (str, type(None)))
         self._backend.download_file_set(self._container_id, self._container_type, self._path, destination, progress_bar)
 
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
+        raise NeptuneUnsupportedFunctionalityException
         path = path or ""
         return self._backend.list_fileset_files(self._path, self._container_id, path)

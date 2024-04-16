@@ -18,6 +18,7 @@
 - Removed `boto3` from requirements ([#1743](https://github.com/neptune-ai/neptune-client/pull/1743))
 - Disabled `StringSet` `remove` and `clear` methods ([#1732](https://github.com/neptune-ai/neptune-client/pull/1732))
 - Disable `fetch_last` and `download_last` ([#1731](https://github.com/neptune-ai/neptune-client/pull/1731))
+- Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))

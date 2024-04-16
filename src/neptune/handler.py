@@ -252,6 +252,7 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#upload
 
         """
+        raise NeptuneUnsupportedFunctionalityException
         value = FileVal.create_from(value)
 
         with self._container.lock():
@@ -263,6 +264,7 @@ class Handler(SupportsNamespaces):
 
     @check_protected_paths
     def upload_files(self, value: Union[str, Iterable[str]], *, wait: bool = False) -> None:
+        raise NeptuneUnsupportedFunctionalityException
         if is_collection(value):
             verify_collection_type("value", value, str)
         else:
@@ -588,6 +590,7 @@ class Handler(SupportsNamespaces):
         For more information, see the docs:
             https://docs.neptune.ai/api/field_types#delete_files
         """
+        raise NeptuneUnsupportedFunctionalityException
         return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
     @check_protected_paths
@@ -621,6 +624,7 @@ class Handler(SupportsNamespaces):
         For more information, see the docs:
            https://docs.neptune.ai/api-reference/field-types
         """
+        raise NeptuneUnsupportedFunctionalityException
         return self._pass_call_to_attr(function_name="download", destination=destination, progress_bar=progress_bar)
 
     def download_last(self, destination: str = None) -> None:
@@ -654,6 +658,7 @@ class Handler(SupportsNamespaces):
         You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_extension
         """
+        raise NeptuneUnsupportedFunctionalityException
         return self._pass_call_to_attr(function_name="fetch_extension")
 
     @feature_temporarily_unavailable
@@ -663,6 +668,7 @@ class Handler(SupportsNamespaces):
         You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_files_list
         """
+        raise NeptuneUnsupportedFunctionalityException
         return self._pass_call_to_attr(function_name="fetch_files_list")
 
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
@@ -700,6 +706,7 @@ class Handler(SupportsNamespaces):
         For more information, see the API reference:
            https://docs.neptune.ai/api/field_types#list_fileset_files
         """
+        raise NeptuneUnsupportedFunctionalityException
         return self._pass_call_to_attr(function_name="list_fileset_files", path=path)
 
     def _pass_call_to_attr(self, function_name, **kwargs):
@@ -713,6 +720,7 @@ class Handler(SupportsNamespaces):
         You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#track_files
         """
+        raise NeptuneUnsupportedFunctionalityException
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
             if attr is None:

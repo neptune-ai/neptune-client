@@ -31,6 +31,7 @@ from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
+    make_parameters,
 )
 from tests.e2e.utils import (
     generate_image,
@@ -38,7 +39,11 @@ from tests.e2e.utils import (
     tmp_context,
 )
 
-BASIC_SERIES_TYPES = ["strings", "floats", "files"]
+BASIC_SERIES_TYPES = (
+    make_parameters(["strings", "floats", "files"])
+    .xfail("files", reason="File funcitonality disabled", raises=NeptuneUnsupportedFunctionalityException)
+    .eval()
+)
 
 
 @pytest.mark.xfail(
@@ -81,6 +86,9 @@ class TestSeries(BaseE2ETest):
         with self.run_then_assert(container, "strings") as (namespace, values, steps, timestamps):
             namespace.assign(StringSeries(values=values, steps=steps, timestamps=timestamps))
 
+    @pytest.mark.xfail(
+        reason="File funcitonality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_file_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "files") as (namespace, values, steps, timestamps):

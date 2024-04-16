@@ -120,6 +120,9 @@ class TestArtifact(TestAttributeBase):
         fetched_hash = self.exp[self.path_str].fetch_files_list()
         self.assertEqual(self.artifact_files, fetched_hash)
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_download(self):
         self.monkeypatch.setattr(
             ArtifactDriversMap,
@@ -134,6 +137,9 @@ class TestArtifact(TestAttributeBase):
             self.assertTrue((temporary_path / "fname.txt").exists())
             self.assertTrue((temporary_path / "subdir" / "other.mp3").exists())
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_download_unknown_type(self):
         self.monkeypatch.setattr(
             ArtifactDriversMap,
