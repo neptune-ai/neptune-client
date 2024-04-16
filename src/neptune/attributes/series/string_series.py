@@ -102,5 +102,5 @@ class StringSeries(
             container_type=self._container_type,
             path=self._path,
             from_step=from_step,
-            limit=limit
+            limit=limit,
         )

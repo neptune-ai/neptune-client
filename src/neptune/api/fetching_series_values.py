@@ -16,13 +16,17 @@
 __all__ = ("fetch_series_values",)
 
 from typing import (
+    Any,
+    Callable,
     Iterator,
-    List,
+    Optional,
     TypeVar,
-    Optional, Callable, Any,
 )
 
-from neptune.internal.backends.api_model import StringPointValue, FloatPointValue
+from neptune.api.models import (
+    FloatPointValue,
+    StringPointValue,
+)
 from neptune.internal.backends.utils import construct_progress_bar
 from neptune.typing import ProgressBarType
 
@@ -30,10 +34,7 @@ PointValue = TypeVar("PointValue", StringPointValue, FloatPointValue)
 
 
 def fetch_series_values(
-    getter: Callable[..., Any],
-    path: str,
-    step_size: int = 1000,
-    progress_bar: Optional[ProgressBarType] = None
+    getter: Callable[..., Any], path: str, step_size: int = 1000, progress_bar: Optional[ProgressBarType] = None
 ) -> Iterator[PointValue]:
     first_batch = getter(from_step=None, limit=1)
     data_count = 0

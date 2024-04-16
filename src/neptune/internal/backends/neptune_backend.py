@@ -259,8 +259,7 @@ class NeptuneBackend:
         path: List[str],
         from_step: float,
         limit: int,
-    ) -> StringSeriesValues:
-        ...
+    ) -> StringSeriesValues: ...
 
     @abc.abstractmethod
     def get_float_series_values(
@@ -270,8 +269,7 @@ class NeptuneBackend:
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
-    ) -> FloatSeriesValues:
-        ...
+    ) -> FloatSeriesValues: ...
 
     @abc.abstractmethod
     def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:

@@ -50,8 +50,7 @@ def make_row(entry: Row, include_timestamp: bool = True) -> Dict[str, Union[str,
 
 class FetchableSeries(Generic[Row]):
     @abc.abstractmethod
-    def _fetch_values_from_backend(self, limit: int, from_step: Optional[float] = None) -> Row:
-        ...
+    def _fetch_values_from_backend(self, limit: int, from_step: Optional[float] = None) -> Row: ...
 
     def fetch_values(self, *, include_timestamp: bool = True, progress_bar: Optional[ProgressBarType] = None):
         import pandas as pd
