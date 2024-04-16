@@ -29,7 +29,6 @@ from io import (
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
-import PIL
 import pytest
 
 from neptune import (
@@ -68,6 +67,8 @@ from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.types.sets.string_set import StringSet as StringSetVal
 from tests.unit.neptune.new.utils.file_helpers import create_file
+
+PIL = pytest.importorskip("PIL")
 
 
 class Obj:

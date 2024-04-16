@@ -24,11 +24,6 @@ from typing import (
     Optional,
 )
 
-from PIL import (
-    Image,
-    UnidentifiedImageError,
-)
-
 from neptune.attributes.series.series import Series
 from neptune.exceptions import (
     FileNotFound,
@@ -83,6 +78,11 @@ class FileSeries(Series[Val, Data, LogOperation], max_batch_size=1, operation_cl
                 file_content = File.from_stream(image_file).content
         else:
             file_content = file.content
+
+        from PIL import (
+            Image,
+            UnidentifiedImageError,
+        )
 
         try:
             with Image.open(io.BytesIO(file_content)):

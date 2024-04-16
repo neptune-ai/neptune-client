@@ -38,13 +38,15 @@ from math import sqrt
 from time import perf_counter
 
 import numpy
+import pytest
 from attr import dataclass
-from PIL import Image
-from PIL.PngImagePlugin import PngImageFile
 
 import neptune
 from neptune.internal.container_type import ContainerType
 from tests.e2e.exceptions import MissingEnvironmentVariable
+
+Image = pytest.importorskip("PIL.Image")
+PngImageFile = pytest.importorskip("PIL.PngImagePlugin.PngImageFile")
 
 
 def _remove_file_if_exists(filepath):

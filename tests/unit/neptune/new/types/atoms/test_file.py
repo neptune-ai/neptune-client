@@ -22,7 +22,6 @@ from io import (
 
 import numpy
 from bokeh.plotting import figure
-from PIL import Image
 
 from neptune.exceptions import (
     NeptuneException,
@@ -166,6 +165,8 @@ class TestFile(unittest.TestCase):
             _ = file.content
 
     def test_as_image(self):
+        from PIL import Image
+
         # given
         image_array = numpy.random.rand(10, 10) * 255
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
