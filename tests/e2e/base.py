@@ -83,7 +83,7 @@ def available_containers_parameters() -> Parameters:
 
 
 def make_parameters(params: List[Union[str, ParameterSet]]) -> Parameters:
-    return [pytest.param(p) if isinstance(p, str) else p for p in params]
+    return Parameters([pytest.param(p) if isinstance(p, str) else p for p in params])
 
 
 class BaseE2ETest:
