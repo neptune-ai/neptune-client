@@ -44,6 +44,8 @@ __all__ = (
     "StringSeriesValues",
     "StringPointValue",
     "ImageSeriesValues",
+    "QueryAttributesResult",
+    "NextPage",
 )
 
 import abc
@@ -599,6 +601,81 @@ class LeaderboardEntriesSearchResult:
             entries=[LeaderboardEntry.from_proto(entry) for entry in data.entries],
             matching_item_count=data.matching_item_count,
         )
+
+
+@dataclass
+class NextPage:
+    limit: Optional[int]
+    next_page_token: Optional[str]
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> NextPage:
+        return NextPage(limit=data.get("limit"), next_page_token=data.get("nextPageToken"))
+
+    @staticmethod
+    def from_model(model: Any) -> NextPage:
+        return NextPage(limit=model.limit, next_page_token=model.nextPageToken)
+
+    @staticmethod
+    def from_proto(data: Any) -> NextPage:
+        raise NotImplementedError()
+
+    def to_dto(self) -> Dict[str, Any]:
+        return {
+            "limit": self.limit,
+            "nextPageToken": self.next_page_token,
+        }
+
+
+@dataclass
+class QueryAttributesExperimentResult:
+    object_id: str
+    object_key: str
+    fields: List[Field]
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> QueryAttributesExperimentResult:
+        return QueryAttributesExperimentResult(
+            object_id=data["experimentId"],
+            object_key=data["experimentShortId"],
+            fields=[Field.from_dict(field) for field in data["attributes"]]
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> QueryAttributesExperimentResult:
+        return QueryAttributesExperimentResult(
+            object_id=model.experimentId,
+            object_key=model.experimentShortId,
+            fields=[Field.from_model(field) for field in model.attributes]
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> QueryAttributesExperimentResult:
+        raise NotImplementedError()
+
+
+@dataclass
+class QueryAttributesResult:
+    entries: List[QueryAttributesExperimentResult]
+    next_page: NextPage
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> QueryAttributesResult:
+        return QueryAttributesResult(
+            entries=[QueryAttributesExperimentResult.from_dict(entry) for entry in data["entries"]],
+            next_page=NextPage.from_dict(data["nextPage"]),
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> QueryAttributesResult:
+        return QueryAttributesResult(
+            entries=[QueryAttributesExperimentResult.from_model(entry) for entry in model.entries],
+            next_page=NextPage.from_model(model.nextPage),
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> QueryAttributesResult:
+        raise NotImplementedError()
 
 
 @dataclass

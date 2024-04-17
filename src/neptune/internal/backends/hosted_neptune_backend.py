@@ -56,7 +56,7 @@ from neptune.api.models import (
     StringField,
     StringSeriesField,
     StringSeriesValues,
-    StringSetField,
+    StringSetField, QueryAttributesResult, NextPage,
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
@@ -1026,6 +1026,29 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
+    def query_fields_within_project(
+        self,
+        project_id: UniqueId,
+        field_names: List[str],
+        next_page: Optional[NextPage] = None
+    ) -> QueryAttributesResult:
+        pagination = {"nextPage": next_page.to_dto()} if next_page else {}
+        params = {
+            "projectIdentifier": project_id,
+            "query": {
+                "attributeNamesFilter": field_names,
+                **pagination,
+             },
+            **DEFAULT_REQUEST_KWARGS,
+        }
+
+        try:
+            result = self.leaderboard_client.api.queryAttributesWithinProject(**params).response().result
+            return QueryAttributesResult.from_model(result)
+        except HTTPNotFound:
+            raise ProjectNotFound(project_id=project_id)
+
+    @with_api_exceptions_handler
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, FieldType, Any]]:
@@ -1142,6 +1165,31 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
+    def query_fields_definitions_within_project(
+        self,
+        project_id: UniqueId,
+        field_name_regex: str,
+    ) -> List[FieldDefinition]:
+        params = {
+            "projectIdentifier": project_id,
+            "query": {
+                "attributeNameRegex": field_name_regex,
+            }
+        }
+
+        try:
+            data = (
+                self.leaderboard_client.api.queryAttributeDefinitionsWithinProject(
+                    **params,
+                    **DEFAULT_REQUEST_KWARGS,
+                )
+                .response()
+                .result
+            )
+            return [FieldDefinition.from_model(field_def) for field_def in data.entries]
+        except HTTPNotFound as e:
+            raise ProjectNotFound(project_id=project_id)
 
     def get_fields_definitions(
         self,
