@@ -25,50 +25,44 @@ from typing import (
     Union,
 )
 
+from neptune.api.fetching_series_values import fetch_series_values
 from neptune.api.models import (
     FloatPointValue,
     StringPointValue,
 )
-from neptune.internal.backends.utils import construct_progress_bar
 from neptune.internal.utils.paths import path_to_str
 from neptune.typing import ProgressBarType
 
 Row = TypeVar("Row", StringPointValue, FloatPointValue)
 
 
+def make_row(entry: Row, include_timestamp: bool = True) -> Dict[str, Union[str, float, datetime]]:
+    row: Dict[str, Union[str, float, datetime]] = {
+        "step": entry.step,
+        "value": entry.value,
+    }
+
+    if include_timestamp:
+        row["timestamp"] = entry.timestamp
+
+    return row
+
+
 class FetchableSeries(Generic[Row]):
     @abc.abstractmethod
-    def _fetch_values_from_backend(self, offset, limit) -> Row:
-        pass
+    def _fetch_values_from_backend(self, limit: int, from_step: Optional[float] = None) -> Row: ...
 
     def fetch_values(self, *, include_timestamp: bool = True, progress_bar: Optional[ProgressBarType] = None):
         import pandas as pd
 
-        limit = 1000
-        val = self._fetch_values_from_backend(0, limit)
-        data = val.values
-        offset = limit
-
-        def make_row(entry: Row) -> Dict[str, Union[str, float, datetime]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            row["step"] = entry.step
-            row["value"] = entry.value
-            if include_timestamp:
-                row["timestamp"] = entry.timestamp
-            return row
-
-        progress_bar = False if len(data) < limit else progress_bar
-
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
-        with construct_progress_bar(progress_bar, f"Fetching {path} values") as bar:
-            bar.update(by=len(data), total=val.total)  # first fetch before the loop
-            while offset < val.total:
-                batch = self._fetch_values_from_backend(offset, limit)
-                data.extend(batch.values)
-                offset += limit
-                bar.update(by=len(batch.values), total=val.total)
+        data = fetch_series_values(
+            getter=self._fetch_values_from_backend,
+            path=path,
+            progress_bar=progress_bar,
+        )
 
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
+        rows = dict((n, make_row(entry=entry, include_timestamp=include_timestamp)) for (n, entry) in enumerate(data))
 
         df = pd.DataFrame.from_dict(data=rows, orient="index")
         return df

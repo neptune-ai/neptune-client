@@ -19,6 +19,7 @@ from typing import (
     TYPE_CHECKING,
     Iterable,
     List,
+    Optional,
     Union,
 )
 
@@ -96,7 +97,11 @@ class StringSeries(
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 
-    def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
+    def _fetch_values_from_backend(self, limit: int, from_step: Optional[float] = None) -> StringSeriesValues:
         return self._backend.get_string_series_values(
-            self._container_id, self._container_type, self._path, offset, limit
+            container_id=self._container_id,
+            container_type=self._container_type,
+            path=self._path,
+            from_step=from_step,
+            limit=limit,
         )

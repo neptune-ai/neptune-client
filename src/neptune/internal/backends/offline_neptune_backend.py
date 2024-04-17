@@ -104,8 +104,8 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         container_id: str,
         container_type: ContainerType,
         path: List[str],
-        offset: int,
         limit: int,
+        from_step: Optional[float] = None,
     ) -> StringSeriesValues:
         raise NeptuneOfflineModeFetchException
 
@@ -114,8 +114,9 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         container_id: str,
         container_type: ContainerType,
         path: List[str],
-        offset: int,
         limit: int,
+        from_step: Optional[float] = None,
+        use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 
