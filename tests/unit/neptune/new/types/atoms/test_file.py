@@ -21,6 +21,7 @@ from io import (
 )
 
 import numpy
+import pytest
 from bokeh.plotting import figure
 
 from neptune.exceptions import (
@@ -34,6 +35,8 @@ from neptune.internal.types.file_types import (
 from neptune.internal.utils.images import _get_pil_image_data
 from neptune.types import File
 from tests.e2e.utils import tmp_context
+
+Image = pytest.importorskip("PIL.Image")
 
 
 class TestFile(unittest.TestCase):
@@ -165,8 +168,6 @@ class TestFile(unittest.TestCase):
             _ = file.content
 
     def test_as_image(self):
-        from PIL import Image
-
         # given
         image_array = numpy.random.rand(10, 10) * 255
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
