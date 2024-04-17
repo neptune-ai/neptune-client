@@ -18,7 +18,6 @@ import time
 from contextlib import contextmanager
 
 import pytest
-from PIL import Image
 
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
@@ -38,6 +37,8 @@ from tests.e2e.utils import (
     image_to_png,
     tmp_context,
 )
+
+Image = pytest.importorskip("PIL.Image")
 
 BASIC_SERIES_TYPES = (
     make_parameters(["strings", "floats", "files"])

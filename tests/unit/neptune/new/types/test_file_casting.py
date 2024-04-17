@@ -16,8 +16,8 @@
 from datetime import datetime
 
 import numpy
+import pytest
 from bokeh.plotting import figure
-from PIL import Image
 
 from neptune.types import (
     Datetime,
@@ -30,6 +30,8 @@ from neptune.types import (
 from neptune.types.namespace import Namespace
 from neptune.types.type_casting import cast_value
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
+
+Image = pytest.importorskip("PIL.Image")
 
 
 class TestTypeCasting(TestAttributeBase):

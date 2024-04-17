@@ -39,8 +39,6 @@ from time import perf_counter
 
 import numpy
 from attr import dataclass
-from PIL import Image
-from PIL.PngImagePlugin import PngImageFile
 
 import neptune
 from neptune.internal.container_type import ContainerType
@@ -95,14 +93,18 @@ def tmp_context():
             yield tmp
 
 
-def generate_image(*, size: int) -> Image:
+def generate_image(*, size: int) -> "Image":  # noqa: F821
     """generate image of size in bytes"""
+    from PIL import Image
+
     width = int(sqrt(size / 3))  # 3 bytes per one pixel in square image
     random_numbers = numpy.random.rand(width, width, 3) * 255
     return Image.fromarray(random_numbers.astype("uint8")).convert("RGB")
 
 
-def image_to_png(*, image: Image) -> PngImageFile:
+def image_to_png(*, image: "Image") -> "PngImageFile":  # noqa: F821
+    from PIL.PngImagePlugin import PngImageFile
+
     png_buf = io.BytesIO()
     image.save(png_buf, format="png")
     png_buf.seek(0)

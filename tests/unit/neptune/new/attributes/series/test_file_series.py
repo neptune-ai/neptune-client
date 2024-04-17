@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import io
+from importlib.util import find_spec
 from unittest import mock
 
 import numpy
@@ -51,6 +52,7 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(TypeError):
                 FileSeries(MagicMock(), MagicMock()).log(value)
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_log_content(self, get_operation_processor):
         # given
@@ -89,6 +91,7 @@ class TestFileSeries(TestAttributeBase):
                 wait=wait,
             )
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign_content(self, get_operation_processor):
         # given
@@ -125,6 +128,7 @@ class TestFileSeries(TestAttributeBase):
                 ]
             )
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_log_path(self, get_operation_processor):
         # given
@@ -181,6 +185,7 @@ class TestFileSeries(TestAttributeBase):
                     ]
                 )
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     def test_log_raise_not_image(self):
         # given
         path = self._random_path()
@@ -201,6 +206,7 @@ class TestFileSeries(TestAttributeBase):
                 with self.assertRaises(OperationNotSupported):
                     attr.log(stream)
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     def test_assign_raise_not_image(self):
         # given
         path = self._random_path()
@@ -221,6 +227,7 @@ class TestFileSeries(TestAttributeBase):
                 with self.assertRaises(OperationNotSupported):
                     attr.assign([stream])
 
+    @pytest.mark.skipif(condition=find_spec("PIL") is None, reason="PIL not installed")
     @mock.patch("neptune.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
     def test_image_limit(self):
         """Test if we prohibit logging images greater than mocked 1KB limit size"""
