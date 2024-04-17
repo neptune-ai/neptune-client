@@ -250,7 +250,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "other 3"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log(5)
@@ -301,7 +301,7 @@ class TestSeries:
             assert exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last() == 33
             assert exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last() == 44
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_many_values(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
@@ -406,7 +406,7 @@ class TestSeries:
                     values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
                 )
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
