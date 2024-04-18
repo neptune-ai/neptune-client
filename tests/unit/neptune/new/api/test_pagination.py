@@ -37,7 +37,7 @@ def extract_entries(data: Any) -> List[int]:
 
 def test__empty():
     # given
-    getter = Mock(side_effect=Mock(next_page=None))
+    getter = Mock(side_effect=[Mock(next_page=None)])
 
     # when
     entries = list(paginate_over(getter=getter, extract_entries=extract_entries_empty))
@@ -48,7 +48,7 @@ def test__empty():
 
 def test__single_page():
     # given
-    getter = Mock(side_effect=Mock(next_page=None))
+    getter = Mock(side_effect=[Mock(next_page=None)])
 
     # when
     entries = list(paginate_over(getter=getter, extract_entries=extract_entries))
