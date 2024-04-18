@@ -37,12 +37,16 @@ from neptune.api.models import (
     IntField,
     LeaderboardEntriesSearchResult,
     LeaderboardEntry,
+    NextPage,
     NotebookRefField,
     ObjectStateField,
+    QueryFieldDefinitionsResult,
+    QueryFieldsExperimentResult,
+    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
-    StringSetField, NextPage, QueryFieldDefinitionsResult, QueryFieldsExperimentResult, QueryFieldsResult,
+    StringSetField,
 )
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
     ProtoAttributeDTO,
@@ -2363,7 +2367,7 @@ def test__query_field_definitions_result__from_dict():
         "nextPage": {
             "nextPageToken": "some-token",
             "limit": 10,
-        }
+        },
     }
 
     # when
@@ -2393,7 +2397,7 @@ def test__query_field_definitions_result__from_model():
             Mock(type="int"),
             Mock(type="string"),
         ],
-        nextPage=Mock(nextPageToken="some-token", limit=10)
+        nextPage=Mock(nextPageToken="some-token", limit=10),
     )
     model.entries[0].name = "some/float"
     model.entries[1].name = "some/int"
@@ -2545,7 +2549,11 @@ def test__query_fields_result__from_dict():
                     {
                         "path": "some/string",
                         "type": "string",
-                        "stringProperties": {"attributeType": "string", "attributeName": "some/string", "value": "hello"},
+                        "stringProperties": {
+                            "attributeType": "string",
+                            "attributeName": "some/string",
+                            "value": "hello",
+                        },
                     },
                 ],
             },
@@ -2553,7 +2561,7 @@ def test__query_fields_result__from_dict():
         "nextPage": {
             "nextPageToken": "some-token",
             "limit": 2,
-        }
+        },
     }
 
     # when
@@ -2626,7 +2634,7 @@ def test__query_fields_result__from_model():
                 ],
             ),
         ],
-        nextPage=Mock(nextPageToken="some-token", limit=2)
+        nextPage=Mock(nextPageToken="some-token", limit=2),
     )
 
     # when

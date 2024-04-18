@@ -639,7 +639,7 @@ class QueryFieldsExperimentResult:
         return QueryFieldsExperimentResult(
             object_id=data["experimentId"],
             object_key=data["experimentShortId"],
-            fields=[Field.from_dict(field) for field in data["attributes"]]
+            fields=[Field.from_dict(field) for field in data["attributes"]],
         )
 
     @staticmethod
@@ -647,7 +647,7 @@ class QueryFieldsExperimentResult:
         return QueryFieldsExperimentResult(
             object_id=model.experimentId,
             object_key=model.experimentShortId,
-            fields=[Field.from_model(field) for field in model.attributes]
+            fields=[Field.from_model(field) for field in model.attributes],
         )
 
     @staticmethod

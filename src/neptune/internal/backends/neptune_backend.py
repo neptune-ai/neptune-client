@@ -40,13 +40,13 @@ from neptune.api.models import (
     ImageSeriesValues,
     IntField,
     LeaderboardEntry,
+    NextPage,
+    QueryFieldDefinitionsResult,
+    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
     StringSetField,
-    QueryFieldDefinitionsResult,
-    NextPage,
-    QueryFieldsResult,
 )
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
@@ -344,9 +344,8 @@ class NeptuneBackend:
         project_id: QualifiedName,
         field_name_regex: Optional[str] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
-    ) -> QueryFieldDefinitionsResult:
-        ...
+        next_page: Optional[NextPage] = None,
+    ) -> QueryFieldDefinitionsResult: ...
 
     @abc.abstractmethod
     def query_fields_within_project(
@@ -354,6 +353,5 @@ class NeptuneBackend:
         project_id: QualifiedName,
         field_names_filter: Optional[List[str]] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
-    ) -> QueryFieldsResult:
-        ...
+        next_page: Optional[NextPage] = None,
+    ) -> QueryFieldsResult: ...

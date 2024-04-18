@@ -50,14 +50,14 @@ from neptune.api.models import (
     ImageSeriesValues,
     IntField,
     LeaderboardEntry,
+    NextPage,
+    QueryFieldDefinitionsResult,
+    QueryFieldsResult,
     StringField,
     StringPointValue,
     StringSeriesField,
     StringSeriesValues,
     StringSetField,
-    QueryFieldDefinitionsResult,
-    NextPage,
-    QueryFieldsResult,
 )
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
@@ -812,7 +812,7 @@ class NeptuneBackendMock(NeptuneBackend):
         project_id: QualifiedName,
         field_name_regex: Optional[str] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
+        next_page: Optional[NextPage] = None,
     ) -> QueryFieldDefinitionsResult:
         return QueryFieldDefinitionsResult(
             entries=[],
@@ -824,7 +824,7 @@ class NeptuneBackendMock(NeptuneBackend):
         project_id: QualifiedName,
         field_names_filter: Optional[List[str]] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
+        next_page: Optional[NextPage] = None,
     ) -> QueryFieldsResult:
         return QueryFieldsResult(
             entries=[],

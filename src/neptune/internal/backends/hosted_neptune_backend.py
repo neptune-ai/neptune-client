@@ -53,13 +53,13 @@ from neptune.api.models import (
     ImageSeriesValues,
     IntField,
     LeaderboardEntry,
+    NextPage,
+    QueryFieldDefinitionsResult,
+    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
     StringSetField,
-    QueryFieldDefinitionsResult,
-    NextPage,
-    QueryFieldsResult,
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
@@ -1034,7 +1034,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         project_id: QualifiedName,
         field_names_filter: Optional[List[str]] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
+        next_page: Optional[NextPage] = None,
     ) -> QueryFieldsResult:
         pagination = {"nextPage": next_page.to_dto()} if next_page else {}
         params = {
@@ -1042,8 +1042,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             "query": {
                 **pagination,
                 "attributeNamesFilter": field_names_filter,
-                "experimentIdsFilter": experiment_ids_filter
-             },
+                "experimentIdsFilter": experiment_ids_filter,
+            },
             **DEFAULT_REQUEST_KWARGS,
         }
 
@@ -1176,7 +1176,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         project_id: QualifiedName,
         field_name_regex: Optional[str] = None,
         experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None
+        next_page: Optional[NextPage] = None,
     ) -> QueryFieldDefinitionsResult:
         pagination = {"nextPage": next_page.to_dto()} if next_page else {}
         params = {
@@ -1184,8 +1184,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             "query": {
                 **pagination,
                 "experimentIdsFilter": experiment_ids_filter,
-                "attributeNameRegex": field_name_regex
-            }
+                "attributeNameRegex": field_name_regex,
+            },
         }
 
         try:
