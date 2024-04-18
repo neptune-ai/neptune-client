@@ -44,6 +44,9 @@ from neptune.api.models import (
     StringSeriesField,
     StringSeriesValues,
     StringSetField,
+    QueryFieldDefinitionsResult,
+    NextPage,
+    QueryFieldsResult,
 )
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.internal.artifacts.types import ArtifactFileData
@@ -334,3 +337,23 @@ class NeptuneBackend:
     @abc.abstractmethod
     def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         pass
+
+    @abc.abstractmethod
+    def query_fields_definitions_within_project(
+        self,
+        project_id: QualifiedName,
+        field_name_regex: Optional[str] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None
+    ) -> QueryFieldDefinitionsResult:
+        ...
+
+    @abc.abstractmethod
+    def query_fields_within_project(
+        self,
+        project_id: QualifiedName,
+        field_names_filter: Optional[List[str]] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None
+    ) -> QueryFieldsResult:
+        ...

@@ -44,8 +44,9 @@ __all__ = (
     "StringSeriesValues",
     "StringPointValue",
     "ImageSeriesValues",
-    "QueryAttributesResult",
+    "QueryFieldDefinitionsResult",
     "NextPage",
+    "QueryFieldsResult",
 )
 
 import abc
@@ -628,53 +629,77 @@ class NextPage:
 
 
 @dataclass
-class QueryAttributesExperimentResult:
+class QueryFieldsExperimentResult:
     object_id: str
     object_key: str
     fields: List[Field]
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> QueryAttributesExperimentResult:
-        return QueryAttributesExperimentResult(
+    def from_dict(data: Dict[str, Any]) -> QueryFieldsExperimentResult:
+        return QueryFieldsExperimentResult(
             object_id=data["experimentId"],
             object_key=data["experimentShortId"],
             fields=[Field.from_dict(field) for field in data["attributes"]]
         )
 
     @staticmethod
-    def from_model(model: Any) -> QueryAttributesExperimentResult:
-        return QueryAttributesExperimentResult(
+    def from_model(model: Any) -> QueryFieldsExperimentResult:
+        return QueryFieldsExperimentResult(
             object_id=model.experimentId,
             object_key=model.experimentShortId,
             fields=[Field.from_model(field) for field in model.attributes]
         )
 
     @staticmethod
-    def from_proto(data: Any) -> QueryAttributesExperimentResult:
+    def from_proto(data: Any) -> QueryFieldsExperimentResult:
         raise NotImplementedError()
 
 
 @dataclass
-class QueryAttributesResult:
-    entries: List[QueryAttributesExperimentResult]
+class QueryFieldsResult:
+    entries: List[QueryFieldsExperimentResult]
     next_page: NextPage
 
     @staticmethod
-    def from_dict(data: Dict[str, Any]) -> QueryAttributesResult:
-        return QueryAttributesResult(
-            entries=[QueryAttributesExperimentResult.from_dict(entry) for entry in data["entries"]],
+    def from_dict(data: Dict[str, Any]) -> QueryFieldsResult:
+        return QueryFieldsResult(
+            entries=[QueryFieldsExperimentResult.from_dict(entry) for entry in data["entries"]],
             next_page=NextPage.from_dict(data["nextPage"]),
         )
 
     @staticmethod
-    def from_model(model: Any) -> QueryAttributesResult:
-        return QueryAttributesResult(
-            entries=[QueryAttributesExperimentResult.from_model(entry) for entry in model.entries],
+    def from_model(model: Any) -> QueryFieldsResult:
+        return QueryFieldsResult(
+            entries=[QueryFieldsExperimentResult.from_model(entry) for entry in model.entries],
             next_page=NextPage.from_model(model.nextPage),
         )
 
     @staticmethod
-    def from_proto(data: Any) -> QueryAttributesResult:
+    def from_proto(data: Any) -> QueryFieldsResult:
+        raise NotImplementedError()
+
+
+@dataclass
+class QueryFieldDefinitionsResult:
+    entries: List[FieldDefinition]
+    next_page: NextPage
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> QueryFieldDefinitionsResult:
+        return QueryFieldDefinitionsResult(
+            entries=[FieldDefinition.from_dict(entry) for entry in data["entries"]],
+            next_page=NextPage.from_dict(data["nextPage"]),
+        )
+
+    @staticmethod
+    def from_model(model: Any) -> QueryFieldDefinitionsResult:
+        return QueryFieldDefinitionsResult(
+            entries=[FieldDefinition.from_model(entry) for entry in model.entries],
+            next_page=NextPage.from_model(model.nextPage),
+        )
+
+    @staticmethod
+    def from_proto(data: Any) -> QueryFieldDefinitionsResult:
         raise NotImplementedError()
 
 

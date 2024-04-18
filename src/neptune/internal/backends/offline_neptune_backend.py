@@ -40,13 +40,16 @@ from neptune.api.models import (
     StringSeriesField,
     StringSeriesValues,
     StringSetField,
+    QueryFieldDefinitionsResult,
+    NextPage,
+    QueryFieldsResult,
 )
 from neptune.exceptions import NeptuneOfflineModeFetchException
 from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
+from neptune.internal.id_formats import UniqueId, QualifiedName
 from neptune.typing import ProgressBarType
 
 
@@ -169,4 +172,22 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         progress_bar: Optional[ProgressBarType] = None,
         use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
+        raise NeptuneOfflineModeFetchException
+
+    def query_fields_definitions_within_project(
+        self,
+        project_id: QualifiedName,
+        field_name_regex: Optional[str] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None
+    ) -> QueryFieldDefinitionsResult:
+        raise NeptuneOfflineModeFetchException
+
+    def query_fields_within_project(
+        self,
+        project_id: QualifiedName,
+        field_names_filter: Optional[List[str]] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None
+    ) -> QueryFieldsResult:
         raise NeptuneOfflineModeFetchException

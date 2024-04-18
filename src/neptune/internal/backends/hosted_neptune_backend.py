@@ -56,7 +56,10 @@ from neptune.api.models import (
     StringField,
     StringSeriesField,
     StringSeriesValues,
-    StringSetField, QueryAttributesResult, NextPage,
+    StringSetField,
+    QueryFieldDefinitionsResult,
+    NextPage,
+    QueryFieldsResult,
 )
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
@@ -1028,23 +1031,25 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def query_fields_within_project(
         self,
-        project_id: UniqueId,
-        field_names: List[str],
+        project_id: QualifiedName,
+        field_names_filter: Optional[List[str]] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
         next_page: Optional[NextPage] = None
-    ) -> QueryAttributesResult:
+    ) -> QueryFieldsResult:
         pagination = {"nextPage": next_page.to_dto()} if next_page else {}
         params = {
             "projectIdentifier": project_id,
             "query": {
-                "attributeNamesFilter": field_names,
                 **pagination,
+                "attributeNamesFilter": field_names_filter,
+                "experimentIdsFilter": experiment_ids_filter
              },
             **DEFAULT_REQUEST_KWARGS,
         }
 
         try:
             result = self.leaderboard_client.api.queryAttributesWithinProject(**params).response().result
-            return QueryAttributesResult.from_model(result)
+            return QueryFieldsResult.from_model(result)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
 
@@ -1168,13 +1173,18 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def query_fields_definitions_within_project(
         self,
-        project_id: UniqueId,
-        field_name_regex: str,
-    ) -> List[FieldDefinition]:
+        project_id: QualifiedName,
+        field_name_regex: Optional[str] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None
+    ) -> QueryFieldDefinitionsResult:
+        pagination = {"nextPage": next_page.to_dto()} if next_page else {}
         params = {
             "projectIdentifier": project_id,
             "query": {
-                "attributeNameRegex": field_name_regex,
+                **pagination,
+                "experimentIdsFilter": experiment_ids_filter,
+                "attributeNameRegex": field_name_regex
             }
         }
 
@@ -1187,8 +1197,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 .response()
                 .result
             )
-            return [FieldDefinition.from_model(field_def) for field_def in data.entries]
-        except HTTPNotFound as e:
+            return QueryFieldDefinitionsResult.from_model(data)
+        except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
 
     def get_fields_definitions(
