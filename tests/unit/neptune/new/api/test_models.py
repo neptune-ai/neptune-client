@@ -37,8 +37,12 @@ from neptune.api.models import (
     IntField,
     LeaderboardEntriesSearchResult,
     LeaderboardEntry,
+    NextPage,
     NotebookRefField,
     ObjectStateField,
+    QueryFieldDefinitionsResult,
+    QueryFieldsExperimentResult,
+    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
@@ -2302,3 +2306,379 @@ def test__image_series_values__from_proto():
     # then
     with pytest.raises(NotImplementedError):
         ImageSeriesValues.from_proto(proto)
+
+
+def test__next_page__from_dict():
+    # given
+    data = {
+        "nextPageToken": "some-token",
+        "limit": 10,
+    }
+
+    # when
+    result = NextPage.from_dict(data)
+
+    # then
+    assert result.next_page_token == "some-token"
+    assert result.limit == 10
+
+
+def test__next_page__from_model():
+    # given
+    model = Mock(
+        nextPageToken="some-token",
+        limit=10,
+    )
+
+    # when
+    result = NextPage.from_model(model)
+
+    # then
+    assert result.next_page_token == "some-token"
+    assert result.limit == 10
+
+
+def test__next_page__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        NextPage.from_proto(proto)
+
+
+def test__query_field_definitions_result__from_dict():
+    # given
+    data = {
+        "entries": [
+            {
+                "name": "some/float",
+                "type": "float",
+            },
+            {
+                "name": "some/int",
+                "type": "int",
+            },
+            {
+                "name": "some/string",
+                "type": "string",
+            },
+        ],
+        "nextPage": {
+            "nextPageToken": "some-token",
+            "limit": 10,
+        },
+    }
+
+    # when
+    result = QueryFieldDefinitionsResult.from_dict(data)
+
+    # then
+    assert len(result.entries) == 3
+
+    assert result.entries[0].path == "some/float"
+    assert result.entries[0].type == FieldType.FLOAT
+
+    assert result.entries[1].path == "some/int"
+    assert result.entries[1].type == FieldType.INT
+
+    assert result.entries[2].path == "some/string"
+    assert result.entries[2].type == FieldType.STRING
+
+    assert result.next_page.next_page_token == "some-token"
+    assert result.next_page.limit == 10
+
+
+def test__query_field_definitions_result__from_model():
+    # given
+    model = Mock(
+        entries=[
+            Mock(type="float"),
+            Mock(type="int"),
+            Mock(type="string"),
+        ],
+        nextPage=Mock(nextPageToken="some-token", limit=10),
+    )
+    model.entries[0].name = "some/float"
+    model.entries[1].name = "some/int"
+    model.entries[2].name = "some/string"
+
+    # when
+    result = QueryFieldDefinitionsResult.from_model(model)
+
+    # then
+    assert len(result.entries) == 3
+
+    assert result.entries[0].path == "some/float"
+    assert result.entries[0].type == FieldType.FLOAT
+
+    assert result.entries[1].path == "some/int"
+    assert result.entries[1].type == FieldType.INT
+
+    assert result.entries[2].path == "some/string"
+    assert result.entries[2].type == FieldType.STRING
+
+    assert result.next_page.next_page_token == "some-token"
+    assert result.next_page.limit == 10
+
+
+def test__query_field_definitions_result__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        QueryFieldDefinitionsResult.from_proto(proto)
+
+
+def test__query_fields_experiment_result__from_dict():
+    # given
+    data = {
+        "experimentId": "some-id-1",
+        "experimentShortId": "some-key-1",
+        "attributes": [
+            {
+                "path": "some/float",
+                "type": "float",
+                "floatProperties": {"attributeType": "float", "attributeName": "some/float", "value": 18.5},
+            },
+            {
+                "path": "some/int",
+                "type": "int",
+                "intProperties": {"attributeType": "int", "attributeName": "some/int", "value": 18},
+            },
+        ],
+    }
+
+    # when
+    result = QueryFieldsExperimentResult.from_dict(data)
+
+    # then
+    assert result.object_id == "some-id-1"
+    assert result.object_key == "some-key-1"
+
+    assert len(result.fields) == 2
+
+    field_1 = result.fields[0]
+    assert field_1.path == "some/float"
+    assert field_1.type == FieldType.FLOAT
+    assert isinstance(field_1, FloatField)
+    assert field_1.value == 18.5
+
+    field_2 = result.fields[1]
+    assert field_2.path == "some/int"
+    assert field_2.type == FieldType.INT
+    assert isinstance(field_2, IntField)
+    assert field_2.value == 18
+
+
+def test__query_fields_experiment_result__from_model():
+    # given
+    model = Mock(
+        experimentId="some-id-1",
+        experimentShortId="some-key-1",
+        attributes=[
+            Mock(
+                path="some/float",
+                type="float",
+                floatProperties=Mock(attributeType="float", attributeName="some/float", value=18.5),
+            ),
+            Mock(
+                path="some/int",
+                type="int",
+                intProperties=Mock(attributeType="int", attributeName="some/int", value=18),
+            ),
+        ],
+    )
+
+    # when
+    result = QueryFieldsExperimentResult.from_model(model)
+
+    # then
+    assert result.object_id == "some-id-1"
+    assert result.object_key == "some-key-1"
+
+    assert len(result.fields) == 2
+
+    field_1 = result.fields[0]
+    assert field_1.path == "some/float"
+    assert field_1.type == FieldType.FLOAT
+    assert isinstance(field_1, FloatField)
+    assert field_1.value == 18.5
+
+    field_2 = result.fields[1]
+    assert field_2.path == "some/int"
+    assert field_2.type == FieldType.INT
+    assert isinstance(field_2, IntField)
+    assert field_2.value == 18
+
+
+def test__query_fields_experiment_result__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        QueryFieldsExperimentResult.from_proto(proto)
+
+
+def test__query_fields_result__from_dict():
+    # given
+    data = {
+        "entries": [
+            {
+                "experimentId": "some-id-1",
+                "experimentShortId": "some-key-1",
+                "attributes": [
+                    {
+                        "path": "some/float",
+                        "type": "float",
+                        "floatProperties": {"attributeType": "float", "attributeName": "some/float", "value": 18.5},
+                    },
+                    {
+                        "path": "some/int",
+                        "type": "int",
+                        "intProperties": {"attributeType": "int", "attributeName": "some/int", "value": 18},
+                    },
+                ],
+            },
+            {
+                "experimentId": "some-id-2",
+                "experimentShortId": "some-key-2",
+                "attributes": [
+                    {
+                        "path": "some/string",
+                        "type": "string",
+                        "stringProperties": {
+                            "attributeType": "string",
+                            "attributeName": "some/string",
+                            "value": "hello",
+                        },
+                    },
+                ],
+            },
+        ],
+        "nextPage": {
+            "nextPageToken": "some-token",
+            "limit": 2,
+        },
+    }
+
+    # when
+    result = QueryFieldsResult.from_dict(data)
+
+    # then
+    assert len(result.entries) == 2
+
+    entry_1 = result.entries[0]
+    assert entry_1.object_id == "some-id-1"
+    assert entry_1.object_key == "some-key-1"
+    assert len(entry_1.fields) == 2
+
+    field_1_1 = entry_1.fields[0]
+    assert field_1_1.path == "some/float"
+    assert field_1_1.type == FieldType.FLOAT
+    assert isinstance(field_1_1, FloatField)
+    assert field_1_1.value == 18.5
+
+    field_1_2 = entry_1.fields[1]
+    assert field_1_2.path == "some/int"
+    assert field_1_2.type == FieldType.INT
+    assert isinstance(field_1_2, IntField)
+    assert field_1_2.value == 18
+
+    entry_2 = result.entries[1]
+    assert entry_2.object_id == "some-id-2"
+    assert entry_2.object_key == "some-key-2"
+    assert len(entry_2.fields) == 1
+
+    field_2_1 = entry_2.fields[0]
+    assert field_2_1.path == "some/string"
+    assert field_2_1.type == FieldType.STRING
+    assert isinstance(field_2_1, StringField)
+    assert field_2_1.value == "hello"
+
+    assert result.next_page.next_page_token == "some-token"
+    assert result.next_page.limit == 2
+
+
+def test__query_fields_result__from_model():
+    # given
+    model = Mock(
+        entries=[
+            Mock(
+                experimentId="some-id-1",
+                experimentShortId="some-key-1",
+                attributes=[
+                    Mock(
+                        path="some/float",
+                        type="float",
+                        floatProperties=Mock(attributeType="float", attributeName="some/float", value=18.5),
+                    ),
+                    Mock(
+                        path="some/int",
+                        type="int",
+                        intProperties=Mock(attributeType="int", attributeName="some/int", value=18),
+                    ),
+                ],
+            ),
+            Mock(
+                experimentId="some-id-2",
+                experimentShortId="some-key-2",
+                attributes=[
+                    Mock(
+                        path="some/string",
+                        type="string",
+                        stringProperties=Mock(attributeType="string", attributeName="some/string", value="hello"),
+                    ),
+                ],
+            ),
+        ],
+        nextPage=Mock(nextPageToken="some-token", limit=2),
+    )
+
+    # when
+    result = QueryFieldsResult.from_model(model)
+
+    # then
+    assert len(result.entries) == 2
+
+    entry_1 = result.entries[0]
+    assert entry_1.object_id == "some-id-1"
+    assert entry_1.object_key == "some-key-1"
+    assert len(entry_1.fields) == 2
+
+    field_1_1 = entry_1.fields[0]
+    assert field_1_1.path == "some/float"
+    assert field_1_1.type == FieldType.FLOAT
+    assert isinstance(field_1_1, FloatField)
+    assert field_1_1.value == 18.5
+
+    field_1_2 = entry_1.fields[1]
+    assert field_1_2.path == "some/int"
+    assert field_1_2.type == FieldType.INT
+    assert isinstance(field_1_2, IntField)
+    assert field_1_2.value == 18
+
+    entry_2 = result.entries[1]
+    assert entry_2.object_id == "some-id-2"
+    assert entry_2.object_key == "some-key-2"
+    assert len(entry_2.fields) == 1
+
+    field_2_1 = entry_2.fields[0]
+    assert field_2_1.path == "some/string"
+    assert field_2_1.type == FieldType.STRING
+    assert isinstance(field_2_1, StringField)
+    assert field_2_1.value == "hello"
+
+    assert result.next_page.next_page_token == "some-token"
+    assert result.next_page.limit == 2
+
+
+def test__query_fields_result__from_proto():
+    # given
+    proto = Mock()
+
+    # then
+    with pytest.raises(NotImplementedError):
+        QueryFieldsResult.from_proto(proto)

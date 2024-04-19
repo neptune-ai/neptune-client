@@ -50,6 +50,9 @@ from neptune.api.models import (
     ImageSeriesValues,
     IntField,
     LeaderboardEntry,
+    NextPage,
+    QueryFieldDefinitionsResult,
+    QueryFieldsResult,
     StringField,
     StringPointValue,
     StringSeriesField,
@@ -803,3 +806,27 @@ class NeptuneBackendMock(NeptuneBackend):
         self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None
     ) -> List[Field]:
         return []
+
+    def query_fields_definitions_within_project(
+        self,
+        project_id: QualifiedName,
+        field_name_regex: Optional[str] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None,
+    ) -> QueryFieldDefinitionsResult:
+        return QueryFieldDefinitionsResult(
+            entries=[],
+            next_page=NextPage(next_page_token=None, limit=0),
+        )
+
+    def query_fields_within_project(
+        self,
+        project_id: QualifiedName,
+        field_names_filter: Optional[List[str]] = None,
+        experiment_ids_filter: Optional[List[str]] = None,
+        next_page: Optional[NextPage] = None,
+    ) -> QueryFieldsResult:
+        return QueryFieldsResult(
+            entries=[],
+            next_page=NextPage(next_page_token=None, limit=0),
+        )
