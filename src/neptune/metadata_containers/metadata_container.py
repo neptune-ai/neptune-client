@@ -22,7 +22,6 @@ import logging
 import os
 import threading
 import time
-import traceback
 from contextlib import AbstractContextManager
 from functools import (
     partial,
@@ -41,7 +40,6 @@ from typing import (
 
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
-from neptune.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
@@ -316,9 +314,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
-            traceback.print_exception(exc_type, exc_val, exc_tb)
-            stacktrace_lines = traceback.format_exception(exc_type, exc_val, exc_tb)
-            self.log_traceback(stacktrace_lines)
+            uncaught_exception_handler.trigger(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __getattr__(self, item):
@@ -706,9 +702,3 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def get_root_object(self) -> "MetadataContainer":
         """Returns the same Neptune object."""
         return self
-
-    def log_traceback(self, stacktrace_lines: List[str]) -> None:
-        if hasattr(self, "_monitoring_namespace"):
-            self[f"{self._monitoring_namespace}/traceback"].log(stacktrace_lines)
-        if getattr(self, "_fail_on_exception", True):
-            self[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
