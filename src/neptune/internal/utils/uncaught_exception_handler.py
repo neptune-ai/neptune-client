@@ -19,6 +19,7 @@ import sys
 import threading
 import traceback
 import uuid
+from functools import partial
 from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
@@ -55,14 +56,9 @@ class UncaughtExceptionHandler:
         with self._lock:
             this = self
 
-            def exception_handler(exc_type, exc_val, exc_tb):
-                self.trigger(exc_type, exc_val, exc_tb)
-
-                this._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
-
             if self._previous_uncaught_exception_handler is None:
                 self._previous_uncaught_exception_handler = sys.excepthook
-                sys.excepthook = exception_handler
+                sys.excepthook = partial(exception_handler, this)
 
     def deactivate(self):
         with self._lock:
@@ -77,6 +73,12 @@ class UncaughtExceptionHandler:
         with self._lock:
             if uid in self._handlers:
                 del self._handlers[uid]
+
+
+def exception_handler(uncaught_exception_handler: UncaughtExceptionHandler, exc_type, exc_val, exc_tb):
+    uncaught_exception_handler.trigger(exc_type, exc_val, exc_tb)
+
+    uncaught_exception_handler._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
 
 
 instance = UncaughtExceptionHandler()
