@@ -54,11 +54,10 @@ class UncaughtExceptionHandler:
 
     def activate(self):
         with self._lock:
-            this = self
-
-            if self._previous_uncaught_exception_handler is None:
-                self._previous_uncaught_exception_handler = sys.excepthook
-                sys.excepthook = partial(exception_handler, this)
+            if self._previous_uncaught_exception_handler is not None:
+                return
+            self._previous_uncaught_exception_handler = sys.excepthook
+            sys.excepthook = partial(exception_handler, self)
 
     def deactivate(self):
         with self._lock:
