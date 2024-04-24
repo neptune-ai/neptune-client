@@ -156,6 +156,9 @@ class TestInitRun(BaseE2ETest):
             monitoring_hash = list(run.get_structure()["monitoring"].items())[0][0]
             assert run.exists(f"monitoring/{monitoring_hash}/traceback")
 
+            traceback_df = run[f"monitoring/{monitoring_hash}/traceback"].fetch_values()
+            assert "Marking run as failed" in traceback_df["value"].to_list()
+
 
 class TestInitProject(BaseE2ETest):
     def test_resuming_project(self, environment):
