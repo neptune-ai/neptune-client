@@ -41,6 +41,7 @@ from typing import (
 
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
+from neptune.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.common.exceptions import UNIX_STYLES
@@ -316,6 +317,11 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
             traceback.print_exception(exc_type, exc_val, exc_tb)
+            if hasattr(self, "_monitoring_namespace"):
+                self[f"{self._monitoring_namespace}/traceback"].log(
+                    traceback.format_exception(exc_type, exc_val, exc_tb)
+                )
+            self[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
         self.stop()
 
     def __getattr__(self, item):
