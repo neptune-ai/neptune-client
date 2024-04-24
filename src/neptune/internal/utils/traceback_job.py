@@ -18,11 +18,9 @@ __all__ = ["TracebackJob"]
 import uuid
 from typing import (
     TYPE_CHECKING,
-    List,
     Optional,
 )
 
-from neptune.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.uncaught_exception_handler import instance as traceback_handler
@@ -42,15 +40,7 @@ class TracebackJob(BackgroundJob):
 
     def start(self, container: "MetadataContainer"):
         if not self._started:
-            path = self._path
-            fail_on_exception = self._fail_on_exception
-
-            def log_traceback(stacktrace_lines: List[str]):
-                container[path].log(stacktrace_lines)
-                if fail_on_exception:
-                    container[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
-
-            traceback_handler.register(self._uuid, log_traceback)
+            traceback_handler.register(self._uuid, container.log_traceback)
         self._started = True
 
     def stop(self):

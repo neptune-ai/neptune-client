@@ -317,11 +317,8 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
             traceback.print_exception(exc_type, exc_val, exc_tb)
-            if hasattr(self, "_monitoring_namespace"):
-                self[f"{self._monitoring_namespace}/traceback"].log(
-                    traceback.format_exception(exc_type, exc_val, exc_tb)
-                )
-            self[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
+            stacktrace_lines = traceback.format_exception(exc_type, exc_val, exc_tb)
+            self.log_traceback(stacktrace_lines)
         self.stop()
 
     def __getattr__(self, item):
@@ -709,3 +706,9 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def get_root_object(self) -> "MetadataContainer":
         """Returns the same Neptune object."""
         return self
+
+    def log_traceback(self, stacktrace_lines: List[str]) -> None:
+        if hasattr(self, "_monitoring_namespace"):
+            self[f"{self._monitoring_namespace}/traceback"].log(stacktrace_lines)
+        if getattr(self, "_fail_on_exception", True):
+            self[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
