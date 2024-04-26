@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, windows, macos]
+        os: [ubuntu, windows, macos-13]
         python-version: ["3.7"]
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}-latest
