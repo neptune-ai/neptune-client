@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches-ignore:
-      - dev/1.x
+      - master
 
 jobs:
   test:
@@ -12,8 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, windows, macos]
+        os: [ubuntu, windows]
         python-version: ["3.7"]
+        include:
+          - python-version: "3.8"
+            os: macos
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}-latest
     steps:
