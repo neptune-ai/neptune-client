@@ -22,7 +22,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, windows-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
@@ -119,7 +119,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
@@ -170,7 +170,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, windows-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
@@ -225,7 +225,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
