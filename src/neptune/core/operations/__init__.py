@@ -13,3 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "AssignInt",
+    "AssignFloat",
+    "AssignBool",
+    "AssignString",
+    "AssignDatetime",
+    "LogFloats",
+]
+
+from neptune.core.operations.operation import (
+    AssignBool,
+    AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    LogFloats,
+)
