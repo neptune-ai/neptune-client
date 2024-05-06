@@ -188,8 +188,9 @@ class LogSeriesValue(Generic[T]):
 
 @dataclass
 class LogFloats(LogOperation):
+    ValueType = LogSeriesValue[float]
 
-    values: List[LogSeriesValue[float]]
+    values: List[ValueType]
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_log_floats(self)
@@ -203,5 +204,5 @@ class LogFloats(LogOperation):
     def from_dict(data: dict) -> "LogFloats":
         return LogFloats(
             data["path"],
-            [LogSeriesValue[float].from_dict(value) for value in data["values"]],  # type: ignore[misc]
+            [LogFloats.ValueType.from_dict(value) for value in data["values"]],  # type: ignore[misc]
         )
