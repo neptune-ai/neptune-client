@@ -28,8 +28,8 @@ from typing import (
 
 from neptune.core.components.abstract import Resource
 from neptune.core.components.operation_storage import OperationStorage
+from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.operation import Operation
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
 
 RT = TypeVar("RT")
 

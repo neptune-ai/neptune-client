@@ -27,10 +27,10 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.types.mode import Mode
 
-from .async_operation_processor import AsyncOperationProcessor
-from .offline_operation_processor import OfflineOperationProcessor
-from .operation_processor import OperationProcessor
-from .read_only_operation_processor import ReadOnlyOperationProcessor
+from ...core.operation_processors.async_operation_processor import AsyncOperationProcessor
+from ...core.operation_processors.offline_operation_processor import OfflineOperationProcessor
+from ...core.operation_processors.operation_processor import OperationProcessor
+from ...core.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
 if TYPE_CHECKING:
