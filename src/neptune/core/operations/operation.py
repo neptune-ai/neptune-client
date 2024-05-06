@@ -66,7 +66,7 @@ class Operation(abc.ABC):
     def clean(self, operation_storage: OperationStorage) -> None:
         pass
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict[str, Any]:
         return {"type": self.__class__.__name__, "path": self.path}
 
     @staticmethod
@@ -98,7 +98,6 @@ class AssignFloat(Operation):
 
 @dataclass
 class AssignInt(Operation):
-
     value: int
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
@@ -116,7 +115,6 @@ class AssignInt(Operation):
 
 @dataclass
 class AssignBool(Operation):
-
     value: bool
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
@@ -134,7 +132,6 @@ class AssignBool(Operation):
 
 @dataclass
 class AssignString(Operation):
-
     value: str
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
@@ -152,7 +149,6 @@ class AssignString(Operation):
 
 @dataclass
 class AssignDatetime(Operation):
-
     value: datetime
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
@@ -174,7 +170,6 @@ class LogOperation(Operation, abc.ABC):
 
 @dataclass
 class LogSeriesValue(Generic[T]):
-
     value: T
     step: Optional[float]
     ts: float
@@ -187,7 +182,7 @@ class LogSeriesValue(Generic[T]):
 
     @staticmethod
     def from_dict(data: Dict[str, Any], value_deserializer: Callable[[T], Any] = lambda x: x) -> "LogSeriesValue[T]":
-        return LogSeriesValue[T](value_deserializer(data["value"]), data.get("step", None), data["ts"])
+        return LogSeriesValue[T](value_deserializer(data["value"]), data.get("step"), data["ts"])
 
 
 @dataclass
