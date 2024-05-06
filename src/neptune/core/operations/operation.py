@@ -55,6 +55,10 @@ class Operation(abc.ABC):
     path: List[str]
     _registry: ClassVar[Dict[str, Type["Operation"]]] = {}
 
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        cls._registry[cls.__name__] = cls
+
     @abc.abstractmethod
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass

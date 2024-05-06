@@ -28,6 +28,8 @@ from neptune.core.operations import (
     AssignString,
     LogFloats,
 )
+from neptune.core.operations.operation import Operation
+from neptune.exceptions import MalformedOperation
 
 
 class TestAssignInt:
@@ -204,3 +206,19 @@ class TestLogFloats:
 )
 def test_is_serialisation_consistent(operation):
     assert operation.from_dict(operation.to_dict()) == operation
+
+
+def test__operation__from_dict():
+    with pytest.raises(MalformedOperation):
+        Operation.from_dict({"path": ["test", "path"], "value": 1})
+
+    with pytest.raises(MalformedOperation):
+        Operation.from_dict({"type": "IncorrectType", "path": ["test", "path"], "value": 1})
+
+    assert Operation.from_dict({"type": "AssignInt", "path": ["test", "path"], "value": 1}) == AssignInt(
+        ["test", "path"], 1
+    )
+
+    assert Operation.from_dict(
+        {"type": "LogFloats", "path": ["test", "path"], "values": [{"value": 1.0, "step": 1.0, "ts": 1.0}]}
+    ) == LogFloats(["test", "path"], [LogFloats.ValueType(1.0, 1.0, 1.0)])
