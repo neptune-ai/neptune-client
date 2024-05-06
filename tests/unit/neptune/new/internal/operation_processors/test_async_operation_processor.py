@@ -22,9 +22,9 @@ from mock import (
 )
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.core.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
+from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 
 
 @patch("neptune.internal.operation_processors.utils.random.choice")

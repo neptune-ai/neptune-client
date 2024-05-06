@@ -100,7 +100,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
         new=lambda _, _uuid, _type, _path: StringField(path=path_to_str(_path), value="MDL"),
     )
-    @patch("neptune.internal.operation_processors.read_only_operation_processor.warn_once")
+    @patch("neptune.core.operation_processors.read_only_operation_processor.warn_once")
     def test_read_only_mode(self, warn_once):
         warned_once.clear()
         with init_model_version(mode="read-only", with_id="whatever") as exp:

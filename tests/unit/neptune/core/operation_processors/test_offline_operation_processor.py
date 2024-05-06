@@ -22,16 +22,16 @@ from mock import (
 )
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
+from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 
 
 @patch("neptune.internal.operation_processors.utils.random.choice")
-@patch("neptune.internal.operation_processors.offline_operation_processor.Path.mkdir")
-@patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
+@patch("neptune.core.operation_processors.offline_operation_processor.Path.mkdir")
+@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
+@patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 @patch("neptune.internal.operation_processors.utils.os.getpid", return_value=42)
 def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
     # given
@@ -54,9 +54,9 @@ def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
     )
 
 
-@patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
+@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
+@patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
     container_id = UniqueId(str(uuid4()))
@@ -82,9 +82,9 @@ def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.flush.assert_called_once()
 
 
-@patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
+@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
+@patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
     container_id = UniqueId(str(uuid4()))
@@ -110,9 +110,9 @@ def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.close.assert_called_once()
 
 
-@patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
+@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
+@patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
     container_id = UniqueId(str(uuid4()))
@@ -148,9 +148,9 @@ def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.cleanup.assert_not_called()
 
 
-@patch("neptune.internal.operation_processors.offline_operation_processor.DiskQueue")
-@patch("neptune.internal.operation_processors.offline_operation_processor.OperationStorage")
-@patch("neptune.internal.operation_processors.offline_operation_processor.MetadataFile")
+@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
+@patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_metadata(metadata_file_mock, _, __):
     # given
     container_id = UniqueId(str(uuid4()))
