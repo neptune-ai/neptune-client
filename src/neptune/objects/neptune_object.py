@@ -45,6 +45,8 @@ from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
+from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
+from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -77,8 +79,6 @@ from neptune.internal.init.parameters import (
 )
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.operation_processors.factory import get_operation_processor
-from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (

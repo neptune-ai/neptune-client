@@ -1,7 +1,7 @@
 import unittest.mock as mock
 
-from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
+from neptune.core.operation_processors.operation_processor import OperationProcessor
 
 
 def test_lazy_initialization():

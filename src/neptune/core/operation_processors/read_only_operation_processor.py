@@ -17,7 +17,7 @@ __all__ = ("ReadOnlyOperationProcessor",)
 
 from typing import TYPE_CHECKING
 
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.warnings import (
     NeptuneWarning,
     warn_once,

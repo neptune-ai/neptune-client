@@ -28,6 +28,7 @@ from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
     SYSTEM_STAGE_ATTRIBUTE_PATH,
 )
+from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
     InactiveModelVersionException,
@@ -47,7 +48,6 @@ from neptune.internal.init.parameters import (
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
-from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
