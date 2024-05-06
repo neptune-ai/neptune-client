@@ -37,7 +37,10 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import MissingFieldException
+from neptune.exceptions import (
+    MissingFieldException,
+    NeptuneException,
+)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.utils.utils import IS_WINDOWS
@@ -304,3 +307,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 capture_hardware_metrics=chm,
             ) as run:
                 assert run.exists("monitoring")
+
+    def test_too_long_custom_run_id_handling(self):
+        with self.assertRaises(NeptuneException):
+            init_run(mode="debug", custom_run_id="a" * 129)
