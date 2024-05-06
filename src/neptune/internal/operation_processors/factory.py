@@ -21,15 +21,15 @@ import threading
 from queue import Queue
 from typing import TYPE_CHECKING
 
+from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
+from neptune.core.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
 from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.types.mode import Mode
 
-from ...core.operation_processors.offline_operation_processor import OfflineOperationProcessor
-from ...core.operation_processors.operation_processor import OperationProcessor
-from ...core.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
 from .async_operation_processor import AsyncOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 
