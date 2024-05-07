@@ -20,7 +20,6 @@ bokeh
 matplotlib
 seaborn
 plotly
-tensorflow
 torch
 typing_extensions>=4.6.0
 

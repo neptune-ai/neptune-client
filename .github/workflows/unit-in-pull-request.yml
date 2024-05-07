@@ -15,8 +15,9 @@ jobs:
         os: [ubuntu, windows]
         python-version: ["3.7"]
         include:
-          - python-version: "3.8"
-            os: macos
+          - os: macos
+            python-version: "3.8"
+
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}-latest
     steps:
