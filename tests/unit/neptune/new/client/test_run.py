@@ -320,3 +320,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 else:
                     with self.assertRaises(NeptuneException):
                         init_run(mode="debug", custom_run_id=custom_run_id)
+
+    def test_custom_run_id_generation(self):
+        with init_run(mode="debug") as run:
+            assert isinstance(run._custom_run_id, str)

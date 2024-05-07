@@ -437,7 +437,7 @@ class Run(NeptuneObject):
 
             git_info = to_git_info(git_ref=self._git_ref)
 
-            custom_run_id = self._custom_run_id if not self._should_generate_custom_id else str(uuid.uuid4())
+            self._custom_run_id = self._custom_run_id if not self._should_generate_custom_id else str(uuid.uuid4())
             if custom_run_id_exceeds_length(self._custom_run_id):
                 raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
@@ -446,7 +446,7 @@ class Run(NeptuneObject):
             return self._backend.create_run(
                 project_id=self._project_api_object.id,
                 git_info=git_info,
-                custom_run_id=custom_run_id,
+                custom_run_id=self._custom_run_id,
                 notebook_id=notebook_id,
                 checkpoint_id=checkpoint_id,
             )
