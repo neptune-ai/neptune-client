@@ -24,19 +24,19 @@ from neptune.types import File
 
 @pytest.mark.integrations
 @pytest.mark.tensorflow
-def test_tensorflow_image_logging():
+def test_tensorflow_image_logging(environment):
     # given
     image_tensor = tf.random.uniform(shape=[200, 300, 3], dtype=tf.int32, maxval=5, minval=1)
 
     # when
-    with neptune.Run() as run:
+    with neptune.Run(project=environment.project) as run:
         run_id = run["sys/id"].fetch()
         run["test_image"] = File.as_image(image_tensor)
 
         run.sync()
 
     # then
-    with neptune.Run(with_id=run_id) as run:
+    with neptune.Run(with_id=run_id, project=environment.project) as run:
         run["test_image"].download()
 
     image_fetched = Image.open("test_image.png")
