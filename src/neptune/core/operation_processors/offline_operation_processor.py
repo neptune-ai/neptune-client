@@ -32,7 +32,7 @@ from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.core.operation_processors.operation_processor import OperationProcessor
-from neptune.internal.operation import Operation
+from neptune.core.operations.operation import Operation
 from neptune.internal.operation_processors.utils import (
     common_metadata,
     get_container_full_path,

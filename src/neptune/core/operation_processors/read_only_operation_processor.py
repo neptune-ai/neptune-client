@@ -24,7 +24,7 @@ from neptune.internal.warnings import (
 )
 
 if TYPE_CHECKING:
-    from neptune.internal.operation import Operation
+    from neptune.core.operations.operation import Operation
 
 
 class ReadOnlyOperationProcessor(OperationProcessor):

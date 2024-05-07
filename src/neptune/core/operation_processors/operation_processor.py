@@ -23,7 +23,7 @@ from typing import (
 
 if TYPE_CHECKING:
     from neptune.core.components.operation_storage import OperationStorage
-    from neptune.internal.operation import Operation
+    from neptune.core.operations.operation import Operation
 
 
 class OperationProcessor(abc.ABC):
