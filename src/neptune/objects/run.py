@@ -436,9 +436,7 @@ class Run(NeptuneObject):
 
             custom_run_id = self._custom_run_id
             if custom_run_id_exceeds_length(self._custom_run_id):
-                raise NeptuneException(
-                    f"Given custom_run_id exceeds {CUSTOM_RUN_ID_LENGTH} characters and it will be ignored."
-                )
+                raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
             notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 

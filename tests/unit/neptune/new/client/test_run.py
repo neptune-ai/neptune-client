@@ -308,6 +308,15 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             ) as run:
                 assert run.exists("monitoring")
 
-    def test_too_long_custom_run_id_handling(self):
-        with self.assertRaises(NeptuneException):
-            init_run(mode="debug", custom_run_id="a" * 129)
+    def test_custom_run_id_handling(self):
+        lengths = [128, 129]
+        valid = [True, False]
+
+        for is_valid, length in zip(valid, lengths):
+            with self.subTest(is_valid=is_valid, length=length):
+                custom_run_id = "a" * length
+                if is_valid:
+                    init_run(mode="debug", custom_run_id=custom_run_id)
+                else:
+                    with self.assertRaises(NeptuneException):
+                        init_run(mode="debug", custom_run_id=custom_run_id)
