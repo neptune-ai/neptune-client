@@ -48,6 +48,7 @@ from neptune.envs import (
 from neptune.exceptions import (
     InactiveRunException,
     NeedExistingRunForReadOnlyMode,
+    NeptuneException,
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
@@ -81,7 +82,10 @@ from neptune.internal.utils.git import (
     track_uncommitted_changes,
 )
 from neptune.internal.utils.hashing import generate_hash
-from neptune.internal.utils.limits import custom_run_id_exceeds_length
+from neptune.internal.utils.limits import (
+    CUSTOM_RUN_ID_LENGTH,
+    custom_run_id_exceeds_length,
+)
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
     in_interactive,
@@ -435,7 +439,7 @@ class Run(NeptuneObject):
 
             custom_run_id = self._custom_run_id if not self._should_generate_custom_id else str(uuid.uuid4())
             if custom_run_id_exceeds_length(self._custom_run_id):
-                custom_run_id = None
+                raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
             notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 

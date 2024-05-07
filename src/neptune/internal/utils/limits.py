@@ -22,20 +22,14 @@ from neptune.internal.utils.logger import get_logger
 _logger = get_logger()
 
 
-_CUSTOM_RUN_ID_LENGTH = 36
+CUSTOM_RUN_ID_LENGTH = 128
 _LOGGED_IMAGE_SIZE_LIMIT_MB = 32
 
 BYTES_IN_MB = 1024 * 1024
 
 
 def custom_run_id_exceeds_length(custom_run_id):
-    if custom_run_id and len(custom_run_id) > _CUSTOM_RUN_ID_LENGTH:
-        _logger.warning(
-            "Given custom_run_id exceeds %s" " characters and it will be ignored.",
-            _CUSTOM_RUN_ID_LENGTH,
-        )
-        return True
-    return False
+    return custom_run_id and len(custom_run_id) > CUSTOM_RUN_ID_LENGTH
 
 
 def image_size_exceeds_limit_for_logging(content_size):

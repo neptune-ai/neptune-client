@@ -37,7 +37,10 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import MissingFieldException
+from neptune.exceptions import (
+    MissingFieldException,
+    NeptuneException,
+)
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.utils.utils import IS_WINDOWS
@@ -304,3 +307,16 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
                 capture_hardware_metrics=chm,
             ) as run:
                 assert run.exists("monitoring")
+
+    def test_custom_run_id_handling(self):
+        lengths = [128, 129]
+        valid = [True, False]
+
+        for is_valid, length in zip(valid, lengths):
+            with self.subTest(is_valid=is_valid, length=length):
+                custom_run_id = "a" * length
+                if is_valid:
+                    init_run(mode="debug", custom_run_id=custom_run_id)
+                else:
+                    with self.assertRaises(NeptuneException):
+                        init_run(mode="debug", custom_run_id=custom_run_id)
