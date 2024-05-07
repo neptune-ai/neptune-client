@@ -407,7 +407,8 @@ class Run(NeptuneObject):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
-        self._should_generate_custom_id = custom_run_id is None and mode != Mode.READ_ONLY
+        if self._custom_run_id is None and mode != Mode.READ_ONLY:
+            self._custom_run_id = str(uuid.uuid4())
 
         super().__init__(
             project=project,
@@ -437,7 +438,6 @@ class Run(NeptuneObject):
 
             git_info = to_git_info(git_ref=self._git_ref)
 
-            self._custom_run_id = self._custom_run_id if not self._should_generate_custom_id else str(uuid.uuid4())
             if custom_run_id_exceeds_length(self._custom_run_id):
                 raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
