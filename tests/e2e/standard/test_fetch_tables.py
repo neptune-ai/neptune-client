@@ -256,7 +256,7 @@ class TestFetchTable(BaseE2ETest):
 
         # when
         runs = project.fetch_runs_table(
-            query=query, sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+            query=query, sort_by="sys/creation_time", ascending=ascending, progress_bar=False, limit=2
         ).to_pandas()
 
         # then
