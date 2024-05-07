@@ -17,6 +17,7 @@ __all__ = ["Run"]
 
 import os
 import threading
+import uuid
 from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
@@ -402,6 +403,8 @@ class Run(NeptuneObject):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+        self._should_generate_custom_id = custom_run_id is None and mode != Mode.READ_ONLY
+
         super().__init__(
             project=project,
             api_token=api_token,
@@ -430,7 +433,7 @@ class Run(NeptuneObject):
 
             git_info = to_git_info(git_ref=self._git_ref)
 
-            custom_run_id = self._custom_run_id
+            custom_run_id = self._custom_run_id if not self._should_generate_custom_id else str(uuid.uuid4())
             if custom_run_id_exceeds_length(self._custom_run_id):
                 custom_run_id = None
 
