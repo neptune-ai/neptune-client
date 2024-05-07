@@ -15,11 +15,12 @@
 #
 import numpy
 import pytest
-import tensorflow as tf
 from PIL import Image
 
 import neptune
 from neptune.types import File
+
+tf = pytest.importorskip("tensorflow")
 
 
 @pytest.mark.integrations
