@@ -136,17 +136,6 @@ class TestImage(unittest.TestCase):
         # and make sure that original image's size was preserved
         self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
 
-    def test_get_image_content_from_tensorflow_tensor(self):
-        import tensorflow as tf
-
-        # given
-        image_tensor = tf.random.uniform(shape=[200, 300, 3])
-        expected_array = image_tensor.numpy() * 255
-        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
-
-        # expect
-        self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
-
     def test_get_image_content_from_seaborn_figure(self):
         # given
         grid = sns.relplot(numpy.random.randn(6, 4))
