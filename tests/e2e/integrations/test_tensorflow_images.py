@@ -13,29 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import io
-
 import numpy
 import pytest
 import tensorflow as tf
 from PIL import Image
 
-from neptune.internal.utils.images import get_image_content
-
-
-def _encode_pil_image(image: Image) -> bytes:
-    with io.BytesIO() as image_buffer:
-        image.save(image_buffer, format="PNG")
-        return image_buffer.getvalue()
+import neptune
+from neptune.types import File
 
 
 @pytest.mark.integrations
 @pytest.mark.tensorflow
-def test_get_image_content_from_tensorflow_tensor():
+def test_tensorflow_image_logging():
     # given
-    image_tensor = tf.random.uniform(shape=[200, 300, 3])
-    expected_array = image_tensor.numpy() * 255
-    expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+    image_tensor = tf.random.uniform(shape=[200, 300, 3], dtype=tf.int32, maxval=5, minval=1)
 
-    # expect
-    assert get_image_content(image_tensor) == _encode_pil_image(expected_image)
+    # when
+    with neptune.Run() as run:
+        run_id = run["sys/id"].fetch()
+        run["test_image"] = File.as_image(image_tensor)
+
+        run.sync()
+
+    # then
+    with neptune.Run(with_id=run_id) as run:
+        run["test_image"].download()
+
+    image_fetched = Image.open("test_image.png")
+
+    assert numpy.array_equal(image_tensor.numpy(), numpy.array(image_fetched))
