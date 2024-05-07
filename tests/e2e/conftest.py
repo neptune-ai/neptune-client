@@ -20,7 +20,6 @@ from datetime import datetime
 
 import pytest
 from faker import Faker
-from git import Repo
 
 from neptune import init_project
 from neptune.internal.utils.s3 import get_boto_s3_client
@@ -135,7 +134,8 @@ def project(environment):
 
 
 @pytest.fixture(scope="session")
-def repo(tmp_path_factory) -> Repo:
+def repo(tmp_path_factory) -> "Repo":  # noqa: F821
+    Repo = pytest.importorskip("git.Repo")
     path = tmp_path_factory.mktemp("git_repo")
     repo = Repo.init(path)
     file = path / f"{uuid.uuid4()}.txt"

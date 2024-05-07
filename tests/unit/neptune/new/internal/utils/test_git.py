@@ -15,9 +15,7 @@
 #
 import datetime
 
-import git
 import pytest
-from git import Repo
 from mock import (
     MagicMock,
     patch,
@@ -35,6 +33,9 @@ from neptune.internal.utils.git import (
     track_uncommitted_changes,
 )
 from neptune.types import GitRef
+
+git = pytest.importorskip("git")
+Repo = pytest.importorskip("git.Repo")
 
 
 @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")

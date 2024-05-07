@@ -32,7 +32,6 @@ swagger-spec-validator = ">=2.7.4"
 protobuf = "^4.0.0"
 
 # Built-in integrations
-GitPython = ">=2.0.8"
 psutil = "*"
 pandas = "*"
 
