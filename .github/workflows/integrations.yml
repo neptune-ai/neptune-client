@@ -42,7 +42,7 @@ jobs:
         os: ${{ matrix.os }}
 
     - name: Test integration
-      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+      uses: neptune-ai/neptune-fastai/.github/actions/e2e@dev/1.x
       with:
         working_directory: neptune-fastai
 
@@ -190,7 +190,7 @@ jobs:
         os: ${{ matrix.os }}
 
     - name: Test integration
-      uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@master
+      uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@dev/1.x
       with:
         working_directory: neptune-tensorflow-keras
 
@@ -535,7 +535,7 @@ jobs:
           python-version: "3.10"
 
       - name: Test integration
-        uses: neptune-ai/neptune-r/.github/actions/e2e@master
+        uses: neptune-ai/neptune-r/.github/actions/e2e@dev/1.x
         with:
           working_directory: rlang
 
@@ -581,7 +581,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-sklearn/.github/actions/e2e@master
+        uses: neptune-ai/neptune-sklearn/.github/actions/e2e@dev/1.x
         with:
           working_directory: neptune-sklearn
 
@@ -627,7 +627,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@master
+        uses: neptune-ai/neptune-xgboost/.github/actions/e2e@dev/1.x
         with:
           working_directory: neptune-xgboost
 
@@ -719,7 +719,7 @@ jobs:
           os: ${{ matrix.os }}
 
       - name: Test integration
-        uses: neptune-ai/neptune-mlflow/.github/actions/e2e@master
+        uses: neptune-ai/neptune-mlflow/.github/actions/e2e@dev/1.x
         with:
           working_directory: neptune-mlflow
 
