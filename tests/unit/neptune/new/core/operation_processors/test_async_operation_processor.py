@@ -23,26 +23,42 @@ from unittest.mock import (
 )
 
 from neptune.constants import ASYNC_DIRECTORY
+from neptune.core.components.abstract import WithResources
 from neptune.core.operation_processors.async_operation_processor import (
     AsyncOperationProcessor,
     _queue_has_enough_space,
 )
+from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import UniqueId
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
 class TestAsyncOperationProcessorInit:
+    def test_is_with_resources_and_operation_processor(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        # then
+        assert isinstance(processor, WithResources)
+        assert isinstance(processor, OperationProcessor)
+
     def test_resources(self):
         # given
         processor = AsyncOperationProcessor(
             container_id=UniqueId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
+            signal_queue=Mock(),
         )
 
         # then
-        assert processor.resources == (processor._metadata_file, processor._operation_storage, processor._disk_queue)
+        assert processor.resources == processor.processing_resources.resources
 
     @patch(
         "neptune.core.operation_processors.async_operation_processor.get_container_full_path",
@@ -64,6 +80,7 @@ class TestAsyncOperationProcessorInit:
                 container_id=UniqueId("test_id"),
                 container_type=container_type,
                 lock=threading.RLock(),
+                signal_queue=Mock(),
                 data_path=test_case["data_path"],
             )
             # then
@@ -90,19 +107,20 @@ class TestAsyncOperationProcessorEnqueueOperation:
             container_id=UniqueId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
+            signal_queue=Mock(),
         )
 
-        processor._disk_queue.put = Mock(return_value=1)
-        processor._disk_queue.size.return_value = 100
+        processor.processing_resources.disk_queue.put = Mock(return_value=1)
+        processor.processing_resources.disk_queue.size.return_value = 100
 
         op = Mock()
         mock_wait = Mock()
         processor.wait = mock_wait
 
         processor.enqueue_operation(op, wait=False)
-        processor._disk_queue.put.assert_called_once_with(op)
+        processor.processing_resources.disk_queue.put.assert_called_once_with(op)
         mock_wait.assert_not_called()
 
         processor.enqueue_operation(op, wait=True)
-        processor._disk_queue.put.assert_called_with(op)
+        processor.processing_resources.disk_queue.put.assert_called_with(op)
         mock_wait.assert_called_once()
