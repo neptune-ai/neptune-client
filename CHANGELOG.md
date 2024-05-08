@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune 1.10.3
+## neptune 1.10.3
 
 ### Fixes
 - Clarified the `autoscale` parameter description in the `as_image()` docstring ([#1742](https://github.com/neptune-ai/neptune-client/pull/1742))
