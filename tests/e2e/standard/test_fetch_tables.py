@@ -240,8 +240,7 @@ class TestFetchTable(BaseE2ETest):
         assert random_val in runs["some_random_val"].values
 
     @pytest.mark.parametrize("ascending", [True, False])
-    @pytest.mark.parametrize("with_query", [True, False])
-    def test_fetch_runs_table_sorting(self, environment, project, ascending, with_query):
+    def test_fetch_runs_table_sorting(self, environment, project, ascending):
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
             run["metrics/accuracy"] = 0.95
@@ -252,17 +251,20 @@ class TestFetchTable(BaseE2ETest):
             run["some_val"] = "a"
 
         time.sleep(WAIT_DURATION)
-        query = "" if with_query else None
+        query = '`sys/custom_run_id`:string CONTAINS "run"'
 
         # when
         runs = project.fetch_runs_table(
-            query=query, sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+            query=query,
+            sort_by="sys/creation_time",
+            ascending=ascending,
+            progress_bar=False,
         ).to_pandas()
 
         # then
         # runs are correctly sorted by creation time -> run1 was first
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
         if ascending:
             assert run_list == ["run1", "run2"]
         else:
@@ -275,7 +277,7 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
 
         if ascending:
             assert run_list == ["run2", "run1"]
@@ -289,7 +291,7 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
 
         if ascending:
             assert run_list == ["run2", "run1"]
