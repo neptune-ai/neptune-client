@@ -23,7 +23,10 @@ from unittest.mock import (
 )
 
 from neptune.constants import ASYNC_DIRECTORY
-from neptune.core.operation_processors.async_operation_processor import AsyncOperationProcessor
+from neptune.core.operation_processors.async_operation_processor import (
+    AsyncOperationProcessor,
+    _queue_has_enough_space,
+)
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import UniqueId
 
@@ -39,7 +42,7 @@ class TestAsyncOperationProcessorInit:
         )
 
         # then
-        assert processor.resources == (processor._metadata_file, processor._operation_storage, processor._queue)
+        assert processor.resources == (processor._metadata_file, processor._operation_storage, processor._disk_queue)
 
     @patch(
         "neptune.core.operation_processors.async_operation_processor.get_container_full_path",
@@ -72,3 +75,34 @@ class TestAsyncOperationProcessorInit:
                     UniqueId("test_id"),
                     container_type,
                 )
+
+
+@patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+class TestAsyncOperationProcessorEnqueueOperation:
+    def test_check_queue_size(self):
+        assert not _queue_has_enough_space(queue_size=1, batch_size=10)
+        assert not _queue_has_enough_space(queue_size=5, batch_size=10)
+        assert _queue_has_enough_space(queue_size=6, batch_size=10)
+
+    @patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
+    def test_enqueue_operation(self):
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+        )
+
+        processor._disk_queue.put = Mock(return_value=1)
+        processor._disk_queue.size.return_value = 100
+
+        op = Mock()
+        mock_wait = Mock()
+        processor.wait = mock_wait
+
+        processor.enqueue_operation(op, wait=False)
+        processor._disk_queue.put.assert_called_once_with(op)
+        mock_wait.assert_not_called()
+
+        processor.enqueue_operation(op, wait=True)
+        processor._disk_queue.put.assert_called_with(op)
+        mock_wait.assert_called_once()
