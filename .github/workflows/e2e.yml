@@ -173,3 +173,4 @@ jobs:
 
   e2e_dev1_x:
     uses: neptune-ai/neptune-client/.github/workflows/e2e.yml@dev/1.x
+    secrets: inherit
