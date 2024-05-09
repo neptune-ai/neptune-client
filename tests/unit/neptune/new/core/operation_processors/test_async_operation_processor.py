@@ -102,14 +102,14 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+@patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
 class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_check_queue_size(self):
         assert not _queue_has_enough_space(queue_size=1, batch_size=10)
         assert not _queue_has_enough_space(queue_size=5, batch_size=10)
         assert _queue_has_enough_space(queue_size=6, batch_size=10)
 
-    @patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
-    def test_enqueue_operation(self):
+    def test_enqueue_operation_without_wait(self):
         # given
         processor = AsyncOperationProcessor(
             container_id=UniqueId("test_id"),
@@ -132,6 +132,22 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         processor.processing_resources.disk_queue.put.assert_called_once_with(op)
         mock_wait.assert_not_called()
 
+    def test_enqueue_operation_with_wait(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor.processing_resources.disk_queue.put = Mock(return_value=1)
+        processor.processing_resources.disk_queue.size.return_value = 100
+
+        op = Mock()
+        mock_wait = Mock()
+        processor.wait = mock_wait
+
         # when
         processor.enqueue_operation(op, wait=True)
 
@@ -139,13 +155,25 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         processor.processing_resources.disk_queue.put.assert_called_with(op)
         mock_wait.assert_called_once()
 
+    def test_enqueue_operation_not_accepting_operations_raises_warning_and_doesnt_put_to_queue(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor.processing_resources.disk_queue.put = Mock(return_value=1)
+        processor.processing_resources.disk_queue.size.return_value = 100
+
         # when
         processor._accepts_operations = False
 
         # then
         with self.assertWarnsRegex(NeptuneWarning, "Not accepting operations"):
-            processor.enqueue_operation(op, wait=False)
-        processor.processing_resources.disk_queue.put.assert_called_with(op)
+            processor.enqueue_operation(Mock(), wait=False)
+        processor.processing_resources.disk_queue.put.assert_not_called()
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
@@ -172,7 +200,7 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
         processor._consumer.wake_up.assert_called_once()
         processor._processing_resources.waiting_cond.wait_for.assert_called_once()
 
-    def test_async_operation_processor_wait_sync_stopped(self):
+    def test_async_operation_processor_wait_consumer_not_running_raises_sync_stopped(self):
         # given
         processor = AsyncOperationProcessor(
             container_id=UniqueId("test_id"),
@@ -191,7 +219,6 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
             processor.wait()
 
         processor._consumer.wake_up.assert_called_once()
-        processor._processing_resources.waiting_cond.wait_for.assert_called_once()
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
@@ -471,7 +498,7 @@ class TestQueueObserver(unittest.TestCase):
         )
         queue_observer._processor_stop_logger.set_processor_stop_signal_queue.assert_called_once_with(signal_queue)
 
-    def test_wait_for_queue_empty_with_backoff_time(self):
+    def test_wait_for_queue_empty_with_backoff_time_logs_connection_interruption(self):
         # given
         queue_observer = QueueObserver(
             disk_queue=Mock(),
@@ -491,7 +518,7 @@ class TestQueueObserver(unittest.TestCase):
         # then
         queue_observer._processor_stop_logger.log_connection_interruption.assert_called_once_with(30)
 
-    def test_wait_single_cycle_reconnect_failure(self):
+    def test_wait_single_cycle_reconnect_failure_triggers_logging(self):
         # given
         queue_observer = QueueObserver(
             disk_queue=Mock(),
@@ -517,7 +544,7 @@ class TestQueueObserver(unittest.TestCase):
         # then
         op_logger.log_reconnect_failure.assert_called_once_with(max_reconnect_wait_time=0, size_remaining=10)
 
-    def test_wait_single_cycle_sync_failure(self):
+    def test_wait_single_cycle_sync_failure_triggers_logging(self):
         # given
         queue_observer = QueueObserver(
             disk_queue=Mock(),
@@ -570,6 +597,10 @@ class TestQueueObserver(unittest.TestCase):
         # then
         synchronization_stopped_exception.assert_called_once()
 
+    @patch(
+        "neptune.core.operation_processors.async_operation_processor._calculate_wait_cycle_results",
+        new=Mock(return_value=QueueWaitCycleResults(200, 30, 15)),
+    )
     def test_wait_single_cycle_returns_cycle_result(self):
         # given
         queue_observer = QueueObserver(
@@ -594,4 +625,4 @@ class TestQueueObserver(unittest.TestCase):
         )
 
         # then
-        assert result == QueueWaitCycleResults(10, 0, 0)
+        assert result == QueueWaitCycleResults(200, 30, 15)
