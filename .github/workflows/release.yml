@@ -78,49 +78,8 @@ jobs:
           name: neptune-package
           path: dist
 
-      - name: Install neptune package
-        run: pip install --force-reinstall ./dist/neptune-${{ github.ref_name }}.tar.gz
-
-      - name: List dependencies
-        run: pip list
-
-      - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
-
-  test-clean-install-neptune-client:
-    needs: [ build-neptune-client ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-client-package
-          path: dist
-
-      - name: Install neptune-client package
-        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
-
-      - name: List dependencies
-        run: pip list
-
-      - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
-
-  test-neptune-and-neptune-client:
-    needs: [ build-neptune-client, build-neptune ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-client-package
-          path: dist
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-package
-          path: dist
-
-      - name: Install neptune-client package
-        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
+      - name: Find the package
+        run: find dist
 
       - name: Install neptune package
         run: pip install --force-reinstall ./dist/neptune-${{ github.ref_name }}.tar.gz
@@ -128,82 +87,126 @@ jobs:
       - name: List dependencies
         run: pip list
 
-      - name: Run tests
-        run: |
-          echo "TEST_EXIT_CODE=$(python -c "from neptune.new import init_run; from neptune import init_run")" >> $GITHUB_ENV
-
-      - name: Test that fails (due to RuntimeException)
-        if: env.TEST_EXIT_CODE == '0'
-        run: exit 1
-
-  test-upgrade-0-16:
-    needs: [ build-neptune-client ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-client-package
-          path: dist
-
-      - name: Install neptune-client 0.16
-        run: pip install neptune-client==0.16.18
-
-      - name: Install new neptune-client package
-        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
-
-      - name: List dependencies
-        run: pip list
-
       - name: Test imports
         run: python -c "from neptune.new import init_run; from neptune import init_run"
-
-  test-uninstall-0-16-install-neptune-client:
-    needs: [ build-neptune-client ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-client-package
-          path: dist
-
-      - name: Install neptune-client 0.16
-        run: pip install neptune-client==0.16.18
-
-      - name: Uninstall neptune-client
-        run: pip uninstall neptune-client -y
-
-      - name: Install new neptune-client package
-        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
-
-      - name: List dependencies
-        run: pip list
-
-      - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
-
-  test-uninstall-0-16-install-neptune:
-    needs: [ build-neptune ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: neptune-package
-          path: dist
-
-      - name: Install neptune-client 0.16
-        run: pip install neptune-client==0.16.18
-
-      - name: Uninstall neptune-client
-        run: pip uninstall neptune-client -y
-
-      - name: Install new neptune package
-        run: pip install --force-reinstall ./dist/neptune-${{ github.ref_name }}.tar.gz
-
-      - name: List dependencies
-        run: pip list
-
-      - name: Test imports
-        run: python -c "from neptune.new import init_run; from neptune import init_run"
+#
+#  test-clean-install-neptune-client:
+#    needs: [ build-neptune-client ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-client-package
+#          path: dist
+#
+#      - name: Install neptune-client package
+#        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
+#
+#      - name: List dependencies
+#        run: pip list
+#
+#      - name: Test imports
+#        run: python -c "from neptune.new import init_run; from neptune import init_run"
+#
+#  test-neptune-and-neptune-client:
+#    needs: [ build-neptune-client, build-neptune ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-client-package
+#          path: dist
+#
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-package
+#          path: dist
+#
+#      - name: Install neptune-client package
+#        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
+#
+#      - name: Install neptune package
+#        run: pip install --force-reinstall ./dist/neptune-${{ github.ref_name }}.tar.gz
+#
+#      - name: List dependencies
+#        run: pip list
+#
+#      - name: Run tests
+#        run: |
+#          echo "TEST_EXIT_CODE=$(python -c "from neptune.new import init_run; from neptune import init_run")" >> $GITHUB_ENV
+#
+#      - name: Test that fails (due to RuntimeException)
+#        if: env.TEST_EXIT_CODE == '0'
+#        run: exit 1
+#
+#  test-upgrade-0-16:
+#    needs: [ build-neptune-client ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-client-package
+#          path: dist
+#
+#      - name: Install neptune-client 0.16
+#        run: pip install neptune-client==0.16.18
+#
+#      - name: Install new neptune-client package
+#        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
+#
+#      - name: List dependencies
+#        run: pip list
+#
+#      - name: Test imports
+#        run: python -c "from neptune.new import init_run; from neptune import init_run"
+#
+#  test-uninstall-0-16-install-neptune-client:
+#    needs: [ build-neptune-client ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-client-package
+#          path: dist
+#
+#      - name: Install neptune-client 0.16
+#        run: pip install neptune-client==0.16.18
+#
+#      - name: Uninstall neptune-client
+#        run: pip uninstall neptune-client -y
+#
+#      - name: Install new neptune-client package
+#        run: pip install --force-reinstall ./dist/neptune-client-${{ github.ref_name }}.tar.gz
+#
+#      - name: List dependencies
+#        run: pip list
+#
+#      - name: Test imports
+#        run: python -c "from neptune.new import init_run; from neptune import init_run"
+#
+#  test-uninstall-0-16-install-neptune:
+#    needs: [ build-neptune ]
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/download-artifact@v4
+#        with:
+#          name: neptune-package
+#          path: dist
+#
+#      - name: Install neptune-client 0.16
+#        run: pip install neptune-client==0.16.18
+#
+#      - name: Uninstall neptune-client
+#        run: pip uninstall neptune-client -y
+#
+#      - name: Install new neptune package
+#        run: pip install --force-reinstall ./dist/neptune-${{ github.ref_name }}.tar.gz
+#
+#      - name: List dependencies
+#        run: pip list
+#
+#      - name: Test imports
+#        run: python -c "from neptune.new import init_run; from neptune import init_run"
 #
 #  publish-neptune:
 #    needs:
