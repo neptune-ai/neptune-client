@@ -16,9 +16,13 @@
 
 import os
 import threading
+from dataclasses import dataclass
 from pathlib import Path
 from queue import Queue
-from time import time
+from time import (
+    monotonic,
+    time,
+)
 from typing import (
     Any,
     Callable,
@@ -45,7 +49,12 @@ from neptune.core.operations.operation import Operation
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import UniqueId
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
+from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
+from neptune.internal.operation_processors.operation_logger import (
+    ProcessorStopLogger,
+    ProcessorStopSignal,
+)
 from neptune.internal.signals_processing.signals import Signal
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
@@ -61,6 +70,13 @@ from neptune.internal.warnings import (
 )
 
 logger = get_logger()
+
+
+@dataclass(slots=True)
+class QueueWaitCycleResults:
+    size_remaining: int
+    already_synced: int
+    already_synced_proc: float
 
 
 class ProcessingResources(WithResources):
@@ -119,10 +135,11 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         batch_size: int = 1,
         data_path: Optional[Path] = None,
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict(),
+        should_print_logs: bool = True,
     ) -> None:
+        self._should_print_logs = should_print_logs
         self._accepts_operations: bool = True
         self._last_version: int = 0
-        self._batch_size: int = batch_size
 
         self._processing_resources = ProcessingResources(
             batch_size=batch_size,
@@ -137,6 +154,13 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         self._consumer = ConsumerThread(
             sleep_time=5,
             processing_resources=self._processing_resources,
+        )
+
+        self._queue_observer = QueueObserver(
+            disk_queue=self._processing_resources.disk_queue,
+            consumer=self._consumer,
+            should_print_logs=self._should_print_logs,
+            stop_queue_max_time_no_connection_seconds=self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
         )
 
     @property
@@ -159,10 +183,68 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
 
         self._last_version = self.processing_resources.disk_queue.put(op)
 
-        if _queue_has_enough_space(self.processing_resources.disk_queue.size(), self._batch_size):
+        if _queue_has_enough_space(self.processing_resources.disk_queue.size(), self._processing_resources.batch_size):
             self._consumer.wake_up()
         if wait:
             self.wait()
+
+    def start(self) -> None:
+        self._consumer.start()
+
+    def pause(self) -> None:
+        self._consumer.pause()
+        self.flush()
+
+    def resume(self) -> None:
+        self._consumer.resume()
+
+    def wait(self) -> None:
+        self.flush()
+        waiting_for_version = self._last_version
+        self._consumer.wake_up()
+
+        # Probably reentering lock just for sure
+        with self._processing_resources.waiting_cond:
+            self._processing_resources.waiting_cond.wait_for(
+                lambda: self._processing_resources.consumed_version >= waiting_for_version
+                or not self._consumer.is_running()
+            )
+        if not self._consumer.is_running():
+            raise NeptuneSynchronizationAlreadyStoppedException()
+
+    def stop(
+        self, seconds: Optional[float] = None, signal_queue: Optional["Queue[ProcessorStopSignal]"] = None
+    ) -> None:
+        ts = time()
+        self.flush()
+        if self._consumer.is_running():
+            self._consumer.disable_sleep()
+            self._consumer.wake_up()
+            self._queue_observer.wait_for_queue_empty(
+                seconds=seconds,
+                signal_queue=signal_queue,
+            )
+            self._consumer.interrupt()
+        sec_left = None if seconds is None else seconds - (time() - ts)
+        self._consumer.join(sec_left)
+
+        # Close resources
+        self.close()
+
+        # Remove local files
+        if self._queue_observer.is_queue_empty():
+            self.cleanup()
+
+    def cleanup(self) -> None:
+        super().cleanup()
+        try:
+            self._processing_resources.data_path.rmdir()
+        except OSError:
+            pass
+
+    def close(self) -> None:
+        self._accepts_operations = False
+        super().close()
 
 
 def _queue_has_enough_space(queue_size: int, batch_size: int) -> bool:
@@ -226,3 +308,116 @@ class ConsumerThread(Daemon):
                 if version_to_ack == version:
                     self._processing_resources.waiting_cond.notify_all()
                     return
+
+
+class QueueObserver:
+    def __init__(
+        self,
+        disk_queue: DiskQueue,
+        consumer: ConsumerThread,
+        should_print_logs: bool,
+        stop_queue_max_time_no_connection_seconds: float,
+    ):
+        self._disk_queue = disk_queue
+        self._consumer = consumer
+        self._should_print_logs = should_print_logs
+        self._stop_queue_max_time_no_connection_seconds = stop_queue_max_time_no_connection_seconds
+
+    def is_queue_empty(self) -> bool:
+        return self._disk_queue.is_empty()
+
+    def wait_for_queue_empty(
+        self,
+        seconds: Optional[float],
+        signal_queue: Optional["Queue[ProcessorStopSignal]"] = None,
+    ) -> None:
+        initial_queue_size = self._disk_queue.size()
+        waiting_start: float = monotonic()
+        time_elapsed: float = 0.0
+        max_reconnect_wait_time: float = self._stop_queue_max_time_no_connection_seconds if seconds is None else seconds
+        op_logger = ProcessorStopLogger(
+            processor_id=id(self),
+            signal_queue=signal_queue,
+            logger=logger,
+            should_print_logs=self._should_print_logs,
+        )
+        if initial_queue_size > 0:
+            if self._consumer.last_backoff_time > 0:
+                op_logger.log_connection_interruption(max_reconnect_wait_time)
+            else:
+                op_logger.log_remaining_operations(size_remaining=initial_queue_size)
+
+        while True:
+            wait_cycle_results = self._wait_single_cycle(
+                seconds,
+                op_logger,
+                initial_queue_size,
+                waiting_start,
+                time_elapsed,
+                max_reconnect_wait_time,
+            )
+            if wait_cycle_results is None:
+                # either there are no more operations to process or there is a synchronization failure
+                return
+            op_logger.log_still_waiting(
+                size_remaining=wait_cycle_results.size_remaining,
+                already_synced=wait_cycle_results.already_synced,
+                already_synced_proc=wait_cycle_results.already_synced_proc,
+            )
+
+    def _wait_single_cycle(
+        self,
+        seconds: Optional[float],
+        op_logger: ProcessorStopLogger,
+        initial_queue_size: int,
+        waiting_start: float,
+        time_elapsed: float,
+        max_reconnect_wait_time: float,
+    ) -> Optional[QueueWaitCycleResults]:
+        if seconds is None:
+            if self._consumer.last_backoff_time == 0:
+                # reset `waiting_start` on successful action
+                waiting_start = monotonic()
+            wait_time = self._stop_queue_max_time_no_connection_seconds
+        else:
+            wait_time = max(
+                min(
+                    seconds - time_elapsed,
+                    self._stop_queue_max_time_no_connection_seconds,
+                ),
+                0.0,
+            )
+        self._disk_queue.wait_for_empty(wait_time)
+
+        cycle_results = _calculate_wait_cycle_results(self._disk_queue, initial_queue_size)
+
+        if cycle_results.size_remaining == 0:
+            op_logger.log_success(ops_synced=initial_queue_size)
+            return None
+
+        time_elapsed = monotonic() - waiting_start
+        if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
+            op_logger.log_reconnect_failure(
+                max_reconnect_wait_time=max_reconnect_wait_time,
+                size_remaining=cycle_results.size_remaining,
+            )
+            return None
+
+        if seconds is not None and wait_time == 0:
+            op_logger.log_sync_failure(seconds=seconds, size_remaining=cycle_results.size_remaining)
+            return None
+
+        if not self._consumer.is_running():
+            exception = NeptuneSynchronizationAlreadyStoppedException()
+            logger.warning(str(exception))
+            return None
+
+        return cycle_results
+
+
+def _calculate_wait_cycle_results(disk_queue: DiskQueue, initial_queue_size: int) -> QueueWaitCycleResults:
+    size_remaining = disk_queue.size()
+    already_synced = initial_queue_size - size_remaining
+    already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
+
+    return QueueWaitCycleResults(size_remaining, already_synced, already_synced_proc)

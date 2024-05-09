@@ -134,7 +134,7 @@ def test_stop_if_empty(metadata_file_mock, operation_storage_mock, disk_queue_mo
     metadata_file = metadata_file_mock.return_value
     operation_storage = operation_storage_mock.return_value
     disk_queue = disk_queue_mock.return_value
-    disk_queue.is_empty.return_value = True
+    disk_queue.is_queue_empty.return_value = True
     disk_queue.size.return_value = 0
 
     # and
@@ -161,7 +161,7 @@ def test_stop_if_empty(metadata_file_mock, operation_storage_mock, disk_queue_mo
     disk_queue.close.assert_called()
     operation_storage.close.assert_called()
     metadata_file.close.assert_called()
-    disk_queue.is_empty.assert_called()
+    disk_queue.is_queue_empty.assert_called()
 
     # and
     disk_queue.cleanup.assert_called()
@@ -181,7 +181,7 @@ def test_stop_if_not_empty(metadata_file_mock, operation_storage_mock, disk_queu
     metadata_file = metadata_file_mock.return_value
     operation_storage = operation_storage_mock.return_value
     disk_queue = disk_queue_mock.return_value
-    disk_queue.is_empty.return_value = False
+    disk_queue.is_queue_empty.return_value = False
     disk_queue.size.return_value = 1
 
     # and
@@ -208,7 +208,7 @@ def test_stop_if_not_empty(metadata_file_mock, operation_storage_mock, disk_queu
     disk_queue.close.assert_called()
     operation_storage.close.assert_called()
     metadata_file.close.assert_called()
-    disk_queue.is_empty.assert_called()
+    disk_queue.is_queue_empty.assert_called()
 
     # and
     disk_queue.cleanup.assert_not_called()
