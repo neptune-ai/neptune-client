@@ -28,6 +28,7 @@ from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.abstract import WithResources
 from neptune.core.operation_processors.async_operation_processor import (
     AsyncOperationProcessor,
+    ConsumerThread,
     _queue_has_enough_space,
 )
 from neptune.core.operation_processors.operation_processor import OperationProcessor
@@ -360,3 +361,64 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
         processor._processing_resources.data_path.rmdir.assert_called_once()
         resource1.cleanup.assert_called_once()
         resource2.cleanup.assert_called_once()
+
+
+class TestConsumerThread(unittest.TestCase):
+    @patch("neptune.core.operation_processors.async_operation_processor.Daemon.run", new=Mock(side_effect=Exception))
+    def test_run(self):
+        # given
+        customer_thread = ConsumerThread(
+            sleep_time=30,
+            processing_resources=Mock(),
+        )
+
+        customer_thread._processing_resources.waiting_cond = MagicMock()
+
+        # then
+        with self.assertRaises(Exception):
+            customer_thread.run()
+
+        customer_thread._processing_resources.waiting_cond.notify_all.assert_called_once()
+
+    @patch("neptune.core.operation_processors.async_operation_processor.signal_batch_started")
+    def test_work(self, signal_batch_started):
+        # given
+        customer_thread = ConsumerThread(
+            sleep_time=30,
+            processing_resources=Mock(),
+        )
+        customer_thread.process_batch = Mock()
+        customer_thread._processing_resources.disk_queue = MagicMock()
+        customer_thread._processing_resources.batch_size = 100
+        customer_thread._processing_resources.disk_queue.get_batch.side_effect = [[MagicMock()], []]
+        customer_thread._processing_resources.waiting_cond = MagicMock()
+
+        # when
+        customer_thread.work()
+
+        # then
+        customer_thread._processing_resources.disk_queue.flush.assert_called_once()
+        customer_thread._processing_resources.disk_queue.get_batch.assert_has_calls([((100,),), ((100,),)])
+        customer_thread.process_batch.assert_called_once()
+        signal_batch_started.assert_called_once()
+
+    @patch("neptune.core.operation_processors.async_operation_processor.signal_batch_processed")
+    @patch("neptune.core.operation_processors.async_operation_processor.signal_batch_lag")
+    def test_process_batch(self, signal_batch_lag, signal_batch_processed):
+        # given
+        customer_thread = ConsumerThread(
+            sleep_time=30,
+            processing_resources=Mock(),
+        )
+
+        operation = MagicMock()
+        customer_thread._processing_resources.waiting_cond = MagicMock()
+
+        # when
+        customer_thread.process_batch(batch=[operation], version=0)
+
+        # then
+        signal_batch_lag.assert_not_called()
+        signal_batch_processed.assert_called_once_with(queue=customer_thread._processing_resources.signals_queue)
+        customer_thread._processing_resources.disk_queue.ack.assert_called_once()
+        customer_thread._processing_resources.waiting_cond.notify_all.assert_called_once()
