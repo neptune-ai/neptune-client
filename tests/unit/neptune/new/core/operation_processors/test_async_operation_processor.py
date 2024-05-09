@@ -422,3 +422,7 @@ class TestConsumerThread(unittest.TestCase):
         signal_batch_processed.assert_called_once_with(queue=customer_thread._processing_resources.signals_queue)
         customer_thread._processing_resources.disk_queue.ack.assert_called_once()
         customer_thread._processing_resources.waiting_cond.notify_all.assert_called_once()
+
+        # when
+        customer_thread.process_batch(batch=[operation], version=0, occurred_at=0)
+        signal_batch_lag.assert_called_once()
