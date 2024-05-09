@@ -32,6 +32,7 @@ from neptune.core.operation_processors.async_operation_processor import (
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import UniqueId
+from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.warnings import NeptuneWarning
 
 
@@ -141,3 +142,45 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         with self.assertWarnsRegex(NeptuneWarning, "Not accepting operations"):
             processor.enqueue_operation(op, wait=False)
         processor.processing_resources.disk_queue.put.assert_called_with(op)
+
+
+@patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+@patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
+class TestAsyncOperationProcessorWait(unittest.TestCase):
+    def test_async_operation_processor_wait(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor.processing_resources.disk_queue.size.return_value = 0
+        processor._consumer = Mock()
+        processor._consumer.is_running.return_value = True
+
+        # when
+        processor.wait()
+
+        # then
+        processor._consumer.wake_up.assert_called_once()
+
+    def test_async_operation_processor_wait_sync_stopped(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor.processing_resources.disk_queue.size.return_value = 0
+        processor._consumer = Mock()
+        processor._consumer.is_running.return_value = False
+
+        # then
+        with self.assertRaises(expected_exception=NeptuneSynchronizationAlreadyStoppedException):
+            processor.wait()
+
+        processor._consumer.wake_up.assert_called_once()
