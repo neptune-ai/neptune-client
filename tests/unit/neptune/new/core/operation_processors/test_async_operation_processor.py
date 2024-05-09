@@ -490,3 +490,108 @@ class TestQueueObserver(unittest.TestCase):
 
         # then
         queue_observer._processor_stop_logger.log_connection_interruption.assert_called_once_with(30)
+
+    def test_wait_single_cycle_reconnect_failure(self):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=AsyncOperationProcessor.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
+        )
+
+        queue_observer._consumer.last_backoff_time = 10
+        queue_observer._disk_queue.size.return_value = 10
+        op_logger = Mock()
+
+        # when
+        queue_observer._wait_single_cycle(
+            seconds=30,
+            op_logger=op_logger,
+            initial_queue_size=10,
+            waiting_start=0,
+            time_elapsed=0,
+            max_reconnect_wait_time=0,
+        )
+
+        # then
+        op_logger.log_reconnect_failure.assert_called_once_with(max_reconnect_wait_time=0, size_remaining=10)
+
+    def test_wait_single_cycle_sync_failure(self):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=0,
+        )
+
+        queue_observer._consumer.last_backoff_time = 0
+        queue_observer._disk_queue.size.return_value = 10
+        op_logger = Mock()
+
+        # when
+        queue_observer._wait_single_cycle(
+            seconds=30,
+            op_logger=op_logger,
+            initial_queue_size=10,
+            waiting_start=0,
+            time_elapsed=0,
+            max_reconnect_wait_time=0,
+        )
+
+        # then
+        op_logger.log_sync_failure.assert_called_once_with(seconds=30, size_remaining=10)
+
+    @patch("neptune.core.operation_processors.async_operation_processor.NeptuneSynchronizationAlreadyStoppedException")
+    def test_wait_single_cycle_sync_already_stopped(self, synchronization_stopped_exception):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=AsyncOperationProcessor.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
+        )
+
+        queue_observer._consumer.last_backoff_time = 0
+        queue_observer._disk_queue.size.return_value = 10
+        queue_observer._consumer.is_running.return_value = False
+
+        # when
+        queue_observer._wait_single_cycle(
+            seconds=None,
+            op_logger=Mock(),
+            initial_queue_size=10,
+            waiting_start=0,
+            time_elapsed=0,
+            max_reconnect_wait_time=0,
+        )
+
+        # then
+        synchronization_stopped_exception.assert_called_once()
+
+    def test_wait_single_cycle_returns_cycle_result(self):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=AsyncOperationProcessor.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
+        )
+
+        queue_observer._consumer.last_backoff_time = 0
+        queue_observer._disk_queue.size.return_value = 10
+        queue_observer._consumer.is_running.return_value = True
+
+        # when
+        result = queue_observer._wait_single_cycle(
+            seconds=None,
+            op_logger=Mock(),
+            initial_queue_size=10,
+            waiting_start=0,
+            time_elapsed=0,
+            max_reconnect_wait_time=0,
+        )
+
+        # then
+        assert result == QueueWaitCycleResults(10, 0, 0)
