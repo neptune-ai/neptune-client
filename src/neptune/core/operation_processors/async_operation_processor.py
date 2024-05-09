@@ -72,7 +72,7 @@ from neptune.internal.warnings import (
 logger = get_logger()
 
 
-@dataclass()
+@dataclass
 class QueueWaitCycleResults:
     size_remaining: int
     already_synced: int
@@ -256,7 +256,7 @@ class ConsumerThread(Daemon):
         self,
         sleep_time: float,
         processing_resources: ProcessingResources,
-    ):
+    ) -> None:
         super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
         self._processing_resources = processing_resources
         self._last_flush: float = 0.0
@@ -320,8 +320,14 @@ class QueueObserver:
     ):
         self._disk_queue = disk_queue
         self._consumer = consumer
-        self._should_print_logs = should_print_logs
         self._stop_queue_max_time_no_connection_seconds = stop_queue_max_time_no_connection_seconds
+
+        self._processor_stop_logger = ProcessorStopLogger(
+            processor_id=id(self),
+            signal_queue=None,
+            logger=logger,
+            should_print_logs=should_print_logs,
+        )
 
     def is_queue_empty(self) -> bool:
         return self._disk_queue.is_empty()
@@ -335,22 +341,19 @@ class QueueObserver:
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self._stop_queue_max_time_no_connection_seconds if seconds is None else seconds
-        op_logger = ProcessorStopLogger(
-            processor_id=id(self),
-            signal_queue=signal_queue,
-            logger=logger,
-            should_print_logs=self._should_print_logs,
-        )
+
+        self._processor_stop_logger.set_processor_stop_signal_queue(signal_queue)
+
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
-                op_logger.log_connection_interruption(max_reconnect_wait_time)
+                self._processor_stop_logger.log_connection_interruption(max_reconnect_wait_time)
             else:
-                op_logger.log_remaining_operations(size_remaining=initial_queue_size)
+                self._processor_stop_logger.log_remaining_operations(size_remaining=initial_queue_size)
 
         while True:
             wait_cycle_results = self._wait_single_cycle(
                 seconds,
-                op_logger,
+                self._processor_stop_logger,
                 initial_queue_size,
                 waiting_start,
                 time_elapsed,
@@ -359,7 +362,7 @@ class QueueObserver:
             if wait_cycle_results is None:
                 # either there are no more operations to process or there is a synchronization failure
                 return
-            op_logger.log_still_waiting(
+            self._processor_stop_logger.log_still_waiting(
                 size_remaining=wait_cycle_results.size_remaining,
                 already_synced=wait_cycle_results.already_synced,
                 already_synced_proc=wait_cycle_results.already_synced_proc,
