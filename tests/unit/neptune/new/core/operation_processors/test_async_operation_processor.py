@@ -16,6 +16,7 @@
 
 import random
 import threading
+import unittest
 from pathlib import Path
 from unittest.mock import (
     Mock,
@@ -31,10 +32,11 @@ from neptune.core.operation_processors.async_operation_processor import (
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import UniqueId
+from neptune.internal.warnings import NeptuneWarning
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
-class TestAsyncOperationProcessorInit:
+class TestAsyncOperationProcessorInit(unittest.TestCase):
     def test_is_with_resources_and_operation_processor(self):
         # given
         processor = AsyncOperationProcessor(
@@ -64,7 +66,7 @@ class TestAsyncOperationProcessorInit:
         "neptune.core.operation_processors.async_operation_processor.get_container_full_path",
         return_value=Path("mock_path"),
     )
-    # those patches prevent the side effect of creating test directories
+    # these patches prevent the side effect of creating test directories
     @patch("neptune.core.components.operation_storage.os.makedirs", new=lambda *_, **__: None)
     @patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
     def test_data_path(self, mock_get_container_full_path):
@@ -95,7 +97,7 @@ class TestAsyncOperationProcessorInit:
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
-class TestAsyncOperationProcessorEnqueueOperation:
+class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_check_queue_size(self):
         assert not _queue_has_enough_space(queue_size=1, batch_size=10)
         assert not _queue_has_enough_space(queue_size=5, batch_size=10)
@@ -103,6 +105,7 @@ class TestAsyncOperationProcessorEnqueueOperation:
 
     @patch("neptune.core.operation_processors.async_operation_processor.DiskQueue", new=Mock)
     def test_enqueue_operation(self):
+        # given
         processor = AsyncOperationProcessor(
             container_id=UniqueId("test_id"),
             container_type=random.choice(list(ContainerType)),
@@ -117,10 +120,24 @@ class TestAsyncOperationProcessorEnqueueOperation:
         mock_wait = Mock()
         processor.wait = mock_wait
 
+        # when
         processor.enqueue_operation(op, wait=False)
+
+        # then
         processor.processing_resources.disk_queue.put.assert_called_once_with(op)
         mock_wait.assert_not_called()
 
+        # when
         processor.enqueue_operation(op, wait=True)
+
+        # then
         processor.processing_resources.disk_queue.put.assert_called_with(op)
         mock_wait.assert_called_once()
+
+        # when
+        processor._accepts_operations = False
+
+        # then
+        with self.assertWarnsRegex(NeptuneWarning, "Not accepting operations"):
+            processor.enqueue_operation(op, wait=False)
+        processor.processing_resources.disk_queue.put.assert_called_with(op)

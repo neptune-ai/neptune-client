@@ -182,10 +182,10 @@ class ConsumerThread(Daemon):
     def run(self) -> None:
         try:
             super().run()
-        except Exception:
+        except Exception as e:
             with self._processing_resources.waiting_cond:
                 self._processing_resources.waiting_cond.notify_all()
-            raise
+            raise Exception from e
 
     def work(self) -> None:
         ts = time()
@@ -216,9 +216,7 @@ class ConsumerThread(Daemon):
         while True:
 
             signal_batch_processed(queue=self._processing_resources.signals_queue)
-            processed_count = len(batch)
-            version_to_ack += processed_count
-            batch = batch[processed_count:]
+            version_to_ack += len(batch)
 
             with self._processing_resources.waiting_cond:
                 self._processing_resources.disk_queue.ack(version_to_ack)
