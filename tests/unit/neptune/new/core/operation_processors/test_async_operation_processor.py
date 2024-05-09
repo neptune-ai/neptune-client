@@ -29,6 +29,8 @@ from neptune.core.components.abstract import WithResources
 from neptune.core.operation_processors.async_operation_processor import (
     AsyncOperationProcessor,
     ConsumerThread,
+    QueueObserver,
+    QueueWaitCycleResults,
     _queue_has_enough_space,
 )
 from neptune.core.operation_processors.operation_processor import OperationProcessor
@@ -426,3 +428,65 @@ class TestConsumerThread(unittest.TestCase):
         # when
         customer_thread.process_batch(batch=[operation], version=0, occurred_at=0)
         signal_batch_lag.assert_called_once()
+
+
+class TestQueueObserver(unittest.TestCase):
+    def test_wait_for_queue_empty_no_backoff_time(self):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=AsyncOperationProcessor.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
+        )
+
+        queue_observer._disk_queue.size.return_value = 10
+        queue_observer._consumer.last_backoff_time = 0
+        queue_observer._processor_stop_logger = Mock()
+        queue_observer._wait_single_cycle = Mock(
+            side_effect=[
+                QueueWaitCycleResults(
+                    size_remaining=100,
+                    already_synced=70,
+                    already_synced_proc=70,
+                ),
+                None,
+            ]
+        )
+
+        signal_queue = Mock()
+
+        # when
+        queue_observer.wait_for_queue_empty(seconds=30, signal_queue=signal_queue)
+
+        # then
+        queue_observer._processor_stop_logger.log_remaining_operations.assert_called_once_with(size_remaining=10)
+        queue_observer._processor_stop_logger.log_connection_interruption.assert_not_called()
+
+        assert queue_observer._wait_single_cycle.call_count == 2
+        queue_observer._processor_stop_logger.log_still_waiting.assert_called_once_with(
+            size_remaining=100,
+            already_synced=70,
+            already_synced_proc=70,
+        )
+        queue_observer._processor_stop_logger.set_processor_stop_signal_queue.assert_called_once_with(signal_queue)
+
+    def test_wait_for_queue_empty_with_backoff_time(self):
+        # given
+        queue_observer = QueueObserver(
+            disk_queue=Mock(),
+            consumer=Mock(),
+            should_print_logs=True,
+            stop_queue_max_time_no_connection_seconds=AsyncOperationProcessor.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS,
+        )
+
+        queue_observer._disk_queue.size.return_value = 10
+        queue_observer._consumer.last_backoff_time = 10
+        queue_observer._wait_single_cycle = Mock(return_value=None)
+        queue_observer._processor_stop_logger = Mock()
+
+        # when
+        queue_observer.wait_for_queue_empty(seconds=30, signal_queue=Mock())
+
+        # then
+        queue_observer._processor_stop_logger.log_connection_interruption.assert_called_once_with(30)
