@@ -72,7 +72,7 @@ from neptune.internal.warnings import (
 logger = get_logger()
 
 
-@dataclass(slots=True)
+@dataclass()
 class QueueWaitCycleResults:
     size_remaining: int
     already_synced: int
