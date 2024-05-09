@@ -19,6 +19,7 @@ import threading
 import unittest
 from pathlib import Path
 from unittest.mock import (
+    MagicMock,
     Mock,
     patch,
 )
@@ -156,15 +157,17 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
             signal_queue=Mock(),
         )
 
-        processor.processing_resources.disk_queue.size.return_value = 0
         processor._consumer = Mock()
         processor._consumer.is_running.return_value = True
+
+        processor._processing_resources.waiting_cond = MagicMock()
 
         # when
         processor.wait()
 
         # then
         processor._consumer.wake_up.assert_called_once()
+        processor._processing_resources.waiting_cond.wait_for.assert_called_once()
 
     def test_async_operation_processor_wait_sync_stopped(self):
         # given
@@ -175,12 +178,185 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
             signal_queue=Mock(),
         )
 
-        processor.processing_resources.disk_queue.size.return_value = 0
         processor._consumer = Mock()
         processor._consumer.is_running.return_value = False
+
+        processor._processing_resources.waiting_cond = MagicMock()
 
         # then
         with self.assertRaises(expected_exception=NeptuneSynchronizationAlreadyStoppedException):
             processor.wait()
 
         processor._consumer.wake_up.assert_called_once()
+        processor._processing_resources.waiting_cond.wait_for.assert_called_once()
+
+
+@patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+class TestAsyncOperationProcessorStartPauseResume(unittest.TestCase):
+    def test_start(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor._consumer = Mock()
+
+        # when
+        processor.start()
+
+        # then
+        processor._consumer.start.assert_called_once()
+
+    def test_pause(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor._consumer = Mock()
+        processor.flush = Mock()
+
+        # when
+        processor.pause()
+
+        # then
+        processor._consumer.pause.assert_called_once()
+        processor.flush.assert_called_once()
+
+    def test_resume(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor._consumer = Mock()
+
+        # when
+        processor.resume()
+
+        # then
+        processor._consumer.resume.assert_called_once()
+
+
+@patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
+    def test_stop(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor._consumer = Mock()
+        processor._consumer.is_running.return_value = True
+
+        processor.flush = Mock()
+        processor.close = Mock()
+        processor.cleanup = Mock()
+
+        processor._queue_observer = Mock()
+        processor._queue_observer.wait_for_queue_empty.return_value = True
+
+        mock_signal_queue = Mock()
+
+        # when
+        processor.stop(seconds=10, signal_queue=mock_signal_queue)
+
+        # then
+        processor.flush.assert_called_once()
+
+        processor._consumer.is_running.assert_called_once()
+        processor._consumer.wake_up.assert_called_once()
+        processor._consumer.interrupt.assert_called_once()
+        processor._consumer.join.assert_called_once()
+
+        processor._queue_observer.wait_for_queue_empty.assert_called_once_with(
+            seconds=10,
+            signal_queue=mock_signal_queue,
+        )
+
+        processor.close.assert_called_once()
+
+        processor._queue_observer.is_queue_empty.assert_called_once()
+        processor.cleanup.assert_called_once()
+
+    def test_close(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processor._consumer = Mock()
+
+        assert processor._accepts_operations
+
+        # when
+        processor.stop()
+
+        # then
+        assert not processor._accepts_operations
+        processor._consumer.join.assert_called_once()
+
+    def test_cleanup(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        resource1 = Mock()
+        resource2 = Mock()
+        mock_processing_resources = Mock()
+        mock_processing_resources.resources = [resource1, resource2]
+
+        processor._processing_resources = mock_processing_resources
+        processor._processing_resources.data_path.rmdir = Mock()
+
+        # when
+        processor.cleanup()
+
+        # then
+        processor._processing_resources.data_path.rmdir.assert_called_once()
+
+        resource1.cleanup.assert_called_once()
+        resource2.cleanup.assert_called_once()
+
+    def test_cleanup_oserror_happens(self):
+        # given
+        processor = AsyncOperationProcessor(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+        resource1 = Mock()
+        resource2 = Mock()
+        mock_processing_resources = Mock()
+        mock_processing_resources.resources = [resource1, resource2]
+
+        processor._processing_resources = mock_processing_resources
+        processor._processing_resources.data_path.rmdir = Mock(side_effect=OSError)
+
+        # when
+        processor.cleanup()  # no error should be raised
+
+        # then
+        processor._processing_resources.data_path.rmdir.assert_called_once()
+        resource1.cleanup.assert_called_once()
+        resource2.cleanup.assert_called_once()
