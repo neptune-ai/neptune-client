@@ -40,6 +40,10 @@ from neptune.core.components.abstract import (
 from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
+from neptune.core.operation_processors.operation_logger import (
+    ProcessorStopLogger,
+    ProcessorStopSignal,
+)
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operation_processors.utils import (
     common_metadata,
@@ -51,10 +55,6 @@ from neptune.core.typing.id_formats import UniqueId
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
-from neptune.internal.operation_processors.operation_logger import (
-    ProcessorStopLogger,
-    ProcessorStopSignal,
-)
 from neptune.internal.signals_processing.signals import Signal
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
@@ -213,7 +213,9 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
             raise NeptuneSynchronizationAlreadyStoppedException()
 
     def stop(
-        self, seconds: Optional[float] = None, signal_queue: Optional["Queue[ProcessorStopSignal]"] = None
+        self,
+        seconds: Optional[float] = None,
+        processor_stop_signal_queue: Optional["Queue[ProcessorStopSignal]"] = None,
     ) -> None:
         ts = time()
         self.flush()
@@ -222,7 +224,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
             self._consumer.wake_up()
             self._queue_observer.wait_for_queue_empty(
                 seconds=seconds,
-                signal_queue=signal_queue,
+                processor_stop_signal_queue=processor_stop_signal_queue,
             )
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
@@ -335,14 +337,14 @@ class QueueObserver:
     def wait_for_queue_empty(
         self,
         seconds: Optional[float],
-        signal_queue: Optional["Queue[ProcessorStopSignal]"] = None,
+        processor_stop_signal_queue: Optional["Queue[ProcessorStopSignal]"] = None,
     ) -> None:
         initial_queue_size = self._disk_queue.size()
         waiting_start: float = monotonic()
         time_elapsed: float = 0.0
         max_reconnect_wait_time: float = self._stop_queue_max_time_no_connection_seconds if seconds is None else seconds
 
-        self._processor_stop_logger.set_processor_stop_signal_queue(signal_queue)
+        self._processor_stop_logger.set_processor_stop_signal_queue(processor_stop_signal_queue)
 
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:

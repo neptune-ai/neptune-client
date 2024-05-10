@@ -152,7 +152,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         processor.enqueue_operation(op, wait=True)
 
         # then
-        processor.processing_resources.disk_queue.put.assert_called_with(op)
+        processor.processing_resources.disk_queue.put.assert_called_once_with(op)
         mock_wait.assert_called_once()
 
     def test_enqueue_operation_not_accepting_operations_raises_warning_and_doesnt_put_to_queue(self):
@@ -301,7 +301,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
         mock_signal_queue = Mock()
 
         # when
-        processor.stop(seconds=10, signal_queue=mock_signal_queue)
+        processor.stop(seconds=10, processor_stop_signal_queue=mock_signal_queue)
 
         # then
         processor.flush.assert_called_once()
@@ -313,7 +313,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
 
         processor._queue_observer.wait_for_queue_empty.assert_called_once_with(
             seconds=10,
-            signal_queue=mock_signal_queue,
+            processor_stop_signal_queue=mock_signal_queue,
         )
 
         processor.close.assert_called_once()
@@ -484,7 +484,7 @@ class TestQueueObserver(unittest.TestCase):
         signal_queue = Mock()
 
         # when
-        queue_observer.wait_for_queue_empty(seconds=30, signal_queue=signal_queue)
+        queue_observer.wait_for_queue_empty(seconds=30, processor_stop_signal_queue=signal_queue)
 
         # then
         queue_observer._processor_stop_logger.log_remaining_operations.assert_called_once_with(size_remaining=10)
@@ -513,7 +513,7 @@ class TestQueueObserver(unittest.TestCase):
         queue_observer._processor_stop_logger = Mock()
 
         # when
-        queue_observer.wait_for_queue_empty(seconds=30, signal_queue=Mock())
+        queue_observer.wait_for_queue_empty(seconds=30, processor_stop_signal_queue=Mock())
 
         # then
         queue_observer._processor_stop_logger.log_connection_interruption.assert_called_once_with(30)
