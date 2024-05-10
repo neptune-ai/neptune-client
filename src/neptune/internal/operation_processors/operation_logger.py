@@ -96,9 +96,6 @@ class ProcessorStopLogger:
         self._logger = logger
         self._should_print_logs = should_print_logs
 
-    def set_processor_stop_signal_queue(self, signal_queue: Optional["Queue[ProcessorStopSignal]"]) -> None:
-        self._signal_queue = signal_queue
-
     def log_connection_interruption(self, max_reconnect_wait_time: float) -> None:
         if self._signal_queue is not None:
             self._signal_queue.put(
