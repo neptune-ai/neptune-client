@@ -19,24 +19,20 @@ import sys
 import threading
 import traceback
 import uuid
-from functools import partial
 from platform import node as get_hostname
 from typing import (
-    TYPE_CHECKING,
+    Any,
     Callable,
     List,
 )
 
 from neptune.internal.utils.logger import get_logger
 
-if TYPE_CHECKING:
-    pass
-
 _logger = get_logger()
 
 
 class UncaughtExceptionHandler:
-    def __init__(self):
+    def __init__(self) -> None:
         self._previous_uncaught_exception_handler = None
         self._handlers = dict()
         self._lock = threading.Lock()
@@ -52,32 +48,32 @@ class UncaughtExceptionHandler:
         for _, handler in self._handlers.items():
             handler(traceback_lines)
 
-    def activate(self):
+    def activate(self) -> None:
         with self._lock:
             if self._previous_uncaught_exception_handler is not None:
                 return
             self._previous_uncaught_exception_handler = sys.excepthook
-            sys.excepthook = partial(exception_handler, self)
+            sys.excepthook = self.exception_handler
 
-    def deactivate(self):
+    def deactivate(self) -> None:
         with self._lock:
             sys.excepthook = self._previous_uncaught_exception_handler
             self._previous_uncaught_exception_handler = None
 
-    def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]):
+    def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]) -> None:
         with self._lock:
             self._handlers[uid] = handler
 
-    def unregister(self, uid: uuid.UUID):
+    def unregister(self, uid: uuid.UUID) -> None:
         with self._lock:
             if uid in self._handlers:
                 del self._handlers[uid]
 
+    def exception_handler(self, *args: Any, **kwargs: Any) -> None:
+        self.trigger(*args, **kwargs)
 
-def exception_handler(uncaught_exception_handler: UncaughtExceptionHandler, exc_type, exc_val, exc_tb):
-    uncaught_exception_handler.trigger(exc_type, exc_val, exc_tb)
-
-    uncaught_exception_handler._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
+        if self._previous_uncaught_exception_handler is not None:
+            self._previous_uncaught_exception_handler(*args, **kwargs)
 
 
 instance = UncaughtExceptionHandler()

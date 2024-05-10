@@ -1,8 +1,13 @@
+## [UNRELEASED] neptune 1.10.4
+
+### Fixes
+- Fixed run not failing in case of an exception if context manager was used ([#1755](https://github.com/neptune-ai/neptune-client/pull/1755))
+
+
 ## neptune 1.10.3
 
 ### Fixes
 - Clarified the `autoscale` parameter description in the `as_image()` docstring ([#1742](https://github.com/neptune-ai/neptune-client/pull/1742))
-- Fixed run not failing in case of an exception if context manager was used ([#1755](https://github.com/neptune-ai/neptune-client/pull/1755))
 
 ### Changes
 - Neptune now shows a warning instead of an error when the dependency tracking file is not found ([#1739](https://github.com/neptune-ai/neptune-client/pull/1739))
