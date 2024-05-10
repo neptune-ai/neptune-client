@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+__all__ = ("AsyncOperationProcessor",)
+
 import os
 import threading
 from dataclasses import dataclass
@@ -72,56 +74,6 @@ from neptune.internal.warnings import (
 logger = get_logger()
 
 
-@dataclass
-class QueueWaitCycleResults:
-    size_remaining: int
-    already_synced: int
-    already_synced_proc: float
-
-
-class ProcessingResources(WithResources):
-    def __init__(
-        self,
-        container_id: UniqueId,
-        container_type: ContainerType,
-        lock: threading.RLock,
-        signal_queue: "Queue[Signal]",
-        batch_size: int = 1,
-        data_path: Optional[Path] = None,
-        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict(),
-    ) -> None:
-        self.batch_size: int = batch_size
-        self._data_path = (
-            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, container_id, container_type)
-        )
-
-        self.metadata_file = MetadataFile(
-            data_path=self._data_path,
-            metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
-        )
-        self.operation_storage = OperationStorage(data_path=self._data_path)
-        self.disk_queue = DiskQueue(
-            data_path=self._data_path,
-            to_dict=serializer,
-            from_dict=Operation.from_dict,
-            lock=lock,
-        )
-
-        self.waiting_cond = threading.Condition()
-
-        self.signals_queue = signal_queue
-
-        self.consumed_version: int = 0
-
-    @property
-    def resources(self) -> Tuple[Resource, ...]:
-        return self.metadata_file, self.operation_storage, self.disk_queue
-
-    @property
-    def data_path(self) -> Path:
-        return self._data_path
-
-
 class AsyncOperationProcessor(WithResources, OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30.0
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = float(os.getenv(NEPTUNE_SYNC_AFTER_STOP_TIMEOUT, DEFAULT_STOP_TIMEOUT))
@@ -172,7 +124,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         return self._processing_resources.data_path
 
     @property
-    def processing_resources(self) -> ProcessingResources:
+    def processing_resources(self) -> "ProcessingResources":
         return self._processing_resources
 
     @ensure_disk_not_overutilize
@@ -247,6 +199,56 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
     def close(self) -> None:
         self._accepts_operations = False
         super().close()
+
+
+@dataclass
+class QueueWaitCycleResults:
+    size_remaining: int
+    already_synced: int
+    already_synced_proc: float
+
+
+class ProcessingResources(WithResources):
+    def __init__(
+        self,
+        container_id: UniqueId,
+        container_type: ContainerType,
+        lock: threading.RLock,
+        signal_queue: "Queue[Signal]",
+        batch_size: int = 1,
+        data_path: Optional[Path] = None,
+        serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict(),
+    ) -> None:
+        self.batch_size: int = batch_size
+        self._data_path = (
+            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, container_id, container_type)
+        )
+
+        self.metadata_file = MetadataFile(
+            data_path=self._data_path,
+            metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
+        )
+        self.operation_storage = OperationStorage(data_path=self._data_path)
+        self.disk_queue = DiskQueue(
+            data_path=self._data_path,
+            to_dict=serializer,
+            from_dict=Operation.from_dict,
+            lock=lock,
+        )
+
+        self.waiting_cond = threading.Condition()
+
+        self.signals_queue = signal_queue
+
+        self.consumed_version: int = 0
+
+    @property
+    def resources(self) -> Tuple[Resource, ...]:
+        return self.metadata_file, self.operation_storage, self.disk_queue
+
+    @property
+    def data_path(self) -> Path:
+        return self._data_path
 
 
 def _queue_has_enough_space(queue_size: int, batch_size: int) -> bool:
