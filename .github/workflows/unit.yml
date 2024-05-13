@@ -63,5 +63,7 @@ jobs:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
 
   unit_dev1_x:
-    uses: neptune-ai/neptune-client/.github/workflows/unit.yml@dev/1.x
+    uses: neptune-ai/neptune-client/.github/workflows/unit.yml@ss/checkout-before-integrations
     secrets: inherit
+    with:
+      neptune_ref: dev/1.x
