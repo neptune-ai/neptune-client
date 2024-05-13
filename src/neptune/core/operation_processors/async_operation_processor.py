@@ -190,11 +190,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
             self.cleanup()
 
     def cleanup(self) -> None:
-        super().cleanup()
-        try:
-            self._processing_resources.data_path.rmdir()
-        except OSError:
-            pass
+        self._processing_resources.cleanup()
 
     def close(self) -> None:
         self._accepts_operations = False
@@ -250,6 +246,13 @@ class ProcessingResources(WithResources):
     def data_path(self) -> Path:
         return self._data_path
 
+    def cleanup(self) -> None:
+        super().cleanup()
+        try:
+            self.data_path.rmdir()
+        except OSError:
+            pass
+
 
 def _queue_has_enough_space(queue_size: int, batch_size: int) -> bool:
     return queue_size > batch_size / 2
@@ -300,9 +303,11 @@ class ConsumerThread(Daemon):
         expected_count = len(batch)
         version_to_ack = version - expected_count
         while True:
+            # TODO: Add proper batch processing logic here once backend is ready
 
             signal_batch_processed(queue=self._processing_resources.signals_queue)
-            version_to_ack += len(batch)
+            processed_count = len(batch)
+            version_to_ack += processed_count
 
             with self._processing_resources.waiting_cond:
                 self._processing_resources.disk_queue.ack(version_to_ack)

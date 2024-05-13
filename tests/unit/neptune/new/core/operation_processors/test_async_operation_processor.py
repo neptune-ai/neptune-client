@@ -29,6 +29,7 @@ from neptune.core.components.abstract import WithResources
 from neptune.core.operation_processors.async_operation_processor import (
     AsyncOperationProcessor,
     ConsumerThread,
+    ProcessingResources,
     QueueObserver,
     QueueWaitCycleResults,
     _queue_has_enough_space,
@@ -341,7 +342,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
         assert not processor._accepts_operations
         processor._consumer.join.assert_called_once()
 
-    def test_cleanup(self):
+    def test_cleanup_triggers_processing_resources_cleanup(self):
         # given
         processor = AsyncOperationProcessor(
             container_id=UniqueId("test_id"),
@@ -350,10 +351,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
             signal_queue=Mock(),
         )
 
-        resource1 = Mock()
-        resource2 = Mock()
-        mock_processing_resources = Mock()
-        mock_processing_resources.resources = [resource1, resource2]
+        mock_processing_resources = Mock(wraps=processor._processing_resources)
 
         processor._processing_resources = mock_processing_resources
         processor._processing_resources.data_path.rmdir = Mock()
@@ -362,34 +360,50 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
         processor.cleanup()
 
         # then
-        processor._processing_resources.data_path.rmdir.assert_called_once()
+        processor._processing_resources.cleanup.assert_called_once()
 
-        resource1.cleanup.assert_called_once()
-        resource2.cleanup.assert_called_once()
 
-    def test_cleanup_oserror_happens(self):
+@patch("neptune.core.operation_processors.async_operation_processor.MetadataFile", new=Mock)
+class TestProcessingResourcesCleanup(unittest.TestCase):
+    def test_cleanup_of_resources_called(self):
         # given
-        processor = AsyncOperationProcessor(
+        processing_resources = ProcessingResources(
             container_id=UniqueId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
         )
-        resource1 = Mock()
-        resource2 = Mock()
-        mock_processing_resources = Mock()
-        mock_processing_resources.resources = [resource1, resource2]
 
-        processor._processing_resources = mock_processing_resources
-        processor._processing_resources.data_path.rmdir = Mock(side_effect=OSError)
+        processing_resources._data_path = Mock(wraps=processing_resources._data_path)
+        processing_resources.metadata_file = Mock()
+        processing_resources.disk_queue = Mock()
+        processing_resources.operation_storage = Mock()
 
         # when
-        processor.cleanup()  # no error should be raised
+        processing_resources.cleanup()
 
         # then
-        processor._processing_resources.data_path.rmdir.assert_called_once()
-        resource1.cleanup.assert_called_once()
-        resource2.cleanup.assert_called_once()
+        processing_resources.metadata_file.cleanup.assert_called_once()
+        processing_resources.disk_queue.cleanup.assert_called_once()
+        processing_resources.operation_storage.cleanup.assert_called_once()
+
+    def test_cleanup_oserror_happens(self):
+        # given
+        processing_resources = ProcessingResources(
+            container_id=UniqueId("test_id"),
+            container_type=random.choice(list(ContainerType)),
+            lock=threading.RLock(),
+            signal_queue=Mock(),
+        )
+
+        processing_resources._data_path = Mock(wraps=processing_resources._data_path)
+        processing_resources._data_path.rmdir = Mock(side_effect=OSError)
+
+        # when
+        processing_resources.cleanup()
+
+        # then
+        processing_resources._data_path.rmdir.assert_called_once()
 
 
 class TestConsumerThread(unittest.TestCase):
