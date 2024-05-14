@@ -25,11 +25,11 @@ jobs:
         id: set_neptune_ref
         run: |
           if [ ${{ github.event_name }} == 'workflow_call' ]; then
-            echo "neptune_ref=${{ inputs.neptune_ref }}" >> $GITHUB_ENV
+            echo "neptune_ref=${{ inputs.neptune_ref }}" >> "$GITHUB_OUTPUT"
           elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
-            echo "neptune_ref=${{ github.ref }}" >> $GITHUB_ENV
+            echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           elif [ ${{ github.event_name }} == 'push' ]; then
-            echo "neptune_ref=${{ github.ref }}" >> $GITHUB_ENV
+            echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           else
             echo ERROR: Unknown event name ${{ github.event_name }}
             exit 1
@@ -39,7 +39,7 @@ jobs:
         run: |
           echo "github.event_name=${{ github.event_name }}"
           echo "steps.set_neptune_ref.outputs.neptune_ref=${{ steps.set_neptune_ref.outputs.neptune_ref }}"
-          echo "env.neptune_ref=${{ env.neptune_ref }}"
+          echo "env.neptune_ref=${{ steps.set_neptune_ref.outputs.neptune_ref }}"
   print_inputs:
     needs: [ set_neptune_ref ]
     runs-on: ubuntu-latest
