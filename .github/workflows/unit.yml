@@ -16,6 +16,14 @@ on:
       - dev/1-x
 
 jobs:
+  print_inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print inputs
+        run: |
+          echo "neptune_ref: ${{ inputs.neptune_ref }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.event.client_payload.pull_request.head.ref: ${{ github.event.client_payload.pull_request.head.ref }}"
   test:
     timeout-minutes: 75
     strategy:
