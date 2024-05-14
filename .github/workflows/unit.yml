@@ -19,7 +19,7 @@ jobs:
   set_neptune_ref:
     uses: ./.github/workflows/set_neptune_ref.yml
     with:
-      neptune_ref: ${{ inputs.neptune_ref }}
+      workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   print_inputs:
     needs: [ set_neptune_ref ]
     runs-on: ubuntu-latest

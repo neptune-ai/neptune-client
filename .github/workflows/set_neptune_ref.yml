@@ -3,10 +3,14 @@ name: set_neptune_ref
 on:
   workflow_call:
     inputs:
-      neptune_ref:
+      workflow_call_input_neptune_ref:
         description: 'neptune_ref obtained from workflow call'
         required: false
         type: string
+    outputs:
+      neptune_ref:
+        description: 'evaluated neptune_ref'
+        value: ${{ jobs.set_neptune_ref.outputs.neptune_ref }}
 
 
 jobs:
@@ -19,7 +23,7 @@ jobs:
         id: set_neptune_ref
         run: |
           if [ ${{ github.event_name }} == 'workflow_call' ]; then
-            echo "neptune_ref=${{ inputs.neptune_ref }}" >> "$GITHUB_OUTPUT"
+            echo "neptune_ref=${{ inputs.workflow_call_input_neptune_ref }}" >> "$GITHUB_OUTPUT"
           elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
             echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           elif [ ${{ github.event_name }} == 'push' ]; then
