@@ -795,9 +795,3 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.fetcher.result }}
-
-  integrations_dev1_x:
-    uses: neptune-ai/neptune-client/.github/workflows/integrations.yml@ss/checkout-before-integrations
-    secrets: inherit
-    with:
-      neptune_ref: dev/1.x
