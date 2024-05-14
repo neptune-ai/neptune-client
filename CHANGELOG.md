@@ -1,3 +1,9 @@
+## [UNRELEASED] neptune 1.10.4
+
+### Fixes
+- Fixed run not failing in case of an exception if context manager was used ([#1755](https://github.com/neptune-ai/neptune-client/pull/1755))
+
+
 ## neptune 1.10.3
 
 ### Fixes

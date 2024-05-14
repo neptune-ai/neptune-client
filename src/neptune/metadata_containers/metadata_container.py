@@ -316,6 +316,7 @@ class MetadataContainer(AbstractContextManager, NeptuneObject):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
             traceback.print_exception(exc_type, exc_val, exc_tb)
+            uncaught_exception_handler.trigger(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __getattr__(self, item):
