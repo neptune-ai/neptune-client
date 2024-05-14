@@ -6,8 +6,7 @@ on:
       neptune_ref:
         description: 'Reference to neptune-client branch to use while running unit tests (can be a branch, tag, or commit SHA)'
         type: string
-        required: false
-        default: ${{ github.ref }}
+        required: true
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
@@ -17,7 +16,31 @@ on:
       - ss/checkout-before-integrations  # remove later
 
 jobs:
+  set_neptune_ref:
+    runs-on: ubuntu-latest
+    outputs:
+      neptune_ref: ${{ steps.set_neptune_ref.outputs.neptune_ref }}
+    steps:
+      - name: Set neptune_ref env variable
+        id: set_neptune_ref
+        run: |
+          if [ ${{ github.event_name }} == 'workflow_call' ]; then
+            echo "neptune_ref=${{ inputs.neptune_ref }}" >> $GITHUB_ENV
+          elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
+            echo "neptune_ref=${{ github.ref }}" >> $GITHUB_ENV
+          elif [ ${{ github.event_name }} == 'push' ]; then
+            echo "neptune_ref=${{ github.ref }}" >> $GITHUB_ENV
+          else
+            echo ERROR: Unknown event name ${{ github.event_name }}
+            exit 1
+          fi
+        shell: bash
+      - name: Read debug variables
+        run: |
+          echo "github.event_name=${{ github.event_name }}"
+          echo "neptune_ref=${{ inputs.neptune_ref }}"
   print_inputs:
+    needs: [ set_neptune_ref ]
     runs-on: ubuntu-latest
     steps:
       - name: Print inputs
@@ -25,6 +48,8 @@ jobs:
           echo "neptune_ref: ${{ inputs.neptune_ref }}"
           echo "github.ref: ${{ github.ref }}"
           echo "github.event.client_payload.pull_request.head.ref: ${{ github.event.client_payload.pull_request.head.ref }}"
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "needs.set_neptune_ref.outputs.neptune_ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}"
   test:
     timeout-minutes: 75
     strategy:
