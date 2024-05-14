@@ -7,13 +7,14 @@ on:
         description: 'Reference to neptune-client branch to use while running unit tests (can be a branch, tag, or commit SHA)'
         type: string
         required: false
-        default: ${{ github.event.client_payload.pull_request.head.ref }}
+        default: ${{ github.ref }}
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
     branches:
-      - dev/1-x
+      - dev/1.x
+      - ss/checkout-before-integrations  # remove later
 
 jobs:
   print_inputs:
