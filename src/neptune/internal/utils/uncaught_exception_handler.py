@@ -20,24 +20,35 @@ import threading
 import traceback
 import uuid
 from platform import node as get_hostname
+from types import TracebackType
 from typing import (
     Any,
     Callable,
+    Dict,
     List,
+    Optional,
+    Type,
 )
 
 from neptune.internal.utils.logger import get_logger
 
 _logger = get_logger()
 
+SYS_UNCAUGHT_EXCEPTION_HANDLER_TYPE = Callable[[Type[BaseException], BaseException, Optional[TracebackType]], Any]
+
 
 class UncaughtExceptionHandler:
     def __init__(self) -> None:
-        self._previous_uncaught_exception_handler = None
-        self._handlers = dict()
+        self._previous_uncaught_exception_handler: Optional[SYS_UNCAUGHT_EXCEPTION_HANDLER_TYPE] = None
+        self._handlers: Dict[uuid.UUID, Callable[[List[str]], None]] = dict()
         self._lock = threading.Lock()
 
-    def trigger(self, exc_type, exc_val, exc_tb) -> None:
+    def trigger(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         header_lines = [
             f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
             "Marking run as failed",
@@ -57,6 +68,8 @@ class UncaughtExceptionHandler:
 
     def deactivate(self) -> None:
         with self._lock:
+            if self._previous_uncaught_exception_handler is None:
+                return
             sys.excepthook = self._previous_uncaught_exception_handler
             self._previous_uncaught_exception_handler = None
 
