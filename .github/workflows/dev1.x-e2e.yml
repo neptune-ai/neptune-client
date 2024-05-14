@@ -15,7 +15,7 @@ env:
 
 jobs:
   dev1_x_e2e:
-    uses: neptune-ai/neptune-client/.github/workflows/e2e.yml@ss/checkout-before-integrations
+    uses: neptune-ai/neptune-client/.github/workflows/e2e.yml@dev/1.x
     secrets: inherit
     with:
       neptune_ref: dev/1.x
