@@ -38,14 +38,15 @@ jobs:
       - name: Read debug variables
         run: |
           echo "github.event_name=${{ github.event_name }}"
-          echo "neptune_ref=${{ inputs.neptune_ref }}"
+          echo "steps.set_neptune_ref.outputs.neptune_ref=${{ steps.set_neptune_ref.outputs.neptune_ref }}"
+          echo "env.neptune_ref=${{ env.neptune_ref }}"
   print_inputs:
     needs: [ set_neptune_ref ]
     runs-on: ubuntu-latest
     steps:
       - name: Print inputs
         run: |
-          echo "neptune_ref: ${{ inputs.neptune_ref }}"
+          echo "inputs.neptune_ref: ${{ inputs.neptune_ref }}"
           echo "github.ref: ${{ github.ref }}"
           echo "github.event.client_payload.pull_request.head.ref: ${{ github.event.client_payload.pull_request.head.ref }}"
           echo "github.event_name: ${{ github.event_name }}"
