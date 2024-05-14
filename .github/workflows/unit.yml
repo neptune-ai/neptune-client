@@ -11,7 +11,6 @@ on:
   push:
     branches:
       - dev/1.x
-      - ss/checkout-before-integrations  # remove later
 
 jobs:
   set_neptune_ref:
