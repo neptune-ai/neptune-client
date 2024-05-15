@@ -741,7 +741,7 @@ class Handler(SupportsNamespaces):
         Args:
             path: Path of the namespace to be removed.
             wait: By default, logged metadata is sent to the server in the background.
-                With this option set to `True`, Neptune first sends all data before executing the call.
+                With this option set to `True`, Neptune first sends all data, then executes the call.
 
         Example:
             >>> import neptune
