@@ -37,6 +37,7 @@
 - Move some `OperationProcessor` implementations to `neptune.core.operation_processors` ([#1760](https://github.com/neptune-ai/neptune-client/pull/1760))
 - Changed handling of too long custom run id ([#1761](https://github.com/neptune-ai/neptune-client/pull/1761))
 - Skip tests that require `GitPython` when not installed ([#1752](https://github.com/neptune-ai/neptune-client/pull/1752))
+- Added docstring for the `pop()` function ([#1776](https://github.com/neptune-ai/neptune-client/pull/1776))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
