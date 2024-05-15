@@ -61,6 +61,7 @@ from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -417,6 +418,9 @@ class Run(MetadataContainer):
             async_no_progress_callback=async_no_progress_callback,
             async_no_progress_threshold=async_no_progress_threshold,
         )
+
+        if not getattr(self._backend, "sys_name_set_by_backend", False):
+            self._name = self._name if self._name is not None else DEFAULT_NAME
 
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace
