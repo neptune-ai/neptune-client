@@ -22,7 +22,7 @@ jobs:
       - name: Set neptune_ref env variable
         id: set_neptune_ref
         run: |
-          if [ ${{ github.event_name }} == 'workflow_call' ]; then
+          if [ ${{ github.event_name }} == 'schedule' ]; then
             echo "neptune_ref=${{ inputs.workflow_call_input_neptune_ref }}" >> "$GITHUB_OUTPUT"
           elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
             echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
