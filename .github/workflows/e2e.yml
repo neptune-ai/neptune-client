@@ -22,7 +22,7 @@ env:
 
 jobs:
   set_neptune_ref:
-    uses: ./.github/workflows/set_neptune_ref.yml
+    uses: ./.github/workflows/set-neptune-ref.yml
     with:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   e2e:
