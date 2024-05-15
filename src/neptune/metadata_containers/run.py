@@ -419,9 +419,6 @@ class Run(MetadataContainer):
             async_no_progress_threshold=async_no_progress_threshold,
         )
 
-        if not getattr(self._backend, "sys_name_set_by_backend", False):
-            self._name = self._name if self._name is not None else DEFAULT_NAME
-
     def _get_or_create_api_object(self) -> ApiExperiment:
         project_workspace = self._project_api_object.workspace
         project_name = self._project_api_object.name
@@ -488,6 +485,9 @@ class Run(MetadataContainer):
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
 
     def _write_initial_attributes(self):
+        if not getattr(self._backend, "sys_name_set_by_backend", False):
+            self._name = self._name if self._name is not None else DEFAULT_NAME
+
         if self._name is not None:
             self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
 
