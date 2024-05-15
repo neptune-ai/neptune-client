@@ -748,7 +748,7 @@ class Handler(SupportsNamespaces):
             >>> run = neptune.init_run(with_id="RUN-100")
             >>> run["large_dataset"].pop()
 
-        See also the API reference: https://docs.neptune.ai/api/run/#pop
+        See also the API reference: https://docs.neptune.ai/api/client_index/#pop
         """
         with self._container.lock():
             handler = self
