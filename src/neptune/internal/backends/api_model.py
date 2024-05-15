@@ -132,6 +132,7 @@ class ClientConfig:
     _missing_features: FrozenSet[str]
     version_info: VersionInfo
     multipart_config: MultipartConfig
+    sys_name_set_by_backend: bool
 
     def has_feature(self, feature_name: str) -> bool:
         return feature_name not in self._missing_features
@@ -173,12 +174,15 @@ class ClientConfig:
             missing_features.append(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
             missing_features.append(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
 
+        sys_name_set_by_backend = getattr(config, "sysNameSetByBackend", False)
+
         return ClientConfig(
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
             _missing_features=frozenset(missing_features),
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
+            sys_name_set_by_backend=sys_name_set_by_backend,
         )
 
 

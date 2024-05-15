@@ -61,6 +61,7 @@ from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -484,6 +485,9 @@ class Run(MetadataContainer):
             self[f"{self._monitoring_namespace}/tid"] = str(self._tid)
 
     def _write_initial_attributes(self):
+        if not getattr(self._backend, "sys_name_set_by_backend", False):
+            self._name = self._name if self._name is not None else DEFAULT_NAME
+
         if self._name is not None:
             self[SYSTEM_NAME_ATTRIBUTE_PATH] = self._name
 

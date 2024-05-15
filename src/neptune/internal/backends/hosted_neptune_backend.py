@@ -195,6 +195,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             # create a stub
             self.artifacts_client = MissingApiClient(OptionalFeatures.ARTIFACTS)
 
+        self.sys_name_set_by_backend = self._client_config.sys_name_set_by_backend
+
     def verify_feature_available(self, feature_name: str):
         if not self._client_config.has_feature(feature_name):
             raise NeptuneFeatureNotAvailableException(feature_name)
