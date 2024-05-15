@@ -3,6 +3,9 @@
 ### Fixes
 - Fixed run not failing in case of an exception if context manager was used ([#1755](https://github.com/neptune-ai/neptune-client/pull/1755))
 
+### Changes
+- Make handling of `sys/name` dependent on the client config flag ([#1777](https://github.com/neptune-ai/neptune-client/pull/1777))
+
 
 ## neptune 1.10.3
 
