@@ -38,6 +38,7 @@
 - Changed handling of too long custom run id ([#1761](https://github.com/neptune-ai/neptune-client/pull/1761))
 - Skip tests that require `GitPython` when not installed ([#1752](https://github.com/neptune-ai/neptune-client/pull/1752))
 - Moved and refactored `AsyncOperationProcessor` to `neptune.core.operation_processors` ([#1770](https://github.com/neptune-ai/neptune-client/pull/1770))
+- Moved and refactored `SyncOperationProcessor` to `neptune.core.operation_processors` ([#1779](https://github.com/neptune-ai/neptune-client/pull/1779))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
