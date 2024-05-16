@@ -15,6 +15,7 @@
 #
 
 from pathlib import Path
+from unittest.mock import Mock
 from uuid import uuid4
 
 from mock import patch
@@ -30,13 +31,16 @@ from neptune.core.typing.id_formats import UniqueId
 @patch("neptune.core.operation_processors.sync_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile")
 @patch("neptune.core.operation_processors.utils.os.getpid", return_value=42)
-def test_setup(_, __, ___, mkdir_mock, random_choice_mock):
+def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
     # given
     container_id = UniqueId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
     random_choice_mock.side_effect = tuple("abcdefgh")
+
+    # and
+    op_storage = operation_storage_mock.return_value
 
     # and
     processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
@@ -49,6 +53,9 @@ def test_setup(_, __, ___, mkdir_mock, random_choice_mock):
         processor.data_path
         == Path(NEPTUNE_DATA_DIRECTORY) / "sync" / f"{container_type.value}__{container_id}__42__abcdefgh"
     )
+
+    # and
+    assert processor.operation_storage == op_storage
 
 
 @patch("neptune.core.operation_processors.sync_operation_processor.OperationStorage")
@@ -133,6 +140,24 @@ def test_stop(metadata_file_mock, operation_storage_mock, rmdir_mock):
     # and
     operation_storage.cleanup.assert_called()
     metadata_file.cleanup.assert_called()
+
+    # and
+    rmdir_mock.assert_called_once()
+
+
+@patch("neptune.core.operation_processors.sync_operation_processor.Path.rmdir", side_effect=OSError)
+@patch("neptune.core.operation_processors.sync_operation_processor.OperationStorage", new=Mock)
+@patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile", new=Mock)
+def test_cleanup_oserror_not_raising_toplevel_exception(rmdir_mock):
+    # given
+    container_id = UniqueId(str(uuid4()))
+    container_type = ContainerType.RUN
+
+    # and
+    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+
+    # when
+    processor.cleanup()  # no exception raised
 
     # and
     rmdir_mock.assert_called_once()
