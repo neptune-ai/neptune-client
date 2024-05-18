@@ -43,14 +43,14 @@ from neptune.core.operation_processors.utils import (
 )
 from neptune.core.operations.operation import Operation
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import CustomId
 from neptune.internal.signals_processing.signals import Signal
 
 
 class ProcessingResources(WithResources):
     def __init__(
         self,
-        container_id: UniqueId,
+        container_id: CustomId,
         container_type: ContainerType,
         lock: threading.RLock,
         signal_queue: Queue[Signal],

@@ -35,13 +35,13 @@ from neptune.core.operation_processors.utils import (
 )
 from neptune.core.operations.operation import Operation
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import CustomId
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 
 class SyncOperationProcessor(WithResources, OperationProcessor):
-    def __init__(self, container_id: "UniqueId", container_type: "ContainerType"):
-        self._container_id: "UniqueId" = container_id
+    def __init__(self, container_id: "CustomId", container_type: "ContainerType"):
+        self._container_id: "CustomId" = container_id
         self._container_type: "ContainerType" = container_type
 
         self._data_path = get_container_full_path(SYNC_DIRECTORY, container_id, container_type)

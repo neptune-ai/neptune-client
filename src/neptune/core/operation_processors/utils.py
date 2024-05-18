@@ -37,8 +37,7 @@ from neptune.objects.structure_version import StructureVersion
 
 if TYPE_CHECKING:
     from neptune.core.typing.container_type import ContainerType
-    from neptune.core.typing.id_formats import UniqueId
-
+    from neptune.core.typing.id_formats import CustomId
 
 RANDOM_KEY_LENGTH = 8
 
@@ -54,16 +53,16 @@ def random_key(length: int) -> str:
     return "".join(random.choice(characters) for _ in range(length))
 
 
-def get_container_dir(container_id: "UniqueId", container_type: "ContainerType") -> str:
+def get_container_dir(container_id: "CustomId", container_type: "ContainerType") -> str:
     return f"{container_type.value}__{container_id}__{os.getpid()}__{random_key(RANDOM_KEY_LENGTH)}"
 
 
-def get_container_full_path(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
+def get_container_full_path(type_dir: str, container_id: "CustomId", container_type: "ContainerType") -> Path:
     neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
     return neptune_data_dir / type_dir / get_container_dir(container_id=container_id, container_type=container_type)
 
 
-def common_metadata(mode: str, container_id: "UniqueId", container_type: "ContainerType") -> Dict[str, Any]:
+def common_metadata(mode: str, container_id: "CustomId", container_type: "ContainerType") -> Dict[str, Any]:
     return {
         "mode": mode,
         "containerId": container_id,

@@ -42,7 +42,7 @@ from neptune.core.operation_processors.async_operation_processor.queue_observer 
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operations.operation import Operation
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import CustomId
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.signals_processing.signals import Signal
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
@@ -55,7 +55,7 @@ from neptune.internal.warnings import (
 class AsyncOperationProcessor(WithResources, OperationProcessor):
     def __init__(
         self,
-        container_id: UniqueId,
+        container_id: CustomId,
         container_type: ContainerType,
         lock: threading.RLock,
         signal_queue: "Queue[Signal]",
