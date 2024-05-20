@@ -13,13 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["UniqueId", "SysId", "QualifiedName", "CustomId"]
+__all__ = ["UniqueId", "QualifiedName", "CustomId"]
 
 from typing import NewType
 
 UniqueId = NewType("UniqueId", str)
-
-SysId = NewType("SysId", str)
 
 QualifiedName = NewType("QualifiedName", str)
 
