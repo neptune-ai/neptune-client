@@ -169,7 +169,7 @@ jobs:
   e2e-tests-notify:
     needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

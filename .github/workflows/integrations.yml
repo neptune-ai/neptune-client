@@ -57,7 +57,7 @@ jobs:
   fastai-notify:
     needs: [fastai, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -104,7 +104,7 @@ jobs:
   kedro-notify:
     needs: [kedro, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
   prophet-notify:
     needs: [prophet, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -208,7 +208,7 @@ jobs:
   keras-notify:
     needs: [keras, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -262,7 +262,7 @@ jobs:
   lightning-notify:
     needs: [lightning, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -316,7 +316,7 @@ jobs:
   huggingface-notify:
     needs: [huggingface, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -366,7 +366,7 @@ jobs:
   zenml-notify:
     needs: [zenml, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -415,7 +415,7 @@ jobs:
   mosaicml-notify:
     needs: [ mosaicml, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -467,7 +467,7 @@ jobs:
   tensorflow-images-notify:
     needs: [ tensorflow-images, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -514,7 +514,7 @@ jobs:
   detectron2-notify:
     needs: [ detectron2, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -560,7 +560,7 @@ jobs:
   rlang-notify:
     needs: [ rlang, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -607,7 +607,7 @@ jobs:
   sklearn-notify:
     needs: [ sklearn, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -654,7 +654,7 @@ jobs:
   xgboost-notify:
     needs: [ xgboost, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -701,7 +701,7 @@ jobs:
   sacred-notify:
     needs: [ sacred, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -748,7 +748,7 @@ jobs:
   mlflow-notify:
     needs: [ mlflow, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -801,7 +801,7 @@ jobs:
   airflow-notify:
     needs: [ airflow, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

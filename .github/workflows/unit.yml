@@ -59,7 +59,7 @@ jobs:
   unit-tests-notify:
     needs: [ test, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: success() || failure()
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
