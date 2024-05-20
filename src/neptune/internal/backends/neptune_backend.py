@@ -134,10 +134,6 @@ class NeptuneBackend:
     ) -> ApiExperiment:
         pass
 
-    @abc.abstractmethod
-    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
-        pass
-
     def ping(self, container_id: str, container_type: ContainerType):
         """Do nothing by default"""
 

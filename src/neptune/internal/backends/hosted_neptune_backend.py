@@ -438,21 +438,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise NeptuneObjectCreationConflict() from e
 
     @with_api_exceptions_handler
-    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
-        try:
-            return (
-                self.leaderboard_client.api.createEmptyCheckpoint(
-                    notebookId=notebook_id,
-                    checkpoint={"path": jupyter_path},
-                    **DEFAULT_REQUEST_KWARGS,
-                )
-                .response()
-                .result.id
-            )
-        except HTTPNotFound:
-            return None
-
-    @with_api_exceptions_handler
     def ping(self, container_id: str, container_type: ContainerType):
         request_kwargs = {
             "_request_options": {

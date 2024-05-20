@@ -251,9 +251,6 @@ class NeptuneBackendMock(NeptuneBackend):
             trashed=False,
         )
 
-    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
-        return None
-
     def get_project(self, project_id: QualifiedName) -> Project:
         return Project(
             id=self._project_id,
