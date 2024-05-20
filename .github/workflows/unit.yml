@@ -77,8 +77,9 @@ jobs:
     steps:
       - name: Dummy
         run: |
-          echo "Dummy success"
+          echo "Dummy failed"
           echo "github.ref: ${{ github.ref }}"
+          exit 1
         shell: bash
 
   dummy-tests-notify:
