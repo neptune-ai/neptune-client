@@ -24,12 +24,12 @@ from typing import (
 
 from neptune.core.operation_processors.async_operation_processor.processing_resources import ProcessingResources
 from neptune.core.operations.operation import Operation
+from neptune.internal.daemon import Daemon
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
     signal_batch_processed,
     signal_batch_started,
 )
-from neptune.internal.threading.daemon import Daemon
 
 
 class ConsumerThread(Daemon):
