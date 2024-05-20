@@ -736,6 +736,20 @@ class Handler(SupportsNamespaces):
     @feature_temporarily_unavailable
     @check_protected_paths
     def pop(self, path: str = None, *, wait: bool = False) -> None:
+        """Completely removes the namespace and all associated metadata stored under the path.
+
+        Args:
+            path: Path of the namespace to be removed.
+            wait: By default, logged metadata is sent to the server in the background.
+                With this option set to `True`, Neptune first sends all data, then executes the call.
+
+        Example:
+            >>> import neptune
+            >>> run = neptune.init_run(with_id="RUN-100")
+            >>> run["large_dataset"].pop()
+
+        See also the API reference: https://docs.neptune.ai/api/client_index/#pop
+        """
         with self._container.lock():
             handler = self
             if path:
