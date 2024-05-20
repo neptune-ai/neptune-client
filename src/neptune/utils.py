@@ -32,7 +32,7 @@ from typing import (
     Union,
 )
 
-from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
+from neptune.internal.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils.logger import get_logger
 from neptune.typing import ProgressBarCallback

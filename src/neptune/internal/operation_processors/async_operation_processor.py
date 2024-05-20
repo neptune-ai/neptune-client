@@ -42,13 +42,13 @@ from neptune.core.operation_processors.operation_processor import OperationProce
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_logger import ProcessorStopLogger
 from neptune.internal.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
 )
+from neptune.internal.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
     signal_batch_processed,

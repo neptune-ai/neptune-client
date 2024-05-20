@@ -27,7 +27,7 @@ from typing import (
     Optional,
 )
 
-from neptune.internal.init.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
+from neptune.internal.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
 from neptune.internal.signals_processing.signals import (
     BatchLagSignal,
     SignalsVisitor,
