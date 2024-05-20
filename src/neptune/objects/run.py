@@ -24,7 +24,6 @@ from typing import (
     Callable,
     List,
     Optional,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -42,8 +41,6 @@ from neptune.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
     MONITORING_NAMESPACE,
-    NEPTUNE_NOTEBOOK_ID,
-    NEPTUNE_NOTEBOOK_PATH,
 )
 from neptune.exceptions import (
     InactiveRunException,
@@ -52,7 +49,6 @@ from neptune.exceptions import (
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
-from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
@@ -63,7 +59,6 @@ from neptune.internal.init.parameters import (
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
-from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.internal.state import ContainerState
 from neptune.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
@@ -441,14 +436,10 @@ class Run(NeptuneObject):
             if custom_run_id_exceeds_length(self._custom_run_id):
                 raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
-            notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
-
             return self._backend.create_run(
                 project_id=self._project_api_object.id,
                 git_info=git_info,
                 custom_run_id=self._custom_run_id,
-                notebook_id=notebook_id,
-                checkpoint_id=checkpoint_id,
             )
 
     @temporarily_disabled
@@ -587,14 +578,3 @@ def check_for_extra_kwargs(caller_name: str, kwargs: dict):
     if kwargs:
         first_key = next(iter(kwargs.keys()))
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
-
-
-def create_notebook_checkpoint(backend: NeptuneBackend) -> Tuple[Optional[str], Optional[str]]:
-    notebook_id = os.getenv(NEPTUNE_NOTEBOOK_ID, None)
-    notebook_path = os.getenv(NEPTUNE_NOTEBOOK_PATH, None)
-
-    checkpoint_id = None
-    if notebook_id is not None and notebook_path is not None:
-        checkpoint_id = create_checkpoint(backend=backend, notebook_id=notebook_id, notebook_path=notebook_path)
-
-    return notebook_id, checkpoint_id
