@@ -272,8 +272,6 @@ module = [
     "neptune.internal.init.model_version",
     "neptune.internal.init.project",
     "neptune.internal.init.run",
-    "neptune.internal.notebooks.comm",
-    "neptune.internal.notebooks.notebooks",
     "neptune.internal.operation",
     "neptune.internal.streams.std_capture_background_job",
     "neptune.internal.streams.std_stream_capture_logger",
