@@ -124,7 +124,7 @@ class TestInitRun(BaseE2ETest):
 
         captured = capsys.readouterr()
         assert "'some_non_existent_file' does not exist" in captured.out
-        assert "ERROR" in captured.out
+        assert "[warning]" in captured.out
 
     def test_tracking_uncommitted_changes(self, repo, environment):
         file = repo.working_dir + "/some_file.txt"
@@ -139,6 +139,25 @@ class TestInitRun(BaseE2ETest):
             run["source_code/diff"].download()
             with open("diff.patch") as fp:
                 assert "some-content" in fp.read()
+
+    def test_failing_on_exception_if_in_context_manager(self, environment):
+        run_id = ""
+
+        try:
+            with neptune.init_run(project=environment.project) as run:
+                run_id = run["sys/id"].fetch()
+                raise Exception()
+        except Exception:
+            pass
+
+        with neptune.init_run(with_id=run_id, project=environment.project) as run:
+            assert run["sys/failed"].fetch() is True
+
+            monitoring_hash = list(run.get_structure()["monitoring"].items())[0][0]
+            assert run.exists(f"monitoring/{monitoring_hash}/traceback")
+
+            traceback_df = run[f"monitoring/{monitoring_hash}/traceback"].fetch_values()
+            assert "Marking run as failed" in traceback_df["value"].to_list()
 
 
 class TestInitProject(BaseE2ETest):

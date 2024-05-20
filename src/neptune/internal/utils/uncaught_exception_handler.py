@@ -20,60 +20,73 @@ import threading
 import traceback
 import uuid
 from platform import node as get_hostname
+from types import TracebackType
 from typing import (
-    TYPE_CHECKING,
+    Any,
     Callable,
+    Dict,
     List,
+    Optional,
+    Type,
 )
 
 from neptune.internal.utils.logger import get_logger
 
-if TYPE_CHECKING:
-    pass
-
 _logger = get_logger()
+
+SYS_UNCAUGHT_EXCEPTION_HANDLER_TYPE = Callable[[Type[BaseException], BaseException, Optional[TracebackType]], Any]
 
 
 class UncaughtExceptionHandler:
-    def __init__(self):
-        self._previous_uncaught_exception_handler = None
-        self._handlers = dict()
+    def __init__(self) -> None:
+        self._previous_uncaught_exception_handler: Optional[SYS_UNCAUGHT_EXCEPTION_HANDLER_TYPE] = None
+        self._handlers: Dict[uuid.UUID, Callable[[List[str]], None]] = dict()
         self._lock = threading.Lock()
 
-    def activate(self):
+    def trigger(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
+        header_lines = [
+            f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
+            "Marking run as failed",
+            "Traceback:",
+        ]
+
+        traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
+        for _, handler in self._handlers.items():
+            handler(traceback_lines)
+
+    def activate(self) -> None:
         with self._lock:
-            this = self
+            if self._previous_uncaught_exception_handler is not None:
+                return
+            self._previous_uncaught_exception_handler = sys.excepthook
+            sys.excepthook = self.exception_handler
 
-            def exception_handler(exc_type, exc_val, exc_tb):
-                header_lines = [
-                    f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
-                    "Marking run as failed",
-                    "Traceback:",
-                ]
-
-                traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
-                for _, handler in self._handlers.items():
-                    handler(traceback_lines)
-
-                this._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
-
+    def deactivate(self) -> None:
+        with self._lock:
             if self._previous_uncaught_exception_handler is None:
-                self._previous_uncaught_exception_handler = sys.excepthook
-                sys.excepthook = exception_handler
-
-    def deactivate(self):
-        with self._lock:
+                return
             sys.excepthook = self._previous_uncaught_exception_handler
             self._previous_uncaught_exception_handler = None
 
-    def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]):
+    def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]) -> None:
         with self._lock:
             self._handlers[uid] = handler
 
-    def unregister(self, uid: uuid.UUID):
+    def unregister(self, uid: uuid.UUID) -> None:
         with self._lock:
             if uid in self._handlers:
                 del self._handlers[uid]
+
+    def exception_handler(self, *args: Any, **kwargs: Any) -> None:
+        self.trigger(*args, **kwargs)
+
+        if self._previous_uncaught_exception_handler is not None:
+            self._previous_uncaught_exception_handler(*args, **kwargs)
 
 
 instance = UncaughtExceptionHandler()

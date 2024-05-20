@@ -43,7 +43,10 @@ from neptune.common.exceptions import NeptuneConnectionLostException
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
-from neptune.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
+from neptune.envs import (
+    NEPTUNE_ASYNC_BATCH_SIZE,
+    NEPTUNE_SYNC_BATCH_TIMEOUT_ENV,
+)
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
 from neptune.internal.operation import Operation
@@ -94,6 +97,8 @@ class ExecutionDirectory:
         operation_storage = OperationStorage(self.path)
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
+        batch_size = int(os.getenv(NEPTUNE_ASYNC_BATCH_SIZE, "1000"))
+
         with DiskQueue(
             data_path=self.path,
             to_dict=serializer,
@@ -101,7 +106,7 @@ class ExecutionDirectory:
             lock=threading.RLock(),
         ) as disk_queue:
             while True:
-                raw_batch = disk_queue.get_batch(1000)
+                raw_batch = disk_queue.get_batch(batch_size)
                 if not raw_batch:
                     break
                 version = raw_batch[-1].ver
