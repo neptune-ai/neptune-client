@@ -73,6 +73,7 @@ class NQLQueryAggregate(NQLQuery):
 
 class NQLAttributeOperator(str, Enum):
     EQUALS = "="
+    NOT_EQUALS = "!="
     CONTAINS = "CONTAINS"
     GREATER_THAN = ">"
 
