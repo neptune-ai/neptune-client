@@ -1,0 +1,50 @@
+name: notify-test
+
+on:
+  workflow_call:
+    inputs:
+      neptune_ref:
+        description: 'Reference to neptune-client branch to use while running e2e tests (can be a branch, tag, or commit SHA)'
+        type: string
+        required: false
+  workflow_dispatch:
+  push:
+    branches:
+      - dev/1.x
+
+env:
+  WORKSPACE_NAME: e2e-tests
+  BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+  USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+  ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+
+jobs:
+  set_neptune_ref:
+    uses: ./.github/workflows/set-neptune-ref.yml
+    with:
+      workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
+
+  dummy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dummy
+        run: echo "Dummy success"
+        shell: bash
+
+  dummy-tests-notify:
+    needs: [ dummy, set_neptune_ref ]
+    runs-on: ubuntu-latest
+    if: success() || failure()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
+      - name: Notify
+        uses: ./.github/actions/workflow-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
