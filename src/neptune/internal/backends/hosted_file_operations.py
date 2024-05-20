@@ -69,7 +69,6 @@ from neptune.internal.exceptions import (
     NeptuneException,
     UploadedFileChanged,
 )
-from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 from neptune.internal.storage import (
     AttributeUploadConfiguration,
     FileChunk,
@@ -88,6 +87,7 @@ from neptune.internal.utils.logger import get_logger
 from neptune.typing import ProgressBarType
 
 logger = get_logger()
+BYTES_IN_ONE_MB = 2**20
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
 

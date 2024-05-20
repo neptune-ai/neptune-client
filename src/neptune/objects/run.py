@@ -54,7 +54,6 @@ from neptune.exceptions import (
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
-from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -464,9 +463,6 @@ class Run(NeptuneObject):
 
         if self._capture_stderr:
             background_jobs.append(StderrCaptureBackgroundJob(attribute_name=self._stderr_path))
-
-        if self._capture_hardware_metrics:
-            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=self._monitoring_namespace))
 
         if self._capture_traceback:
             background_jobs.append(
