@@ -76,7 +76,6 @@ class TestManagement(BaseE2ETest):
         assert username in member_list
         assert member_list.get(username) == expected_role
 
-
     def test_standard_scenario(self, environment: Environment):
         project_name = a_project_name(project_slug=f"{fake.slug()}-mgmt")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
@@ -427,7 +426,6 @@ class TestManagement(BaseE2ETest):
         assert status["storageBytesAvailable"] >= 0
         assert status["storageBytesLimit"] >= 0
         assert status["storageBytesUsed"] >= 0
-
 
 
 @pytest.mark.management
