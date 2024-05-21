@@ -12,18 +12,21 @@ runs:
     #- uses: technote-space/workflow-conclusion-action@v3
 
     - name: Set production field
+      outputs:
+        production: ${{ steps.set-production.outputs.production }}
       id: set-production
       run: |
         if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
-          echo "Production=Production 1.x" >> $GITHUB_ENV
+          echo "production=Production 1.x" >> $GITHUB_ENV
         elif [[ "${{ github.ref }}" == "refs/heads/dev/1.x" ]]; then
-          echo "Production=Production" >> $GITHUB_ENV
+          echo "production=Production" >> $GITHUB_ENV
         else
-          echo "Production=Unknown" >> $GITHUB_ENV
+          echo "production=Unknown" >> $GITHUB_ENV
         fi
       shell: bash
 
     - name: Notify about success
+      needs: [ set-production ]
       uses: 8398a7/action-slack@v3
       #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
@@ -39,37 +42,37 @@ runs:
                 "fields": [
                   {
                     "title": "Repository",
-                    "value": "${{ github.repository }}",
+                    "value": "${{ process.env.AS_REPO }}",
                     "short": true
                   },
                   {
                     "title": "Message",
-                    "value": "${{ github.event.head_commit.message }}",
+                    "value": "${{ process.env.AS_MESSAGE }}",
                     "short": false
                   },
                   {
                     "title": "Author",
-                    "value": "${{ github.event.head_commit.author.name }}",
+                    "value": "${{ process.env.AS_AUTHOR }}",
                     "short": true
                   },
                   {
                     "title": "Job",
-                    "value": "${{ github.job }}",
+                    "value": "${{ process.env.AS_JOB }}",
                     "short": true
                   },
                   {
                     "title": "Event Name",
-                    "value": "${{ github.event_name }}",
+                    "value": "${{ process.env.AS_EVENTNAME }}",
                     "short": true
                   },
                   {
                     "title": "Took",
-                    "value": "${{ steps.took.outputs.time }}",
+                    "value": "${{ process.env.AS_TOOK }}",
                     "short": true
                   },
                   {
                     "title": "Production",
-                    "value": "${{ env.Production }}",
+                    "value": "${{ needs.set-production.outputs.production }}",
                     "short": true
                   }
                 ]
