@@ -25,40 +25,40 @@ jobs:
     uses: ./.github/workflows/set-neptune-ref.yml
     with:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
-#  e2e:
-#    environment: "Production 1.x"
-#    needs: [ set_neptune_ref ]
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.12" ]
-#        os: [ ubuntu, windows ]
-#        include:
-#          - python-version:  "3.8"
-#            os: macos
-#          - python-version: "3.12"
-#            os: macos
-#    runs-on: ${{ matrix.os }}-latest
-#    name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: "not s3 and not integrations"
-#          name: "standard"
-#          report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
-#          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+  e2e:
+    environment: "Production 1.x"
+    needs: [ set_neptune_ref ]
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.12" ]
+        os: [ ubuntu, windows ]
+        include:
+          - python-version:  "3.8"
+            os: macos
+          - python-version: "3.12"
+            os: macos
+    runs-on: ${{ matrix.os }}-latest
+    name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: "not s3 and not integrations"
+          name: "standard"
+          report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_management:
     environment: "Production 1.x"
@@ -94,82 +94,82 @@ jobs:
           name: management
           report_job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
-#
-#  e2e_s3_gcs:
-#    environment: "Production 1.x"
-#    needs: [ set_neptune_ref ]
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.12" ]
-#        os: [ ubuntu, windows ]
-#        include:
-#          - python-version:  "3.8"
-#            os: macos
-#          - python-version: "3.12"
-#            os: macos
-#    runs-on: ${{ matrix.os }}-latest
-#    name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
-#          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_GCS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_GCS_SECRET_ACCESS_KEY }}
-#          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: s3
-#          name: s3-gcs
-#          report_job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
-#          codecov-token: ${{ secrets.CODECOV_TOKEN }}
-#
-#  e2e_s3:
-#    environment: "Production 1.x"
-#    needs: [ set_neptune_ref ]
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.7", "3.12" ]
-#        os: [ ubuntu, windows ]
-#        include:
-#          - python-version:  "3.8"
-#            os: macos
-#          - python-version: "3.12"
-#            os: macos
-#    runs-on: ${{ matrix.os }}-latest
-#    name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
-#
-#      - name: Test
-#        uses: ./.github/actions/test-e2e
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
-#          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_AWS_ACCESS_KEY_ID }}
-#          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_AWS_SECRET_ACCESS_KEY }}
-#        with:
-#          python-version: ${{ matrix.python-version }}
-#          os: ${{ matrix.os }}
-#          module: s3
-#          name: s3
-#          report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
-#          codecov-token: ${{ secrets.CODECOV_TOKEN }}
-#
+
+  e2e_s3_gcs:
+    environment: "Production 1.x"
+    needs: [ set_neptune_ref ]
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.12" ]
+        os: [ ubuntu, windows ]
+        include:
+          - python-version:  "3.8"
+            os: macos
+          - python-version: "3.12"
+            os: macos
+    runs-on: ${{ matrix.os }}-latest
+    name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_GCS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_GCS_SECRET_ACCESS_KEY }}
+          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: s3
+          name: s3-gcs
+          report_job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
+  e2e_s3:
+    environment: "Production 1.x"
+    needs: [ set_neptune_ref ]
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.12" ]
+        os: [ ubuntu, windows ]
+        include:
+          - python-version:  "3.8"
+            os: macos
+          - python-version: "3.12"
+            os: macos
+    runs-on: ${{ matrix.os }}-latest
+    name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
+      - name: Test
+        uses: ./.github/actions/test-e2e
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_AWS_SECRET_ACCESS_KEY }}
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: s3
+          name: s3
+          report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
+          codecov-token: ${{ secrets.CODECOV_TOKEN }}
+
 #  e2e-tests-notify:
 #    needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3, set_neptune_ref ]
 #    runs-on: ubuntu-latest
