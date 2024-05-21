@@ -1,0 +1,77 @@
+---
+name: Notify about workflow status
+description: Send Slack channel notification about workflow finish status
+inputs:
+  slack-webhook:
+    description: "A Slack Webhook to post a notification"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: technote-space/workflow-conclusion-action@v3
+
+    - name: Set production field
+      id: set-production
+      run: |
+        if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          echo "Production=Production 1.x" >> $GITHUB_ENV
+        elif [[ "${{ github.ref }}" == "refs/heads/dev/1.x" ]]; then
+          echo "Production=Production" >> $GITHUB_ENV
+        else
+          echo "Production=Unknown" >> $GITHUB_ENV
+        fi
+
+    - name: Notify about success
+      uses: 8398a7/action-slack@v3
+      if: env.WORKFLOW_CONCLUSION == 'success'
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+      with:
+        status: custom
+        custom_payload: |
+          {
+            "text": "*Workflow Status: ${{ env.WORKFLOW_CONCLUSION }}*",
+            "attachments": [
+              {
+                "color": "#36a64f",
+                "fields": [
+                  {
+                    "title": "Repository",
+                    "value": "${{ github.repository }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Message",
+                    "value": "${{ github.event.head_commit.message }}",
+                    "short": false
+                  },
+                  {
+                    "title": "Author",
+                    "value": "${{ github.event.head_commit.author.name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Job",
+                    "value": "${{ github.job }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Event Name",
+                    "value": "${{ github.event_name }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Took",
+                    "value": "${{ steps.took.outputs.time }}",
+                    "short": true
+                  },
+                  {
+                    "title": "Production",
+                    "value": "${{ env.Production }}",
+                    "short": true
+                  }
+                ]
+              }
+            ]
+          }
