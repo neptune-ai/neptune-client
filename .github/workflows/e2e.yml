@@ -9,8 +9,8 @@ on:
         required: false
   workflow_dispatch:
   push:
-#    branches:
-#      - dev/1.x
+    branches:
+      - dev/1.x
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
@@ -67,13 +67,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7" ] #, "3.12" ]
-        os: [ ubuntu ] #, windows ]
-#        include:
-#          - python-version:  "3.8"
-#            os: macos
-#          - python-version: "3.12"
-#            os: macos
+        python-version: [ "3.7", "3.12" ]
+        os: [ ubuntu, windows ]
+        include:
+          - python-version:  "3.8"
+            os: macos
+          - python-version: "3.12"
+            os: macos
     runs-on: ${{ matrix.os }}-latest
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -170,18 +170,18 @@ jobs:
           report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-#  e2e-tests-notify:
-#    needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3, set_neptune_ref ]
-#    runs-on: ubuntu-latest
-#    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
-#    steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v4
-#        with:
-#          fetch-depth: 0
-#          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
-#
-#      - name: Notify
-#        uses: ./.github/actions/workflow-notify
-#        with:
-#          slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
+  e2e-tests-notify:
+    needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3, set_neptune_ref ]
+    runs-on: ubuntu-latest
+    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
+      - name: Notify
+        uses: ./.github/actions/workflow-notify
+        with:
+          slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
