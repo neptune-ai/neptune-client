@@ -86,6 +86,8 @@ jobs:
 
       - name: Test
         uses: ./.github/actions/test-e2e
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
