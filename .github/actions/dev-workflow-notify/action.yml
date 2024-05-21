@@ -9,7 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: technote-space/workflow-conclusion-action@v3
+    #- uses: technote-space/workflow-conclusion-action@v3
 
     - name: Set production field
       id: set-production
@@ -25,7 +25,7 @@ runs:
 
     - name: Notify about success
       uses: 8398a7/action-slack@v3
-      if: env.WORKFLOW_CONCLUSION == 'success'
+      #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
       with:
