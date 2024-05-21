@@ -9,16 +9,17 @@ on:
         required: false
   workflow_dispatch:
   push:
-    branches:
-      - dev/1.x
+#    branches:
+#      - dev/1.x
 
 env:
-  WORKSPACE_NAME: e2e-tests
+  WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
   BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-  USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-  ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-  SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+  USER_USERNAME: ${{ vars.E2E_USER_USERNAME }}
+  NEPTUNE_API_TOKEN: ${{ secrets.E2E_USER_API_TOKEN }}
+  ADMIN_USERNAME: ${{ vars.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ vars.E2E_SERVICE_ACCOUNT_NAME }}
 
 jobs:
   set_neptune_ref:
@@ -26,6 +27,7 @@ jobs:
     with:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   e2e:
+    environment: "Production 1.x"
     needs: [ set_neptune_ref ]
     timeout-minutes: 75
     strategy:
@@ -50,7 +52,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
@@ -60,6 +62,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_management:
+    environment: "Production 1.x"
     needs: [ set_neptune_ref ]
     timeout-minutes: 75
     strategy:
@@ -83,8 +86,6 @@ jobs:
 
       - name: Test
         uses: ./.github/actions/test-e2e
-        env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
@@ -94,6 +95,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_s3_gcs:
+    environment: "Production 1.x"
     needs: [ set_neptune_ref ]
     timeout-minutes: 75
     strategy:
@@ -118,9 +120,9 @@ jobs:
       - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
-          AWS_ACCESS_KEY_ID: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_GCS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_GCS_SECRET_ACCESS_KEY }}
           S3_ENDPOINT_URL: "https://storage.googleapis.com/"
         with:
           python-version: ${{ matrix.python-version }}
@@ -131,6 +133,7 @@ jobs:
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e_s3:
+    environment: "Production 1.x"
     needs: [ set_neptune_ref ]
     timeout-minutes: 75
     strategy:
@@ -155,9 +158,9 @@ jobs:
       - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
-          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.E2E_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_AWS_SECRET_ACCESS_KEY }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
