@@ -10,9 +10,15 @@ on:
   workflow_dispatch:
 
 env:
-  WORKSPACE_NAME: e2e-tests
-  NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+  NEPTUNE_PROJECT: ${{ vars.E2E_WORKSPACE_NAME }}/integrations
+  WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
+  NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
   SLACK_WEBHOOK_URL: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+  BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+  USER_USERNAME: ${{ vars.E2E_USER_USERNAME }}
+  ADMIN_USERNAME: ${{ vars.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ vars.E2E_SERVICE_ACCOUNT_NAME }}
 
 jobs:
   set_neptune_ref:
@@ -21,8 +27,7 @@ jobs:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   fastai:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -73,8 +78,7 @@ jobs:
 
   kedro:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -120,8 +124,7 @@ jobs:
 
   prophet:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -172,8 +175,7 @@ jobs:
 
   keras:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -224,12 +226,7 @@ jobs:
 
   lightning:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -278,12 +275,7 @@ jobs:
 
   huggingface:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -332,12 +324,8 @@ jobs:
 
   zenml:
     needs: [set_neptune_ref]
+    environment: "Production 1.x"
     env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
       ZENML_ANALYTICS_OPT_IN: false
     timeout-minutes: 75
     strategy:
@@ -382,12 +370,7 @@ jobs:
 
   mosaicml:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -431,12 +414,7 @@ jobs:
 
   tensorflow-images:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -483,8 +461,7 @@ jobs:
 
   detectron2:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -530,8 +507,7 @@ jobs:
 
   rlang:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -576,8 +552,7 @@ jobs:
 
   sklearn:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -623,8 +598,7 @@ jobs:
 
   xgboost:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -670,8 +644,7 @@ jobs:
 
   sacred:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -717,8 +690,7 @@ jobs:
 
   mlflow:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -764,8 +736,7 @@ jobs:
 
   airflow:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
