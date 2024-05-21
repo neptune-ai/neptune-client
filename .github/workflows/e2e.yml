@@ -16,7 +16,6 @@ env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
   BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
   USER_USERNAME: ${{ vars.E2E_USER_USERNAME }}
-  NEPTUNE_API_TOKEN: ${{ secrets.E2E_USER_API_TOKEN }}
   ADMIN_USERNAME: ${{ vars.E2E_ADMIN_USERNAME }}
   ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_API_TOKEN }}
   SERVICE_ACCOUNT_NAME: ${{ vars.E2E_SERVICE_ACCOUNT_NAME }}
@@ -87,7 +86,7 @@ jobs:
       - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_USER_API_TOKEN }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
