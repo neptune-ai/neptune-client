@@ -24,7 +24,6 @@ runs:
       shell: bash
 
     - name: Notify about success
-      needs: [ set-production ]
       uses: 8398a7/action-slack@v3
       #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
