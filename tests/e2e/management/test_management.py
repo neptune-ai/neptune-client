@@ -166,8 +166,6 @@ class TestManagement(BaseE2ETest):
 
         assert created_project_identifier not in get_project_list(api_token=environment.admin_token)
 
-
-
     def test_visibility_workspace(self, environment: "Environment"):
         project_name = a_project_name(project_slug=f"{fake.slug()}-workspace")
         project_identifier = normalize_project_name(name=project_name, workspace=environment.workspace)
