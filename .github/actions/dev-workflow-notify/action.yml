@@ -40,12 +40,12 @@ runs:
                 "fields": [
                   {
                     "title": "Repository",
-                    "value": "${{ process.env.AS_REPO }}",
+                    "value": "${{ env.AS_REPO }}",
                     "short": true
                   },
                   {
                     "title": "Message",
-                    "value": "${ process.env.AS_MESSAGE }",
+                    "value": "${ env.AS_MESSAGE }",
                     "short": false
                   },
                   {
