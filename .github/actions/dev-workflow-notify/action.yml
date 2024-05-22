@@ -37,11 +37,35 @@ runs:
         fields: workflow,job,commit,repo,ref,author,took
         custom_payload: |
           {
-            attachments: [{
-              color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-              text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-            }]
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: 'New workflow finished with success'
+                }
+              },
+              {
+                type: 'section',
+                fields: [
+                  {
+                    type: 'mrkdwn',
+                    text: '*Environment:*\nProducrtion 1.x'
+                  },
+                  {
+                    type: 'mrkdwn',
+                    text: `*Author:*\n${process.env.AS_AUTHOR}`
+                  }
+                ]
+              }
+            ]
           }
+# {
+#   attachments: [{
+#     color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+#     text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+#   }]
+# }
 # {
 #   text: `*Workflow Status: ${process.env.WORKFLOW_CONCLUSION}*`,
 #   attachments: [
