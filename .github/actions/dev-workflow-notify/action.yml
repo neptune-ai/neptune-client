@@ -44,7 +44,7 @@ runs:
                 fields: [
                   {
                     title: Repository,
-                    value: `${{process.env.AS_REPO}}`,
+                    value: `${process.env.AS_REPO}`,
                     short: true
                   },
                   {
@@ -54,7 +54,7 @@ runs:
                   },
                   {
                     title: Author,
-                    value: "${{process.env.AS_REPO}}",
+                    value: "${process.env.AS_REPO}",
                     short: true
                   },
                   {
