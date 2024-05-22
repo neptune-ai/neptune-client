@@ -40,7 +40,7 @@ LogOperation = LogFloats
 
 
 class FloatSeries(
-    Series[Val, Data, LogOperation], FetchableSeries[FloatSeriesValues], max_batch_size=100, operation_cls=LogOperation
+    Series[Val, Data, LogOperation], FetchableSeries[FloatSeriesValues], max_batch_size=1, operation_cls=LogOperation
 ):
     def configure(
         self,
