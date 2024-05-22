@@ -27,8 +27,8 @@ runs:
         fi
       shell: bash
 
-    - name: Notify about success
-      uses: 8398a7/action-slack@v3
+    #- name: Notify about success
+    - uses: 8398a7/action-slack@v3
       #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
@@ -37,45 +37,45 @@ runs:
         fields: repo,message,author,job,eventName,took
         custom_payload: |
           {
-            "text": "*Workflow Status: ${{ env.WORKFLOW_CONCLUSION }}*",
-            "attachments": [
+            text: `*Workflow Status: ${process.env.WORKFLOW_CONCLUSION}*`,
+            attachments: [
               {
-                "color": `#36a64f`,
-                "fields": [
+                color: `#36a64f`,
+                fields: [
                   {
-                    "title": "Repository",
-                    "value": `${process.env.AS_REPO}`,
-                    "short": true
+                    title: Repository,
+                    value: `${{process.env.AS_REPO}}`,
+                    short: true
                   },
                   {
-                    "title": "Message",
-                    "value": `${process.env.AS_MESSAGE}`,
-                    "short": false
+                    title: Message,
+                    value: `${process.env.AS_REPO}`,
+                    short: false
                   },
                   {
-                    "title": "Author",
-                    "value": `${env.AS_AUTHOR}`,
-                    "short": true
+                    title: Author,
+                    value: "${{process.env.AS_REPO}}",
+                    short: true
                   },
                   {
-                    "title": "Job",
-                    "value": "${process.env.AS_JOB}",
-                    "short": true
+                    title: Job,
+                    value: "${process.env.AS_REPO}",
+                    short: true
                   },
                   {
-                    "title": "Event Name",
-                    "value": "${{ env.AS_EVENTNAME }}",
-                    "short": true
+                    title: Event Name,
+                    value: "${{env.AS_REPO}}",
+                    short: true
                   },
                   {
-                    "title": "Took",
-                    "value": "${{ env.AS_TOOK }}",
-                    "short": true
+                    title: Took,
+                    value: "${{env.AS_REPO}}",
+                    short: true
                   },
                   {
-                    "title": "Production",
-                    "value": `${steps.set-production.outputs.PRODUCTION}`,
-                    "short": true
+                    title: Production,
+                    value: `${{steps.set-production.outputs.PRODUCTION}}`,
+                    short: true
                   }
                 ]
               }
