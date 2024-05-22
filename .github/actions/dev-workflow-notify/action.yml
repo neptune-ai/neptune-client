@@ -24,7 +24,7 @@ runs:
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: '${{ job.status }}' === 'success' ? ':rocket: Github Workflow Finished With Success' : ':skull_and_crossbones: Github Workflow Failed',
+                  text: '${{ job.status }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed',
                 }
               },
               {
