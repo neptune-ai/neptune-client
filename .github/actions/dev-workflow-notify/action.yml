@@ -10,6 +10,23 @@ runs:
   using: "composite"
   steps:
     #- uses: technote-space/workflow-conclusion-action@v3
+
+    - name: Set production field
+      id: set-production
+      run: |
+        echo "github.ref: ${{ github.ref }}";
+        if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          echo "PRODUCTION=Production 1.x" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Production 1.x"
+        elif [[ "${{ github.ref }}" == "refs/heads/dev/1.x" ]]; then
+          echo "PRODUCTION=Production" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Production"
+        else
+          echo "PRODUCTION=Unknown" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Unknown"
+        fi
+      shell: bash
+
     - uses: 8398a7/action-slack@v3
       #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
@@ -25,7 +42,7 @@ runs:
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: '${{ job.status }}' === 'success' ? ':rocket: github workflow finished with success' : ':skull_and_crossbones: github workflow failed'
+                  text: '${{ job.status }}' === 'success' ? ':rocket: github workflow finished with success' : ':skull_and_crossbones: github workflow failed',
                 }
               },
               {
@@ -37,25 +54,76 @@ runs:
                   },
                   {
                     type: 'mrkdwn',
-                    text: '*Environment:*\n' + (${{process.env.AS_REF}} === 'refs/heads/master' ? 'Production 1.x' : (${{process.env.AS_REF}} === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown'))
+                    text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production 1.x' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown')),
                   },
                   {
                     type: 'mrkdwn',
-                    text: `*message:*\n${process.env.AS_MESSAGE}`
+                    text: `*message:*\n${process.env.AS_MESSAGE}`,
                   },
                   {
                     type: 'mrkdwn',
-                    text: `*job:*\n${process.env.AS_JOB}`
+                    text: `*job:*\n${process.env.AS_JOB}`,
                   },
                   {
                     type: 'mrkdwn',
-                    text: `*event:*\n${process.env.AS_EVENT_NAME}`
+                    text: `*event:*\n${process.env.AS_EVENT_NAME}`,
                   },
                   {
                     type: 'mrkdwn',
-                    text: `*took:*\n${process.env.AS_TOOK}`
+                    text: `*took:*\n${process.env.AS_TOOK}`,
                   },
                 ]
               }
             ]
           }
+# {
+#   attachments: [{
+#     color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+#     text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
+#   }]
+# }
+# {
+#   text: `*Workflow Status: ${process.env.WORKFLOW_CONCLUSION}*`,
+#   attachments: [
+#     {
+#       color: `#36a64f`,
+#       fields: [
+#         {
+#           title: Repository,
+#           value: `${process.env.AS_REPO}`,
+#           short: true
+#         },
+#         {
+#           title: Message,
+#           value: `${process.env.AS_REPO}`,
+#           short: false
+#         },
+#         {
+#           title: Author,
+#           value: "${process.env.AS_REPO}",
+#           short: true
+#         },
+#         {
+#           title: Job,
+#           value: "${process.env.AS_REPO}",
+#           short: true
+#         },
+#         {
+#           title: Event Name,
+#           value: "${{env.AS_REPO}}",
+#           short: true
+#         },
+#         {
+#           title: Took,
+#           value: "${{env.AS_REPO}}",
+#           short: true
+#         },
+#         {
+#           title: Production,
+#           value: `${{steps.set-production.outputs.PRODUCTION}}`,
+#           short: true
+#         }
+#       ]
+#     }
+#   ]
+# }
