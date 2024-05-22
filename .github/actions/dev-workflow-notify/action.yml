@@ -14,12 +14,16 @@ runs:
     - name: Set production field
       id: set-production
       run: |
+        echo "github.ref: ${{ github.ref }}";
         if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
           echo "PRODUCTION=Production 1.x" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Production 1.x"
         elif [[ "${{ github.ref }}" == "refs/heads/dev/1.x" ]]; then
           echo "PRODUCTION=Production" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Production"
         else
           echo "PRODUCTION=Unknown" >> $GITHUB_OUTPUT
+          echo "setting PRODUCTION=Unknown"
         fi
       shell: bash
 
@@ -36,26 +40,26 @@ runs:
             "text": "*Workflow Status: ${{ env.WORKFLOW_CONCLUSION }}*",
             "attachments": [
               {
-                "color": "#36a64f",
+                "color": `#36a64f`,
                 "fields": [
                   {
                     "title": "Repository",
-                    "value": "${{ env.AS_REPO }}",
+                    "value": `${process.env.AS_REPO}`,
                     "short": true
                   },
                   {
                     "title": "Message",
-                    "value": "${ env.AS_MESSAGE }",
+                    "value": `${process.env.AS_MESSAGE}`,
                     "short": false
                   },
                   {
                     "title": "Author",
-                    "value": "${{ env.AS_AUTHOR }}",
+                    "value": `${env.AS_AUTHOR}`,
                     "short": true
                   },
                   {
                     "title": "Job",
-                    "value": "${ env.AS_JOB }",
+                    "value": "${process.env.AS_JOB}",
                     "short": true
                   },
                   {
@@ -70,7 +74,7 @@ runs:
                   },
                   {
                     "title": "Production",
-                    "value": "${{ steps.set-production.outputs.PRODUCTION }}",
+                    "value": `${steps.set-production.outputs.PRODUCTION}`,
                     "short": true
                   }
                 ]
