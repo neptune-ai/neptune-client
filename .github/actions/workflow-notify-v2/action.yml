@@ -9,8 +9,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    #- uses: technote-space/workflow-conclusion-action@v3
-
+    - uses: technote-space/workflow-conclusion-action@v3
     - uses: 8398a7/action-slack@v3
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
