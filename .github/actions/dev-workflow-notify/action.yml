@@ -27,7 +27,6 @@ runs:
         fi
       shell: bash
 
-    #- name: Notify about success
     - uses: 8398a7/action-slack@v3
       #if: env.WORKFLOW_CONCLUSION == 'success'
       env:
