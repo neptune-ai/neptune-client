@@ -29,6 +29,7 @@ websocket-client = ">=0.35.0, !=1.0.0"
 urllib3 = "*"
 swagger-spec-validator = ">=2.7.4"
 protobuf = "^4.0.0"
+grpcio = ">=1.0.0"
 
 # Built-in integrations
 psutil = "*"
@@ -36,7 +37,7 @@ pandas = "*"
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = ">=3.9,<3.12" }
-neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
+neptune-detectron2 = { version = "*", optional = true}
 neptune-fastai = { version = "*", optional = true }
 neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
@@ -123,7 +124,7 @@ neptune = "neptune.cli.__main__:main"
 
 [tool.black]
 line-length = 120
-target-version = ['py37', 'py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$,\_pb2\.py$'
 exclude = '''
 /(
