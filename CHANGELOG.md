@@ -21,6 +21,7 @@
 - Removed `pillow` from requirements ([#1745](https://github.com/neptune-ai/neptune-client/pull/1745))
 - Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
 - Disabled file logging ([#1733](https://github.com/neptune-ai/neptune-client/pull/1733))
+- Upgraded minimal `python` version to `3.8` ([#1794](https://github.com/neptune-ai/neptune-client/pull/1794))
 
 ### Features
 - Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))
