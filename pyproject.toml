@@ -9,10 +9,9 @@ style = "semver"
 pattern = "default-unprefixed"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 # Python lack of functionalities from future versions
-importlib-metadata = { version = "*", python = "<3.8" }
 typing-extensions = ">=3.10.0"
 
 # Utility
