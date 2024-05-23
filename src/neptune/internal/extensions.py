@@ -30,7 +30,7 @@ from neptune.internal.warnings import (
 
 
 def get_entry_points(name: str) -> List[Tuple[str, Callable[[], None]]]:
-    if (3, 8) <= sys.version_info < (3, 10):
+    if sys.version_info < (3, 10):
         return [(entry_point.name, entry_point.load()) for entry_point in entry_points().get(name, tuple())]
     return [
         (entry_point.name, entry_point.load())  # type: ignore[unused-ignore, attr-defined]
