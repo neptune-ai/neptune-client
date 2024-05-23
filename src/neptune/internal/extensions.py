@@ -16,16 +16,12 @@
 __all__ = ["load_extensions"]
 
 import sys
+from importlib.metadata import entry_points
 from typing import (
     Callable,
     List,
     Tuple,
 )
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import entry_points
-else:
-    from importlib_metadata import entry_points
 
 from neptune.internal.warnings import (
     NeptuneWarning,

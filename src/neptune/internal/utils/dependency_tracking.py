@@ -21,10 +21,13 @@ __all__ = [
 ]
 
 import os
-import sys
 from abc import (
     ABC,
     abstractmethod,
+)
+from importlib.metadata import (
+    Distribution,
+    distributions,
 )
 from typing import (
     TYPE_CHECKING,
@@ -32,15 +35,6 @@ from typing import (
 )
 
 from neptune.internal.utils.logger import get_logger
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import (
-        Distribution,
-        distributions,
-    )
-else:
-    from importlib_metadata import Distribution, distributions
-
 from neptune.types import File
 
 if TYPE_CHECKING:
