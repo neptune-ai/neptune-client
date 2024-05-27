@@ -250,16 +250,6 @@ class ModelVersion(NeptuneObject):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelVersionException(label=self._sys_id)
 
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_model_version_url(
-            model_version_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-            sys_id=self._sys_id,
-            model_id=self["sys/model_id"].fetch(),
-        )
-
     def change_stage(self, stage: str) -> None:
         """Changes the stage of the model version.
 

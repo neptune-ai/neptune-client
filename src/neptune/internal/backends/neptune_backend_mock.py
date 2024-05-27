@@ -497,25 +497,6 @@ class NeptuneBackendMock(NeptuneBackend):
     ):
         """Non relevant for backend"""
 
-    def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
-        return f"offline/{run_id}"
-
-    def get_project_url(self, project_id: str, workspace: str, project_name: str) -> str:
-        return f"offline/{project_id}"
-
-    def get_model_url(self, model_id: str, workspace: str, project_name: str, sys_id: str) -> str:
-        return f"offline/{model_id}"
-
-    def get_model_version_url(
-        self,
-        model_version_id: str,
-        model_id: str,
-        workspace: str,
-        project_name: str,
-        sys_id: str,
-    ) -> str:
-        return f"offline/{model_version_id}"
-
     def get_fields_definitions(
         self,
         container_id: str,

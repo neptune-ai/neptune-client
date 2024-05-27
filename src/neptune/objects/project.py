@@ -190,14 +190,6 @@ class Project(NeptuneObject):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
 
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_project_url(
-            project_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-        )
-
     def fetch_runs_table(
         self,
         *,
