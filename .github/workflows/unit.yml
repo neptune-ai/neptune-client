@@ -47,7 +47,7 @@ jobs:
   #         codecov-token: ${{ secrets.CODECOV_TOKEN }}
   test:
     timeout-minutes: 75
-    name: Try to fail
+    name: Try not to fail
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -57,7 +57,7 @@ jobs:
           ref: ${{ github.event.client_payload.pull_request.head.ref }}
 
       - name: Dummy fail
-        run: exit 1
+        run: echo "we good"
 
 
   unit-tests-notify:
