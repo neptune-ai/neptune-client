@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Dummy
-        run: echo "Dummy test job"
+        run: exit 1
 
   unit-tests-notify:
     needs: [ test, set_neptune_ref ]
