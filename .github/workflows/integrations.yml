@@ -71,7 +71,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.fastai.result }}
@@ -117,7 +117,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.kedro.result }}
@@ -168,7 +168,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.prophet.result }}
@@ -219,7 +219,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.keras.result }}
@@ -268,7 +268,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.lightning.result }}
@@ -317,7 +317,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.huggingface.result }}
@@ -363,7 +363,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.zenml.result }}
@@ -407,7 +407,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mosaicml.result }}
@@ -454,7 +454,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.tensorflow-images.result }}
@@ -500,7 +500,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.detectron2.result }}
@@ -545,7 +545,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.rlang.result }}
@@ -591,7 +591,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sklearn.result }}
@@ -637,7 +637,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.xgboost.result }}
@@ -683,7 +683,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sacred.result }}
@@ -729,7 +729,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mlflow.result }}
@@ -781,7 +781,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.airflow.result }}
