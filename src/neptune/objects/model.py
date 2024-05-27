@@ -259,15 +259,6 @@ class Model(NeptuneObject):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelException(label=self._sys_id)
 
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_model_url(
-            model_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-            sys_id=self._sys_id,
-        )
-
     def fetch_model_versions_table(
         self,
         *,

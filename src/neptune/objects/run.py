@@ -544,15 +544,6 @@ class Run(NeptuneObject):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
 
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_run_url(
-            run_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-            sys_id=self._sys_id,
-        )
-
 
 def capture_only_if_non_interactive(mode) -> bool:
     if in_interactive() or in_notebook():

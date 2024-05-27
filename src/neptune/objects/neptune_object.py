@@ -51,7 +51,10 @@ from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
 )
-from neptune.exceptions import MetadataInconsistency
+from neptune.exceptions import (
+    MetadataInconsistency,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.handler import Handler
 from neptune.internal.backends.api_model import (
     ApiExperiment,
@@ -453,10 +456,6 @@ class NeptuneObject(AbstractContextManager):
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
-
-        if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
-            metadata_url = self.get_url().rstrip("/") + "/metadata"
-            self._logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
         self._backend.close()
 
         with self._forking_cond:
@@ -636,7 +635,6 @@ class NeptuneObject(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
-    @abc.abstractmethod
     def get_url(self) -> str:
         """Returns a link to the object in the Neptune app.
 
@@ -644,11 +642,11 @@ class NeptuneObject(AbstractContextManager):
 
         API reference: https://docs.neptune.ai/api/universal/#get_url
         """
-        ...
+        raise NeptuneUnsupportedFunctionalityException
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            self._logger.info(f"Neptune initialized. Open in the app: {self.get_url()}")
+            self._logger.info(f"Neptune initialized. Object identifier: {self._id}")
 
         self.start()
 
