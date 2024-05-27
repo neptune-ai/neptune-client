@@ -40,7 +40,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production 1.x' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown'))
+                        text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
                       },
                       {
                         type: 'mrkdwn',
