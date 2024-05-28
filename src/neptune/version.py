@@ -15,17 +15,11 @@
 #
 __all__ = ["version", "__version__"]
 
-import sys
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as version_parser
 from typing import Optional
 
 from packaging.version import parse
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import PackageNotFoundError
-    from importlib.metadata import version as version_parser
-else:
-    from importlib_metadata import PackageNotFoundError
-    from importlib_metadata import version as version_parser
 
 
 def check_version(package_name: str) -> Optional[str]:

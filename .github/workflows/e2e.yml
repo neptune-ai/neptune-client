@@ -25,13 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.12" ]
-        os: [ ubuntu, windows ]
-        include:
-          - python-version:  "3.8"
-            os: macos
-          - python-version: "3.12"
-            os: macos
+        python-version: [ "3.8", "3.12" ]
+        os: [ ubuntu, windows, macos ]
     runs-on: ${{ matrix.os }}-latest
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -59,13 +54,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.12" ]
-        os: [ ubuntu, windows ]
-        include:
-          - python-version:  "3.8"
-            os: macos
-          - python-version: "3.12"
-            os: macos
+        python-version: [ "3.8", "3.12" ]
+        os: [ ubuntu, windows, macos ]
     runs-on: ${{ matrix.os }}-latest
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
