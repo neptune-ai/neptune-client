@@ -51,7 +51,7 @@ from neptune.exceptions import (
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import QualifiedName
-from neptune.internal.init.parameters import (
+from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,

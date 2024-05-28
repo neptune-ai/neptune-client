@@ -31,7 +31,7 @@ from neptune.attributes.constants import (
     SYSTEM_FAILED_ATTRIBUTE_PATH,
 )
 from neptune.internal.background_job import BackgroundJob
-from neptune.internal.threading.daemon import Daemon
+from neptune.internal.daemon import Daemon
 from neptune.internal.utils import process_killer
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket

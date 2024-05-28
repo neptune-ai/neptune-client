@@ -41,20 +41,20 @@ from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.envs import NEPTUNE_SYNC_AFTER_STOP_TIMEOUT
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
+from neptune.internal.daemon import Daemon
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processors.operation_logger import ProcessorStopLogger
 from neptune.internal.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
 )
+from neptune.internal.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
     signal_batch_processed,
     signal_batch_started,
 )
-from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.warnings import (

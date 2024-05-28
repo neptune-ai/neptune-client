@@ -21,7 +21,7 @@ from typing import (
 )
 
 from neptune.internal.background_job import BackgroundJob
-from neptune.internal.threading.daemon import Daemon
+from neptune.internal.daemon import Daemon
 from neptune.internal.utils.logger import get_logger
 
 if TYPE_CHECKING:

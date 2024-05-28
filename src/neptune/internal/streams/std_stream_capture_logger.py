@@ -20,7 +20,7 @@ import threading
 from queue import Queue
 from typing import TextIO
 
-from neptune.internal.threading.daemon import Daemon
+from neptune.internal.daemon import Daemon
 from neptune.objects import NeptuneObject
 
 

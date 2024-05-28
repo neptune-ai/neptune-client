@@ -75,13 +75,13 @@ from neptune.internal.id_formats import (
     UniqueId,
     conform_optional,
 )
-from neptune.internal.init.parameters import (
+from neptune.internal.operation import DeleteAttribute
+from neptune.internal.operation_processors.factory import get_operation_processor
+from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
 )
-from neptune.internal.operation import DeleteAttribute
-from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
