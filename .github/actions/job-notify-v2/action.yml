@@ -26,44 +26,51 @@ runs:
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: '${{ inputs.job-status }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed',
+                  text: '${{ inputs.job-status }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed'
                 }
-              },
+              }
+            ],
+            attachments: [
               {
-                type: 'section',
-                fields: [
+                color: '${{ inputs.job-status }}' === 'success' ? '#4bb543' : '#fc100d',
+                blocks: [
                   {
-                    type: 'mrkdwn',
-                    text: `*Author:*\n${process.env.AS_AUTHOR}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production 1.x' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown')),
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Repo:*\n${process.env.AS_REPO}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Ref:*\n${process.env.AS_REF}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Message:*\n${process.env.AS_MESSAGE}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Job:*\n${process.env.AS_JOB}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Event:*\n${process.env.AS_EVENT_NAME}`,
-                  },
-                  {
-                    type: 'mrkdwn',
-                    text: `*Took:*\n${process.env.AS_TOOK}`,
-                  },
+                    type: 'section',
+                    fields: [
+                      {
+                        type: 'mrkdwn',
+                        text: `*Author:*\n${process.env.AS_AUTHOR}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Repo:*\n${process.env.AS_REPO}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Ref:*\n${process.env.AS_REF}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Message:*\n${process.env.AS_MESSAGE}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Job:*\n${process.env.AS_JOB}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Event:*\n${process.env.AS_EVENT_NAME}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Took:*\n${process.env.AS_TOOK}`
+                      }
+                    ]
+                  }
                 ]
               }
             ]
