@@ -56,6 +56,7 @@ from neptune.internal.warnings import (
     NeptuneUnsupportedType,
     warned_once,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import File as FileVal
 from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime as DatetimeVal
@@ -90,6 +91,11 @@ def assert_logged_warning(capsys: pytest.CaptureFixture, msg: str = ""):
     assert msg in captured.out
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestBaseAssign:
     @classmethod
     def setUpClass(cls) -> None:
@@ -230,6 +236,11 @@ class TestUpload:
             zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestSeries:
     @classmethod
     def setUpClass(cls) -> None:
@@ -441,6 +452,11 @@ class TestSeries:
             assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestSet:
     @classmethod
     def setUpClass(cls) -> None:
@@ -497,6 +513,11 @@ class TestSet:
             assert isinstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestNamespace:
     @classmethod
     def setUpClass(cls) -> None:
@@ -619,6 +640,11 @@ class TestNamespace:
                 assert params_dict == {"x": "Some text"}
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestDelete:
     @classmethod
     def setUpClass(cls) -> None:
@@ -671,6 +697,11 @@ class TestArtifacts:
             )
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestOtherBehaviour:
     @classmethod
     def setUpClass(cls) -> None:

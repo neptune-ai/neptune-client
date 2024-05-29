@@ -29,7 +29,6 @@ from neptune.exceptions import (
     InactiveProjectException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
 from neptune.internal.parameters import (
@@ -166,6 +165,7 @@ class Project(NeptuneObject):
             raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
         super().__init__(
+            custom_id=None,
             project=project,
             api_token=api_token,
             mode=mode,
@@ -175,15 +175,6 @@ class Project(NeptuneObject):
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,
             async_no_progress_threshold=async_no_progress_threshold,
-        )
-
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        return ApiExperiment(
-            id=self._project_api_object.id,
-            type=ContainerType.PROJECT,
-            sys_id=self._project_api_object.sys_id,
-            workspace=self._project_api_object.workspace,
-            project_name=self._project_api_object.name,
         )
 
     def _raise_if_stopped(self):

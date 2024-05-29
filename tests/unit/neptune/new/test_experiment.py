@@ -19,6 +19,7 @@ import signal
 import unittest
 from datetime import datetime
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -50,6 +51,7 @@ from neptune.objects import (
     ModelVersion,
     Project,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
 from neptune.types.series import (
@@ -70,14 +72,19 @@ class TestExperiment(unittest.TestCase):
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
 
-        with init_run(**kwargs) as run:
-            yield run
+        with patch.object(
+            NeptuneObject,
+            "_async_create_run",
+            lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+        ):
+            with init_run(**kwargs) as run:
+                yield run
 
-        with init_project(**kwargs) as project:
-            yield project
+            with init_project(**kwargs) as project:
+                yield project
 
-        with init_model(key="MOD", **kwargs) as model:
-            yield model
+            with init_model(key="MOD", **kwargs) as model:
+                yield model
 
     @classmethod
     def get_experiments(cls, flush_period=None):

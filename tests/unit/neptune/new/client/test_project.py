@@ -43,6 +43,7 @@ from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.objects.utils import prepare_nql_query
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
@@ -56,6 +57,11 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
     PROJECT_NAME = "organization/project"
 
     @staticmethod
+    @patch.object(
+        NeptuneObject,
+        "_async_create_run",
+        lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    )
     def call_init(**kwargs):
         return init_project(project=TestClientProject.PROJECT_NAME, **kwargs)
 
@@ -109,7 +115,7 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
             )
 
             self.assertEqual(42, project["some/variable"].fetch())
-            self.assertNotIn(str(project._id), os.listdir(".neptune"))
+            self.assertNotIn(str(project._custom_id), os.listdir(".neptune"))
 
     @pytest.mark.xfail(reason="Project not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_async_mode(self):

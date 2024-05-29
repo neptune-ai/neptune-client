@@ -29,13 +29,8 @@ from neptune.attributes.constants import SYSTEM_NAME_ATTRIBUTE_PATH
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
     InactiveModelException,
-    NeedExistingModelForReadOnlyMode,
-    NeptuneMissingRequiredInitParameter,
-    NeptuneModelKeyAlreadyExistsError,
-    NeptuneObjectCreationConflict,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
@@ -45,7 +40,6 @@ from neptune.internal.backends.nql import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.id_formats import QualifiedName
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -217,36 +211,6 @@ class Model(NeptuneObject):
             async_no_progress_callback=async_no_progress_callback,
             async_no_progress_threshold=async_no_progress_threshold,
         )
-
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        project_workspace = self._project_api_object.workspace
-        project_name = self._project_api_object.name
-        project_qualified_name = f"{project_workspace}/{project_name}"
-
-        if self._with_id is not None:
-            # with_id (resume existing model) has priority over key (creating a new model)
-            #  additional creation parameters (e.g. name) are simply ignored in this scenario
-            return self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
-                expected_container_type=self.container_type,
-            )
-        elif self._key is not None:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingModelForReadOnlyMode()
-
-            try:
-                return self._backend.create_model(project_id=self._project_api_object.id, key=self._key)
-            except NeptuneObjectCreationConflict as e:
-                base_url = self._backend.get_display_address()
-                raise NeptuneModelKeyAlreadyExistsError(
-                    model_key=self._key,
-                    models_tab_url=f"{base_url}/{project_workspace}/{project_name}/models",
-                ) from e
-        else:
-            raise NeptuneMissingRequiredInitParameter(
-                parameter_name="key",
-                called_function="init_model",
-            )
 
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         return [PingBackgroundJob()]
