@@ -32,7 +32,10 @@ from neptune.core.operation_processors.async_operation_processor.async_operation
 )
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import (
+    CustomId,
+    UniqueId,
+)
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.internal.warnings import NeptuneWarning
 
@@ -42,7 +45,7 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     def test_is_with_resources_and_operation_processor(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -55,7 +58,7 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     def test_resources(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -81,7 +84,7 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
         for test_case in test_cases:
             container_type = random.choice(list(ContainerType))
             processor = AsyncOperationProcessor(
-                container_id=UniqueId("test_id"),
+                custom_id=CustomId("test_id"),
                 container_type=container_type,
                 lock=threading.RLock(),
                 signal_queue=Mock(),
@@ -109,7 +112,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_enqueue_operation_without_wait(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -132,7 +135,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_enqueue_operation_with_wait(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -155,7 +158,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_enqueue_operation_not_accepting_operations_raises_warning_and_doesnt_put_to_queue(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -179,7 +182,7 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
     def test_async_operation_processor_wait(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -200,7 +203,7 @@ class TestAsyncOperationProcessorWait(unittest.TestCase):
     def test_async_operation_processor_wait_consumer_not_running_raises_sync_stopped(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -223,7 +226,7 @@ class TestAsyncOperationProcessorStartPauseResume(unittest.TestCase):
     def test_start(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -240,7 +243,7 @@ class TestAsyncOperationProcessorStartPauseResume(unittest.TestCase):
     def test_pause(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -259,7 +262,7 @@ class TestAsyncOperationProcessorStartPauseResume(unittest.TestCase):
     def test_resume(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -279,7 +282,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
     def test_stop(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -321,7 +324,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
     def test_close(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -341,7 +344,7 @@ class TestAsyncOperationProcessorStopAndClose(unittest.TestCase):
     def test_cleanup_triggers_processing_resources_cleanup(self):
         # given
         processor = AsyncOperationProcessor(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
