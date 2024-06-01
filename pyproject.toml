@@ -286,7 +286,6 @@ module = [
     "neptune.objects.project",
     "neptune.objects.run",
     "neptune.types.type_casting",
-    "neptune.vendor.pynvml",
     "neptune.api.requests_utils",
     "neptune.version",
     "neptune.internal.container_type",
