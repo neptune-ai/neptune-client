@@ -37,7 +37,6 @@ from neptune.api.models import (
     FileSetField,
     FloatField,
     FloatSeriesField,
-    GitRefField,
     ImageSeriesField,
     IntField,
     LeaderboardEntry,
@@ -88,9 +87,6 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
 
     def visit_file_set(self, field: FileSetField) -> None:
         return None
-
-    def visit_git_ref(self, field: GitRefField) -> Optional[str]:
-        return field.commit.commit_id if field.commit is not None else None
 
     def visit_object_state(self, field: ObjectStateField) -> str:
         return field.value

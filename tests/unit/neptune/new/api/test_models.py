@@ -31,7 +31,6 @@ from neptune.api.models import (
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    GitRefField,
     ImageSeriesField,
     ImageSeriesValues,
     IntField,
@@ -848,91 +847,6 @@ def test__notebook_ref_field__from_proto__no_notebook_name():
         NotebookRefField.from_proto(proto)
 
 
-def test__git_ref_field__from_dict():
-    # given
-    data = {
-        "attributeType": "gitRef",
-        "attributeName": "some/gitRef",
-        "commit": {
-            "commitId": "b2d7f8a",
-        },
-    }
-
-    # when
-    result = GitRefField.from_dict(data)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert result.commit.commit_id == "b2d7f8a"
-
-
-def test__git_ref_field__from_dict__no_commit():
-    # given
-    data = {
-        "attributeType": "gitRef",
-        "attributeName": "some/gitRef",
-    }
-
-    # when
-    result = GitRefField.from_dict(data)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert result.commit is None
-
-
-def test__git_ref_field__from_model():
-    # given
-    model = Mock(
-        attributeType="gitRef",
-        attributeName="some/gitRef",
-        commit=Mock(
-            commitId="b2d7f8a",
-        ),
-    )
-
-    # when
-    result = GitRefField.from_model(model)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert result.commit.commit_id == "b2d7f8a"
-
-
-def test__git_ref_field__from_model__no_commit():
-    # given
-    model = Mock(
-        attributeType="gitRef",
-        attributeName="some/gitRef",
-        commit=None,
-    )
-
-    # when
-    result = GitRefField.from_model(model)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert result.commit is None
-
-
-def test__git_ref_field__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        GitRefField.from_proto(proto)
-
-
-def test__git_ref_field__from_proto__no_commit():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        GitRefField.from_proto(proto)
-
-
 def test__artifact_field__from_dict():
     # given
     data = {
@@ -1653,53 +1567,6 @@ def test__field__from_proto__notebook_ref():
     # then
     with pytest.raises(NotImplementedError):
         NotebookRefField.from_proto(proto)
-
-
-def test__field__from_dict__git_ref():
-    # given
-    data = {
-        "path": "some/gitRef",
-        "type": "gitRef",
-        "gitRefProperties": {
-            "attributeType": "gitRef",
-            "attributeName": "some/gitRef",
-            "commit": {"commitId": "b2d7f8a"},
-        },
-    }
-
-    # when
-    result = Field.from_dict(data)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert isinstance(result, GitRefField)
-    assert result.commit.commit_id == "b2d7f8a"
-
-
-def test__field__from_model__git_ref():
-    # given
-    model = Mock(
-        path="some/gitRef",
-        type="gitRef",
-        gitRefProperties=Mock(attributeType="gitRef", attributeName="some/gitRef", commit=Mock(commitId="b2d7f8a")),
-    )
-
-    # when
-    result = Field.from_model(model)
-
-    # then
-    assert result.path == "some/gitRef"
-    assert isinstance(result, GitRefField)
-    assert result.commit.commit_id == "b2d7f8a"
-
-
-def test__field__from_proto__git_ref():
-    # given
-    proto = Mock(name="some/gitRef", type="gitRef", git_ref_properties=Mock())
-
-    # then
-    with pytest.raises(NotImplementedError):
-        GitRefField.from_proto(proto)
 
 
 def test__field__from_dict__artifact():

@@ -15,7 +15,6 @@
 #
 import os
 import time
-import uuid
 from datetime import datetime
 
 import pytest
@@ -131,17 +130,3 @@ def common_tag():
 @pytest.fixture(scope="session")
 def project(environment):
     yield init_project(mode="read-only", project=environment.project, api_token=environment.user_token)
-
-
-@pytest.fixture(scope="session")
-def repo(tmp_path_factory) -> "Repo":  # noqa: F821
-    Repo = pytest.importorskip("git.Repo")
-    path = tmp_path_factory.mktemp("git_repo")
-    repo = Repo.init(path)
-    file = path / f"{uuid.uuid4()}.txt"
-    with open(file, "w") as fp:
-        fp.write(str(uuid.uuid4()))
-
-    repo.git.add(all=True)
-    repo.index.commit("Init commit")
-    return repo

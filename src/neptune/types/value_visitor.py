@@ -33,7 +33,6 @@ from neptune.types import (
     FileSet,
     Float,
     FloatSeries,
-    GitRef,
     Integer,
     String,
     StringSeries,
@@ -95,10 +94,6 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_string_set(self, value: StringSet) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_git_ref(self, value: GitRef) -> Ret:
         pass
 
     @abc.abstractmethod

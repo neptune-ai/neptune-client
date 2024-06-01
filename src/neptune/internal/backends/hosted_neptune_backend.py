@@ -144,7 +144,6 @@ from neptune.internal.operation import (
 )
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
-from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
 from neptune.internal.utils.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -345,31 +344,11 @@ class HostedNeptuneBackend(NeptuneBackend):
     def create_run(
         self,
         project_id: UniqueId,
-        git_info: Optional[GitInfo] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
     ) -> ApiExperiment:
-
-        git_info_serialized = (
-            {
-                "commit": {
-                    "commitId": git_info.commit_id,
-                    "message": git_info.message,
-                    "authorName": git_info.author_name,
-                    "authorEmail": git_info.author_email,
-                    "commitDate": git_info.commit_date,
-                },
-                "repositoryDirty": git_info.dirty,
-                "currentBranch": git_info.branch,
-                "remotes": git_info.remotes,
-            }
-            if git_info
-            else None
-        )
-
         additional_params = {
-            "gitInfo": git_info_serialized,
             "customId": custom_run_id,
         }
 

@@ -50,7 +50,6 @@ _unmapped_attribute_types_map = {
     FieldType.FILE_SET.value: "fileSetProperties",  # TODO: return size?
     FieldType.FILE.value: "fileProperties",  # TODO: name? size?
     FieldType.IMAGE_SERIES.value: "imageSeriesProperties",  # TODO: return last step?
-    FieldType.GIT_REF.value: "gitRefProperties",  # TODO: commit? branch?
 }
 
 

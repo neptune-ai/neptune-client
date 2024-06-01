@@ -19,7 +19,6 @@ __all__ = [
     "Datetime",
     "File",
     "Float",
-    "GitRef",
     "Integer",
     "String",
     "FileSet",
@@ -36,7 +35,6 @@ from .atoms import (
     Datetime,
     File,
     Float,
-    GitRef,
     Integer,
     String,
 )
