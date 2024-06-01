@@ -25,7 +25,6 @@ from typing import (
 
 from neptune.attributes.attribute import Attribute
 from neptune.types import (
-    Artifact,
     Boolean,
     Datetime,
     File,
@@ -66,10 +65,6 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_datetime(self, value: Datetime) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_artifact(self, value: Artifact) -> Ret:
         pass
 
     @abc.abstractmethod

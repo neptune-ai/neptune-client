@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Artifact", "Boolean", "Datetime", "File", "Float", "Integer", "String"]
+__all__ = ["Boolean", "Datetime", "File", "Float", "Integer", "String"]
 
-from .artifact import Artifact
 from .boolean import Boolean
 from .datetime import Datetime
 from .file import File

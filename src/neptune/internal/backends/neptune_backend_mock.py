@@ -35,7 +35,6 @@ from typing import (
 from zipfile import ZipFile
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
@@ -67,7 +66,6 @@ from neptune.exceptions import (
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     Project,
@@ -89,13 +87,11 @@ from neptune.internal.id_formats import (
 )
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -109,7 +105,6 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -123,7 +118,6 @@ from neptune.types import (
     Boolean,
     Integer,
 )
-from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.file import File
 from neptune.types.atoms.float import Float
@@ -152,7 +146,6 @@ class NeptuneBackendMock(NeptuneBackend):
         self._containers: Dict[(UniqueId, ContainerType), ContainerStructure[Value, dict]] = dict()
         self._next_run = 1  # counter for runs
         self._next_model_version = defaultdict(lambda: 1)  # counter for model versions
-        self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
         self._create_container(self._project_id, ContainerType.PROJECT, self.PROJECT_KEY)
 
@@ -401,15 +394,6 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, Datetime)
         return DateTimeField(path=path_to_str(path), value=val.value)
 
-    def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactField:
-        val = self._get_attribute(container_id, container_type, path, Artifact)
-        return ArtifactField(path=path_to_str(path), hash=val.hash)
-
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
-        return self._artifacts[(project_id, artifact_hash)]
-
     def get_float_series_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesField:
@@ -578,9 +562,6 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_string_set(self, _: StringSet) -> FieldType:
             return FieldType.STRING_SET
 
-        def visit_artifact(self, _: Artifact) -> FieldType:
-            return FieldType.ARTIFACT
-
         def visit_namespace(self, _: Namespace) -> FieldType:
             raise NotImplementedError
 
@@ -594,7 +575,6 @@ class NeptuneBackendMock(NeptuneBackend):
             self._backend = backend
             self._path = path
             self._current_value = current_value
-            self._artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
             self._operation_storage = operation_storage
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
@@ -621,23 +601,6 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
-
-        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("assign", Artifact.__name__)
-            return Artifact(op.hash)
-
-        def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("save", Artifact.__name__)
-            return Artifact(self._artifact_hash)
-
-        def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
-            if self._current_value is None:
-                return Artifact()
-            if not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("clear", Artifact.__name__)
-            return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):

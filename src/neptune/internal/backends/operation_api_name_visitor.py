@@ -18,13 +18,11 @@ __all__ = ["OperationApiNameVisitor"]
 from neptune.internal.exceptions import InternalClientError
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -38,7 +36,6 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -112,15 +109,6 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_delete_files(self, _: DeleteFiles) -> Ret:
         return "deleteFiles"
-
-    def visit_assign_artifact(self, _: AssignArtifact) -> Ret:
-        return "assignArtifact"
-
-    def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Ret:
-        raise InternalClientError("Specialized endpoint should be used to track artifact files")
-
-    def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
-        return "clearArtifact"
 
     def visit_copy_attribute(self, _: CopyAttribute) -> Ret:
         raise NotImplementedError("This operation is client-side only")

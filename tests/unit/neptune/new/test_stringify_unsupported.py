@@ -43,7 +43,6 @@ from neptune.internal.warnings import (
 )
 from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import (
-    Artifact,
     Boolean,
     Datetime,
     Float,
@@ -193,14 +192,6 @@ class TestStringifyUnsupported:
             run["regular"] = {"array": str([Obj(), Obj(), Obj()])}
 
         assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
-
-    def test_assign__artifact(self, run):
-        with assert_no_warnings():
-            run["artifact"] = Artifact(
-                value=stringify_unsupported("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-            )
-            run["artifact"] = Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-            run["artifact"].assign(Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
     def test_assign__boolean(self, run):
         with assert_no_warnings():

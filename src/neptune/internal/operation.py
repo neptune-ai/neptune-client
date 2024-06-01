@@ -23,7 +23,6 @@ from typing import (
     List,
     Optional,
     Set,
-    Tuple,
     Type,
     TypeVar,
 )
@@ -164,24 +163,6 @@ class AssignDatetime(Operation):
     @staticmethod
     def from_dict(data: dict) -> "AssignDatetime":
         return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
-
-
-@dataclass
-class AssignArtifact(Operation):
-
-    hash: str
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_assign_artifact(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["hash"] = self.hash
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "AssignArtifact":
-        return AssignArtifact(data["path"], str(data["hash"]))
 
 
 @dataclass
@@ -525,39 +506,6 @@ class DeleteAttribute(Operation):
     @staticmethod
     def from_dict(data: dict) -> "DeleteAttribute":
         return DeleteAttribute(data["path"])
-
-
-@dataclass
-class TrackFilesToArtifact(Operation):
-    project_id: str
-    entries: List[Tuple[str, Optional[str]]]
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_track_files_to_artifact(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["entries"] = self.entries
-        ret["project_id"] = self.project_id
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "TrackFilesToArtifact":
-        return TrackFilesToArtifact(
-            path=data["path"],
-            project_id=data["project_id"],
-            entries=list(map(tuple, data["entries"])),
-        )
-
-
-@dataclass
-class ClearArtifact(Operation):
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_clear_artifact(self)
-
-    @staticmethod
-    def from_dict(data: dict) -> "ClearArtifact":
-        return ClearArtifact(data["path"])
 
 
 @dataclass

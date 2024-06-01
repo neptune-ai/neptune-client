@@ -36,7 +36,6 @@ from neptune.api.models import FieldType
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
-    create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,
     create_leaderboard_client,
@@ -90,7 +89,6 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         create_http_client_with_auth.cache_clear()
         create_backend_client.cache_clear()
         create_leaderboard_client.cache_clear()
-        create_artifacts_client.cache_clear()
 
     def test_project_listing_empty(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

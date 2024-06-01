@@ -23,7 +23,6 @@ from typing import (
 )
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
@@ -45,7 +44,6 @@ from neptune.api.models import (
     StringSetField,
 )
 from neptune.exceptions import NeptuneOfflineModeFetchException
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
@@ -80,14 +78,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> DateTimeField:
-        raise NeptuneOfflineModeFetchException
-
-    def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactField:
-        raise NeptuneOfflineModeFetchException
-
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_attribute(

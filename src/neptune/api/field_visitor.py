@@ -23,7 +23,6 @@ from typing import (
 )
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     FieldVisitor,
@@ -82,6 +81,3 @@ class FieldToValueVisitor(FieldVisitor[Any]):
 
     def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
         return field.notebook_name
-
-    def visit_artifact(self, field: ArtifactField) -> str:
-        return field.hash

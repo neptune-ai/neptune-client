@@ -19,7 +19,6 @@ import pytest
 from mock import Mock
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
@@ -847,47 +846,6 @@ def test__notebook_ref_field__from_proto__no_notebook_name():
         NotebookRefField.from_proto(proto)
 
 
-def test__artifact_field__from_dict():
-    # given
-    data = {
-        "attributeType": "artifact",
-        "attributeName": "some/artifact",
-        "hash": "f192cddb2b98c0b4c72bba22b68d2245",
-    }
-
-    # when
-    result = ArtifactField.from_dict(data)
-
-    # then
-    assert result.path == "some/artifact"
-    assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
-
-
-def test__artifact_field__from_model():
-    # given
-    model = Mock(
-        attributeType="artifact",
-        attributeName="some/artifact",
-        hash="f192cddb2b98c0b4c72bba22b68d2245",
-    )
-
-    # when
-    result = ArtifactField.from_model(model)
-
-    # then
-    assert result.path == "some/artifact"
-    assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
-
-
-def test__artifact_field__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        ArtifactField.from_proto(proto)
-
-
 def test__field__from_dict__float():
     # given
     data = {
@@ -1567,55 +1525,6 @@ def test__field__from_proto__notebook_ref():
     # then
     with pytest.raises(NotImplementedError):
         NotebookRefField.from_proto(proto)
-
-
-def test__field__from_dict__artifact():
-    # given
-    data = {
-        "path": "some/artifact",
-        "type": "artifact",
-        "artifactProperties": {
-            "attributeType": "artifact",
-            "attributeName": "some/artifact",
-            "hash": "f192cddb2b98c0b4c72bba22b68d2245",
-        },
-    }
-
-    # when
-    result = Field.from_dict(data)
-
-    # then
-    assert result.path == "some/artifact"
-    assert isinstance(result, ArtifactField)
-    assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
-
-
-def test__field__from_model__artifact():
-    # given
-    model = Mock(
-        path="some/artifact",
-        type="artifact",
-        artifactProperties=Mock(
-            attributeType="artifact", attributeName="some/artifact", hash="f192cddb2b98c0b4c72bba22b68d2245"
-        ),
-    )
-
-    # when
-    result = Field.from_model(model)
-
-    # then
-    assert result.path == "some/artifact"
-    assert isinstance(result, ArtifactField)
-    assert result.hash == "f192cddb2b98c0b4c72bba22b68d2245"
-
-
-def test__field__from_proto__artifact():
-    # given
-    proto = Mock(name="some/artifact", type="artifact", artifact_properties=Mock())
-
-    # then
-    with pytest.raises(NotImplementedError):
-        ArtifactField.from_proto(proto)
 
 
 def test__field_definition__from_dict():

@@ -69,16 +69,6 @@ flags:
       - src/neptune/management
     carryforward: true
 
-  e2e-s3-gcs:
-    paths:
-      - src/neptune
-    carryforward: true
-
-  e2e-s3:
-    paths:
-      - src/neptune
-    carryforward: true
-
 component_management:
   individual_components:
     - component_id: client

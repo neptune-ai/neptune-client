@@ -26,7 +26,6 @@ from typing import (
 )
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
@@ -49,7 +48,6 @@ from neptune.api.models import (
     StringSetField,
 )
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     Project,
@@ -195,16 +193,6 @@ class NeptuneBackend:
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> DateTimeField:
-        pass
-
-    @abc.abstractmethod
-    def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactField:
-        pass
-
-    @abc.abstractmethod
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod

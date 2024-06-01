@@ -31,7 +31,6 @@ from typing import (
 
 from neptune.api.models import FileEntry
 from neptune.attributes import File
-from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.attributes.file_set import FileSet
 from neptune.attributes.namespace import Namespace
@@ -45,7 +44,6 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
     NeptuneUserApiInputException,
 )
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
@@ -607,7 +605,6 @@ class Handler(SupportsNamespaces):
             * `File`
             * `FileSeries`
             * `FileSet`
-            * `Artifact`
 
         Args:
             destination (str, optional): Path to where the file(s) should be downloaded.
@@ -663,14 +660,13 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="fetch_extension")
 
     @feature_temporarily_unavailable
-    def fetch_files_list(self) -> List[ArtifactFileData]:
+    def fetch_files_list(self) -> Any:
         """Fetches the list of files in an artifact and their metadata.
 
         You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_files_list
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="fetch_files_list")
 
     def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
         """Fetches metadata of the file set.
@@ -722,13 +718,6 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#track_files
         """
         raise NeptuneUnsupportedFunctionalityException
-        with self._container.lock():
-            attr = self._container.get_attribute(self._path)
-            if attr is None:
-                attr = Artifact(self._container, parse_path(self._path))
-                self._container.set_attribute(self._path, attr)
-
-            attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)

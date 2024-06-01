@@ -116,7 +116,7 @@ class Run(NeptuneObject):
     run["your/structure"] = some_metadata
     ```
 
-    Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
+    Examples of metadata you can log: metrics, losses, scores, images, predictions,
     model weights, parameters, checkpoints, and interactive visualizations.
 
     By default, the run automatically tracks hardware consumption, stdout/stderr, source code.
