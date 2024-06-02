@@ -26,7 +26,7 @@ def in_interactive() -> bool:
 def in_notebook() -> bool:
     """Based on: https://stackoverflow.com/a/22424821/1565454"""
     try:
-        from IPython import get_ipython
+        from IPython import get_ipython  # type: ignore
 
         ipy = get_ipython()
         return (
