@@ -66,7 +66,7 @@ from neptune.internal.utils import (
 from neptune.internal.utils.dependency_tracking import (
     FileDependenciesStrategy,
     InferDependenciesStrategy,
-
+)
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (

@@ -49,6 +49,7 @@ from neptune.internal.warnings import (
     NeptuneWarning,
     warned_once,
 )
+from neptune.objects import NeptuneObject
 from tests.unit.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.unit.neptune.new.utils.api_experiments_factory import api_run
 
