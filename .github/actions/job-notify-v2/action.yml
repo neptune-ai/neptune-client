@@ -8,6 +8,10 @@ inputs:
   job-status:
     description: "Finish status of a preceding job"
     required: true
+  neptune-ref:
+    description: "A Neptune ref obtanied from set-netpune-ref workflow"
+    required: true
+
 
 
 runs:
@@ -43,7 +47,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production 1.x' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown'))
+                        text: '*Environment:*\n' + ('${{ inputs.neptune-ref }}' === 'refs/heads/master' ? 'Production 1.x' : ('${{ inputs.neptune-ref }}' === 'refs/heads/dev/1.x' ? 'Production' : 'Unknown'))
                       },
                       {
                         type: 'mrkdwn',
@@ -51,7 +55,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: `*Ref:*\n${process.env.AS_REF}`
+                        text: `*Ref:*\n${'${{ inputs.neptune-ref }}'}`
                       },
                       {
                         type: 'mrkdwn',
