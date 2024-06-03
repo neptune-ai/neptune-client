@@ -19,7 +19,6 @@ __all__ = (
     "FileEntry",
     "Field",
     "FieldType",
-    "GitCommit",
     "LeaderboardEntry",
     "LeaderboardEntriesSearchResult",
     "FieldVisitor",
@@ -34,7 +33,6 @@ __all__ = (
     "StringSeriesField",
     "ImageSeriesField",
     "StringSetField",
-    "GitRefField",
     "ObjectStateField",
     "NotebookRefField",
     "ArtifactField",
@@ -72,7 +70,6 @@ from typing import (
 
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributeDefinitionDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
-    ProtoAttributeDTO,
     ProtoAttributesDTO,
     ProtoBoolAttributeDTO,
     ProtoDatetimeAttributeDTO,
@@ -113,7 +110,6 @@ class FieldType(Enum):
     STRING_SERIES = "stringSeries"
     IMAGE_SERIES = "imageSeries"
     STRING_SET = "stringSet"
-    GIT_REF = "gitRef"
     OBJECT_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
     ARTIFACT = "artifact"
@@ -197,9 +193,6 @@ class FieldVisitor(Generic[Ret], abc.ABC):
 
     @abc.abstractmethod
     def visit_string_set(self, field: StringSetField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_git_ref(self, field: GitRefField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_object_state(self, field: ObjectStateField) -> Ret: ...
@@ -437,46 +430,6 @@ class StringSetField(Field, field_type=FieldType.STRING_SET):
     @staticmethod
     def from_proto(data: ProtoStringSetAttributeDTO) -> StringSetField:
         return StringSetField(path=data.attribute_name, values=set(data.value))
-
-
-@dataclass
-class GitCommit:
-    commit_id: Optional[str]
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> GitCommit:
-        commit_id = str(data["commitId"]) if "commitId" in data else None
-        return GitCommit(commit_id=commit_id)
-
-    @staticmethod
-    def from_model(model: Any) -> GitCommit:
-        return GitCommit(commit_id=model.commitId)
-
-    @staticmethod
-    def from_proto(data: Any) -> GitCommit:
-        raise NotImplementedError()
-
-
-@dataclass
-class GitRefField(Field, field_type=FieldType.GIT_REF):
-    commit: Optional[GitCommit]
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_git_ref(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> GitRefField:
-        commit = GitCommit.from_dict(data["commit"]) if "commit" in data else None
-        return GitRefField(path=data["attributeName"], commit=commit)
-
-    @staticmethod
-    def from_model(model: Any) -> GitRefField:
-        commit = GitCommit.from_model(model.commit) if model.commit is not None else None
-        return GitRefField(path=model.attributeName, commit=commit)
-
-    @staticmethod
-    def from_proto(data: ProtoAttributeDTO) -> GitRefField:
-        raise NotImplementedError()
 
 
 @dataclass

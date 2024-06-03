@@ -38,7 +38,7 @@ Constants:
 Tracking runs
 -------------
 A Neptune run tracks some things automatically during the execution of your model training
-script, such as hardware consumption, source code, and Git information. You can also
+script, such as hardware consumption, source code. You can also
 assign any metadata to the run manually and organize it in a structure of your choosing.
 
 >>> run = neptune.init_run()

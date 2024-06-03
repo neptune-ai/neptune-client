@@ -118,13 +118,11 @@ from neptune.internal.operation_visitor import OperationVisitor
 from neptune.internal.types.file_types import FileType
 from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
-from neptune.internal.utils.git import GitInfo
 from neptune.internal.utils.paths import path_to_str
 from neptune.types import (
     Boolean,
     Integer,
 )
-from neptune.types.atoms import GitRef
 from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.file import File
@@ -201,7 +199,6 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_run(
         self,
         project_id: UniqueId,
-        git_info: Optional[GitInfo] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
@@ -580,9 +577,6 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_string_set(self, _: StringSet) -> FieldType:
             return FieldType.STRING_SET
-
-        def visit_git_ref(self, _: GitRef) -> FieldType:
-            return FieldType.GIT_REF
 
         def visit_artifact(self, _: Artifact) -> FieldType:
             return FieldType.ARTIFACT

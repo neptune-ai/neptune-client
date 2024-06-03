@@ -34,7 +34,6 @@ from neptune.internal.exceptions import (
     NotADirectory,
     NotAFile,
 )
-from neptune.internal.utils.git_info import GitInfo
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
@@ -140,76 +139,12 @@ def _split_df_by_stems(df):
     return channel_dfs, common_x
 
 
-def discover_git_repo_location():
-    import __main__
-
-    if hasattr(__main__, "__file__"):
-        return os.path.dirname(os.path.abspath(__main__.__file__))
-    return None
-
-
 def update_session_proxies(session, proxies):
     if proxies is not None:
         try:
             session.proxies.update(proxies)
         except (TypeError, ValueError):
             raise ValueError("Wrong proxies format: {}".format(proxies))
-
-
-def get_git_info(repo_path=None):
-    """Retrieve information about git repository.
-
-    If the attempt fails, ``None`` will be returned.
-
-    Args:
-        repo_path (:obj:`str`, optional, default is ``None``):
-
-            | Path to the repository from which extract information about git.
-            | If ``None`` is passed, calling ``get_git_info`` is equivalent to calling
-              ``git.Repo(search_parent_directories=True)``.
-              Check `GitPython <https://gitpython.readthedocs.io/en/stable/reference.html#git.repo.base.Repo>`_
-              docs for more information.
-
-    Returns:
-        :class:`~neptune.git_info.GitInfo` - An object representing information about git repository.
-
-    Examples:
-
-        .. code:: python3
-
-            # Get git info from the current directory
-            git_info = get_git_info('.')
-
-    """
-    try:
-        import git
-
-        repo = git.Repo(repo_path, search_parent_directories=True)
-
-        commit = repo.head.commit
-
-        active_branch = ""
-
-        try:
-            active_branch = repo.active_branch.name
-        except TypeError as e:
-            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
-                active_branch = "Detached HEAD"
-
-        remote_urls = [remote.url for remote in repo.remotes]
-
-        return GitInfo(
-            commit_id=commit.hexsha,
-            message=commit.message,
-            author_name=commit.author.name,
-            author_email=commit.author.email,
-            commit_date=commit.committed_datetime,
-            repository_dirty=repo.is_dirty(index=False, untracked_files=True),
-            active_branch=active_branch,
-            remote_urls=remote_urls,
-        )
-    except:  # noqa: E722
-        return None
 
 
 def file_contains(filename, text):

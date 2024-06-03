@@ -31,8 +31,6 @@ from neptune.api.models import (
     FileSetField,
     FloatField,
     FloatSeriesField,
-    GitCommit,
-    GitRefField,
     ImageSeriesField,
     LeaderboardEntry,
     ObjectStateField,
@@ -87,7 +85,6 @@ class AbstractTablesTestMixin:
             FloatSeriesField(path="float/series", last=8.7),
             StringSeriesField(path="string/series", last="last text"),
             StringSetField(path="string/set", values={"a", "b"}),
-            GitRefField(path="git/ref", commit=GitCommit(commit_id="abcdef0123456789")),
             FileField(path="file", size=0, name="file.txt", ext="txt"),
             FileSetField(path="file/set", size=0),
             ImageSeriesField(path="image/series", last_step=None),
@@ -125,7 +122,6 @@ class AbstractTablesTestMixin:
         self.assertEqual(8.7, df["float/series"][1])
         self.assertEqual("last text", df["string/series"][1])
         self.assertEqual({"a", "b"}, set(df["string/set"][1].split(",")))
-        self.assertEqual("abcdef0123456789", df["git/ref"][1])
 
         with self.assertRaises(KeyError):
             self.assertTrue(df["file"])
@@ -159,7 +155,6 @@ class AbstractTablesTestMixin:
             self.assertEqual(8.7, row.get_attribute_value("float/series"))
             self.assertEqual("last text", row.get_attribute_value("string/series"))
             self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
-            self.assertEqual("abcdef0123456789", row.get_attribute_value("git/ref"))
 
             with self.assertRaises(MetadataInconsistency):
                 row.get_attribute_value("file")
@@ -195,7 +190,6 @@ class AbstractTablesTestMixin:
         self.assertEqual(8.7, table_entry["float/series"].get())
         self.assertEqual("last text", table_entry["string/series"].get())
         self.assertEqual({"a", "b"}, table_entry["string/set"].get())
-        self.assertEqual("abcdef0123456789", table_entry["git/ref"].get())
 
         with self.assertRaises(MetadataInconsistency):
             table_entry["file"].get()

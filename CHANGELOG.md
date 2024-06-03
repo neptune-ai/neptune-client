@@ -22,8 +22,7 @@
 - Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
 - Disabled file logging ([#1733](https://github.com/neptune-ai/neptune-client/pull/1733))
 - Upgraded minimal `python` version to `3.8` ([#1794](https://github.com/neptune-ai/neptune-client/pull/1794))
-- Changed `containerId` to `customId` in the metadata file ([#1798](https://github.com/neptune-ai/neptune-client/pull/1798))
-- Made custom id part of the `.neptune` directory ([#1798](https://github.com/neptune-ai/neptune-client/pull/1798))
+- Remove Git support ([#1801](https://github.com/neptune-ai/neptune-client/pull/1801))
 
 ### Features
 - Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))

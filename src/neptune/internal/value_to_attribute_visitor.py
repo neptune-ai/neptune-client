@@ -35,12 +35,10 @@ from neptune.attributes.series.file_series import FileSeries as ImageSeriesAttr
 from neptune.attributes.series.float_series import FloatSeries as FloatSeriesAttr
 from neptune.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.attributes.sets.string_set import StringSet as StringSetAttr
-from neptune.exceptions import OperationNotSupported
 from neptune.types import (
     Boolean,
     Integer,
 )
-from neptune.types.atoms import GitRef
 from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.file import File
@@ -98,9 +96,6 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_string_set(self, _: StringSet) -> Attribute:
         return StringSetAttr(self._container, self._path)
-
-    def visit_git_ref(self, _: GitRef) -> Attribute:
-        raise OperationNotSupported("Cannot create custom attribute of type GitRef")
 
     def visit_namespace(self, _: Namespace) -> Attribute:
         return NamespaceAttr(self._container, self._path)
