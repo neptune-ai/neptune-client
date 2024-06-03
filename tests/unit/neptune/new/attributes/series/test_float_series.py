@@ -19,7 +19,6 @@ from mock import (
     patch,
 )
 
-from neptune import init_run
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.warnings import NeptuneUnsupportedValue
@@ -60,28 +59,26 @@ class TestFloatSeries(TestAttributeBase):
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_float_warnings(self):
-        run = init_run(mode="debug")
+        with self._exp() as run:
+            with pytest.warns(NeptuneUnsupportedValue):
+                run["train"].append({"supported_1": 1, "supported_2": 2})
+                run["train"].append({"unsupported": float("nan"), "supported_3": float(3)})
+                run["train"].append({"nef_infinity": float("-inf")})
+                run["train"].append({"infinity": float("inf")})
 
-        with pytest.warns(NeptuneUnsupportedValue):
-            run["train"].append({"supported_1": 1, "supported_2": 2})
-            run["train"].append({"unsupported": float("nan"), "supported_3": float(3)})
-            run["train"].append({"nef_infinity": float("-inf")})
-            run["train"].append({"infinity": float("inf")})
-
-            assert run["train/supported_1"].fetch_last() == 1
-            assert run["train/supported_2"].fetch_last() == 2
-            assert run["train/supported_3"].fetch_last() == 3
+                assert run["train/supported_1"].fetch_last() == 1
+                assert run["train/supported_2"].fetch_last() == 2
+                assert run["train/supported_3"].fetch_last() == 3
 
         run.stop()
 
     def test_multiple_values_to_same_namespace(self):
-        run = init_run(mode="debug")
+        with self._exp() as run:
+            run["multiple"].extend([1.5, 2.3, str(float("nan")), 4.7])
+            result = run["multiple"].fetch_values()
 
-        run["multiple"].extend([1.5, 2.3, str(float("nan")), 4.7])
-        result = run["multiple"].fetch_values()
+            assert result["value"][0] == 1.5
+            assert result["value"][1] == 2.3
+            assert result["value"][2] == 4.7
 
-        assert result["value"][0] == 1.5
-        assert result["value"][1] == 2.3
-        assert result["value"][2] == 4.7
-
-        run.stop()
+            run.stop()

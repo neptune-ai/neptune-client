@@ -50,7 +50,7 @@ class Attribute:
 
     @property
     def _container_id(self) -> str:
-        return self._container._id
+        return self._container._custom_id
 
     @property
     def _container_type(self) -> "ContainerType":

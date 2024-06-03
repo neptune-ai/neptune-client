@@ -19,7 +19,6 @@ from mock import (
     patch,
 )
 
-from neptune import init_run
 from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
@@ -66,19 +65,19 @@ class TestFloat(TestAttributeBase):
             self.assertEqual(5, var.fetch())
 
     def test_float_warnings(self):
-        run = init_run(mode="debug")
-        with pytest.warns(NeptuneUnsupportedValue):
-            run["infinity"] = float("inf")
-            run["neg-infinity"] = float("-inf")
-            run["nan"] = float("nan")
+        with self._exp() as run:
+            with pytest.warns(NeptuneUnsupportedValue):
+                run["infinity"] = float("inf")
+                run["neg-infinity"] = float("-inf")
+                run["nan"] = float("nan")
 
-        with pytest.raises(MetadataInconsistency):
-            run["infinity"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["infinity"].fetch()
 
-        with pytest.raises(MetadataInconsistency):
-            run["neg-infinity"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["neg-infinity"].fetch()
 
-        with pytest.raises(MetadataInconsistency):
-            run["nan"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["nan"].fetch()
 
-        run.stop()
+            run.stop()

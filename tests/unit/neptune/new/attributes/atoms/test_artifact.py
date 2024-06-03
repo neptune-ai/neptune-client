@@ -40,11 +40,17 @@ from neptune.internal.artifacts.types import (
 from neptune.internal.container_type import ContainerType
 from neptune.internal.operation import TrackFilesToArtifact
 from neptune.internal.utils.paths import path_to_str
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types.atoms.artifact import Artifact as ArtifactAttr
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestArtifact(TestAttributeBase):
+    @patch.object(
+        NeptuneObject,
+        "_async_create_run",
+        lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    )
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def setUp(self, get_operation_processor):
         self.monkeypatch = MonkeyPatch()
@@ -80,7 +86,7 @@ class TestArtifact(TestAttributeBase):
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
-        self.exp._backend._containers[(self.exp._id, ContainerType.RUN)].set(
+        self.exp._backend._containers[(self.exp._custom_id, ContainerType.RUN)].set(
             self.path, ArtifactAttr(self.artifact_hash)
         )
         self.exp._backend._artifacts[self.exp._project_id, self.artifact_hash] = self.artifact_files

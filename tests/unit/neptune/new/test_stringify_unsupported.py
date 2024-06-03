@@ -23,6 +23,7 @@ from typing import (
     Iterator,
     MutableMapping,
 )
+from unittest.mock import patch
 
 from freezegun import freeze_time
 from pytest import (
@@ -40,6 +41,7 @@ from neptune.internal.warnings import (
     NeptuneUnsupportedType,
     warned_once,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import (
     Artifact,
     Boolean,
@@ -98,8 +100,13 @@ def assert_no_warnings():
 
 @fixture
 def run():
-    with init_run(mode="debug") as run:
-        yield run
+    with patch.object(
+        NeptuneObject,
+        "_async_create_run",
+        lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    ):
+        with init_run(mode="debug") as run:
+            yield run
 
 
 class TestStringifyUnsupported:

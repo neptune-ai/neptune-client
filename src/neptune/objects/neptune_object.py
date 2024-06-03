@@ -23,6 +23,7 @@ import os
 import threading
 import time
 import traceback
+import uuid
 from contextlib import AbstractContextManager
 from functools import (
     partial,
@@ -53,13 +54,11 @@ from neptune.envs import (
 )
 from neptune.exceptions import (
     MetadataInconsistency,
+    NeptuneException,
     NeptuneUnsupportedFunctionalityException,
 )
 from neptune.handler import Handler
-from neptune.internal.backends.api_model import (
-    ApiExperiment,
-    Project,
-)
+from neptune.internal.backends.api_model import Project
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
@@ -71,7 +70,6 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import UNIX_STYLES
 from neptune.internal.id_formats import (
     QualifiedName,
-    SysId,
     UniqueId,
     conform_optional,
 )
@@ -87,6 +85,10 @@ from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
+)
+from neptune.internal.utils.limits import (
+    CUSTOM_RUN_ID_LENGTH,
+    custom_run_id_exceeds_length,
 )
 from neptune.internal.utils.logger import (
     get_disabled_logger,
@@ -125,6 +127,7 @@ class NeptuneObject(AbstractContextManager):
     def __init__(
         self,
         *,
+        custom_id: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         mode: Mode = Mode.ASYNC,
@@ -135,6 +138,7 @@ class NeptuneObject(AbstractContextManager):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
+        verify_type("custom_id", custom_id, (str, type(None)))
         verify_type("project", project, (str, type(None)))
         verify_type("api_token", api_token, (str, type(None)))
         verify_type("mode", mode, Mode)
@@ -144,6 +148,12 @@ class NeptuneObject(AbstractContextManager):
         verify_optional_callable("async_lag_callback", async_lag_callback)
         verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
         verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
+
+        if custom_run_id_exceeds_length(custom_id):
+            raise NeptuneException(
+                f"Custom run ID can't be longer than {CUSTOM_RUN_ID_LENGTH} characters. "
+                f"Ensure that the `custom_run_id` argument doesn't exceed the limit."
+            )
 
         self._mode: Mode = mode
         self._flush_period = flush_period
@@ -160,13 +170,10 @@ class NeptuneObject(AbstractContextManager):
         self._project_api_object: Project = project_name_lookup(
             backend=self._backend, name=self._project_qualified_name
         )
+        self._workspace: str = self._project_api_object.workspace
+        self._project_name: str = self._project_api_object.name
         self._project_id: UniqueId = self._project_api_object.id
-
-        self._api_object: ApiExperiment = self._get_or_create_api_object()
-        self._id: UniqueId = self._api_object.id
-        self._sys_id: SysId = self._api_object.sys_id
-        self._workspace: str = self._api_object.workspace
-        self._project_name: str = self._api_object.project_name
+        self._custom_id: str = custom_id or str(uuid.uuid4())
 
         self._async_lag_threshold = async_lag_threshold
         self._async_lag_callback = NeptuneObject._get_callback(
@@ -181,7 +188,7 @@ class NeptuneObject(AbstractContextManager):
 
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
-            container_id=self._id,
+            container_id=self._custom_id,
             container_type=self.container_type,
             backend=self._backend,
             lock=self._lock,
@@ -189,11 +196,10 @@ class NeptuneObject(AbstractContextManager):
             queue=self._signals_queue,
         )
 
+        self._async_create_run()
+
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
-
-        if self._mode != Mode.OFFLINE:
-            self.sync(wait=False)
 
         if self._mode != Mode.READ_ONLY:
             self._write_initial_attributes()
@@ -217,6 +223,10 @@ class NeptuneObject(AbstractContextManager):
 
     On Linux it looks like it does not help much but does not break anything either.
     """
+
+    def _async_create_run(self):
+        """placeholder for async run creation"""
+        pass
 
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
@@ -246,7 +256,7 @@ class NeptuneObject(AbstractContextManager):
                 operation_processor_getter=partial(
                     get_operation_processor,
                     mode=self._mode,
-                    container_id=self._id,
+                    container_id=self._custom_id,
                     container_type=self.container_type,
                     backend=self._backend,
                     lock=self._lock,
@@ -299,10 +309,6 @@ class NeptuneObject(AbstractContextManager):
             )
 
         return BackgroundJobList(jobs)
-
-    @abc.abstractmethod
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        raise NotImplementedError
 
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         return []
@@ -403,7 +409,7 @@ class NeptuneObject(AbstractContextManager):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping(self._id, self.container_type)
+        self._backend.ping(self._custom_id, self.container_type)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -623,7 +629,7 @@ class NeptuneObject(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._id, self.container_type)
+            attributes = self._backend.get_attributes(self._custom_id, self.container_type)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
@@ -646,7 +652,7 @@ class NeptuneObject(AbstractContextManager):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            self._logger.info(f"Neptune initialized. Object identifier: {self._id}")
+            self._logger.info(f"Neptune initialized. Object identifier: {self._custom_id}")
 
         self.start()
 
