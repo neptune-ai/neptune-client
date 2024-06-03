@@ -23,7 +23,7 @@ from mock import patch
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.core.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import CustomId
 
 
 @patch("neptune.core.operation_processors.utils.random.choice")
@@ -33,7 +33,7 @@ from neptune.core.typing.id_formats import UniqueId
 @patch("neptune.core.operation_processors.utils.os.getpid", return_value=42)
 def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -43,7 +43,7 @@ def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
     op_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
 
     # then
     mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
@@ -51,7 +51,7 @@ def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
     # and
     assert (
         processor.data_path
-        == Path(NEPTUNE_DATA_DIRECTORY) / "sync" / f"{container_type.value}__{container_id}__42__abcdefgh"
+        == Path(NEPTUNE_DATA_DIRECTORY) / "sync" / f"{container_type.value}__{custom_id}__42__abcdefgh"
     )
 
     # and
@@ -62,7 +62,7 @@ def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile")
 def test_flush(metadata_file_mock, operation_storage_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -70,7 +70,7 @@ def test_flush(metadata_file_mock, operation_storage_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
 
     # and
     processor.start()
@@ -87,7 +87,7 @@ def test_flush(metadata_file_mock, operation_storage_mock):
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile")
 def test_close(metadata_file_mock, operation_storage_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -95,7 +95,7 @@ def test_close(metadata_file_mock, operation_storage_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
 
     # and
     processor.start()
@@ -113,7 +113,7 @@ def test_close(metadata_file_mock, operation_storage_mock):
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile")
 def test_stop(metadata_file_mock, operation_storage_mock, rmdir_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -121,7 +121,7 @@ def test_stop(metadata_file_mock, operation_storage_mock, rmdir_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
 
     # and
     processor.start()
@@ -150,11 +150,11 @@ def test_stop(metadata_file_mock, operation_storage_mock, rmdir_mock):
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile", new=Mock)
 def test_cleanup_oserror_not_raising_toplevel_exception(rmdir_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
-    processor = SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
 
     # when
     processor.cleanup()  # no exception raised
@@ -167,14 +167,14 @@ def test_cleanup_oserror_not_raising_toplevel_exception(rmdir_mock):
 @patch("neptune.core.operation_processors.sync_operation_processor.MetadataFile")
 def test_metadata(metadata_file_mock, _):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId("test_id")
     container_type = ContainerType.RUN
 
     # when
-    SyncOperationProcessor(container_id=container_id, container_type=container_type)
+    SyncOperationProcessor(custom_id, container_type=container_type)
 
     # then
     metadata = metadata_file_mock.call_args_list[0][1]["metadata"]
     assert metadata["mode"] == "sync"
     assert metadata["containerType"] == ContainerType.RUN
-    assert metadata["containerId"] == container_id
+    assert metadata["customId"] == custom_id

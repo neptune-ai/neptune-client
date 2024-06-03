@@ -24,7 +24,7 @@ from unittest.mock import (
 
 from neptune.core.operation_processors.async_operation_processor.processing_resources import ProcessingResources
 from neptune.core.typing.container_type import ContainerType
-from neptune.core.typing.id_formats import UniqueId
+from neptune.core.typing.id_formats import CustomId
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
@@ -32,7 +32,7 @@ class TestProcessingResourcesCleanup(unittest.TestCase):
     def test_cleanup_of_resources_called(self):
         # given
         processing_resources = ProcessingResources(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),
@@ -54,7 +54,7 @@ class TestProcessingResourcesCleanup(unittest.TestCase):
     def test_cleanup_oserror_happens(self):
         # given
         processing_resources = ProcessingResources(
-            container_id=UniqueId("test_id"),
+            custom_id=CustomId("test_id"),
             container_type=random.choice(list(ContainerType)),
             lock=threading.RLock(),
             signal_queue=Mock(),

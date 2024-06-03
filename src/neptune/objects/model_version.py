@@ -32,15 +32,11 @@ from neptune.core.operation_processors.offline_operation_processor import Offlin
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
     InactiveModelVersionException,
-    NeedExistingModelVersionForReadOnlyMode,
-    NeptuneMissingRequiredInitParameter,
     NeptuneOfflineModeChangeStageException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.id_formats import QualifiedName
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -212,32 +208,6 @@ class ModelVersion(NeptuneObject):
             async_no_progress_callback=async_no_progress_callback,
             async_no_progress_threshold=async_no_progress_threshold,
         )
-
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        project_workspace = self._project_api_object.workspace
-        project_name = self._project_api_object.name
-        project_qualified_name = f"{project_workspace}/{project_name}"
-
-        if self._with_id is not None:
-            # with_id (resume existing model_version) has priority over model (creating a new model_version)
-            return self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
-                expected_container_type=self.container_type,
-            )
-        elif self._model is not None:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingModelVersionForReadOnlyMode()
-
-            api_model = self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._model),
-                expected_container_type=ContainerType.MODEL,
-            )
-            return self._backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
-        else:
-            raise NeptuneMissingRequiredInitParameter(
-                parameter_name="model",
-                called_function="init_model_version",
-            )
 
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         return [PingBackgroundJob()]

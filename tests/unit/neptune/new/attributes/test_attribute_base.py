@@ -18,24 +18,32 @@ import time
 import unittest
 import uuid
 from contextlib import contextmanager
+from unittest.mock import patch
 
 from neptune import Run
+from neptune.objects.neptune_object import NeptuneObject
 
 _now = time.time()
 
 
 class TestAttributeBase(unittest.TestCase):
+
     @staticmethod
     @contextmanager
     def _exp():
-        with Run(
-            mode="debug",
-            capture_stderr=False,
-            capture_traceback=False,
-            capture_stdout=False,
-            capture_hardware_metrics=False,
-        ) as exp:
-            yield exp
+        with patch.object(
+            NeptuneObject,
+            "_async_create_run",
+            lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+        ):
+            with Run(
+                mode="debug",
+                capture_stderr=False,
+                capture_traceback=False,
+                capture_stdout=False,
+                capture_hardware_metrics=False,
+            ) as exp:
+                yield exp
 
     @staticmethod
     def _random_path():

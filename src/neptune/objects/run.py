@@ -44,13 +44,9 @@ from neptune.envs import (
 )
 from neptune.exceptions import (
     InactiveRunException,
-    NeedExistingRunForReadOnlyMode,
-    NeptuneException,
     NeptuneRunResumeAndCustomIdCollision,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import QualifiedName
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -70,12 +66,8 @@ from neptune.internal.utils import (
 from neptune.internal.utils.dependency_tracking import (
     FileDependenciesStrategy,
     InferDependenciesStrategy,
-)
+
 from neptune.internal.utils.hashing import generate_hash
-from neptune.internal.utils.limits import (
-    CUSTOM_RUN_ID_LENGTH,
-    custom_run_id_exceeds_length,
-)
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
     in_interactive,
@@ -385,6 +377,7 @@ class Run(NeptuneObject):
             self._custom_run_id = str(uuid.uuid4())
 
         super().__init__(
+            custom_id=self._custom_run_id,
             project=project,
             api_token=api_token,
             mode=mode,
@@ -396,33 +389,11 @@ class Run(NeptuneObject):
             async_no_progress_threshold=async_no_progress_threshold,
         )
 
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        project_workspace = self._project_api_object.workspace
-        project_name = self._project_api_object.name
-        project_qualified_name = f"{project_workspace}/{project_name}"
-
-        if self._with_id:
-            return self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
-                expected_container_type=Run.container_type,
-            )
-        else:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingRunForReadOnlyMode()
-
-            if custom_run_id_exceeds_length(self._custom_run_id):
-                raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
-
-            return self._backend.create_run(
-                project_id=self._project_api_object.id,
-                custom_run_id=self._custom_run_id,
-            )
-
     @temporarily_disabled
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._custom_id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
@@ -502,7 +473,7 @@ class Run(NeptuneObject):
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
-            raise InactiveRunException(label=self._sys_id)
+            raise InactiveRunException(label=self._custom_id)
 
 
 def capture_only_if_non_interactive(mode) -> bool:

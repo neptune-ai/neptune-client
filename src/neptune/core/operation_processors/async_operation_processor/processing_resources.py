@@ -50,7 +50,7 @@ from neptune.internal.signals_processing.signals import Signal
 class ProcessingResources(WithResources):
     def __init__(
         self,
-        container_id: CustomId,
+        custom_id: CustomId,
         container_type: ContainerType,
         lock: threading.RLock,
         signal_queue: Queue[Signal],
@@ -60,12 +60,12 @@ class ProcessingResources(WithResources):
     ) -> None:
         self.batch_size: int = batch_size
         self._data_path = (
-            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, container_id, container_type)
+            data_path if data_path else get_container_full_path(ASYNC_DIRECTORY, custom_id, container_type)
         )
 
         self.metadata_file = MetadataFile(
             data_path=self._data_path,
-            metadata=common_metadata(mode="async", container_id=container_id, container_type=container_type),
+            metadata=common_metadata(mode="async", custom_id=custom_id, container_type=container_type),
         )
         self.operation_storage = OperationStorage(data_path=self._data_path)
         self.disk_queue = DiskQueue(
