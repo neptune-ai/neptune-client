@@ -5,6 +5,9 @@ inputs:
   slack-webhook:
     description: "A Slack Webhook to post a notification"
     required: true
+  neptune-ref:
+    description: "A reference to the workflow run obtained by set-neptune-ref workflow"
+    required: true
 
 runs:
   using: "composite"
@@ -13,6 +16,7 @@ runs:
     - uses: 8398a7/action-slack@v3
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+        NEPTUNE_REF: ${{ inputs.neptune-ref }}
       with:
         status: custom
         fields: job,repo,ref,author,took,message,eventName
