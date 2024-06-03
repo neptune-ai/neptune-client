@@ -150,7 +150,10 @@ class NeptuneObject(AbstractContextManager):
         verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
 
         if custom_run_id_exceeds_length(custom_id):
-            raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
+            raise NeptuneException(
+                f"Custom run ID can't be longer than {CUSTOM_RUN_ID_LENGTH} characters. "
+                f"Ensure that the `custom_run_id` argument doesn't exceed the limit."
+            )
 
         self._mode: Mode = mode
         self._flush_period = flush_period
