@@ -26,7 +26,7 @@ runs:
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success [TEST NOTIF]' : ':dizzy_face::clown_face::fire: Github Workflow Failed [TEST NOTIF]'
+                  text: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed'
                 }
               }
             ],
