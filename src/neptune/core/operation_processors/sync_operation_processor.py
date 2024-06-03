@@ -40,18 +40,18 @@ from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 
 class SyncOperationProcessor(WithResources, OperationProcessor):
-    def __init__(self, container_id: "CustomId", container_type: "ContainerType"):
-        self._container_id: "CustomId" = container_id
+    def __init__(self, custom_id: "CustomId", container_type: "ContainerType"):
+        self._container_id: "CustomId" = custom_id
         self._container_type: "ContainerType" = container_type
 
-        self._data_path = get_container_full_path(SYNC_DIRECTORY, container_id, container_type)
+        self._data_path = get_container_full_path(SYNC_DIRECTORY, custom_id, container_type)
 
         # Initialize directory
         self._data_path.mkdir(parents=True, exist_ok=True)
 
         self._metadata_file = MetadataFile(
             data_path=self._data_path,
-            metadata=common_metadata(mode="sync", container_id=container_id, container_type=container_type),
+            metadata=common_metadata(mode="sync", custom_id=custom_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
 

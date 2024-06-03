@@ -55,7 +55,7 @@ from neptune.internal.warnings import (
 class AsyncOperationProcessor(WithResources, OperationProcessor):
     def __init__(
         self,
-        container_id: CustomId,
+        custom_id: CustomId,
         container_type: ContainerType,
         lock: threading.RLock,
         signal_queue: "Queue[Signal]",
@@ -70,7 +70,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
 
         self._processing_resources = ProcessingResources(
             batch_size=batch_size,
-            container_id=container_id,
+            custom_id=custom_id,
             container_type=container_type,
             lock=lock,
             signal_queue=signal_queue,
