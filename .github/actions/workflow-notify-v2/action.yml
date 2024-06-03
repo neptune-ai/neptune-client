@@ -6,7 +6,7 @@ inputs:
     description: "A Slack Webhook to post a notification"
     required: true
   neptune-ref:
-    description: "A reference to the workflow run obtained by set-neptune-ref workflow"
+    description: "A Neptune ref obtanied from set-netpune-ref workflow"
     required: true
 
 runs:
@@ -16,7 +16,6 @@ runs:
     - uses: 8398a7/action-slack@v3
       env:
         SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
-        NEPTUNE_REF: ${{ inputs.neptune-ref }}
       with:
         status: custom
         fields: job,repo,ref,author,took,message,eventName
@@ -27,7 +26,7 @@ runs:
                 type: 'section',
                 text: {
                   type: 'mrkdwn',
-                  text: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed'
+                  text: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success [TEST NOTIF]' : ':dizzy_face::clown_face::fire: Github Workflow Failed [TEST NOTIF]'
                 }
               }
             ],
@@ -44,7 +43,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: '*Environment:*\n' + (process.env.AS_REF === 'refs/heads/master' ? 'Production' : (process.env.AS_REF === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
+                        text: '*Environment:*\n' + ('${{ inptuts.neptune-ref }}' === 'refs/heads/master' ? 'Production' : ('${{ inptuts.neptune-ref }}' === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
                       },
                       {
                         type: 'mrkdwn',
@@ -52,7 +51,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: `*Ref:*\n${process.env.AS_REF}`
+                        text: '*Ref:*\n${{ inptuts.neptune-ref }}'
                       },
                       {
                         type: 'mrkdwn',
