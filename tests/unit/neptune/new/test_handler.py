@@ -677,6 +677,11 @@ class TestDelete:
             assert "some" not in exp.get_structure()
 
 
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 class TestOtherBehaviour:
     @classmethod
     def setUpClass(cls) -> None:
