@@ -75,6 +75,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.fastai.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   kedro:
     needs: [set_neptune_ref]
@@ -121,6 +123,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.kedro.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   prophet:
     needs: [set_neptune_ref]
@@ -172,6 +176,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.prophet.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   keras:
     needs: [set_neptune_ref]
@@ -223,6 +229,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.keras.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   lightning:
     needs: [set_neptune_ref]
@@ -272,6 +280,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.lightning.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   huggingface:
     needs: [set_neptune_ref]
@@ -321,6 +331,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.huggingface.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   zenml:
     needs: [set_neptune_ref]
@@ -367,6 +379,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.zenml.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   mosaicml:
     needs: [set_neptune_ref]
@@ -411,6 +425,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mosaicml.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   tensorflow-images:
     needs: [set_neptune_ref]
@@ -458,6 +474,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.tensorflow-images.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   detectron2:
     needs: [set_neptune_ref]
@@ -504,6 +522,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.detectron2.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   rlang:
     needs: [set_neptune_ref]
@@ -549,6 +569,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.rlang.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   sklearn:
     needs: [set_neptune_ref]
@@ -595,6 +617,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sklearn.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   xgboost:
     needs: [set_neptune_ref]
@@ -641,6 +665,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.xgboost.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   sacred:
     needs: [set_neptune_ref]
@@ -687,6 +713,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sacred.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   mlflow:
     needs: [set_neptune_ref]
@@ -733,6 +761,8 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mlflow.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   airflow:
     needs: [set_neptune_ref]
@@ -785,3 +815,4 @@ jobs:
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.airflow.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}

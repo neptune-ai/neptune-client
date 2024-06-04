@@ -22,18 +22,16 @@ jobs:
       - name: Set neptune_ref env variable
         id: set_neptune_ref
         run: |
-          if [ ${{ github.event_name }} == 'schedule' ]; then
+          if [ '${{ inputs.workflow_call_input_neptune_ref }}' != '' ]; then
+            echo "inputs.workflow_call_input_neptune_ref provided. Using it as neptune_ref"
             echo "neptune_ref=${{ inputs.workflow_call_input_neptune_ref }}" >> "$GITHUB_OUTPUT"
-          elif [ ${{ github.event_name }} == 'workflow_dispatch' ]; then
-            echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
-          elif [ ${{ github.event_name }} == 'push' ]; then
-            echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           else
-            echo ERROR: Unknown event name ${{ github.event_name }}
-            exit 1
+            echo "inputs.workflow_call_input_neptune_ref not provided. Using github.ref as neptune_ref"
+            echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           fi
         shell: bash
       - name: Read debug variables
         run: |
+          echo "inputs.workflow_call_input_neptune_ref=${{ inputs.workflow_call_input_neptune_ref }}"
           echo "github.event_name=${{ github.event_name }}"
           echo "steps.set_neptune_ref.outputs.neptune_ref=${{ steps.set_neptune_ref.outputs.neptune_ref }}"

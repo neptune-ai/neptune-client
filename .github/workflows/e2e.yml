@@ -185,3 +185,4 @@ jobs:
         uses: ./.github/actions/workflow-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
