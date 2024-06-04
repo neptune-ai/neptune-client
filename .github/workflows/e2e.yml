@@ -3,11 +3,6 @@ name: e2e
 on:
   workflow_call:
   workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
-  push:
-    branches:
-      - master
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
