@@ -43,6 +43,7 @@
 - Moved and refactored `AsyncOperationProcessor` to `neptune.core.operation_processors` ([#1770](https://github.com/neptune-ai/neptune-client/pull/1770))
 - Moved and refactored `SyncOperationProcessor` to `neptune.core.operation_processors` ([#1779](https://github.com/neptune-ai/neptune-client/pull/1779))
 - Added docstring for the `pop()` function ([#1776](https://github.com/neptune-ai/neptune-client/pull/1776))
+- Added `httpx[http2]` as dependency ([#1808](https://github.com/neptune-ai/neptune-client/pull/1808))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
