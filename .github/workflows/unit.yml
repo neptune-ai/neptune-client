@@ -65,7 +65,7 @@ jobs:
   unit-tests-notify:
     needs: [ test, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure())
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
