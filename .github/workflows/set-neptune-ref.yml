@@ -22,11 +22,11 @@ jobs:
       - name: Set neptune_ref env variable
         id: set_neptune_ref
         run: |
-          if [ ${{ inputs.workflow_call_input_neptune_ref }} != '' ]; then
+          if [ '${{ inputs.workflow_call_input_neptune_ref }}' != '' ]; then
             echo "inputs.workflow_call_input_neptune_ref provided. Using it as neptune_ref"
             echo "neptune_ref=${{ inputs.workflow_call_input_neptune_ref }}" >> "$GITHUB_OUTPUT"
           else
-            ehco "inputs.workflow_call_input_neptune_ref not provided. Using github.ref as neptune_ref"
+            echo "inputs.workflow_call_input_neptune_ref not provided. Using github.ref as neptune_ref"
             echo "neptune_ref=${{ github.ref }}" >> "$GITHUB_OUTPUT"
           fi
         shell: bash

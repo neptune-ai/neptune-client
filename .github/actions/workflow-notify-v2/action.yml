@@ -43,7 +43,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: '*Environment:*\n' + ('${{ inptuts.neptune-ref }}' === 'refs/heads/master' ? 'Production' : ('${{ inptuts.neptune-ref }}' === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
+                        text: '*Environment:*\n' + ('${{ inputs.neptune-ref }}' === 'refs/heads/master' ? 'Production' : ('${{ inputs.neptune-ref }}' === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
                       },
                       {
                         type: 'mrkdwn',
@@ -51,7 +51,7 @@ runs:
                       },
                       {
                         type: 'mrkdwn',
-                        text: '*Ref:*\n${{ inptuts.neptune-ref }}'
+                        text: '*Ref:*\n${{ inputs.neptune-ref }}'
                       },
                       {
                         type: 'mrkdwn',
