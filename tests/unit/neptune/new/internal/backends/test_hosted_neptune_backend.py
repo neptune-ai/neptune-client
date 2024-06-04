@@ -48,21 +48,18 @@ from neptune.exceptions import (
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
-    create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,
     create_leaderboard_client,
     get_client_config,
 )
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.internal.backends.utils import verify_host_resolution
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
 from neptune.internal.operation import (
     AssignString,
     LogFloats,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
 )
@@ -92,7 +89,6 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         create_http_client_with_auth.cache_clear()
         create_backend_client.cache_clear()
         create_leaderboard_client.cache_clear()
-        create_artifacts_client.cache_clear()
 
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
         self.dummy_operation_storage = OperationStorage(Path("./tests/dummy_storage"))
@@ -376,199 +372,6 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             source="/path/to/some_image.jpeg",
                             ext="jpeg",
                             multipart_config=backend._client_config.multipart_config,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
-    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_new_artifact")
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
-        # given
-        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        container_id = str(uuid.uuid4())
-        project_id = str(uuid.uuid4())
-
-        response_error = MagicMock()
-        response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
-        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=response_mock())
-        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
-
-        for container_type in self.container_types:
-            with self.subTest(msg=f"For type {container_type.value}"):
-                track_to_new_artifact_mock.reset_mock()
-                swagger_client_factory.reset_mock()
-
-                # when
-                backend.execute_operations(
-                    container_id=container_id,
-                    container_type=container_type,
-                    operations=[
-                        TrackFilesToArtifact(
-                            path=["sub", "one"],
-                            project_id=project_id,
-                            entries=[("/path/to/file", "/path/to")],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "two"],
-                            project_id=project_id,
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file1", None)],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file2", None)],
-                        ),
-                    ],
-                    operation_storage=self.dummy_operation_storage,
-                )
-
-                # then
-                track_to_new_artifact_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "one"],
-                            parent_identifier=str(container_id),
-                            entries=[("/path/to/file", "/path/to")],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "two"],
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "three"],
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
-    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
-        # given
-        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        container_id = str(uuid.uuid4())
-        project_id = str(uuid.uuid4())
-
-        response_error = MagicMock()
-        response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
-        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = "dummyHash"
-        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
-
-        for container_type in self.container_types:
-            track_to_existing_artifact_mock.reset_mock()
-            swagger_client_factory.reset_mock()
-
-            with self.subTest(msg=f"For type {container_type.value}"):
-                track_to_existing_artifact_mock.reset_mock()
-                swagger_client_factory.reset_mock()
-
-                # when
-                backend.execute_operations(
-                    container_id=container_id,
-                    container_type=container_type,
-                    operations=[
-                        TrackFilesToArtifact(
-                            path=["sub", "one"],
-                            project_id=project_id,
-                            entries=[("/path/to/file", "/path/to")],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "two"],
-                            project_id=project_id,
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file1", None)],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file2", None)],
-                        ),
-                    ],
-                    operation_storage=self.dummy_operation_storage,
-                )
-
-                # then
-                track_to_existing_artifact_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "one"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[("/path/to/file", "/path/to")],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "two"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "three"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
                         ),
                     ],
                     any_order=True,

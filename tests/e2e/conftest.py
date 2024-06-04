@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import time
 from datetime import datetime
 
@@ -21,7 +20,6 @@ import pytest
 from faker import Faker
 
 from neptune import init_project
-from neptune.internal.utils.s3 import get_boto_s3_client
 from neptune.management import (
     add_project_member,
     add_project_service_account,
@@ -111,15 +109,6 @@ def containers_pair(request, environment):
 
     container_b.stop()
     container_a.stop()
-
-
-@pytest.fixture(scope="session")
-def bucket():
-    bucket_name = os.environ.get("BUCKET_NAME")
-
-    s3_client = get_boto_s3_client()
-
-    yield bucket_name, s3_client
 
 
 @pytest.fixture()

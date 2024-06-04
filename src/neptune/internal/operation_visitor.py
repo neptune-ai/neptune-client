@@ -23,13 +23,11 @@ from typing import (
 
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -43,7 +41,6 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -74,10 +71,6 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_assign_artifact(self, op: AssignArtifact) -> Ret:
         pass
 
     @abc.abstractmethod
@@ -138,14 +131,6 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_delete_files(self, op: DeleteFiles) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
         pass
 
     @abc.abstractmethod

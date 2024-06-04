@@ -71,16 +71,8 @@ __all__ = [
     "NeptuneFieldCountLimitExceedException",
     "NeptuneStorageLimitException",
     "FetchAttributeNotFoundException",
-    "ArtifactNotFoundException",
     "PlotlyIncompatibilityException",
-    "NeptuneUnhandledArtifactSchemeException",
-    "NeptuneUnhandledArtifactTypeException",
     "NeptuneLocalStorageAccessException",
-    "NeptuneRemoteStorageCredentialsException",
-    "NeptuneRemoteStorageAccessException",
-    "ArtifactUploadingError",
-    "NeptuneUnsupportedArtifactFunctionalityException",
-    "NeptuneEmptyLocationException",
     "NeptuneFeatureNotAvailableException",
     "NeptuneObjectCreationConflict",
     "NeptuneModelKeyAlreadyExistsError",
@@ -97,7 +89,6 @@ from typing import (
     Optional,
     Union,
 )
-from urllib.parse import urlparse
 
 from packaging.version import Version
 
@@ -898,31 +889,6 @@ You may also want to check the following docs page:
         super().__init__(message.format(attribute_path=attribute_path, **STYLES))
 
 
-class ArtifactNotFoundException(MetadataInconsistency):
-    def __init__(self, artifact_hash: str):
-        message = """
-{h1}
-----MetadataInconsistency----------------------------------------------------------------------
-{end}
-Artifact with hash {python}{artifact_hash}{end} was not found.
-
-Remember that in the asynchronous (default) connection mode, data is synchronized
-with the Neptune servers in the background. The data may have not reached
-the servers before it was fetched. Before fetching the data, you can force
-wait for all the requests sent by invoking:
-
-    {python}run.wait(){end}
-
-Remember that each use of {python}wait{end} introduces a delay in code execution.
-
-You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/connection_modes
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help.html
-"""
-        super().__init__(message.format(artifact_hash=artifact_hash, **STYLES))
-
-
 class PlotlyIncompatibilityException(Exception):
     def __init__(self, matplotlib_version, plotly_version, details):
         super().__init__(
@@ -930,34 +896,6 @@ class PlotlyIncompatibilityException(Exception):
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "{}".format(matplotlib_version, plotly_version, details)
         )
-
-
-class NeptuneUnhandledArtifactSchemeException(NeptuneException):
-    def __init__(self, path: str):
-        scheme = urlparse(path).scheme
-        message = """
-{h1}
-----NeptuneUnhandledArtifactProtocolException------------------------------------
-{end}
-You have used a Neptune Artifact to track a file with a scheme unhandled by this client ({scheme}).
-Problematic path: {path}
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(scheme=scheme, path=path, **STYLES))
-
-
-class NeptuneUnhandledArtifactTypeException(NeptuneException):
-    def __init__(self, type_str: str):
-        message = """
-{h1}
-----NeptuneUnhandledArtifactTypeException----------------------------------------
-{end}
-A Neptune Artifact you're listing is tracking a file type unhandled by this client ({type_str}).
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(type_str=type_str, **STYLES))
 
 
 class NeptuneLocalStorageAccessException(NeptuneException):
@@ -971,65 +909,6 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
-
-
-class NeptuneRemoteStorageCredentialsException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneRemoteStorageCredentialsException-------------------------------------
-{end}
-Neptune could not find suitable credentials for remote storage of a Neptune Artifact you're listing.
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(**STYLES))
-
-
-class NeptuneRemoteStorageAccessException(NeptuneException):
-    def __init__(self, location: str):
-        message = """
-{h1}
-----NeptuneRemoteStorageAccessException------------------------------------------
-{end}
-Neptune could not access an object ({location}) from remote storage of a Neptune Artifact you're listing.
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(location=location, **STYLES))
-
-
-class ArtifactUploadingError(NeptuneException):
-    def __init__(self, msg: str):
-        super().__init__("Cannot upload artifact: {}".format(msg))
-
-
-class NeptuneUnsupportedArtifactFunctionalityException(NeptuneException):
-    def __init__(self, functionality_info: str):
-        message = """
-{h1}
-----NeptuneUnsupportedArtifactFunctionality-------------------------------------
-{end}
-It seems you are using Neptune Artifacts functionality that is currently not supported.
-
-{functionality_info}
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(functionality_info=functionality_info, **STYLES))
-
-
-class NeptuneEmptyLocationException(NeptuneException):
-    def __init__(self, location: str, namespace: str):
-        message = """
-{h1}
-----NeptuneEmptyLocationException----------------------------------------------
-{end}
-Neptune could not find files in the requested location ({location}) during the creation of an Artifact in "{namespace}".
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(location=location, namespace=namespace, **STYLES))
 
 
 class NeptuneFeatureNotAvailableException(NeptuneException):

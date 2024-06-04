@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import uuid
-
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.operation import (
@@ -31,7 +28,6 @@ from neptune.internal.operation import (
     LogImages,
     LogStrings,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFileSet,
 )
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
@@ -66,7 +62,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -106,7 +101,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -165,7 +159,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -236,7 +229,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -298,7 +290,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
                 UploadFileSet(["d"], ["hhh", "gij"], reset=False),
             ],
         )
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -341,7 +332,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
                 UploadFileSet(["d"], ["hhh", "gij"], reset=False),
             ],
         )
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -350,67 +340,3 @@ class TestOperationsPreprocessor(TestAttributeBase):
         )
         self.assertEqual(result.errors, [])
         self.assertEqual(processor.processed_ops_count, 6)
-
-    def test_artifacts(self):
-        # given
-        processor = OperationsPreprocessor()
-        project_uuid = str(uuid.uuid4())
-
-        operations = [
-            TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-            DeleteAttribute(["a"]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir4/dir5/", "dir4/")]),
-            AssignFloat(["c"], 5),
-            TrackFilesToArtifact(["c"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["d"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["d"], project_uuid, [("dir4/", None)]),
-            TrackFilesToArtifact(["e"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["e"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir4/", None)]),
-            TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-        ]
-
-        # when
-        processor.process(operations)
-
-        # then: there's a cutoff before second TrackFilesToArtifact(["a"]) due to DeleteAttribute(["a"])
-        result = processor.get_operations()
-        self.assertEqual(result.upload_operations, [])
-        self.assertEqual(
-            result.artifact_operations,
-            [
-                TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-                TrackFilesToArtifact(
-                    ["b"],
-                    project_uuid,
-                    [("dir1/", None), ("dir2/dir3/", "dir2/"), ("dir4/dir5/", "dir4/")],
-                ),
-                TrackFilesToArtifact(["d"], project_uuid, [("dir2/dir3/", "dir2/"), ("dir4/", None)]),
-                TrackFilesToArtifact(["e"], project_uuid, [("dir1/", None), ("dir2/dir3/", "dir2/")]),
-                TrackFilesToArtifact(
-                    ["f"],
-                    project_uuid,
-                    [("dir1/", None), ("dir2/dir3/", "dir2/"), ("dir4/", None)],
-                ),
-            ],
-        )
-        self.assertEqual(
-            result.other_operations,
-            [
-                DeleteAttribute(["a"]),
-                AssignFloat(["c"], 5),
-            ],
-        )
-        self.assertEqual(
-            result.errors,
-            [
-                MetadataInconsistency(
-                    "Cannot perform TrackFilesToArtifact operation on c: Attribute is not a Artifact"
-                ),
-            ],
-        )
-        self.assertEqual(processor.processed_ops_count, len(operations) - 1)

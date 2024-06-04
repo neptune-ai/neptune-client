@@ -30,10 +30,6 @@ class BackendTestMixin:
         setattr(py_lib_versions, "minCompatibleVersion", min_compatible)
         setattr(py_lib_versions, "maxCompatibleVersion", max_compatible)
 
-        artifacts = type("artifacts", (object,), {})()
-        setattr(artifacts, "enabled", True)
-        setattr(artifacts, "apiVersion", 2)
-
         multipart_upload = type("multiPartUpload", (object,), {})()
         setattr(multipart_upload, "enabled", True)
         setattr(multipart_upload, "minChunkSize", 204800)  # 200KB
@@ -43,7 +39,6 @@ class BackendTestMixin:
 
         client_config = type("client_config_response_result", (object,), {})()
         setattr(client_config, "pyLibVersions", py_lib_versions)
-        setattr(client_config, "artifacts", artifacts)
         setattr(client_config, "multiPartUpload", multipart_upload)
         setattr(client_config, "apiUrl", "ui.neptune.ai")
         setattr(client_config, "applicationUrl", "ui.neptune.ai")

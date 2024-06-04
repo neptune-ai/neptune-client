@@ -58,7 +58,6 @@ from neptune.internal.warnings import (
 )
 from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import File as FileVal
-from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.types.atoms.float import Float as FloatVal
 from neptune.types.atoms.string import String as StringVal
@@ -676,25 +675,6 @@ class TestDelete:
             ns = exp["some"]
             del ns["num/val"]
             assert "some" not in exp.get_structure()
-
-
-class TestArtifacts:
-    @classmethod
-    def setUpClass(cls) -> None:
-        os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
-
-    @pytest.mark.xfail(reason="Artifact methods disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
-    def test_artifacts(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["art1"].track_files("s3://path/to/tracking/file", destination="/some/destination")
-            exp["art2"].track_files("s3://path/to/tracking/file2")
-            assert exp["art1"].fetch() == Artifact(
-                value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            )
-            assert exp["art2"].fetch() == Artifact(
-                value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            )
 
 
 @patch.object(

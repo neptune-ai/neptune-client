@@ -39,7 +39,6 @@ from bravado.exception import (
 )
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
@@ -83,23 +82,15 @@ from neptune.exceptions import (
     ProjectNotFound,
     ProjectNotFoundWithSuggestions,
 )
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     OptionalFeatures,
     Project,
     Workspace,
 )
-from neptune.internal.backends.hosted_artifact_operations import (
-    get_artifact_attribute,
-    list_artifact_files,
-    track_to_existing_artifact,
-    track_to_new_artifact,
-)
 from neptune.internal.backends.hosted_client import (
     DEFAULT_PROTO_REQUEST_KWARGS,
     DEFAULT_REQUEST_KWARGS,
-    create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,
     create_leaderboard_client,
@@ -118,7 +109,6 @@ from neptune.internal.backends.operation_api_object_converter import OperationAp
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
-    MissingApiClient,
     build_operation_url,
     ssl_verify,
     with_api_exceptions_handler,
@@ -137,7 +127,6 @@ from neptune.internal.id_formats import (
 from neptune.internal.operation import (
     DeleteAttribute,
     Operation,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -189,12 +178,6 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         self.backend_client = create_backend_client(self._client_config, self._http_client)
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
-
-        if self._client_config.has_feature(OptionalFeatures.ARTIFACTS):
-            self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
-        else:
-            # create a stub
-            self.artifacts_client = MissingApiClient(OptionalFeatures.ARTIFACTS)
 
     def verify_feature_available(self, feature_name: str):
         if not self._client_config.has_feature(feature_name):
@@ -452,9 +435,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         preprocessed_operations = operations_preprocessor.get_operations()
         errors.extend(preprocessed_operations.errors)
 
-        if preprocessed_operations.artifact_operations:
-            self.verify_feature_available(OptionalFeatures.ARTIFACTS)
-
         # Upload operations should be done first since they are idempotent
         errors.extend(
             self._execute_upload_operations_with_400_retry(
@@ -465,28 +445,16 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
         )
 
-        (
-            artifact_operations_errors,
-            assign_artifact_operations,
-        ) = self._execute_artifact_operations(
-            container_id=container_id,
-            container_type=container_type,
-            artifact_operations=preprocessed_operations.artifact_operations,
-        )
-
-        errors.extend(artifact_operations_errors)
-
         errors.extend(
             self._execute_operations(
                 container_id,
                 container_type,
-                operations=assign_artifact_operations + preprocessed_operations.other_operations,
+                operations=preprocessed_operations.other_operations,
             )
         )
 
         for op in itertools.chain(
             preprocessed_operations.upload_operations,
-            assign_artifact_operations,
             preprocessed_operations.other_operations,
         ):
             op.clean(operation_storage=operation_storage)
@@ -570,56 +538,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
-
-    @with_api_exceptions_handler
-    def _execute_artifact_operations(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        artifact_operations: List[TrackFilesToArtifact],
-    ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
-        errors = list()
-        assign_operations = list()
-
-        has_hash_exclude_metadata = self._client_config.has_feature(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
-        has_exclude_directories = self._client_config.has_feature(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
-
-        for op in artifact_operations:
-            try:
-                artifact_hash = self.get_artifact_attribute(container_id, container_type, op.path).hash
-            except FetchAttributeNotFoundException:
-                artifact_hash = None
-
-            try:
-                if artifact_hash is None:
-                    assign_operation = track_to_new_artifact(
-                        swagger_client=self.artifacts_client,
-                        project_id=op.project_id,
-                        path=op.path,
-                        parent_identifier=container_id,
-                        entries=op.entries,
-                        default_request_params=DEFAULT_REQUEST_KWARGS,
-                        exclude_directory_files=has_exclude_directories,
-                        exclude_metadata_from_hash=has_hash_exclude_metadata,
-                    )
-                else:
-                    assign_operation = track_to_existing_artifact(
-                        swagger_client=self.artifacts_client,
-                        project_id=op.project_id,
-                        path=op.path,
-                        artifact_hash=artifact_hash,
-                        parent_identifier=container_id,
-                        entries=op.entries,
-                        default_request_params=DEFAULT_REQUEST_KWARGS,
-                        exclude_directory_files=has_exclude_directories,
-                    )
-
-                if assign_operation:
-                    assign_operations.append(assign_operation)
-            except NeptuneException as error:
-                errors.append(error)
-
-        return errors, assign_operations
 
     @with_api_exceptions_handler
     def _execute_operations(
@@ -826,24 +744,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return DateTimeField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactField:
-        return get_artifact_attribute(
-            swagger_client=self.leaderboard_client,
-            parent_identifier=container_id,
-            path=path,
-            default_request_params=DEFAULT_REQUEST_KWARGS,
-        )
-
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
-        return list_artifact_files(
-            swagger_client=self.artifacts_client,
-            project_id=project_id,
-            artifact_hash=artifact_hash,
-            default_request_params=DEFAULT_REQUEST_KWARGS,
-        )
 
     @with_api_exceptions_handler
     def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:

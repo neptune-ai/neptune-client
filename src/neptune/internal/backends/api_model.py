@@ -20,7 +20,6 @@ __all__ = [
     "OptionalFeatures",
     "VersionInfo",
     "ClientConfig",
-    "ArtifactModel",
     "MultipartConfig",
 ]
 
@@ -93,9 +92,6 @@ class ApiExperiment:
 
 class OptionalFeatures:
     VERSION_INFO = "version_info"
-    ARTIFACTS = "artifacts"
-    ARTIFACTS_HASH_EXCLUDE_METADATA = "artifacts_hash_exclude_metadata"
-    ARTIFACTS_EXCLUDE_DIRECTORY_FILES = "artifact_exclude_directory_files"
     MULTIPART_UPLOAD = "multipart_upload"
 
 
@@ -156,16 +152,6 @@ class ClientConfig:
                 min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
             )
 
-        artifacts_config_obj = getattr(config, "artifacts", None)
-        has_artifacts = getattr(artifacts_config_obj, "enabled", False)
-        if not has_artifacts:
-            missing_features.append(OptionalFeatures.ARTIFACTS)
-
-        artifacts_api_version = getattr(artifacts_config_obj, "apiVersion", 1)
-        if artifacts_api_version == 1:
-            missing_features.append(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
-            missing_features.append(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
-
         return ClientConfig(
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
@@ -173,10 +159,3 @@ class ClientConfig:
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
         )
-
-
-@dataclass
-class ArtifactModel:
-    received_metadata: bool
-    hash: str
-    size: int

@@ -35,7 +35,6 @@ __all__ = (
     "StringSetField",
     "ObjectStateField",
     "NotebookRefField",
-    "ArtifactField",
     "FieldDefinition",
     "FloatSeriesValues",
     "FloatPointValue",
@@ -112,7 +111,6 @@ class FieldType(Enum):
     STRING_SET = "stringSet"
     OBJECT_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
-    ARTIFACT = "artifact"
 
 
 @dataclass
@@ -199,9 +197,6 @@ class FieldVisitor(Generic[Ret], abc.ABC):
 
     @abc.abstractmethod
     def visit_notebook_ref(self, field: NotebookRefField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_artifact(self, field: ArtifactField) -> Ret: ...
 
 
 @dataclass
@@ -472,26 +467,6 @@ class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
 
     @staticmethod
     def from_proto(data: Any) -> NotebookRefField:
-        raise NotImplementedError()
-
-
-@dataclass
-class ArtifactField(Field, field_type=FieldType.ARTIFACT):
-    hash: str
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_artifact(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ArtifactField:
-        return ArtifactField(path=data["attributeName"], hash=str(data["hash"]))
-
-    @staticmethod
-    def from_model(model: Any) -> ArtifactField:
-        return ArtifactField(path=model.attributeName, hash=model.hash)
-
-    @staticmethod
-    def from_proto(data: Any) -> ArtifactField:
         raise NotImplementedError()
 
 

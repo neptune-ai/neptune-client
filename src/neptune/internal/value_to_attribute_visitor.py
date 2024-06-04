@@ -21,7 +21,6 @@ from typing import (
     Type,
 )
 
-from neptune.attributes.atoms.artifact import Artifact as ArtifactAttr
 from neptune.attributes.atoms.boolean import Boolean as BooleanAttr
 from neptune.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.attributes.atoms.file import File as FileAttr
@@ -39,7 +38,6 @@ from neptune.types import (
     Boolean,
     Integer,
 )
-from neptune.types.atoms.artifact import Artifact
 from neptune.types.atoms.datetime import Datetime
 from neptune.types.atoms.file import File
 from neptune.types.atoms.float import Float
@@ -75,9 +73,6 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_datetime(self, _: Datetime) -> Attribute:
         return DatetimeAttr(self._container, self._path)
-
-    def visit_artifact(self, _: Artifact) -> Attribute:
-        return ArtifactAttr(self._container, self._path)
 
     def visit_file(self, _: File) -> Attribute:
         return FileAttr(self._container, self._path)

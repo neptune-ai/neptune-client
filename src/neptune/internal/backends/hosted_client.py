@@ -19,7 +19,6 @@ __all__ = [
     "create_http_client_with_auth",
     "create_backend_client",
     "create_leaderboard_client",
-    "create_artifacts_client",
 ]
 
 import os
@@ -53,7 +52,6 @@ from neptune.version import version as neptune_version
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
-ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = int(os.getenv(NEPTUNE_REQUEST_TIMEOUT, "600"))
@@ -197,16 +195,6 @@ def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClie
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
-            http_client,
-        )
-    )
-
-
-@cache
-def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
-    return SwaggerClientWrapper(
-        create_swagger_client(
-            build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
             http_client,
         )
     )

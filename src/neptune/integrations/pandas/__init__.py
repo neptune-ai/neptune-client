@@ -29,7 +29,6 @@ from typing import (
 import pandas as pd
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     FieldVisitor,
@@ -93,9 +92,6 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
 
     def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
         return field.notebook_name
-
-    def visit_artifact(self, field: ArtifactField) -> str:
-        return field.hash
 
 
 def make_row(entry: LeaderboardEntry, to_value_visitor: FieldVisitor) -> Dict[str, PANDAS_AVAILABLE_TYPES]:

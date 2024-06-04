@@ -18,13 +18,11 @@ __all__ = ["OperationApiObjectConverter"]
 from neptune.internal.exceptions import InternalClientError
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -38,7 +36,6 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -67,9 +64,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {"valueMilliseconds": int(1000 * op.value.timestamp())}
-
-    def visit_assign_artifact(self, op: AssignArtifact) -> dict:
-        return {"hash": op.hash}
 
     def visit_upload_file(self, _: UploadFile) -> dict:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
@@ -146,12 +140,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_delete_files(self, op: DeleteFiles) -> Ret:
         return {"filePaths": list(op.file_paths)}
-
-    def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> dict:
-        raise InternalClientError("Specialized endpoint should be used to track artifact files")
-
-    def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
-        return {}
 
     def visit_copy_attribute(self, _: CopyAttribute) -> Ret:
         raise NotImplementedError("This operation is client-side only")

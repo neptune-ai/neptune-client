@@ -21,13 +21,11 @@ import uuid
 from neptune.attributes import Integer
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -43,7 +41,6 @@ from neptune.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -82,10 +79,6 @@ class TestOperations(unittest.TestCase):
             AssignDatetime(
                 TestOperations._random_path(),
                 now.replace(microsecond=1000 * int(now.microsecond / 1000)),
-            ),
-            AssignArtifact(
-                TestOperations._random_path(),
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             ),
             UploadFile(TestOperations._random_path(), "txt", file_path="file/path/f.txt"),
             UploadFile(TestOperations._random_path(), "txt", file_path="file/path/f.txt", clean_after_upload=True),
@@ -134,12 +127,6 @@ class TestOperations(unittest.TestCase):
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),
             DeleteAttribute(TestOperations._random_path()),
-            TrackFilesToArtifact(
-                TestOperations._random_path(),
-                str(uuid.uuid4()),
-                [("file/path/f.txt", None)],
-            ),
-            ClearArtifact(TestOperations._random_path()),
             CopyAttribute(
                 TestOperations._random_path(),
                 container_id=str(uuid.uuid4()),

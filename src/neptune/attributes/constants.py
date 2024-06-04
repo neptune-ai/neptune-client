@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 __all__ = [
-    "ARTIFACT_ATTRIBUTE_SPACE",
     "DIFF_HEAD_INDEX_PATH",
     "LOG_ATTRIBUTE_SPACE",
     "MONITORING_ATTRIBUTE_SPACE",
@@ -38,8 +37,6 @@ __all__ = [
     "SIGNAL_TYPE_ABORT",
     "UPSTREAM_INDEX_DIFF",
 ]
-
-ARTIFACT_ATTRIBUTE_SPACE = "artifacts/"
 
 LOG_ATTRIBUTE_SPACE = "logs/"
 

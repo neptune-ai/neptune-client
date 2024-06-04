@@ -22,7 +22,6 @@ from typing import (
 
 from neptune.api.models import FieldType
 from neptune.attributes import (
-    Artifact,
     Boolean,
     Datetime,
     File,
@@ -57,7 +56,6 @@ _attribute_type_to_attr_class_map = {
     FieldType.STRING_SET: StringSet,
     FieldType.OBJECT_STATE: RunState,
     FieldType.NOTEBOOK_REF: NotebookRef,
-    FieldType.ARTIFACT: Artifact,
 }
 
 

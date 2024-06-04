@@ -15,7 +15,6 @@
 #
 
 __all__ = [
-    "Artifact",
     "Boolean",
     "Datetime",
     "File",
@@ -34,7 +33,6 @@ __all__ = [
 
 
 from .atoms import (
-    Artifact,
     Boolean,
     Datetime,
     File,
