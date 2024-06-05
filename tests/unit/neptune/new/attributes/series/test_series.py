@@ -41,11 +41,6 @@ class TestSeries(TestAttributeBase):
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
         value = FloatSeriesVal([17, 3.6], min=0, max=100, unit="%")
-        expected = [
-            LogFloats.ValueType(17, None, self._now()),
-            LogFloats.ValueType(3.6, None, self._now()),
-        ]
-
         processor = MagicMock()
         get_operation_processor.return_value = processor
         path, wait = (
@@ -59,7 +54,24 @@ class TestSeries(TestAttributeBase):
                 [
                     call(ConfigFloatSeries(path, min=0, max=100, unit="%"), wait=False),
                     call(ClearFloatLog(path), wait=False),
-                    call(LogFloats(path, expected), wait=wait),
+                    call(
+                        LogFloats(
+                            path,
+                            [
+                                LogFloats.ValueType(17, None, self._now()),
+                            ],
+                        ),
+                        wait=wait,
+                    ),
+                    call(
+                        LogFloats(
+                            path,
+                            [
+                                LogFloats.ValueType(3.6, None, self._now()),
+                            ],
+                        ),
+                        wait=wait,
+                    ),
                 ]
             )
 
@@ -119,7 +131,7 @@ class TestSeries(TestAttributeBase):
                 )
                 var = FloatSeries(exp, path)
                 var.log(value, wait=wait)
-                processor.enqueue_operation.assert_called_with(LogFloats(path, expected), wait=wait)
+                processor.enqueue_operation.assert_has_calls([call(LogFloats(path, [e]), wait=wait) for e in expected])
 
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_log_with_step(self, get_operation_processor):
