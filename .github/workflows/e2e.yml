@@ -3,6 +3,9 @@ name: e2e
 on:
   workflow_call:
   workflow_dispatch:
+  push:
+    branches:
+      - rj/self-hosted-runner
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
