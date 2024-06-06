@@ -107,7 +107,7 @@ def get_single_page(
         sort_by_as_nql = NQLQueryAttribute(
             name=sort_by,
             type=NQLAttributeType(sort_by_column_type),
-            operator=NQLAttributeOperator.GREATER_THAN,
+            operator=NQLAttributeOperator.GREATER_THAN if ascending else NQLAttributeOperator.LESS_THAN,
             value=searching_after,
         )
 
