@@ -69,10 +69,6 @@ class NeptuneBackend:
     def close(self) -> None:
         """No need for closing implementation"""
 
-    @abc.abstractmethod
-    def get_display_address(self) -> str:
-        pass
-
     def verify_feature_available(self, _: str) -> None:
         """
         this method makes sense only for backends interacting with server;

@@ -183,9 +183,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         if not self._client_config.has_feature(feature_name):
             raise NeptuneFeatureNotAvailableException(feature_name)
 
-    def get_display_address(self) -> str:
-        return self._client_config.display_url
-
     def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
         base_url = re.sub(r"^http", "ws", self._client_config.api_url)
         return WebsocketsFactory(
