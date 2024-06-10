@@ -134,15 +134,7 @@ def _get_token_client(
 def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
     backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
-    config = (
-        backend_client.api.getClientConfig(
-            X_Neptune_Api_Token=credentials.api_token,
-            alpha="true",
-            **DEFAULT_REQUEST_KWARGS,
-        )
-        .response()
-        .result
-    )
+    config = backend_client.api.getClientConfig(**DEFAULT_REQUEST_KWARGS).response().result
 
     client_config = ClientConfig.from_api_response(config)
     if not client_config.version_info:

@@ -149,9 +149,6 @@ class NeptuneBackendMock(NeptuneBackend):
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
         self._create_container(self._project_id, ContainerType.PROJECT, self.PROJECT_KEY)
 
-    def get_display_address(self) -> str:
-        return "OFFLINE"
-
     def get_available_projects(
         self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:

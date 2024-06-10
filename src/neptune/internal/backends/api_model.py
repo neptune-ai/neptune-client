@@ -117,7 +117,6 @@ class VersionInfo:
 @dataclass(frozen=True)
 class ClientConfig:
     api_url: str
-    display_url: str
     _missing_features: FrozenSet[str]
     version_info: VersionInfo
     multipart_config: MultipartConfig
@@ -154,7 +153,6 @@ class ClientConfig:
 
         return ClientConfig(
             api_url=config.apiUrl,
-            display_url=config.applicationUrl,
             _missing_features=frozenset(missing_features),
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
