@@ -15,7 +15,6 @@
 #
 __all__ = ["OperationApiObjectConverter"]
 
-from neptune.internal.exceptions import InternalClientError
 from neptune.internal.operation import (
     AddStrings,
     AssignBool,
@@ -24,21 +23,15 @@ from neptune.internal.operation import (
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 from neptune.internal.operation_visitor import (
     OperationVisitor,
@@ -65,15 +58,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {"valueMilliseconds": int(1000 * op.value.timestamp())}
 
-    def visit_upload_file(self, _: UploadFile) -> dict:
-        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
-
-    def visit_upload_file_content(self, _: UploadFileContent) -> dict:
-        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
-
-    def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
-        raise InternalClientError("Specialized endpoints should be used to upload file set attribute")
-
     def visit_log_floats(self, op: LogFloats) -> dict:
         return {
             "entries": [
@@ -98,29 +82,10 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
             ]
         }
 
-    def visit_log_images(self, op: LogImages) -> dict:
-        return {
-            "entries": [
-                {
-                    "value": {
-                        "data": value.value.data,
-                        "name": value.value.name,
-                        "description": value.value.description,
-                    },
-                    "step": value.step,
-                    "timestampMilliseconds": int(value.ts * 1000),
-                }
-                for value in op.values
-            ]
-        }
-
     def visit_clear_float_log(self, _: ClearFloatLog) -> dict:
         return {}
 
     def visit_clear_string_log(self, _: ClearStringLog) -> dict:
-        return {}
-
-    def visit_clear_image_log(self, _: ClearImageLog) -> dict:
         return {}
 
     def visit_config_float_series(self, op: ConfigFloatSeries) -> dict:
@@ -137,9 +102,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_clear_string_set(self, _: ClearStringSet) -> dict:
         return {}
-
-    def visit_delete_files(self, op: DeleteFiles) -> Ret:
-        return {"filePaths": list(op.file_paths)}
 
     def visit_copy_attribute(self, _: CopyAttribute) -> Ret:
         raise NotImplementedError("This operation is client-side only")

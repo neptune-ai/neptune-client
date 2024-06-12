@@ -31,12 +31,9 @@ from neptune.api.models import (
     Field,
     FieldDefinition,
     FieldType,
-    FileEntry,
-    FileField,
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     NextPage,
@@ -144,28 +141,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def download_file(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        pass
-
-    @abc.abstractmethod
-    def download_file_set(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        pass
-
-    @abc.abstractmethod
     def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         pass
 
@@ -175,10 +150,6 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
-        pass
-
-    @abc.abstractmethod
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         pass
 
     @abc.abstractmethod
@@ -207,29 +178,6 @@ class NeptuneBackend:
     def get_string_set_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetField:
-        pass
-
-    @abc.abstractmethod
-    def download_file_series_by_index(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        index: int,
-        destination: str,
-        progress_bar: Optional[ProgressBarType],
-    ):
-        pass
-
-    @abc.abstractmethod
-    def get_image_series_values(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        offset: int,
-        limit: int,
-    ) -> ImageSeriesValues:
         pass
 
     @abc.abstractmethod
@@ -287,10 +235,6 @@ class NeptuneBackend:
         progress_bar: Optional[ProgressBarType] = None,
         use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
-        pass
-
-    @abc.abstractmethod
-    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         pass
 
     @abc.abstractmethod

@@ -22,11 +22,6 @@ from datetime import (
     datetime,
     timedelta,
 )
-from io import (
-    BytesIO,
-    StringIO,
-)
-from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import pytest
@@ -37,18 +32,15 @@ from neptune import (
 )
 from neptune.attributes.atoms.boolean import Boolean
 from neptune.attributes.atoms.datetime import Datetime
-from neptune.attributes.atoms.file import File
 from neptune.attributes.atoms.float import Float
 from neptune.attributes.atoms.integer import Integer
 from neptune.attributes.atoms.string import String
-from neptune.attributes.series import FileSeries
 from neptune.attributes.sets.string_set import StringSet
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
 from neptune.exceptions import (
-    FileNotFound,
     NeptuneUnsupportedFunctionalityException,
     NeptuneUserApiInputException,
 )
@@ -57,16 +49,13 @@ from neptune.internal.warnings import (
     warned_once,
 )
 from neptune.objects.neptune_object import NeptuneObject
-from neptune.types import File as FileVal
 from neptune.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.types.atoms.float import Float as FloatVal
 from neptune.types.atoms.string import String as StringVal
 from neptune.types.namespace import Namespace as NamespaceVal
-from neptune.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.types.sets.string_set import StringSet as StringSetVal
-from tests.unit.neptune.new.utils.file_helpers import create_file
 
 PIL = pytest.importorskip("PIL")
 
@@ -184,57 +173,6 @@ class TestBaseAssign:
             assert exp["ns"][5].fetch() == 7
 
 
-@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
-class TestUpload:
-    @classmethod
-    def setUpClass(cls) -> None:
-        os.environ[PROJECT_ENV_NAME] = "organization/project"
-        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
-
-    def test_save_download_text_stream_to_given_destination(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            data = "Some test content of the stream"
-
-            exp["some/num/attr_name"] = FileVal.from_stream(StringIO(data))
-            assert isinstance(exp.get_structure()["some"]["num"]["attr_name"], File)
-
-            with create_file() as temp_filename:
-                exp["some/num/attr_name"].download(temp_filename)
-                with open(temp_filename, "rt") as file:
-                    assert file.read() == data
-
-    def test_save_download_binary_stream_to_default_destination(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            data = b"Some test content of the stream"
-
-            exp["some/num/attr_name"] = FileVal.from_stream(BytesIO(data))
-            assert isinstance(exp.get_structure()["some"]["num"]["attr_name"], File)
-
-            with TemporaryDirectory() as temp_dir:
-                with patch("neptune.internal.backends.neptune_backend_mock.os.path.abspath") as abspath_mock:
-                    abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + "/" + path)
-                    exp["some/num/attr_name"].download()
-                with open(temp_dir + "/attr_name.bin", "rb") as file:
-                    assert file.read() == data
-
-    @patch(
-        "neptune.internal.utils.glob",
-        new=lambda path, recursive=False: [path.replace("*", "file.txt")],
-    )
-    @patch("neptune.internal.backends.neptune_backend_mock.ZipFile.write")
-    def test_save_files_download(self, zip_write_mock):
-        with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["some/artifacts"].upload_files("path/to/file.txt")
-            exp["some/artifacts"].upload_files("path/to/other/*")
-
-            with TemporaryDirectory() as temp_dir:
-                exp["some/artifacts"].download(temp_dir)
-                exp["some/artifacts"].download(temp_dir)
-
-            zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
-            zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")
-
-
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -251,26 +189,21 @@ class TestSeries:
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(FloatSeriesVal([1, 2, 0, 10]))
             exp["some/str/val"].assign(StringSeriesVal(["text1", "text2"]), wait=True)
-            exp["some/img/val"].assign(FileSeriesVal([FileVal.as_image(PIL.Image.new("RGB", (10, 15), color="red"))]))
             assert exp["some"]["num"]["val"].fetch_last() == 10
             assert exp["some"]["str"]["val"].fetch_last() == "text2"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
             exp["some/num/val"].assign(FloatSeriesVal([122, 543, 2, 5]))
             exp["some/str/val"].assign(StringSeriesVal(["other 1", "other 2", "other 3"]), wait=True)
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "other 3"
 
-    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log(5)
             exp["some/str/val"].log("some text")
-            exp["some/img/val"].log(FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")))
-            exp["some/img/val"].log(PIL.Image.new("RGB", (60, 30), color="red"))
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_dict(self):
@@ -284,11 +217,8 @@ class TestSeries:
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].append(5)
             exp["some/str/val"].append("some text")
-            exp["some/img/val"].append(FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")))
-            exp["some/img/val"].append(PIL.Image.new("RGB", (60, 30), color="red"))
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_dict(self):
@@ -317,15 +247,8 @@ class TestSeries:
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
             exp["some/str/val"].log(["some text", "other"])
-            exp["some/img/val"].log(
-                [
-                    FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
-                    FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="red")),
-                ]
-            )
             assert exp["some"]["num"]["val"].fetch_last() == 15
             assert exp["some"]["str"]["val"].fetch_last() == "other"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
     def test_append_many_values_cause_error(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -355,15 +278,8 @@ class TestSeries:
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].extend([5, 7])
             exp["some/str/val"].extend(["some", "text"])
-            exp["some/img/val"].extend(
-                [
-                    FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
-                    FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="blue")),
-                ]
-            )
             assert exp["some"]["num"]["val"].fetch_last() == 7
             assert exp["some"]["str"]["val"].fetch_last() == "text"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend_dict(self):
@@ -417,11 +333,9 @@ class TestSeries:
                     values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
                 )
 
-    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
-
             with pytest.raises(ValueError):
                 exp["x"].log([])
             with pytest.raises(ValueError):
@@ -433,22 +347,12 @@ class TestSeries:
             exp["some/num/val"].log([])
             with pytest.raises(ValueError):
                 exp["some/num/val"].log("str")
-            with pytest.raises(TypeError):
-                exp["some/num/val"].log(img)
 
             exp["some/str/val"].log(["str"], step=1)
             exp["some/str/val"].log([])
 
-            exp["some/img/val"].log([img], step=1)
-            exp["some/img/val"].log([])
-            with pytest.raises(TypeError):
-                exp["some/img/val"].log(5)
-            with pytest.raises(FileNotFound):
-                exp["some/img/val"].log("path")
-
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "str"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
 
 @patch.object(
@@ -465,24 +369,14 @@ class TestSet:
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
-
             exp["some/num/val"].append(5, step=1)
             with pytest.raises(ValueError):
                 exp["some/num/val"].append("str")
-            with pytest.raises(TypeError):
-                exp["some/num/val"].append(img)
 
             exp["some/str/val"].append("str", step=1)
-            exp["some/img/val"].append(img, step=1)
-            with pytest.raises(TypeError):
-                exp["some/img/val"].append(5)
-            with pytest.raises(FileNotFound):
-                exp["some/img/val"].append("path")
 
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "str"
-            assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
     def test_extend_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -578,9 +472,6 @@ class TestNamespace:
             with pytest.raises(TypeError):
                 exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
 
-    @pytest.mark.xfail(
-        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
-    )
     def test_fetch_dict(self):
         now = datetime.now()
 
@@ -595,7 +486,6 @@ class TestNamespace:
             # attributes to be ignored
             exp["params/sub-namespace/string_series"].log("Some text #1")
             exp["params/sub-namespace/int_series"].log(100)
-            exp["some/num/attr_name"] = FileVal.from_stream(BytesIO(b"Some stream"))
 
             params_dict = exp["params"].fetch()
             assert params_dict == {

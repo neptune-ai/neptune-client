@@ -15,7 +15,6 @@
 #
 __all__ = ["OperationApiNameVisitor"]
 
-from neptune.internal.exceptions import InternalClientError
 from neptune.internal.operation import (
     AddStrings,
     AssignBool,
@@ -24,21 +23,15 @@ from neptune.internal.operation import (
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 from neptune.internal.operation_visitor import (
     OperationVisitor,
@@ -65,32 +58,17 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_assign_datetime(self, _: AssignDatetime) -> Ret:
         return "assignDatetime"
 
-    def visit_upload_file(self, _: UploadFile) -> str:
-        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
-
-    def visit_upload_file_content(self, _: UploadFileContent) -> str:
-        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
-
-    def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
-        raise InternalClientError("Specialized endpoints should be used to upload file set attribute")
-
     def visit_log_floats(self, _: LogFloats) -> str:
         return "logFloats"
 
     def visit_log_strings(self, _: LogStrings) -> str:
         return "logStrings"
 
-    def visit_log_images(self, _: LogImages) -> str:
-        return "logImages"
-
     def visit_clear_float_log(self, _: ClearFloatLog) -> str:
         return "clearFloatSeries"
 
     def visit_clear_string_log(self, _: ClearStringLog) -> str:
         return "clearStringSeries"
-
-    def visit_clear_image_log(self, _: ClearImageLog) -> str:
-        return "clearImageSeries"
 
     def visit_config_float_series(self, _: ConfigFloatSeries) -> str:
         return "configFloatSeries"
@@ -106,9 +84,6 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_clear_string_set(self, _: ClearStringSet) -> str:
         return "clearStringSet"
-
-    def visit_delete_files(self, _: DeleteFiles) -> Ret:
-        return "deleteFiles"
 
     def visit_copy_attribute(self, _: CopyAttribute) -> Ret:
         raise NotImplementedError("This operation is client-side only")

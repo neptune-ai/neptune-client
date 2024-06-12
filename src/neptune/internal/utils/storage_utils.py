@@ -13,26 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "AttributeUploadConfiguration",
-    "UploadEntry",
-    "normalize_file_name",
-    "scan_unique_upload_entries",
-    "split_upload_files",
-    "FileChunk",
-    "FileChunker",
-    "compress_to_tar_gz_in_memory",
-]
+import os
 
-from neptune.internal.storage.datastream import (
-    FileChunk,
-    FileChunker,
-    compress_to_tar_gz_in_memory,
-)
-from neptune.internal.storage.storage_utils import (
-    AttributeUploadConfiguration,
-    UploadEntry,
-    normalize_file_name,
-    scan_unique_upload_entries,
-    split_upload_files,
-)
+
+def normalize_file_name(name):
+    return name.replace(os.sep, "/")

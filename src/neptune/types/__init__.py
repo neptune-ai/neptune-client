@@ -16,13 +16,10 @@
 __all__ = [
     "Boolean",
     "Datetime",
-    "File",
     "Float",
     "Integer",
     "String",
-    "FileSet",
     "StringSet",
-    "FileSeries",
     "FloatSeries",
     "StringSeries",
 ]
@@ -31,14 +28,11 @@ __all__ = [
 from .atoms import (
     Boolean,
     Datetime,
-    File,
     Float,
     Integer,
     String,
 )
-from .file_set import FileSet
 from .series import (
-    FileSeries,
     FloatSeries,
     StringSeries,
 )

@@ -385,7 +385,7 @@ class NeptuneObject(AbstractContextManager):
 
         You can use this method to retrieve metadata from a started or resumed run.
         The result preserves the hierarchical structure of the run's metadata, but only contains Atom fields.
-        This means fields that contain single values, as opposed to series, files, or sets.
+        This means fields that contain single values, as opposed to series, or sets.
 
         Returns:
             `dict` containing the values of all non-File Atom fields.

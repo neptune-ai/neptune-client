@@ -32,11 +32,8 @@ from neptune.api.models import (
     BoolField,
     DateTimeField,
     FieldVisitor,
-    FileField,
-    FileSetField,
     FloatField,
     FloatSeriesField,
-    ImageSeriesField,
     IntField,
     LeaderboardEntry,
     NotebookRefField,
@@ -69,9 +66,6 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
     def visit_datetime(self, field: DateTimeField) -> datetime:
         return field.value
 
-    def visit_file(self, field: FileField) -> None:
-        return None
-
     def visit_string_set(self, field: StringSetField) -> Optional[str]:
         return ",".join(field.values)
 
@@ -80,12 +74,6 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
 
     def visit_string_series(self, field: StringSeriesField) -> Optional[str]:
         return field.last
-
-    def visit_image_series(self, field: ImageSeriesField) -> None:
-        return None
-
-    def visit_file_set(self, field: FileSetField) -> None:
-        return None
 
     def visit_object_state(self, field: ObjectStateField) -> str:
         return field.value

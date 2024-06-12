@@ -24,14 +24,9 @@ from neptune.api.models import (
     Field,
     FieldDefinition,
     FieldType,
-    FileEntry,
-    FileField,
-    FileSetField,
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesField,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntriesSearchResult,
     LeaderboardEntry,
@@ -471,78 +466,6 @@ def test__string_series_field__from_proto():
         StringSeriesField.from_proto(proto)
 
 
-def test__image_series_field__from_dict():
-    # given
-    data = {
-        "attributeType": "imageSeries",
-        "attributeName": "some/imageSeries",
-        "lastStep": 15.0,
-    }
-
-    # when
-    result = ImageSeriesField.from_dict(data)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert result.last_step == 15.0
-
-
-def test__image_series_field__from_dict__no_last_step():
-    # given
-    data = {
-        "attributeType": "imageSeries",
-        "attributeName": "some/imageSeries",
-    }
-
-    # when
-    result = ImageSeriesField.from_dict(data)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert result.last_step is None
-
-
-def test__image_series_field__from_model():
-    # given
-    model = Mock(
-        attributeType="imageSeries",
-        attributeName="some/imageSeries",
-        lastStep=15.0,
-    )
-
-    # when
-    result = ImageSeriesField.from_model(model)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert result.last_step == 15.0
-
-
-def test__image_series_field__from_model__no_last_step():
-    # given
-    model = Mock(
-        attributeType="imageSeries",
-        attributeName="some/imageSeries",
-        lastStep=None,
-    )
-
-    # when
-    result = ImageSeriesField.from_model(model)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert result.last_step is None
-
-
-def test__image_series_field__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        ImageSeriesField.from_proto(proto)
-
-
 def test__string_set_field__from_dict():
     # given
     data = {
@@ -639,55 +562,6 @@ def test__string_set_field__from_proto__empty():
     assert result.values == set()
 
 
-def test__file_field__from_dict():
-    # given
-    data = {
-        "attributeType": "file",
-        "attributeName": "some/file",
-        "name": "file.txt",
-        "size": 1024,
-        "ext": "txt",
-    }
-
-    # when
-    result = FileField.from_dict(data)
-
-    # then
-    assert result.path == "some/file"
-    assert result.name == "file.txt"
-    assert result.size == 1024
-    assert result.ext == "txt"
-
-
-def test__file_field__from_model():
-    # given
-    model = Mock(
-        attributeType="file",
-        attributeName="some/file",
-        size=1024,
-        ext="txt",
-    )
-    model.name = "file.txt"
-
-    # when
-    result = FileField.from_model(model)
-
-    # then
-    assert result.path == "some/file"
-    assert result.name == "file.txt"
-    assert result.size == 1024
-    assert result.ext == "txt"
-
-
-def test__file_field__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        FileField.from_proto(proto)
-
-
 @pytest.mark.parametrize("state,expected", [("running", "Active"), ("idle", "Inactive")])
 def test__object_state_field__from_dict(state, expected):
     # given
@@ -722,47 +596,6 @@ def test__object_state_field__from_proto(state, expected):
     # then
     with pytest.raises(NotImplementedError):
         ObjectStateField.from_proto(model)
-
-
-def test__file_set_field__from_dict():
-    # given
-    data = {
-        "attributeType": "fileSet",
-        "attributeName": "some/fileSet",
-        "size": 3072,
-    }
-
-    # when
-    result = FileSetField.from_dict(data)
-
-    # then
-    assert result.path == "some/fileSet"
-    assert result.size == 3072
-
-
-def test__file_set_field__from_model():
-    # given
-    model = Mock(
-        attributeType="fileSet",
-        attributeName="some/fileSet",
-        size=3072,
-    )
-
-    # when
-    result = FileSetField.from_model(model)
-
-    # then
-    assert result.path == "some/fileSet"
-    assert result.size == 3072
-
-
-def test__file_set_field__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        FileSetField.from_proto(proto)
 
 
 def test__notebook_ref_field__from_dict():
@@ -1228,53 +1061,6 @@ def test__field__from_proto__string_series():
         Field.from_proto(proto)
 
 
-def test__field__from_dict__image_series():
-    # given
-    data = {
-        "path": "some/imageSeries",
-        "type": "imageSeries",
-        "imageSeriesProperties": {
-            "attributeType": "imageSeries",
-            "attributeName": "some/imageSeries",
-            "lastStep": 15.0,
-        },
-    }
-
-    # when
-    result = Field.from_dict(data)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert isinstance(result, ImageSeriesField)
-    assert result.last_step == 15.0
-
-
-def test__field__from_model__image_series():
-    # given
-    model = Mock(
-        path="some/imageSeries",
-        type="imageSeries",
-        imageSeriesProperties=Mock(attributeType="imageSeries", attributeName="some/imageSeries", lastStep=15.0),
-    )
-
-    # when
-    result = Field.from_model(model)
-
-    # then
-    assert result.path == "some/imageSeries"
-    assert isinstance(result, ImageSeriesField)
-    assert result.last_step == 15.0
-
-
-def test__field__from_proto__image_series():
-    # given
-    proto = Mock(name="some/imageSeries", type="imageSeries", image_series_properties=Mock())
-
-    # when
-    with pytest.raises(NotImplementedError):
-        Field.from_proto(proto)
-
-
 def test__field__from_dict__string_set():
     # given
     data = {
@@ -1334,60 +1120,6 @@ def test__field__from_proto__string_set():
     assert result.values == {"hello", "world"}
 
 
-def test__field__from_dict__file():
-    # given
-    data = {
-        "path": "some/file",
-        "type": "file",
-        "fileProperties": {
-            "attributeType": "file",
-            "attributeName": "some/file",
-            "name": "file.txt",
-            "size": 1024,
-            "ext": "txt",
-        },
-    }
-
-    # when
-    result = Field.from_dict(data)
-
-    # then
-    assert result.path == "some/file"
-    assert isinstance(result, FileField)
-    assert result.name == "file.txt"
-    assert result.size == 1024
-    assert result.ext == "txt"
-
-
-def test__field__from_model__file():
-    # given
-    model = Mock(
-        path="some/file",
-        type="file",
-        fileProperties=Mock(attributeType="file", attributeName="some/file", size=1024, ext="txt"),
-    )
-    model.fileProperties.name = "file.txt"
-
-    # when
-    result = Field.from_model(model)
-
-    # then
-    assert result.path == "some/file"
-    assert isinstance(result, FileField)
-    assert result.name == "file.txt"
-    assert result.size == 1024
-    assert result.ext == "txt"
-
-
-def test__field__from_proto__file():
-    # given
-    proto = Mock(name="some/file", type="file", file_properties=Mock())
-
-    # then
-    with pytest.raises(NotImplementedError):
-        FileField.from_proto(proto)
-
-
 def test__field__from_dict__object_state():
     # given
     data = {
@@ -1433,49 +1165,6 @@ def test__field__from_proto__object_state():
     # when
     with pytest.raises(NotImplementedError):
         Field.from_proto(proto)
-
-
-def test__field__from_dict__file_set():
-    # given
-    data = {
-        "path": "some/fileSet",
-        "type": "fileSet",
-        "fileSetProperties": {"attributeType": "fileSet", "attributeName": "some/fileSet", "size": 3072},
-    }
-
-    # when
-    result = Field.from_dict(data)
-
-    # then
-    assert result.path == "some/fileSet"
-    assert isinstance(result, FileSetField)
-    assert result.size == 3072
-
-
-def test__field__from_model__file_set():
-    # given
-    model = Mock(
-        path="some/fileSet",
-        type="fileSet",
-        fileSetProperties=Mock(attributeType="fileSet", attributeName="some/fileSet", size=3072),
-    )
-
-    # when
-    result = Field.from_model(model)
-
-    # then
-    assert result.path == "some/fileSet"
-    assert isinstance(result, FileSetField)
-    assert result.size == 3072
-
-
-def test__field__from_proto__file_set():
-    # given
-    proto = Mock(name="some/fileSet", type="fileSet", file_set_properties=Mock())
-
-    # then
-    with pytest.raises(NotImplementedError):
-        FileSetField.from_proto(proto)
 
 
 def test__field__from_dict__notebook_ref():
@@ -1870,26 +1559,6 @@ def test__all_field_types__have_class(field_type):
     assert field_class.type == field_type
 
 
-def test__file_entry__from_model():
-    # given
-    now = datetime.datetime.now()
-
-    # and
-    model = Mock(
-        size=100,
-        mtime=now,
-        fileType="file",
-    )
-    model.name = "mock_name"
-
-    entry = FileEntry.from_dto(model)
-
-    assert entry.name == "mock_name"
-    assert entry.size == 100
-    assert entry.mtime == now
-    assert entry.file_type == "file"
-
-
 def test__float_series_values__from_dict():
     # given
     data = {
@@ -2047,41 +1716,6 @@ def test__string_series_values__from_proto():
     # then
     with pytest.raises(NotImplementedError):
         StringSeriesValues.from_proto(proto)
-
-
-def test__image_series_values__from_dict():
-    # given
-    data = {
-        "totalItemCount": 3,
-    }
-
-    # when
-    result = ImageSeriesValues.from_dict(data)
-
-    # then
-    assert result.total == 3
-
-
-def test__image_series_values__from_model():
-    # given
-    model = Mock(
-        totalItemCount=3,
-    )
-
-    # when
-    result = ImageSeriesValues.from_model(model)
-
-    # then
-    assert result.total == 3
-
-
-def test__image_series_values__from_proto():
-    # given
-    proto = Mock()
-
-    # then
-    with pytest.raises(NotImplementedError):
-        ImageSeriesValues.from_proto(proto)
 
 
 def test__next_page__from_dict():

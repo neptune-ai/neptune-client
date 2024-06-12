@@ -26,11 +26,8 @@ from neptune.api.models import (
     BoolField,
     DateTimeField,
     FieldVisitor,
-    FileField,
-    FileSetField,
     FloatField,
     FloatSeriesField,
-    ImageSeriesField,
     IntField,
     NotebookRefField,
     ObjectStateField,
@@ -38,7 +35,6 @@ from neptune.api.models import (
     StringSeriesField,
     StringSetField,
 )
-from neptune.exceptions import MetadataInconsistency
 
 
 class FieldToValueVisitor(FieldVisitor[Any]):
@@ -58,20 +54,11 @@ class FieldToValueVisitor(FieldVisitor[Any]):
     def visit_datetime(self, field: DateTimeField) -> datetime:
         return field.value
 
-    def visit_file(self, field: FileField) -> None:
-        raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
-
-    def visit_file_set(self, field: FileSetField) -> None:
-        raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
-
     def visit_float_series(self, field: FloatSeriesField) -> Optional[float]:
         return field.last
 
     def visit_string_series(self, field: StringSeriesField) -> Optional[str]:
         return field.last
-
-    def visit_image_series(self, field: ImageSeriesField) -> None:
-        raise MetadataInconsistency("Cannot get value for image series.")
 
     def visit_string_set(self, field: StringSetField) -> Set[str]:
         return field.values
