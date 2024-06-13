@@ -29,7 +29,6 @@ from tests.e2e.base import (
 from tests.e2e.utils import (
     initialize_container,
     reinitialize_container,
-    with_check_if_file_appears,
 )
 
 
@@ -46,18 +45,6 @@ class TestInitRun(BaseE2ETest):
             assert exp2[key].fetch() == val
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_send_source_code(self, environment):
-        with neptune.init_run(
-            source_files="**/*.py",
-            name="E2e init source code",
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            with with_check_if_file_appears("files.zip"):
-                exp["source_code/files"].download()
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_infer_dependencies(self, environment):
         with neptune.init_run(
             project=environment.project,
@@ -66,23 +53,6 @@ class TestInitRun(BaseE2ETest):
             exp.sync()
 
             assert exp.exists("source_code/requirements")
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_upload_dependency_file(self, environment):
-        filename = fake.file_name(extension="txt")
-        with open(filename, "w") as file:
-            file.write("some-dependency==1.0.0")
-
-        with neptune.init_run(
-            project=environment.project,
-            dependencies=filename,
-        ) as exp:
-            exp.sync()
-
-            exp["source_code/requirements"].download("requirements.txt")
-
-        with open("requirements.txt", "r") as file:
-            assert file.read() == "some-dependency==1.0.0"
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
