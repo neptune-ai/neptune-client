@@ -25,6 +25,7 @@ from neptune.types import GitRef
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
+    are_group_tags_enabled,
     fake,
 )
 from tests.e2e.utils import (
@@ -186,7 +187,7 @@ class TestInitProject(BaseE2ETest):
         read_only_project = neptune.init_project(mode="read-only", project=environment.project)
         read_only_project.sync()
 
-        assert set(read_only_project.get_structure()["sys"]) == {
+        expected_set = {
             "creation_time",
             "id",
             "modification_time",
@@ -198,8 +199,12 @@ class TestInitProject(BaseE2ETest):
             "state",
             "tags",
             "visibility",
-            "group_tags",
         }
+
+        if are_group_tags_enabled():
+            expected_set.add("group_tags")
+
+        assert set(read_only_project.get_structure()["sys"]) == expected_set
         assert read_only_project[key].fetch() == val
 
 
