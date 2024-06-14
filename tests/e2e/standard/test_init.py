@@ -198,6 +198,7 @@ class TestInitProject(BaseE2ETest):
             "state",
             "tags",
             "visibility",
+            "group_tags",
         }
         assert read_only_project[key].fetch() == val
 
