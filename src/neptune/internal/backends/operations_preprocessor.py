@@ -34,21 +34,15 @@ from neptune.internal.operation import (
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.internal.utils.paths import path_to_str
@@ -87,19 +81,12 @@ class OperationsPreprocessor:
         target_acc.visit(op)
         return target_acc
 
-    @staticmethod
-    def is_file_op(op: Operation):
-        return isinstance(op, (UploadFile, UploadFileContent, UploadFileSet))
-
     def get_operations(self) -> AccumulatedOperations:
         result = AccumulatedOperations()
         for _, acc in sorted(self._accumulators.items()):
             acc: "_OperationsAccumulator"
             for op in acc.get_operations():
-                if self.is_file_op(op):
-                    result.upload_operations.append(op)
-                else:
-                    result.other_operations.append(op)
+                result.other_operations.append(op)
             result.errors.extend(acc.get_errors())
 
         return result
@@ -110,16 +97,10 @@ class _DataType(Enum):
     INT = "Int"
     BOOL = "Bool"
     STRING = "String"
-    FILE = "File"
     DATETIME = "Datetime"
-    FILE_SET = "File Set"
     FLOAT_SERIES = "Float Series"
     STRING_SERIES = "String Series"
-    IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
-
-    def is_file_op(self) -> bool:
-        return self in (self.FILE, self.FILE_SET)
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -136,10 +117,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
-
-    def _check_prerequisites(self, op: Operation):
-        if OperationsPreprocessor.is_file_op(op) and len(self._delete_ops) > 0:
-            raise RequiresPreviousCompleted()
 
     def _process_modify_op(
         self,
@@ -162,7 +139,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
-            self._check_prerequisites(op)
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
 
@@ -182,7 +158,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
-            self._check_prerequisites(op)
             self._type = expected_type
             self._config_ops = [op]
 
@@ -200,18 +175,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_assign_datetime(self, op: AssignDatetime) -> None:
         self._process_modify_op(_DataType.DATETIME, op, self._assign_modifier())
-
-    def visit_upload_file(self, op: UploadFile) -> None:
-        self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
-
-    def visit_upload_file_content(self, op: UploadFileContent) -> None:
-        self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
-
-    def visit_upload_file_set(self, op: UploadFileSet) -> None:
-        if op.reset:
-            self._process_modify_op(_DataType.FILE_SET, op, self._assign_modifier())
-        else:
-            self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_log_floats(self, op: LogFloats) -> None:
         self._process_modify_op(
@@ -235,25 +198,11 @@ class _OperationsAccumulator(OperationVisitor[None]):
             ),
         )
 
-    def visit_log_images(self, op: LogImages) -> None:
-        self._process_modify_op(
-            _DataType.IMAGE_SERIES,
-            op,
-            self._log_modifier(
-                LogImages,
-                ClearImageLog,
-                lambda op1, op2: LogImages(op1.path, op1.values + op2.values),
-            ),
-        )
-
     def visit_clear_float_log(self, op: ClearFloatLog) -> None:
         self._process_modify_op(_DataType.FLOAT_SERIES, op, self._clear_modifier())
 
     def visit_clear_string_log(self, op: ClearStringLog) -> None:
         self._process_modify_op(_DataType.STRING_SERIES, op, self._clear_modifier())
-
-    def visit_clear_image_log(self, op: ClearImageLog) -> None:
-        self._process_modify_op(_DataType.IMAGE_SERIES, op, self._clear_modifier())
 
     def visit_add_strings(self, op: AddStrings) -> None:
         self._process_modify_op(_DataType.STRING_SET, op, self._add_modifier())
@@ -266,9 +215,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_config_float_series(self, op: ConfigFloatSeries) -> None:
         self._process_config_op(_DataType.FLOAT_SERIES, op)
-
-    def visit_delete_files(self, op: DeleteFiles) -> None:
-        self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_delete_attribute(self, op: DeleteAttribute) -> None:
         if self._type:

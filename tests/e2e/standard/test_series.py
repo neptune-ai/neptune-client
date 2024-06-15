@@ -22,7 +22,6 @@ import pytest
 from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
 from neptune.types import (
-    FileSeries,
     FloatSeries,
     StringSeries,
 )
@@ -32,19 +31,8 @@ from tests.e2e.base import (
     fake,
     make_parameters,
 )
-from tests.e2e.utils import (
-    generate_image,
-    image_to_png,
-    tmp_context,
-)
 
-Image = pytest.importorskip("PIL.Image")
-
-BASIC_SERIES_TYPES = (
-    make_parameters(["strings", "floats", "files"])
-    .xfail("files", reason="File funcitonality disabled", raises=NeptuneUnsupportedFunctionalityException)
-    .eval()
-)
+BASIC_SERIES_TYPES = make_parameters(["strings", "floats"]).eval()
 
 
 @pytest.mark.xfail(
@@ -86,14 +74,6 @@ class TestSeries(BaseE2ETest):
     def test_string_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "strings") as (namespace, values, steps, timestamps):
             namespace.assign(StringSeries(values=values, steps=steps, timestamps=timestamps))
-
-    @pytest.mark.xfail(
-        reason="File funcitonality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
-    )
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_file_series_type_assign(self, container: NeptuneObject):
-        with self.run_then_assert(container, "files") as (namespace, values, steps, timestamps):
-            namespace.assign(FileSeries(values=values, steps=steps, timestamps=timestamps))
 
     @contextmanager
     def run_then_assert(self, container: NeptuneObject, series_type: str):
@@ -141,24 +121,3 @@ class TestSeries(BaseE2ETest):
                 list(map(lambda t: time.mktime(t.utctimetuple()), container[key].fetch_values()["timestamp"]))
                 == timestamps
             )
-
-        elif series_type == "files":
-            # given
-            images = list(generate_image(size=2**n) for n in range(7, 12))
-
-            # when
-            yield container[key], images, steps, timestamps
-
-            container.sync()
-
-            # then
-            with tmp_context():
-                container[key].download_last("last")
-                container[key].download("all")
-
-                with Image.open("last/4.png") as img:
-                    assert img == image_to_png(image=images[-1])
-
-                for i in range(5):
-                    with Image.open(f"all/{i}.png") as img:
-                        assert img == image_to_png(image=images[i])

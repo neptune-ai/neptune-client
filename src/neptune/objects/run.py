@@ -63,17 +63,12 @@ from neptune.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.internal.utils.dependency_tracking import (
-    FileDependenciesStrategy,
-    InferDependenciesStrategy,
-)
 from neptune.internal.utils.hashing import generate_hash
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
     in_interactive,
     in_notebook,
 )
-from neptune.internal.utils.source_code import upload_source_code
 from neptune.internal.utils.traceback_job import TracebackJob
 from neptune.internal.warnings import (
     NeptuneWarning,
@@ -116,7 +111,7 @@ class Run(NeptuneObject):
     run["your/structure"] = some_metadata
     ```
 
-    Examples of metadata you can log: metrics, losses, scores, images, predictions,
+    Examples of metadata you can log: metrics, losses, scores, predictions,
     model weights, parameters, checkpoints, and interactive visualizations.
 
     By default, the run automatically tracks hardware consumption, stdout/stderr, source code.
@@ -445,27 +440,6 @@ class Run(NeptuneObject):
 
         if self._capture_stderr and not self.exists(self._stderr_path):
             self.define(self._stderr_path, StringSeries([]))
-
-        if self._with_id is None or self._source_files is not None:
-            # upload default sources ONLY if creating a new run
-            upload_source_code(source_files=self._source_files, run=self)
-
-        if self._dependencies:
-            try:
-                if self._dependencies == "infer":
-                    dependency_strategy = InferDependenciesStrategy()
-
-                else:
-                    dependency_strategy = FileDependenciesStrategy(path=self._dependencies)
-
-                dependency_strategy.log_dependencies(run=self)
-            except Exception as e:
-                warn_once(
-                    "An exception occurred in automatic dependency tracking."
-                    "Skipping upload of requirement files."
-                    "Exception: " + str(e),
-                    exception=NeptuneWarning,
-                )
 
     @property
     def monitoring_namespace(self) -> str:

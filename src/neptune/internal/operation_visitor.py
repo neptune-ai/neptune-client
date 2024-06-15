@@ -29,21 +29,15 @@ from neptune.internal.operation import (
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 
 Ret = TypeVar("Ret")
@@ -74,18 +68,6 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_upload_file(self, op: UploadFile) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_upload_file_content(self, op: UploadFileContent) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
-        pass
-
-    @abc.abstractmethod
     def visit_log_floats(self, op: LogFloats) -> Ret:
         pass
 
@@ -94,19 +76,11 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_log_images(self, op: LogImages) -> Ret:
-        pass
-
-    @abc.abstractmethod
     def visit_clear_float_log(self, op: ClearFloatLog) -> Ret:
         pass
 
     @abc.abstractmethod
     def visit_clear_string_log(self, op: ClearStringLog) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_clear_image_log(self, op: ClearImageLog) -> Ret:
         pass
 
     @abc.abstractmethod
@@ -127,10 +101,6 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_clear_string_set(self, op: ClearStringSet) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_delete_files(self, op: DeleteFiles) -> Ret:
         pass
 
     @abc.abstractmethod

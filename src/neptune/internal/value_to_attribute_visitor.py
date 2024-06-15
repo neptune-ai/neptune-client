@@ -23,14 +23,11 @@ from typing import (
 
 from neptune.attributes.atoms.boolean import Boolean as BooleanAttr
 from neptune.attributes.atoms.datetime import Datetime as DatetimeAttr
-from neptune.attributes.atoms.file import File as FileAttr
 from neptune.attributes.atoms.float import Float as FloatAttr
 from neptune.attributes.atoms.integer import Integer as IntegerAttr
 from neptune.attributes.atoms.string import String as StringAttr
 from neptune.attributes.attribute import Attribute
-from neptune.attributes.file_set import FileSet as FileSetAttr
 from neptune.attributes.namespace import Namespace as NamespaceAttr
-from neptune.attributes.series.file_series import FileSeries as ImageSeriesAttr
 from neptune.attributes.series.float_series import FloatSeries as FloatSeriesAttr
 from neptune.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.attributes.sets.string_set import StringSet as StringSetAttr
@@ -39,12 +36,9 @@ from neptune.types import (
     Integer,
 )
 from neptune.types.atoms.datetime import Datetime
-from neptune.types.atoms.file import File
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
-from neptune.types.file_set import FileSet
 from neptune.types.namespace import Namespace
-from neptune.types.series.file_series import FileSeries
 from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
@@ -74,20 +68,11 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def visit_datetime(self, _: Datetime) -> Attribute:
         return DatetimeAttr(self._container, self._path)
 
-    def visit_file(self, _: File) -> Attribute:
-        return FileAttr(self._container, self._path)
-
-    def visit_file_set(self, _: FileSet) -> Attribute:
-        return FileSetAttr(self._container, self._path)
-
     def visit_float_series(self, _: FloatSeries) -> Attribute:
         return FloatSeriesAttr(self._container, self._path)
 
     def visit_string_series(self, _: StringSeries) -> Attribute:
         return StringSeriesAttr(self._container, self._path)
-
-    def visit_image_series(self, _: FileSeries) -> Attribute:
-        return ImageSeriesAttr(self._container, self._path)
 
     def visit_string_set(self, _: StringSet) -> Attribute:
         return StringSetAttr(self._container, self._path)

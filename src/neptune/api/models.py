@@ -16,7 +16,6 @@
 from __future__ import annotations
 
 __all__ = (
-    "FileEntry",
     "Field",
     "FieldType",
     "LeaderboardEntry",
@@ -27,11 +26,8 @@ __all__ = (
     "BoolField",
     "StringField",
     "DateTimeField",
-    "FileField",
-    "FileSetField",
     "FloatSeriesField",
     "StringSeriesField",
-    "ImageSeriesField",
     "StringSetField",
     "ObjectStateField",
     "NotebookRefField",
@@ -40,7 +36,6 @@ __all__ = (
     "FloatPointValue",
     "StringSeriesValues",
     "StringPointValue",
-    "ImageSeriesValues",
     "QueryFieldDefinitionsResult",
     "NextPage",
     "QueryFieldsResult",
@@ -85,29 +80,14 @@ from neptune.internal.utils.run_state import RunState
 Ret = TypeVar("Ret")
 
 
-@dataclass
-class FileEntry:
-    name: str
-    size: int
-    mtime: datetime
-    file_type: str
-
-    @classmethod
-    def from_dto(cls, file_dto: Any) -> "FileEntry":
-        return cls(name=file_dto.name, size=file_dto.size, mtime=file_dto.mtime, file_type=file_dto.fileType)
-
-
 class FieldType(Enum):
     FLOAT = "float"
     INT = "int"
     BOOL = "bool"
     STRING = "string"
     DATETIME = "datetime"
-    FILE = "file"
-    FILE_SET = "fileSet"
     FLOAT_SERIES = "floatSeries"
     STRING_SERIES = "stringSeries"
-    IMAGE_SERIES = "imageSeries"
     STRING_SET = "stringSet"
     OBJECT_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
@@ -175,19 +155,10 @@ class FieldVisitor(Generic[Ret], abc.ABC):
     def visit_datetime(self, field: DateTimeField) -> Ret: ...
 
     @abc.abstractmethod
-    def visit_file(self, field: FileField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_file_set(self, field: FileSetField) -> Ret: ...
-
-    @abc.abstractmethod
     def visit_float_series(self, field: FloatSeriesField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_string_series(self, field: StringSeriesField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_image_series(self, field: ImageSeriesField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_string_set(self, field: StringSetField) -> Ret: ...
@@ -302,48 +273,6 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
 
 
 @dataclass
-class FileField(Field, field_type=FieldType.FILE):
-    name: str
-    ext: str
-    size: int
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_file(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> FileField:
-        return FileField(path=data["attributeName"], name=data["name"], ext=data["ext"], size=int(data["size"]))
-
-    @staticmethod
-    def from_model(model: Any) -> FileField:
-        return FileField(path=model.attributeName, name=model.name, ext=model.ext, size=model.size)
-
-    @staticmethod
-    def from_proto(data: Any) -> FileField:
-        raise NotImplementedError()
-
-
-@dataclass
-class FileSetField(Field, field_type=FieldType.FILE_SET):
-    size: int
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_file_set(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> FileSetField:
-        return FileSetField(path=data["attributeName"], size=int(data["size"]))
-
-    @staticmethod
-    def from_model(model: Any) -> FileSetField:
-        return FileSetField(path=model.attributeName, size=model.size)
-
-    @staticmethod
-    def from_proto(data: Any) -> FileSetField:
-        raise NotImplementedError()
-
-
-@dataclass
 class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
     last: Optional[float]
 
@@ -383,27 +312,6 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
 
     @staticmethod
     def from_proto(data: Any) -> StringSeriesField:
-        raise NotImplementedError()
-
-
-@dataclass
-class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
-    last_step: Optional[float]
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_image_series(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ImageSeriesField:
-        last_step = float(data["lastStep"]) if "lastStep" in data else None
-        return ImageSeriesField(path=data["attributeName"], last_step=last_step)
-
-    @staticmethod
-    def from_model(model: Any) -> ImageSeriesField:
-        return ImageSeriesField(path=model.attributeName, last_step=model.lastStep)
-
-    @staticmethod
-    def from_proto(data: Any) -> ImageSeriesField:
         raise NotImplementedError()
 
 
@@ -750,21 +658,4 @@ class StringPointValue:
 
     @staticmethod
     def from_proto(data: Any) -> StringPointValue:
-        raise NotImplementedError()
-
-
-@dataclass
-class ImageSeriesValues:
-    total: int
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ImageSeriesValues:
-        return ImageSeriesValues(total=data["totalItemCount"])
-
-    @staticmethod
-    def from_model(model: Any) -> ImageSeriesValues:
-        return ImageSeriesValues(total=model.totalItemCount)
-
-    @staticmethod
-    def from_proto(data: Any) -> ImageSeriesValues:
         raise NotImplementedError()

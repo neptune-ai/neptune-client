@@ -27,11 +27,8 @@ from neptune.api.models import (
     DateTimeField,
     FieldDefinition,
     FieldType,
-    FileField,
-    FileSetField,
     FloatField,
     FloatSeriesField,
-    ImageSeriesField,
     LeaderboardEntry,
     ObjectStateField,
     StringField,
@@ -42,7 +39,6 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import MetadataInconsistency
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.table import (
     Table,
@@ -85,9 +81,6 @@ class AbstractTablesTestMixin:
             FloatSeriesField(path="float/series", last=8.7),
             StringSeriesField(path="string/series", last="last text"),
             StringSetField(path="string/set", values={"a", "b"}),
-            FileField(path="file", size=0, name="file.txt", ext="txt"),
-            FileSetField(path="file/set", size=0),
-            ImageSeriesField(path="image/series", last_step=None),
         ]
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
@@ -123,13 +116,6 @@ class AbstractTablesTestMixin:
         self.assertEqual("last text", df["string/series"][1])
         self.assertEqual({"a", "b"}, set(df["string/set"][1].split(",")))
 
-        with self.assertRaises(KeyError):
-            self.assertTrue(df["file"])
-        with self.assertRaises(KeyError):
-            self.assertTrue(df["file/set"])
-        with self.assertRaises(KeyError):
-            self.assertTrue(df["image/series"])
-
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_as_rows(self, search_leaderboard_entries):
         # given
@@ -156,18 +142,9 @@ class AbstractTablesTestMixin:
             self.assertEqual("last text", row.get_attribute_value("string/series"))
             self.assertEqual({"a", "b"}, row.get_attribute_value("string/set"))
 
-            with self.assertRaises(MetadataInconsistency):
-                row.get_attribute_value("file")
-            with self.assertRaises(MetadataInconsistency):
-                row.get_attribute_value("image/series")
-
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
-    @patch.object(NeptuneBackendMock, "download_file")
-    @patch.object(NeptuneBackendMock, "download_file_set")
     def test_get_table_as_table_entries(
         self,
-        download_file_set,
-        download_file,
         search_leaderboard_entries,
     ):
         # given
@@ -190,31 +167,6 @@ class AbstractTablesTestMixin:
         self.assertEqual(8.7, table_entry["float/series"].get())
         self.assertEqual("last text", table_entry["string/series"].get())
         self.assertEqual({"a", "b"}, table_entry["string/set"].get())
-
-        with self.assertRaises(MetadataInconsistency):
-            table_entry["file"].get()
-        with self.assertRaises(MetadataInconsistency):
-            table_entry["file/set"].get()
-        with self.assertRaises(MetadataInconsistency):
-            table_entry["image/series"].get()
-
-        table_entry["file"].download("some_directory")
-        download_file.assert_called_with(
-            container_id=exp_id,
-            container_type=self.expected_container_type,
-            path=["file"],
-            destination="some_directory",
-            progress_bar=None,
-        )
-
-        table_entry["file/set"].download("some_directory")
-        download_file_set.assert_called_with(
-            container_id=exp_id,
-            container_type=self.expected_container_type,
-            path=["file", "set"],
-            destination="some_directory",
-            progress_bar=None,
-        )
 
     def test_table_limit(self):
         with pytest.raises(ValueError):

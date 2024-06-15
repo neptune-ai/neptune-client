@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["Boolean", "Datetime", "File", "Float", "Integer", "NotebookRef", "RunState", "String"]
+__all__ = ["Boolean", "Datetime", "Float", "Integer", "NotebookRef", "RunState", "String"]
 
 from .boolean import Boolean
 from .datetime import Datetime
-from .file import File
 from .float import Float
 from .integer import Integer
 from .notebook_ref import NotebookRef

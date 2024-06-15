@@ -27,12 +27,9 @@ from neptune.api.models import (
     DateTimeField,
     Field,
     FieldDefinition,
-    FileEntry,
-    FileField,
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     NextPage,
@@ -67,9 +64,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
-        raise NeptuneOfflineModeFetchException
-
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
         raise NeptuneOfflineModeFetchException
 
     def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
@@ -114,30 +108,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues:
-        raise NeptuneOfflineModeFetchException
-
-    def get_image_series_values(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        offset: int,
-        limit: int,
-    ) -> ImageSeriesValues:
-        raise NeptuneOfflineModeFetchException
-
-    def download_file_series_by_index(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        index: int,
-        destination: str,
-        progress_bar: Optional[ProgressBarType],
-    ):
-        raise NeptuneOfflineModeFetchException
-
-    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         raise NeptuneOfflineModeFetchException
 
     def get_fields_with_paths_filter(

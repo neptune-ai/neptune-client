@@ -15,11 +15,9 @@
 #
 __all__ = ["NeptuneBackendMock"]
 
-import os
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from shutil import copyfile
 from typing import (
     Any,
     Dict,
@@ -32,7 +30,6 @@ from typing import (
     TypeVar,
     Union,
 )
-from zipfile import ZipFile
 
 from neptune.api.models import (
     BoolField,
@@ -40,13 +37,10 @@ from neptune.api.models import (
     Field,
     FieldDefinition,
     FieldType,
-    FileEntry,
-    FileField,
     FloatField,
     FloatPointValue,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     NextPage,
@@ -71,7 +65,6 @@ from neptune.internal.backends.api_model import (
     Project,
     Workspace,
 )
-from neptune.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_structure import ContainerStructure
@@ -93,25 +86,17 @@ from neptune.internal.operation import (
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 from neptune.internal.operation_visitor import OperationVisitor
-from neptune.internal.types.file_types import FileType
-from neptune.internal.utils import base64_decode
 from neptune.internal.utils.generic_attribute_mapper import NoValue
 from neptune.internal.utils.paths import path_to_str
 from neptune.types import (
@@ -119,12 +104,9 @@ from neptune.types import (
     Integer,
 )
 from neptune.types.atoms.datetime import Datetime
-from neptune.types.atoms.file import File
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
-from neptune.types.file_set import FileSet
 from neptune.types.namespace import Namespace
-from neptune.types.series.file_series import FileSeries
 from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
@@ -316,50 +298,6 @@ class NeptuneBackendMock(NeptuneBackend):
                     value_or_dict.accept(self._attribute_type_converter_value_visitor),
                 )
 
-    def download_file(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        run = self._get_container(container_id, container_type)
-        value: File = run.get(path)
-        target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
-        if value.file_type is FileType.IN_MEMORY:
-            with open(target_path, "wb") as target_file:
-                target_file.write(value.content)
-        elif value.file_type is FileType.LOCAL_FILE:
-            if value.path != target_path:
-                copyfile(value.path, target_path)
-        else:
-            raise ValueError(f"Unexpected FileType: {value.file_type}")
-
-    def download_file_set(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        run = self._get_container(container_id, container_type)
-        source_file_set_value: FileSet = run.get(path)
-
-        if destination is None:
-            target_file = path[-1] + ".zip"
-        elif os.path.isdir(destination):
-            target_file = os.path.join(destination, path[-1] + ".zip")
-        else:
-            target_file = destination
-
-        upload_entries = get_unique_upload_entries(source_file_set_value.file_globs)
-
-        with ZipFile(target_file, "w") as zipObj:
-            for upload_entry in upload_entries:
-                zipObj.write(upload_entry.source, upload_entry.target_path)
-
     def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         val = self._get_attribute(container_id, container_type, path, Float)
         return FloatField(path=path_to_str(path), value=val.value)
@@ -371,15 +309,6 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolField:
         val = self._get_attribute(container_id, container_type, path, Boolean)
         return BoolField(path=path_to_str(path), value=val.value)
-
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
-        val = self._get_attribute(container_id, container_type, path, File)
-        return FileField(
-            path=path_to_str(path),
-            name=os.path.basename(val.path) if val.file_type is FileType.LOCAL_FILE else "",
-            ext=val.extension or "",
-            size=0,
-        )
 
     def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         val = self._get_attribute(container_id, container_type, path, String)
@@ -454,27 +383,6 @@ class NeptuneBackendMock(NeptuneBackend):
             [FloatPointValue(timestamp=datetime.now(), step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
-    def get_image_series_values(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        offset: int,
-        limit: int,
-    ) -> ImageSeriesValues:
-        return ImageSeriesValues(0)
-
-    def download_file_series_by_index(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        index: int,
-        destination: str,
-        progress_bar: Optional[ProgressBarType],
-    ):
-        """Non relevant for backend"""
-
     def get_fields_definitions(
         self,
         container_id: str,
@@ -541,20 +449,11 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_datetime(self, _: Datetime) -> FieldType:
             return FieldType.DATETIME
 
-        def visit_file(self, _: File) -> FieldType:
-            return FieldType.FILE
-
-        def visit_file_set(self, _: FileSet) -> FieldType:
-            return FieldType.FILE_SET
-
         def visit_float_series(self, _: FloatSeries) -> FieldType:
             return FieldType.FLOAT_SERIES
 
         def visit_string_series(self, _: StringSeries) -> FieldType:
             return FieldType.STRING_SERIES
-
-        def visit_image_series(self, _: FileSeries) -> FieldType:
-            return FieldType.IMAGE_SERIES
 
         def visit_string_set(self, _: StringSet) -> FieldType:
             return FieldType.STRING_SET
@@ -599,23 +498,6 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
 
-        def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, File):
-                raise self._create_type_error("save", File.__name__)
-            return File.from_path(path=op.get_absolute_path(self._operation_storage), extension=op.ext)
-
-        def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, File):
-                raise self._create_type_error("upload_files", File.__name__)
-            return File.from_content(content=base64_decode(op.file_content), extension=op.ext)
-
-        def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
-            if self._current_value is None or op.reset:
-                return FileSet(op.file_globs)
-            if not isinstance(self._current_value, FileSet):
-                raise self._create_type_error("save", FileSet.__name__)
-            return FileSet(self._current_value.file_globs + op.file_globs)
-
         def visit_log_floats(self, op: LogFloats) -> Optional[Value]:
             raw_values = [x.value for x in op.values]
             if self._current_value is None:
@@ -637,14 +519,6 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("log", StringSeries.__name__)
             return StringSeries(self._current_value.values + raw_values)
 
-        def visit_log_images(self, op: LogImages) -> Optional[Value]:
-            raw_values = [File.from_content(base64_decode(x.value.data)) for x in op.values]
-            if self._current_value is None:
-                return FileSeries(raw_values)
-            if not isinstance(self._current_value, FileSeries):
-                raise self._create_type_error("log", FileSeries.__name__)
-            return FileSeries(self._current_value.values + raw_values)
-
         def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
             if self._current_value is None:
                 return FloatSeries([])
@@ -663,13 +537,6 @@ class NeptuneBackendMock(NeptuneBackend):
             if not isinstance(self._current_value, StringSeries):
                 raise self._create_type_error("clear", StringSeries.__name__)
             return StringSeries([])
-
-        def visit_clear_image_log(self, op: ClearImageLog) -> Optional[Value]:
-            if self._current_value is None:
-                return FileSeries([])
-            if not isinstance(self._current_value, FileSeries):
-                raise self._create_type_error("clear", FileSeries.__name__)
-            return FileSeries([])
 
         def visit_config_float_series(self, op: ConfigFloatSeries) -> Optional[Value]:
             if self._current_value is None:
@@ -699,14 +566,6 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("clear", StringSet.__name__)
             return StringSet(set())
 
-        def visit_delete_files(self, op: DeleteFiles) -> Optional[Value]:
-            if self._current_value is None:
-                return FileSet([])
-            if not isinstance(self._current_value, FileSet):
-                raise self._create_type_error("delete_files", FileSet.__name__)
-            # It is not important to support deleting properly in debug mode, let's just ignore this operation
-            return self._current_value
-
         def visit_delete_attribute(self, op: DeleteAttribute) -> Optional[Value]:
             if self._current_value is None:
                 raise MetadataInconsistency(
@@ -723,16 +582,6 @@ class NeptuneBackendMock(NeptuneBackend):
                     op_name, self._path, expected, type(self._current_value)
                 )
             )
-
-    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
-        return [
-            FileEntry(
-                name="mock_name",
-                size=100,
-                mtime=datetime.now(),
-                file_type="file",
-            )
-        ]
 
     def get_fields_with_paths_filter(
         self, container_id: str, container_type: ContainerType, paths: List[str], use_proto: Optional[bool] = None

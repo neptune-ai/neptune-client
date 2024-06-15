@@ -44,12 +44,9 @@ from neptune.api.models import (
     Field,
     FieldDefinition,
     FieldType,
-    FileEntry,
-    FileField,
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     NextPage,
@@ -73,7 +70,6 @@ from neptune.exceptions import (
     AmbiguousProjectName,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
-    FileSetNotFound,
     MetadataContainerNotFound,
     MetadataInconsistency,
     NeptuneFeatureNotAvailableException,
@@ -84,7 +80,6 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.api_model import (
     ApiExperiment,
-    OptionalFeatures,
     Project,
     Workspace,
 )
@@ -94,13 +89,6 @@ from neptune.internal.backends.hosted_client import (
     create_backend_client,
     create_http_client_with_auth,
     create_leaderboard_client,
-)
-from neptune.internal.backends.hosted_file_operations import (
-    download_file_attribute,
-    download_file_set_attribute,
-    download_image_series_element,
-    upload_file_attribute,
-    upload_file_set_attribute,
 )
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
@@ -115,23 +103,12 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
-from neptune.internal.exceptions import (
-    ClientHttpError,
-    InternalClientError,
-    NeptuneException,
-)
+from neptune.internal.exceptions import NeptuneException
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
 )
-from neptune.internal.operation import (
-    DeleteAttribute,
-    Operation,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
-)
-from neptune.internal.utils import base64_decode
+from neptune.internal.operation import Operation
 from neptune.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.internal.utils.logger import get_logger
 from neptune.internal.utils.paths import path_to_str
@@ -432,16 +409,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         preprocessed_operations = operations_preprocessor.get_operations()
         errors.extend(preprocessed_operations.errors)
 
-        # Upload operations should be done first since they are idempotent
-        errors.extend(
-            self._execute_upload_operations_with_400_retry(
-                container_id=container_id,
-                container_type=container_type,
-                upload_operations=preprocessed_operations.upload_operations,
-                operation_storage=operation_storage,
-            )
-        )
-
         errors.extend(
             self._execute_operations(
                 container_id,
@@ -460,81 +427,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             operations_preprocessor.processed_ops_count + dropped_count,
             errors,
         )
-
-    def _execute_upload_operations(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        upload_operations: List[Operation],
-        operation_storage: OperationStorage,
-    ) -> List[NeptuneException]:
-        errors = list()
-
-        if self._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD):
-            multipart_config = self._client_config.multipart_config
-            # collect delete operations and execute them
-            attributes_to_reset = [
-                DeleteAttribute(op.path) for op in upload_operations if isinstance(op, UploadFileSet) and op.reset
-            ]
-            if attributes_to_reset:
-                errors.extend(self._execute_operations(container_id, container_type, operations=attributes_to_reset))
-        else:
-            multipart_config = None
-
-        for op in upload_operations:
-            if isinstance(op, UploadFile):
-                upload_errors = upload_file_attribute(
-                    swagger_client=self.leaderboard_client,
-                    container_id=container_id,
-                    attribute=path_to_str(op.path),
-                    source=op.get_absolute_path(operation_storage),
-                    ext=op.ext,
-                    multipart_config=multipart_config,
-                )
-                if upload_errors:
-                    errors.extend(upload_errors)
-            elif isinstance(op, UploadFileContent):
-                upload_errors = upload_file_attribute(
-                    swagger_client=self.leaderboard_client,
-                    container_id=container_id,
-                    attribute=path_to_str(op.path),
-                    source=base64_decode(op.file_content),
-                    ext=op.ext,
-                    multipart_config=multipart_config,
-                )
-                if upload_errors:
-                    errors.extend(upload_errors)
-            elif isinstance(op, UploadFileSet):
-                upload_errors = upload_file_set_attribute(
-                    swagger_client=self.leaderboard_client,
-                    container_id=container_id,
-                    attribute=path_to_str(op.path),
-                    file_globs=op.file_globs,
-                    reset=op.reset,
-                    multipart_config=multipart_config,
-                )
-                if upload_errors:
-                    errors.extend(upload_errors)
-            else:
-                raise InternalClientError("Upload operation in neither File or FileSet")
-
-        return errors
-
-    def _execute_upload_operations_with_400_retry(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        upload_operations: List[Operation],
-        operation_storage: OperationStorage,
-    ) -> List[NeptuneException]:
-        while True:
-            try:
-                return self._execute_upload_operations(
-                    container_id, container_type, upload_operations, operation_storage
-                )
-            except ClientHttpError as ex:
-                if "Length of stream does not match given range" not in ex.response:
-                    raise ex
 
     @with_api_exceptions_handler
     def _execute_operations(
@@ -594,74 +486,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 container_type=container_type,
             ) from e
 
-    def download_file_series_by_index(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        index: int,
-        destination: str,
-        progress_bar: Optional[ProgressBarType],
-    ):
-        try:
-            download_image_series_element(
-                swagger_client=self.leaderboard_client,
-                container_id=container_id,
-                attribute=path_to_str(path),
-                index=index,
-                destination=destination,
-                progress_bar=progress_bar,
-            )
-        except ClientHttpError as e:
-            if e.status == HTTPNotFound.status_code:
-                raise FetchAttributeNotFoundException(path_to_str(path))
-            else:
-                raise
-
-    def download_file(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        try:
-            download_file_attribute(
-                swagger_client=self.leaderboard_client,
-                container_id=container_id,
-                attribute=path_to_str(path),
-                destination=destination,
-                progress_bar=progress_bar,
-            )
-        except ClientHttpError as e:
-            if e.status == HTTPNotFound.status_code:
-                raise FetchAttributeNotFoundException(path_to_str(path))
-            else:
-                raise
-
-    def download_file_set(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        download_request = self._get_file_set_download_request(container_id, container_type, path)
-        try:
-            download_file_set_attribute(
-                swagger_client=self.leaderboard_client,
-                download_id=download_request.id,
-                destination=destination,
-                progress_bar=progress_bar,
-            )
-        except ClientHttpError as e:
-            if e.status == HTTPNotFound.status_code:
-                raise FetchAttributeNotFoundException(path_to_str(path))
-            else:
-                raise
-
     @with_api_exceptions_handler
     def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         params = {
@@ -702,19 +526,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
-        params = {
-            "experimentId": container_id,
-            "attribute": path_to_str(path),
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.leaderboard_client.api.getFileAttribute(**params).response().result
-            return FileField.from_model(result)
-        except HTTPNotFound:
-            raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
     def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         params = {
             "experimentId": container_id,
@@ -741,21 +552,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return DateTimeField.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
-        attribute = path_to_str(attribute)
-        try:
-            entries = (
-                self.leaderboard_client.api.lsFileSetAttribute(
-                    attribute=attribute, path=path, experimentId=container_id, **DEFAULT_REQUEST_KWARGS
-                )
-                .response()
-                .result
-            )
-            return [FileEntry.from_dto(entry) for entry in entries]
-        except HTTPNotFound:
-            raise FileSetNotFound(attribute, path)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(
@@ -799,28 +595,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
             return StringSetField.from_model(result)
-        except HTTPNotFound:
-            raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def get_image_series_values(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        offset: int,
-        limit: int,
-    ) -> ImageSeriesValues:
-        params = {
-            "experimentId": container_id,
-            "attribute": path_to_str(path),
-            "limit": limit,
-            "offset": offset,
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
-            return ImageSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -934,18 +708,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             ]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(container_id, container_type) from e
-
-    @with_api_exceptions_handler
-    def _get_file_set_download_request(self, container_id: str, container_type: ContainerType, path: List[str]):
-        params = {
-            "experimentId": container_id,
-            "attribute": path_to_str(path),
-            **DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
-        except HTTPNotFound:
-            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:

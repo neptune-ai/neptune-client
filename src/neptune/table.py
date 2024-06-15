@@ -34,11 +34,7 @@ from neptune.integrations.pandas import to_pandas
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.utils.logger import get_logger
-from neptune.internal.utils.paths import (
-    join_paths,
-    parse_path,
-)
-from neptune.typing import ProgressBarType
+from neptune.internal.utils.paths import join_paths
 
 if TYPE_CHECKING:
     import pandas
@@ -77,48 +73,6 @@ class TableEntry:
                 return self._field_to_value_visitor.visit(field)
         raise ValueError("Could not find {} attribute".format(path))
 
-    def download_file_attribute(
-        self,
-        path: str,
-        destination: Optional[str],
-        progress_bar: Optional[ProgressBarType] = None,
-    ) -> None:
-        for attr in self._fields:
-            if attr.path == path:
-                _type = attr.type
-                if _type == FieldType.FILE:
-                    self._backend.download_file(
-                        container_id=self._id,
-                        container_type=self._container_type,
-                        path=parse_path(path),
-                        destination=destination,
-                        progress_bar=progress_bar,
-                    )
-                    return
-                raise MetadataInconsistency("Cannot download file from attribute of type {}".format(_type))
-        raise ValueError("Could not find {} attribute".format(path))
-
-    def download_file_set_attribute(
-        self,
-        path: str,
-        destination: Optional[str],
-        progress_bar: Optional[ProgressBarType] = None,
-    ) -> None:
-        for attr in self._fields:
-            if attr.path == path:
-                _type = attr.type
-                if _type == FieldType.FILE_SET:
-                    self._backend.download_file_set(
-                        container_id=self._id,
-                        container_type=self._container_type,
-                        path=parse_path(path),
-                        destination=destination,
-                        progress_bar=progress_bar,
-                    )
-                    return
-                raise MetadataInconsistency("Cannot download ZIP archive from attribute of type {}".format(_type))
-        raise ValueError("Could not find {} attribute".format(path))
-
 
 class LeaderboardHandler:
     def __init__(self, table_entry: TableEntry, path: str) -> None:
@@ -133,10 +87,6 @@ class LeaderboardHandler:
 
     def download(self, destination: Optional[str]) -> None:
         attr_type = self._table_entry.get_attribute_type(self._path)
-        if attr_type == FieldType.FILE:
-            return self._table_entry.download_file_attribute(self._path, destination)
-        elif attr_type == FieldType.FILE_SET:
-            return self._table_entry.download_file_set_attribute(path=self._path, destination=destination)
         raise MetadataInconsistency("Cannot download file from attribute of type {}".format(attr_type))
 
 

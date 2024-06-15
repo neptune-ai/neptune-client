@@ -36,7 +36,6 @@ from neptune.internal.utils import (
 )
 from neptune.types import (
     Boolean,
-    File,
     Integer,
 )
 from neptune.types.atoms.datetime import Datetime
@@ -44,7 +43,6 @@ from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
 from neptune.types.namespace import Namespace
 from neptune.types.series import (
-    FileSeries,
     FloatSeries,
     StringSeries,
 )
@@ -66,10 +64,6 @@ def cast_value(value: Any) -> Optional[Value]:
         return ValueCopy(value)
     elif isinstance(value, argparse.Namespace):
         return Namespace(vars(value))
-    elif File.is_convertable_to_image(value):
-        return File.as_image(value)
-    elif File.is_convertable_to_html(value):
-        return File.as_html(value)
     elif is_bool(value):
         return Boolean(value)
     elif is_int(value):
@@ -104,13 +98,7 @@ def cast_value_for_extend(
 
     sample_val = next(iter(values))
 
-    if isinstance(sample_val, File):
-        return FileSeries(values=values)
-    elif File.is_convertable_to_image(sample_val):
-        return FileSeries(values=values)
-    elif File.is_convertable_to_html(sample_val):
-        return FileSeries(values=values)
-    elif is_string(sample_val):
+    if is_string(sample_val):
         return StringSeries(values=values)
     elif is_float_like(sample_val):
         return FloatSeries(values=values)

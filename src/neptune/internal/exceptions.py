@@ -125,11 +125,6 @@ You may also want to check the following docs page:
         super().__init__(message.format(env_api_token=API_TOKEN_ENV_NAME, **STYLES))
 
 
-class UploadedFileChanged(NeptuneException):
-    def __init__(self, filename: str) -> None:
-        super().__init__("File {} changed during upload, restarting upload.".format(filename))
-
-
 class InternalClientError(NeptuneException):
     def __init__(self, msg: str) -> None:
         message = """
@@ -322,18 +317,6 @@ You may also want to check the following docs page:
         super().__init__(message.format(**STYLES))
 
 
-class FileNotFound(NeptuneException):
-    def __init__(self, path: str) -> None:
-        super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
-
-
-class InvalidNotebookPath(NeptuneException):
-    def __init__(self, path: str) -> None:
-        super(InvalidNotebookPath, self).__init__(
-            "File {} is not a valid notebook. Should end with .ipynb.".format(path)
-        )
-
-
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
     def __init__(self, project_qualified_name: str) -> None:
         message = """
@@ -403,16 +386,6 @@ You may also want to check the following docs pages:
         super(NeptuneMissingProjectQualifiedNameException, self).__init__(
             message.format(env_project=PROJECT_ENV_NAME, **STYLES)
         )
-
-
-class NotAFile(NeptuneException):
-    def __init__(self, path: str) -> None:
-        super(NotAFile, self).__init__("Path {} is not a file.".format(path))
-
-
-class NotADirectory(NeptuneException):
-    def __init__(self, path: str) -> None:
-        super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
 
 
 class WritingToArchivedProjectException(NeptuneException):
