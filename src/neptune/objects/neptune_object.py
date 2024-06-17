@@ -39,6 +39,8 @@ from typing import (
     Iterable,
     List,
     Optional,
+    ParamSpec,
+    TypeVar,
     Union,
 )
 
@@ -113,6 +115,9 @@ if TYPE_CHECKING:
 
 NeptuneObjectCallback = Callable[["NeptuneObject"], None]
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
 
 def ensure_not_stopped(fun):
     @wraps(fun)
@@ -121,6 +126,16 @@ def ensure_not_stopped(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+def temporarily_disabled(func: Callable[P, R]) -> Callable[P, R]:
+    def wrapper(*_: P.args, **__: P.kwargs):
+        if func.__name__ == "_get_background_jobs":
+            return []
+        else:
+            return None
+
+    return wrapper
 
 
 class NeptuneObject(AbstractContextManager):
@@ -226,6 +241,7 @@ class NeptuneObject(AbstractContextManager):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
+    @temporarily_disabled
     def _async_create_run(self):
         """placeholder for async run creation"""
         operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)
