@@ -46,6 +46,7 @@
 - Added docstring for the `pop()` function ([#1776](https://github.com/neptune-ai/neptune-client/pull/1776))
 - Added `httpx[http2]` as dependency ([#1808](https://github.com/neptune-ai/neptune-client/pull/1808))
 - Decreased `batch_size` for `FloatSeries` from 100 to 1 ([#1793](https://github.com/neptune-ai/neptune-client/pull/1793))
+- Introduced `RunCreation` operation ([#1817](https://github.com/neptune-ai/neptune-client/pull/1817))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
