@@ -39,9 +39,12 @@ from typing import (
     Iterable,
     List,
     Optional,
+    Union,
+)
+
+from typing_extensions import (
     ParamSpec,
     TypeVar,
-    Union,
 )
 
 from neptune.api.models import FieldType
