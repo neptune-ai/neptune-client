@@ -68,9 +68,6 @@ class Project(NeptuneObject):
     You can also log (and fetch) metadata common to the whole project, such as information about datasets,
     links to documents, or key project metrics.
 
-    Note: If you want to instead create a project, use the
-    [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
-
     You can also use the Project object as a context manager (see examples).
 
     Args:

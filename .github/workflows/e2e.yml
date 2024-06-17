@@ -38,40 +38,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: "not integrations and not management"
+          module: "not integrations"
           name: "standard"
           report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
-  e2e_management:
-    environment: Production
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.8", "3.12" ]
-        os: [ ubuntu, windows, macos ]
-    runs-on: ${{ matrix.os }}-latest
-    name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.client_payload.pull_request.head.ref }}
-
-      - name: Test
-        uses: ./.github/actions/test-e2e
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: management
-          name: management
-          report_job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
-
   e2e-tests-notify:
-    needs: [ e2e, e2e_management ]
+    needs: [ e2e, ]
     runs-on: ubuntu-latest
     if: (success() || failure()) && github.ref == 'refs/heads/master'
     steps:
