@@ -29,7 +29,7 @@ from typing import (
 from neptune.core.components.abstract import Resource
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.operation_processors.operation_processor import OperationProcessor
-from neptune.core.operations.operation import FieldOperation
+from neptune.core.operations.operation import Operation
 
 RT = TypeVar("RT")
 
@@ -80,7 +80,7 @@ class LazyOperationProcessorWrapper(OperationProcessor):
         return self._operation_processor is not None
 
     @trigger_evaluation
-    def enqueue_operation(self, op: FieldOperation, *, wait: bool) -> None:
+    def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
         self._operation_processor.enqueue_operation(op, wait=wait)
 
     @property
