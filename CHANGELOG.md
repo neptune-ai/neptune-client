@@ -25,6 +25,7 @@
 - Remove Git support ([#1801](https://github.com/neptune-ai/neptune-client/pull/1801))
 - Removed artifacts feature ([#1800](https://github.com/neptune-ai/neptune-client/pull/1800))
 - Removed file support ([#1814](https://github.com/neptune-ai/neptune-client/pull/1814))
+- Removed management support ([#1816](https://github.com/neptune-ai/neptune-client/pull/1816))
 
 ### Features
 - Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))
