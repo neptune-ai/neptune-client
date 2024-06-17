@@ -33,7 +33,7 @@ from neptune.core.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
 )
-from neptune.core.operations.operation import Operation
+from neptune.core.operations.operation import FieldOperation
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import CustomId
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
@@ -68,7 +68,7 @@ class SyncOperationProcessor(WithResources, OperationProcessor):
         return self._metadata_file, self._operation_storage
 
     @ensure_disk_not_overutilize
-    def enqueue_operation(self, op: "Operation", *, wait: bool) -> None: ...
+    def enqueue_operation(self, op: "FieldOperation", *, wait: bool) -> None: ...
 
     def stop(self, seconds: Optional[float] = None) -> None:
         self.flush()

@@ -21,6 +21,8 @@ __all__ = [
     "AssignDatetime",
     "LogFloats",
     "Operation",
+    "FieldOperation",
+    "RunCreation",
 ]
 
 import abc
@@ -52,7 +54,6 @@ T = TypeVar("T")
 
 @dataclass
 class Operation(abc.ABC):
-    path: List[str]
     _registry: ClassVar[Dict[str, Type["Operation"]]] = {}
 
     def __init_subclass__(cls, **kwargs: Any) -> None:
@@ -67,10 +68,10 @@ class Operation(abc.ABC):
         pass
 
     def to_dict(self) -> Dict[str, Any]:
-        return {"type": self.__class__.__name__, "path": self.path}
+        return {"type": self.__class__.__name__}
 
-    @staticmethod
-    def from_dict(data: dict) -> "Operation":
+    @classmethod
+    def from_dict(cls, data: dict) -> "Operation":
         if "type" not in data:
             raise MalformedOperation("Malformed operation {} - type is missing".format(data))
         operation_type = data["type"]
@@ -80,91 +81,105 @@ class Operation(abc.ABC):
 
 
 @dataclass
-class AssignFloat(Operation):
+class RunCreation(Operation):
+    created_at: datetime
+    custom_id: str
+
+    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        return visitor.visit_run_creation(self)
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Operation":
+        return cls(data["created_at"], data["custom_id"])
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {**super().to_dict(), "created_at": self.created_at, "custom_id": self.custom_id}
+
+
+@dataclass
+class FieldOperation(Operation, abc.ABC):
+    path: List[str]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {**super().to_dict(), "path": self.path}
+
+
+@dataclass
+class AssignFloat(FieldOperation):
     value: float
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_assign_float(self)
 
     def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["value"] = self.value
-        return ret
+        return {**super().to_dict(), "value": self.value}
 
-    @staticmethod
-    def from_dict(data: dict) -> "AssignFloat":
-        return AssignFloat(data["path"], data["value"])
+    @classmethod
+    def from_dict(cls, data: dict) -> "AssignFloat":
+        return cls(data["path"], data["value"])
 
 
 @dataclass
-class AssignInt(Operation):
+class AssignInt(FieldOperation):
     value: int
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_assign_int(self)
 
     def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["value"] = self.value
-        return ret
+        return {**super().to_dict(), "value": self.value}
 
-    @staticmethod
-    def from_dict(data: dict) -> "AssignInt":
-        return AssignInt(data["path"], data["value"])
+    @classmethod
+    def from_dict(cls, data: dict) -> "AssignInt":
+        return cls(data["path"], data["value"])
 
 
 @dataclass
-class AssignBool(Operation):
+class AssignBool(FieldOperation):
     value: bool
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_assign_bool(self)
 
     def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["value"] = self.value
-        return ret
+        return {**super().to_dict(), "value": self.value}
 
-    @staticmethod
-    def from_dict(data: dict) -> "AssignBool":
-        return AssignBool(data["path"], data["value"])
+    @classmethod
+    def from_dict(cls, data: dict) -> "AssignBool":
+        return cls(data["path"], data["value"])
 
 
 @dataclass
-class AssignString(Operation):
+class AssignString(FieldOperation):
     value: str
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_assign_string(self)
 
     def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["value"] = self.value
-        return ret
+        return {**super().to_dict(), "value": self.value}
 
-    @staticmethod
-    def from_dict(data: dict) -> "AssignString":
+    @classmethod
+    def from_dict(cls, data: dict) -> "AssignString":
         return AssignString(data["path"], data["value"])
 
 
 @dataclass
-class AssignDatetime(Operation):
+class AssignDatetime(FieldOperation):
     value: datetime
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_assign_datetime(self)
 
     def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["value"] = int(1000 * self.value.timestamp())
-        return ret
+        return {**super().to_dict(), "value": int(1000 * self.value.timestamp())}
 
-    @staticmethod
-    def from_dict(data: dict) -> "AssignDatetime":
+    @classmethod
+    def from_dict(cls, data: dict) -> "AssignDatetime":
         return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
 
 
-class LogOperation(Operation, abc.ABC):
+class LogOperation(FieldOperation, abc.ABC):
     pass
 
 
@@ -195,13 +210,11 @@ class LogFloats(LogOperation):
         return visitor.visit_log_floats(self)
 
     def to_dict(self) -> Dict[str, Any]:
-        ret = super().to_dict()
-        ret["values"] = [value.to_dict() for value in self.values]
-        return ret
+        return {**super().to_dict(), "values": [value.to_dict() for value in self.values]}
 
-    @staticmethod
-    def from_dict(data: dict) -> "LogFloats":
-        return LogFloats(
+    @classmethod
+    def from_dict(cls, data: dict) -> "LogFloats":
+        return cls(
             data["path"],
-            [LogFloats.ValueType.from_dict(value) for value in data["values"]],  # type: ignore[misc]
+            [cls.ValueType.from_dict(value) for value in data["values"]],  # type: ignore[misc]
         )

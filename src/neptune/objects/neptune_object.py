@@ -17,6 +17,7 @@ __all__ = ["NeptuneObject"]
 
 import abc
 import atexit
+import datetime
 import itertools
 import logging
 import os
@@ -48,6 +49,7 @@ from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.core.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operations.operation import RunCreation
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -226,7 +228,8 @@ class NeptuneObject(AbstractContextManager):
 
     def _async_create_run(self):
         """placeholder for async run creation"""
-        pass
+        operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)
+        self._op_processor.enqueue_operation(operation, wait=False)
 
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:

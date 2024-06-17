@@ -23,7 +23,7 @@ from typing import (
 )
 
 from neptune.core.operation_processors.async_operation_processor.processing_resources import ProcessingResources
-from neptune.core.operations.operation import Operation
+from neptune.core.operations.operation import FieldOperation
 from neptune.internal.daemon import Daemon
 from neptune.internal.signals_processing.utils import (
     signal_batch_lag,
@@ -70,7 +70,7 @@ class ConsumerThread(Daemon):
             " synced manually using `neptune sync` command."
         )
     )
-    def process_batch(self, batch: List[Operation], version: int, occurred_at: Optional[float] = None) -> None:
+    def process_batch(self, batch: List[FieldOperation], version: int, occurred_at: Optional[float] = None) -> None:
         if occurred_at is not None:
             signal_batch_lag(queue=self._processing_resources.signals_queue, lag=time() - occurred_at)
 
