@@ -118,7 +118,6 @@ from neptune.internal.warnings import (
     warn_once,
 )
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.management.exceptions import ObjectNotFound
 from neptune.typing import ProgressBarType
 from neptune.version import version as neptune_version
 
@@ -273,29 +272,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: Union[UniqueId, QualifiedName],
         expected_container_type: typing.Optional[ContainerType],
     ) -> ApiExperiment:
-        try:
-            experiment = (
-                self.leaderboard_client.api.getExperiment(
-                    experimentId=container_id,
-                    **DEFAULT_REQUEST_KWARGS,
-                )
-                .response()
-                .result
+        experiment = (
+            self.leaderboard_client.api.getExperiment(
+                experimentId=container_id,
+                **DEFAULT_REQUEST_KWARGS,
             )
+            .response()
+            .result
+        )
 
-            if (
-                expected_container_type is not None
-                and ContainerType.from_api(experiment.type) != expected_container_type
-            ):
-                raise MetadataContainerNotFound.of_container_type(
-                    container_type=expected_container_type, container_id=container_id
-                )
-
-            return ApiExperiment.from_experiment(experiment)
-        except ObjectNotFound:
+        if expected_container_type is not None and ContainerType.from_api(experiment.type) != expected_container_type:
             raise MetadataContainerNotFound.of_container_type(
                 container_type=expected_container_type, container_id=container_id
             )
+
+        return ApiExperiment.from_experiment(experiment)
 
     @with_api_exceptions_handler
     def create_run(

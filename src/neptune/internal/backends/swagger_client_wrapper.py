@@ -41,18 +41,6 @@ class ApiMethodWrapper:
 
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
-        from neptune.management.exceptions import (
-            ActiveProjectsLimitReachedException,
-            IncorrectIdentifierException,
-            ObjectNotFound,
-            ProjectKeyCollision,
-            ProjectKeyInvalid,
-            ProjectNameCollision,
-            ProjectNameInvalid,
-            ProjectPrivacyRestrictedException,
-            ProjectsLimitReached,
-        )
-
         error_processors: Dict[str, Callable[[Dict], Exception]] = {
             "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED": lambda response_body: NeptuneFieldCountLimitExceedException(
                 limit=response_body.get("limit", "<unknown limit>"),
@@ -60,27 +48,27 @@ class ApiMethodWrapper:
                 identifier=response_body.get("experimentQualifiedName", "<unknown identifier>"),
             ),
             "AUTHORIZATION_TOKEN_EXPIRED": lambda _: NeptuneAuthTokenExpired(),
-            "EXPERIMENT_NOT_FOUND": lambda _: ObjectNotFound(),
-            "INCORRECT_IDENTIFIER": lambda response_body: IncorrectIdentifierException(
-                identifier=response_body.get("identifier", "<Unknown identifier>")
+            "EXPERIMENT_NOT_FOUND": lambda _: RuntimeError("Object not found"),
+            "INCORRECT_IDENTIFIER": lambda response_body: RuntimeError(
+                f"Incorrect identifier: {response_body.get('identifier', '<Unknown identifier>')}"
             ),
-            "LIMIT_OF_PROJECTS_REACHED": lambda _: ProjectsLimitReached(),
-            "PROJECT_KEY_COLLISION": lambda response_body: ProjectKeyCollision(
-                key=response_body.get("key", "<unknown key>")
+            "LIMIT_OF_PROJECTS_REACHED": lambda _: RuntimeError("Projects limit reached"),
+            "PROJECT_KEY_COLLISION": lambda response_body: RuntimeError(
+                f"Project key collision: {response_body.get('key', '<unknown key>')}"
             ),
-            "PROJECT_KEY_INVALID": lambda response_body: ProjectKeyInvalid(
-                key=response_body.get("key", "<unknown key>"),
-                reason=response_body.get("reason", "Unknown reason"),
+            "PROJECT_KEY_INVALID": lambda response_body: RuntimeError(
+                f"Project key invalid: {response_body.get('key', '<unknown key>')}, "
+                f"reason: {response_body.get('reason', 'Unknown reason')}"
             ),
-            "PROJECT_NAME_COLLISION": lambda response_body: ProjectNameCollision(
-                key=response_body.get("key", "<unknown key>")
+            "PROJECT_NAME_COLLISION": lambda response_body: RuntimeError(
+                f"Project name collision: {response_body.get('key', '<unknown key>')}"
             ),
-            "PROJECT_NAME_INVALID": lambda response_body: ProjectNameInvalid(
-                name=response_body.get("name", "<unknown name>")
+            "PROJECT_NAME_INVALID": lambda response_body: RuntimeError(
+                f"Project name invalid: {response_body.get('name', '<unknown name>')}"
             ),
-            "VISIBILITY_RESTRICTED": lambda response_body: ProjectPrivacyRestrictedException(
-                requested=response_body.get("requestedValue"),
-                allowed=response_body.get("allowedValues"),
+            "VISIBILITY_RESTRICTED": lambda response_body: RuntimeError(
+                f"Project privacy restricted: requested {response_body.get('requestedValue')}, "
+                f"allowed {response_body.get('allowedValues')}"
             ),
             "WORKSPACE_IN_READ_ONLY_MODE": lambda response_body: NeptuneLimitExceedException(
                 reason=response_body.get("title", "Unknown reason")
@@ -88,8 +76,8 @@ class ApiMethodWrapper:
             "PROJECT_LIMITS_EXCEEDED": lambda response_body: NeptuneLimitExceedException(
                 reason=response_body.get("title", "Unknown reason")
             ),
-            "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: ActiveProjectsLimitReachedException(
-                currentQuota=response_body.get("currentQuota", "<unknown quota>")
+            "LIMIT_OF_ACTIVE_PROJECTS_REACHED": lambda response_body: RuntimeError(
+                f"Active projects limit reached: current quota {response_body.get('currentQuota', '<unknown quota>')}"
             ),
             "WRITE_ACCESS_DENIED_TO_ARCHIVED_PROJECT": lambda _: WritingToArchivedProjectException(),
         }

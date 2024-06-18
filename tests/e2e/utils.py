@@ -15,7 +15,6 @@
 #
 __all__ = [
     "tmp_context",
-    "a_project_name",
     "a_key",
     "Environment",
     "initialize_container",
@@ -29,7 +28,6 @@ import random
 import string
 import tempfile
 from contextlib import contextmanager
-from datetime import datetime
 from time import perf_counter
 
 from attr import dataclass
@@ -67,12 +65,6 @@ def a_key():
     return "".join(random.choices(string.ascii_uppercase, k=10))
 
 
-def a_project_name(project_slug: str):
-    project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-
-    return project_name
-
-
 class RawEnvironment:
     """Load environment variables required to run e2e tests"""
 
@@ -80,15 +72,7 @@ class RawEnvironment:
         env = os.environ
         try:
             # Target workspace name
-            self.workspace_name = env["WORKSPACE_NAME"]
-            # Admin user
-            self.admin_username = env["ADMIN_USERNAME"]
-            # Admin user API token
-            self.admin_neptune_api_token = env["ADMIN_NEPTUNE_API_TOKEN"]
-            # Member user
-            self.user_username = env["USER_USERNAME"]
-            # SA name
-            self.service_account_name = env["SERVICE_ACCOUNT_NAME"]
+            self.project_name = env["NEPTUNE_PROJECT"]
             # Member user or SA API token
             self.neptune_api_token = env["NEPTUNE_API_TOKEN"]
         except KeyError as e:
@@ -97,13 +81,8 @@ class RawEnvironment:
 
 @dataclass
 class Environment:
-    workspace: str
     project: str
-    user_token: str  # token of `user` or `service_account`
-    admin_token: str
-    admin: str
-    user: str
-    service_account: str
+    user_token: str
 
 
 def initialize_container(container_type, project, **extra_args):
@@ -116,16 +95,6 @@ def initialize_container(container_type, project, **extra_args):
     if container_type == "run":
         return neptune.init_run(project=project, **extra_args)
 
-    if container_type == "model":
-        return neptune.init_model(key=a_key(), project=project, **extra_args)
-
-    if container_type == "model_version":
-        model = neptune.init_model(key=a_key(), project=project, **extra_args)
-        model_sys_id = model["sys/id"].fetch()
-        model.stop()
-
-        return neptune.init_model_version(model=model_sys_id, project=project, **extra_args)
-
     raise NotImplementedError(container_type)
 
 
@@ -136,12 +105,6 @@ def reinitialize_container(sys_id: str, container_type: str, project: str, **kwa
 
     if container_type == "run":
         return neptune.init_run(with_id=sys_id, project=project, **kwargs)
-
-    if container_type == "model":
-        return neptune.init_model(with_id=sys_id, project=project, **kwargs)
-
-    if container_type == "model_version":
-        return neptune.init_model_version(with_id=sys_id, project=project, **kwargs)
 
     raise NotImplementedError()
 
