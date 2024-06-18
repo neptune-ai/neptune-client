@@ -50,13 +50,13 @@ from neptune.internal.parameters import (
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
 from neptune.objects.utils import build_raw_query
 from neptune.table import Table
-from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
     ProgressBarType,

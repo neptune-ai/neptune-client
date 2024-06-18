@@ -174,7 +174,6 @@ module = [
     "neptune.objects.abstract",
     "neptune.types.value_copy",
     "neptune.types.namespace",
-    "neptune.types.mode",
     "neptune.types.series.series_value",
     "neptune.types.atoms.datetime",
     "neptune.types.atoms.boolean",
