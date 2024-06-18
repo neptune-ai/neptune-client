@@ -27,8 +27,8 @@ from neptune.core.operations.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
-    FieldOperation,
     LogFloats,
+    Operation,
     RunCreation,
 )
 
@@ -36,7 +36,7 @@ Ret = TypeVar("Ret")
 
 
 class OperationVisitor(Generic[Ret]):
-    def visit(self, op: FieldOperation) -> Ret:
+    def visit(self, op: Operation) -> Ret:
         return op.accept(self)
 
     @abc.abstractmethod
