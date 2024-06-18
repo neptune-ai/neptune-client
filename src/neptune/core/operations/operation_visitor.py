@@ -29,6 +29,7 @@ from neptune.core.operations.operation import (
     AssignString,
     LogFloats,
     Operation,
+    RunCreation,
 )
 
 Ret = TypeVar("Ret")
@@ -60,4 +61,8 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_log_floats(self, op: LogFloats) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_run_creation(self, op: RunCreation) -> Ret:
         pass

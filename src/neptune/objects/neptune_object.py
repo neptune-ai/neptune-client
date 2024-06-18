@@ -17,6 +17,7 @@ __all__ = ["NeptuneObject"]
 
 import abc
 import atexit
+import datetime
 import itertools
 import logging
 import os
@@ -41,6 +42,11 @@ from typing import (
     Union,
 )
 
+from typing_extensions import (
+    ParamSpec,
+    TypeVar,
+)
+
 from neptune.api.models import FieldType
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
@@ -48,6 +54,7 @@ from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
 from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.core.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operations.operation import RunCreation
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -111,6 +118,9 @@ if TYPE_CHECKING:
 
 NeptuneObjectCallback = Callable[["NeptuneObject"], None]
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
 
 def ensure_not_stopped(fun):
     @wraps(fun)
@@ -119,6 +129,16 @@ def ensure_not_stopped(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+def temporarily_disabled(func: Callable[P, R]) -> Callable[P, R]:
+    def wrapper(*_: P.args, **__: P.kwargs):
+        if func.__name__ == "_get_background_jobs":
+            return []
+        else:
+            return None
+
+    return wrapper
 
 
 class NeptuneObject(AbstractContextManager):
@@ -224,9 +244,11 @@ class NeptuneObject(AbstractContextManager):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
+    @temporarily_disabled
     def _async_create_run(self):
         """placeholder for async run creation"""
-        pass
+        operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)
+        self._op_processor.enqueue_operation(operation, wait=False)
 
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:

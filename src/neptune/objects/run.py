@@ -21,10 +21,8 @@ import uuid
 from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
-    Callable,
     List,
     Optional,
-    TypeVar,
     Union,
 )
 
@@ -78,27 +76,13 @@ from neptune.internal.websockets.websocket_signals_background_job import Websock
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
+    temporarily_disabled,
 )
 from neptune.types import StringSeries
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob
-
-
-T = TypeVar("T")
-
-
-def temporarily_disabled(func: Callable[..., T]) -> Callable[..., T]:
-    def wrapper(*_, **__):
-        if func.__name__ == "_get_background_jobs":
-            return []
-        elif func.__name__ == "_write_initial_attributes":
-            return None
-        elif func.__name__ == "_write_initial_monitoring_attributes":
-            return None
-
-    return wrapper
 
 
 class Run(NeptuneObject):
