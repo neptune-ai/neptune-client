@@ -43,6 +43,7 @@ from neptune.internal.utils import (
     verify_type,
     verify_value,
 )
+from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
@@ -52,7 +53,6 @@ from neptune.objects.utils import (
     prepare_nql_query,
 )
 from neptune.table import Table
-from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
     ProgressBarType,

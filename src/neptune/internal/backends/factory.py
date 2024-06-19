@@ -18,7 +18,7 @@ __all__ = ["get_backend"]
 from typing import Optional
 
 from neptune.internal.credentials import Credentials
-from neptune.types.mode import Mode
+from neptune.objects.mode import Mode
 
 from .hosted_neptune_backend import HostedNeptuneBackend
 from .neptune_backend import NeptuneBackend

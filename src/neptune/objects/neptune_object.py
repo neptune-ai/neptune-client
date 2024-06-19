@@ -106,8 +106,8 @@ from neptune.internal.utils.uncaught_exception_handler import instance as uncaug
 from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
+from neptune.objects.mode import Mode
 from neptune.table import Table
-from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback

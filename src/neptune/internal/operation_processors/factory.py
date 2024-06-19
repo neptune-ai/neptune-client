@@ -28,7 +28,7 @@ from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.container_type import ContainerType
 from neptune.internal.id_formats import UniqueId
-from neptune.types.mode import Mode
+from neptune.objects.mode import Mode
 
 from .async_operation_processor import AsyncOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
