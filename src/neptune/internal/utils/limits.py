@@ -15,9 +15,10 @@
 #
 __all__ = ["custom_run_id_exceeds_length"]
 
+from typing import Optional
 
 CUSTOM_RUN_ID_LENGTH = 128
 
 
-def custom_run_id_exceeds_length(custom_run_id):
-    return custom_run_id and len(custom_run_id) > CUSTOM_RUN_ID_LENGTH
+def custom_run_id_exceeds_length(custom_run_id: Optional[str]) -> bool:
+    return custom_run_id is not None and len(custom_run_id) > CUSTOM_RUN_ID_LENGTH
