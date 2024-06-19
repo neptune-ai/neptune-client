@@ -210,7 +210,6 @@ module = [
     "neptune.integrations.python_logger",
     "neptune.integrations.utils",
     "neptune.internal.types.stringify_value",
-    "neptune.utils",
     "neptune.internal.backends.api_model",
     "neptune.internal.backends.hosted_client",
     "neptune.internal.backends.hosted_neptune_backend",
