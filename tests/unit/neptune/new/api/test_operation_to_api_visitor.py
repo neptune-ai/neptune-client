@@ -83,7 +83,7 @@ def test_operation_to_api_visitor_run_creation():
 
 
 @pytest.mark.parametrize(
-    ["operation", "expected_proto_run_operation"],
+    ["core_operation", "expected_proto_run_operation"],
     [
         (
             core_operations.AssignInt(["path"], 1),
@@ -114,11 +114,11 @@ def test_operation_to_api_visitor_run_creation():
     ],
 )
 def test_api_to_operation_visitor(
-    operation: core_operations.Operation,
+    core_operation: core_operations.Operation,
     expected_proto_run_operation: ProtoRunOperation,
     visitor: OperationToApiVisitor,
 ):
-    api_op = operation.accept(visitor)
+    api_op = core_operation.accept(visitor)
 
     run_op = RunOperation("project", "run_id", operation=api_op)
 
