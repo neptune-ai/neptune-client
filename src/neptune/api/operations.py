@@ -18,9 +18,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from google.protobuf import timestamp_pb2
+
 import neptune.api.proto.ingest_pb2 as ingest_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 from neptune.api.models import FloatSeriesValues
+from neptune.core.operations.operation import RunCreation
 
 
 @dataclass
@@ -35,6 +38,9 @@ class RunOperation:
         create = self.operation if isinstance(self.operation, common_pb2.Run) else None
         update = self.operation if isinstance(self.operation, common_pb2.UpdateRunSnapshot) else None
 
+        if create is not None and update is not None:
+            raise ValueError("Operation must be either a Run or an UpdateRunSnapshot")
+
         return ingest_pb2.RunOperation(
             project=self.project,
             run_id=self.run_id,
@@ -47,8 +53,13 @@ class RunOperation:
 
 @dataclass
 class Run:
+    operation: RunCreation
+
     def to_proto(self) -> common_pb2.Run:
-        return common_pb2.Run()
+        return common_pb2.Run(
+            run_id=self.operation.custom_id,
+            creation_time=timestamp_pb2.Timestamp(seconds=int(self.operation.created_at.timestamp())),
+        )
 
 
 @dataclass
@@ -57,7 +68,6 @@ class LogFloats:
     items: FloatSeriesValues
 
     def to_proto(self) -> common_pb2.UpdateRunSnapshot:
-        # Only first item, # <= 1
         first_item = self.items.values[0]
 
         return common_pb2.UpdateRunSnapshot(
@@ -66,4 +76,5 @@ class LogFloats:
                 "path": common_pb2.Value(string=self.path),
                 "value": common_pb2.Value(float64=first_item.value),
             },
+            timestamp=timestamp_pb2.Timestamp(seconds=int(first_item.timestamp.timestamp())),
         )
