@@ -15,7 +15,7 @@
 #
 from __future__ import annotations
 
-import typing
+import abc
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
@@ -29,17 +29,35 @@ import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 
 
-class Operation(typing.Protocol):
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot | common_pb2.Run:
-        pass
+class ProtoSerializable(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def create(self) -> Optional[common_pb2.Run]: ...
+
+    @property
+    @abc.abstractmethod
+    def update(self) -> Optional[common_pb2.UpdateRunSnapshot]: ...
+
+
+class SerializableCreation(ProtoSerializable, abc.ABC):
+    @property
+    def update(self) -> Optional[common_pb2.UpdateRunSnapshot]:
+        return None
+
+
+class SerializableUpdate(ProtoSerializable, abc.ABC):
+    @property
+    def create(self) -> Optional[common_pb2.Run]:
+        return None
 
 
 @dataclass
-class Run:
+class Run(SerializableCreation):
     created_at: datetime
     custom_id: str
 
-    def to_proto(self) -> common_pb2.Run:
+    @property
+    def create(self) -> common_pb2.Run:
         return common_pb2.Run(
             run_id=self.custom_id,
             creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
@@ -54,11 +72,12 @@ class FloatValue:
 
 
 @dataclass
-class LogFloats:
+class LogFloats(SerializableUpdate):
     path: str
     items: List[FloatValue]
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         first_item = self.items[0]
 
         step = (
@@ -78,11 +97,12 @@ class LogFloats:
 
 
 @dataclass
-class AssignInteger:
+class AssignInteger(SerializableUpdate):
     path: str
     value: int
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         return common_pb2.UpdateRunSnapshot(
             assign={
                 "path": common_pb2.Value(string=self.path),
@@ -92,11 +112,12 @@ class AssignInteger:
 
 
 @dataclass
-class AssignFloat:
+class AssignFloat(SerializableUpdate):
     path: str
     value: float
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         return common_pb2.UpdateRunSnapshot(
             assign={
                 "path": common_pb2.Value(string=self.path),
@@ -106,11 +127,12 @@ class AssignFloat:
 
 
 @dataclass
-class AssignBool:
+class AssignBool(SerializableUpdate):
     path: str
     value: bool
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         return common_pb2.UpdateRunSnapshot(
             assign={
                 "path": common_pb2.Value(string=self.path),
@@ -120,11 +142,12 @@ class AssignBool:
 
 
 @dataclass
-class AssignString:
+class AssignString(SerializableUpdate):
     path: str
     value: str
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         return common_pb2.UpdateRunSnapshot(
             assign={
                 "path": common_pb2.Value(string=self.path),
@@ -134,11 +157,12 @@ class AssignString:
 
 
 @dataclass
-class AssignDatetime:
+class AssignDatetime(SerializableUpdate):
     path: str
     value: datetime
 
-    def to_proto(self) -> common_pb2.UpdateRunSnapshot:
+    @property
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         return common_pb2.UpdateRunSnapshot(
             assign={
                 "path": common_pb2.Value(string=self.path),
@@ -151,17 +175,14 @@ class AssignDatetime:
 class RunOperation:
     project: str
     run_id: str
-    operation: Operation
+    operation: ProtoSerializable
 
     def to_proto(self) -> ingest_pb2.RunOperation:
-        create = self.operation.to_proto() if isinstance(self.operation, Run) else None
-        update = self.operation.to_proto() if not isinstance(self.operation, Run) else None
-
         return ingest_pb2.RunOperation(
             project=self.project,
             run_id=self.run_id,
             create_missing_project=False,
-            create=create,
-            update=update,  # type: ignore[arg-type]
+            create=self.operation.create,
+            update=self.operation.update,
             api_key=b"",
         )

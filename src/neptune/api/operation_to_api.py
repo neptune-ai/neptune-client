@@ -15,7 +15,7 @@
 #
 
 import neptune.api.operations as api_operations
-from neptune.api.operations import Operation
+from neptune.api.operations import ProtoSerializable
 from neptune.core.operations import (
     AssignBool,
     AssignDatetime,
@@ -29,27 +29,27 @@ from neptune.core.operations.operation_visitor import OperationVisitor
 from neptune.internal.utils.paths import path_to_str
 
 
-class OperationToApiVisitor(OperationVisitor[Operation]):
-    def visit_assign_float(self, op: AssignFloat) -> Operation:
+class OperationToApiVisitor(OperationVisitor[ProtoSerializable]):
+    def visit_assign_float(self, op: AssignFloat) -> ProtoSerializable:
         return api_operations.AssignFloat(path_to_str(op.path), op.value)
 
-    def visit_assign_int(self, op: AssignInt) -> Operation:
+    def visit_assign_int(self, op: AssignInt) -> ProtoSerializable:
         return api_operations.AssignInteger(path_to_str(op.path), op.value)
 
-    def visit_assign_bool(self, op: AssignBool) -> Operation:
+    def visit_assign_bool(self, op: AssignBool) -> ProtoSerializable:
         return api_operations.AssignBool(path_to_str(op.path), op.value)
 
-    def visit_assign_datetime(self, op: AssignDatetime) -> Operation:
+    def visit_assign_datetime(self, op: AssignDatetime) -> ProtoSerializable:
         return api_operations.AssignDatetime(path_to_str(op.path), op.value)
 
-    def visit_assign_string(self, op: AssignString) -> Operation:
+    def visit_assign_string(self, op: AssignString) -> ProtoSerializable:
         return api_operations.AssignString(path_to_str(op.path), op.value)
 
-    def visit_log_floats(self, op: LogFloats) -> Operation:
+    def visit_log_floats(self, op: LogFloats) -> ProtoSerializable:
         return api_operations.LogFloats(
             path_to_str(op.path),
             [api_operations.FloatValue(val.ts, val.value, val.step) for val in op.values],
         )
 
-    def visit_run_creation(self, op: RunCreation) -> Operation:
+    def visit_run_creation(self, op: RunCreation) -> ProtoSerializable:
         return api_operations.Run(op.created_at, op.custom_id)
