@@ -5,7 +5,7 @@ isort:skip_file
 import builtins
 import google.protobuf.descriptor
 import google.protobuf.message
-import neptune_pb.ingest.v1.common_pb2
+import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 import sys
 
 if sys.version_info >= (3, 8):
@@ -36,10 +36,10 @@ class RunOperation(google.protobuf.message.Message):
     create_missing_project: builtins.bool
     """Optional. Will create project if it doesn't yet exist. This operation is idempotent."""
     @property
-    def create(self) -> neptune_pb.ingest.v1.common_pb2.Run:
+    def create(self) -> common_pb2.Run:
         """Creates a new run. See `CreateRun` for details."""
     @property
-    def update(self) -> neptune_pb.ingest.v1.common_pb2.UpdateRunSnapshot:
+    def update(self) -> common_pb2.UpdateRunSnapshot:
         """All included fields will be aligned to the same step. In case the step is not set, it will select the
         successor of the highest last_step value among metrics currently being updated.
         """
@@ -53,8 +53,8 @@ class RunOperation(google.protobuf.message.Message):
         project: builtins.str = ...,
         run_id: builtins.str = ...,
         create_missing_project: builtins.bool = ...,
-        create: neptune_pb.ingest.v1.common_pb2.Run | None = ...,
-        update: neptune_pb.ingest.v1.common_pb2.UpdateRunSnapshot | None = ...,
+        create: common_pb2.Run | None = ...,
+        update: common_pb2.UpdateRunSnapshot | None = ...,
         api_key: builtins.bytes = ...,
     ) -> None: ...
     def HasField(self, field_name: typing_extensions.Literal["create", b"create", "operation", b"operation", "update", b"update"]) -> builtins.bool: ...
