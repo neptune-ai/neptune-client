@@ -11,7 +11,7 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
-from neptune_pb.ingest.v1 import common_pb2 as neptune__pb_dot_ingest_dot_v1_dot_common__pb2
+from neptune.api.proto.neptune_pb.ingest.v1 import common_pb2 as neptune__pb_dot_ingest_dot_v1_dot_common__pb2
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n%neptune_pb/ingest/v1/pub/ingest.proto\x12\x15neptune.ingest.v1.pub\x1a!neptune_pb/ingest/v1/common.proto\"\xcf\x01\n\x0cRunOperation\x12\x0f\n\x07project\x18\x01 \x01(\t\x12\x0e\n\x06run_id\x18\x02 \x01(\t\x12\x1e\n\x16\x63reate_missing_project\x18\x03 \x01(\x08\x12(\n\x06\x63reate\x18\x06 \x01(\x0b\x32\x16.neptune.ingest.v1.RunH\x00\x12\x36\n\x06update\x18\x07 \x01(\x0b\x32$.neptune.ingest.v1.UpdateRunSnapshotH\x00\x12\x0f\n\x07\x61pi_key\x18\x0c \x01(\x0c\x42\x0b\n\toperationB<\n(ml.neptune.leaderboard.api.ingest.v1.pubB\x0eIngestPubProtoP\x01\x62\x06proto3')

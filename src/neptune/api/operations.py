@@ -20,7 +20,7 @@ from dataclasses import dataclass
 
 from google.protobuf import timestamp_pb2
 
-import neptune.api.proto.ingest_pb2 as ingest_pb2
+import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 from neptune.api.models import FloatSeriesValues
 from neptune.core.operations.operation import RunCreation
