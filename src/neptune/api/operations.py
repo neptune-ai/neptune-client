@@ -36,7 +36,6 @@ from typing import (
 )
 
 from google.protobuf import timestamp_pb2
-from google.protobuf.message import Message
 
 import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
@@ -44,7 +43,7 @@ import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 
 class Serializable(abc.ABC):
     @abc.abstractmethod
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         pass
 
 
@@ -53,8 +52,10 @@ class Run(Serializable):
     created_at: datetime
     custom_id: str
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             create=common_pb2.Run(
                 creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
                 run_id=self.custom_id,
@@ -75,7 +76,7 @@ class LogFloats(Serializable):
     path: str
     items: List[FloatValue]
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         first_item = self.items[0]
 
         step = (
@@ -85,6 +86,8 @@ class LogFloats(Serializable):
         )
 
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 step=step,
                 append={
@@ -96,33 +99,16 @@ class LogFloats(Serializable):
             api_key=b"",
         )
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        first_item = self.items[0]
-
-        step = (
-            common_pb2.Step(whole=int(first_item.step), micro=int((first_item.step - int(first_item.step)) * 1e6))
-            if first_item.step is not None
-            else None
-        )
-
-        return common_pb2.UpdateRunSnapshot(
-            step=step,
-            append={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(float64=first_item.value),
-            },
-            timestamp=timestamp_pb2.Timestamp(seconds=int(first_item.timestamp)),
-        )
-
 
 @dataclass
 class AssignInteger(Serializable):
     path: str
     value: int
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
                     "path": common_pb2.Value(string=self.path),
@@ -138,8 +124,10 @@ class AssignFloat(Serializable):
     path: str
     value: float
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
                     "path": common_pb2.Value(string=self.path),
@@ -155,8 +143,10 @@ class AssignBool(Serializable):
     path: str
     value: bool
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
                     "path": common_pb2.Value(string=self.path),
@@ -172,8 +162,10 @@ class AssignString(Serializable):
     path: str
     value: str
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
                     "path": common_pb2.Value(string=self.path),
@@ -189,8 +181,10 @@ class AssignDatetime(Serializable):
     path: str
     value: datetime
 
-    def to_proto(self) -> ingest_pb2.RunOperation:
+    def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
         return ingest_pb2.RunOperation(
+            project=run_op.project,
+            run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
                     "path": common_pb2.Value(string=self.path),
@@ -208,17 +202,4 @@ class RunOperation:
     operation: Serializable
 
     def to_proto(self) -> ingest_pb2.RunOperation:
-        serialized_op = self.operation.to_proto()
-
-        return ingest_pb2.RunOperation(
-            project=self.project,
-            run_id=self.run_id,
-            create_missing_project=False,
-            create=serialized_op.create if is_message_not_empty(serialized_op.create) else None,
-            update=serialized_op.update if is_message_not_empty(serialized_op.update) else None,
-            api_key=b"",
-        )
-
-
-def is_message_not_empty(message: Message) -> bool:
-    return len(message.ListFields()) > 0
+        return self.operation.to_proto(run_op=self)
