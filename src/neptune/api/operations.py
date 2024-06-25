@@ -36,6 +36,7 @@ from typing import (
 )
 
 from google.protobuf import timestamp_pb2
+from google.protobuf.message import Message
 
 import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
@@ -58,7 +59,6 @@ class Run(Serializable):
                 creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
                 run_id=self.custom_id,
             ),
-            update=None,
             api_key=b"",
         )
 
@@ -214,7 +214,11 @@ class RunOperation:
             project=self.project,
             run_id=self.run_id,
             create_missing_project=False,
-            create=serialized_op.create if serialized_op.create.ListFields() else None,
-            update=serialized_op.update if serialized_op.update.ListFields() else None,
+            create=serialized_op.create if is_message_not_empty(serialized_op.create) else None,
+            update=serialized_op.update if is_message_not_empty(serialized_op.update) else None,
             api_key=b"",
         )
+
+
+def is_message_not_empty(message: Message) -> bool:
+    return len(message.ListFields()) > 0
