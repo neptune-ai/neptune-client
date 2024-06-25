@@ -29,7 +29,7 @@ websocket-client = ">=0.35.0, !=1.0.0"
 urllib3 = "*"
 swagger-spec-validator = ">=2.7.4"
 protobuf = "^4.0.0"
-httpx = {version = "^0.27.0", extras = ["http2"]}
+neptune-api = "0.2.0"
 
 # Built-in integrations
 psutil = "*"
