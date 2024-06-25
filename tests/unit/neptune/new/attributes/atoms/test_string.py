@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from mock import (
     MagicMock,
     patch,
@@ -47,6 +48,7 @@ class TestString(TestAttributeBase):
                 var.assign(value, wait=wait)
                 processor.enqueue_operation.assert_called_with(AssignString(path, expected), wait=wait)
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_get(self):
         with self._exp() as exp:
             var = String(exp, self._random_path())

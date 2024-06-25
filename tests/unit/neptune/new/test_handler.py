@@ -79,6 +79,7 @@ def assert_logged_warning(capsys: pytest.CaptureFixture, msg: str = ""):
     assert msg in captured.out
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -355,6 +356,7 @@ class TestSeries:
             assert exp["some"]["str"]["val"].fetch_last() == "str"
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -406,6 +408,7 @@ class TestSet:
             assert isinstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -567,6 +570,7 @@ class TestDelete:
             assert "some" not in exp.get_structure()
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",

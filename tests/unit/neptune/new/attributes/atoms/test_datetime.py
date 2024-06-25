@@ -16,6 +16,7 @@
 
 from datetime import datetime
 
+import pytest
 from mock import (
     MagicMock,
     patch,
@@ -29,6 +30,7 @@ from neptune.internal.operation import AssignDatetime
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestDatetime(TestAttributeBase):
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):

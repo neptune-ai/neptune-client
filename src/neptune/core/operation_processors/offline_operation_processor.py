@@ -32,32 +32,32 @@ from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.core.operation_processors.operation_processor import OperationProcessor
-from neptune.core.operations.operation import Operation
-from neptune.internal.operation_processors.utils import (
+from neptune.core.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
 )
+from neptune.core.operations.operation import Operation
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
     from neptune.core.components.abstract import Resource
-    from neptune.internal.container_type import ContainerType
-    from neptune.internal.id_formats import UniqueId
+    from neptune.core.typing.container_type import ContainerType
+    from neptune.core.typing.id_formats import CustomId
 
 
 serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
 
 class OfflineOperationProcessor(WithResources, OperationProcessor):
-    def __init__(self, container_id: "UniqueId", container_type: "ContainerType", lock: "threading.RLock"):
-        self._data_path = get_container_full_path(OFFLINE_DIRECTORY, container_id, container_type)
+    def __init__(self, custom_id: "CustomId", container_type: "ContainerType", lock: "threading.RLock"):
+        self._data_path = get_container_full_path(OFFLINE_DIRECTORY, custom_id, container_type)
 
         # Initialize directory
         self._data_path.mkdir(parents=True, exist_ok=True)
 
         self._metadata_file = MetadataFile(
             data_path=self._data_path,
-            metadata=common_metadata(mode="offline", container_id=container_id, container_type=container_type),
+            metadata=common_metadata(mode="offline", custom_id=custom_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
         self._queue = DiskQueue(data_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)

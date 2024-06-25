@@ -52,9 +52,11 @@ from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
+from neptune.core.operation_processors.factory import get_operation_processor
 from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operations.operation import RunCreation
+from neptune.core.typing.id_formats import CustomId
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
@@ -81,7 +83,6 @@ from neptune.internal.id_formats import (
     conform_optional,
 )
 from neptune.internal.operation import DeleteAttribute
-from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -208,9 +209,8 @@ class NeptuneObject(AbstractContextManager):
 
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
-            container_id=self._custom_id,
+            custom_id=CustomId(self._custom_id),
             container_type=self.container_type,
-            backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
             queue=self._signals_queue,

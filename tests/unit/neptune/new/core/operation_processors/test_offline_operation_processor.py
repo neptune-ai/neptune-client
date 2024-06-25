@@ -23,26 +23,26 @@ from mock import (
 
 from neptune.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
+from neptune.core.typing.container_type import ContainerType
+from neptune.core.typing.id_formats import CustomId
 
 
-@patch("neptune.internal.operation_processors.utils.random.choice")
+@patch("neptune.core.operation_processors.utils.random.choice")
 @patch("neptune.core.operation_processors.offline_operation_processor.Path.mkdir")
 @patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
-@patch("neptune.internal.operation_processors.utils.os.getpid", return_value=42)
+@patch("neptune.core.operation_processors.utils.os.getpid", return_value=42)
 def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
     random_choice_mock.side_effect = tuple("abcdefgh")
 
     # and
-    processor = OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=MagicMock())
+    processor = OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=MagicMock())
 
     # then
     mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
@@ -50,7 +50,7 @@ def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
     # and
     assert (
         processor.data_path
-        == Path(NEPTUNE_DATA_DIRECTORY) / "offline" / f"{container_type.value}__{container_id}__42__abcdefgh"
+        == Path(NEPTUNE_DATA_DIRECTORY) / "offline" / f"{container_type.value}__{custom_id}__42__abcdefgh"
     )
 
 
@@ -59,7 +59,7 @@ def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -68,7 +68,7 @@ def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     disk_queue = disk_queue_mock.return_value
 
     # and
-    processor = OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=MagicMock())
+    processor = OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=MagicMock())
 
     # and
     processor.start()
@@ -87,7 +87,7 @@ def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -96,7 +96,7 @@ def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     disk_queue = disk_queue_mock.return_value
 
     # and
-    processor = OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=MagicMock())
+    processor = OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=MagicMock())
 
     # and
     processor.start()
@@ -115,7 +115,7 @@ def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # and
@@ -124,7 +124,7 @@ def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     disk_queue = disk_queue_mock.return_value
 
     # and
-    processor = OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=MagicMock())
+    processor = OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=MagicMock())
 
     # and
     processor.start()
@@ -153,14 +153,14 @@ def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_metadata(metadata_file_mock, _, __):
     # given
-    container_id = UniqueId(str(uuid4()))
+    custom_id = CustomId(str(uuid4()))
     container_type = ContainerType.RUN
 
     # when
-    OfflineOperationProcessor(container_id=container_id, container_type=container_type, lock=MagicMock())
+    OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=MagicMock())
 
     # then
     metadata = metadata_file_mock.call_args_list[0][1]["metadata"]
     assert metadata["mode"] == "offline"
     assert metadata["containerType"] == ContainerType.RUN
-    assert metadata["containerId"] == container_id
+    assert metadata["customId"] == custom_id

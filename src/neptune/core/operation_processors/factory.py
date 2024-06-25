@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+# Copyright (c) 2024, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,67 +21,41 @@ import threading
 from queue import Queue
 from typing import TYPE_CHECKING
 
+from neptune.core.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
+from neptune.core.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.core.typing.container_type import ContainerType
+from neptune.core.typing.id_formats import CustomId
 from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import UniqueId
 from neptune.objects.mode import Mode
-
-from .async_operation_processor import AsyncOperationProcessor
-from .sync_operation_processor import SyncOperationProcessor
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
 
 
-# WARNING: Be careful when changing this function. It is used in the experimental package
-def build_async_operation_processor(
-    container_id: UniqueId,
-    container_type: ContainerType,
-    backend: NeptuneBackend,
-    lock: threading.RLock,
-    sleep_time: float,
-    queue: "Queue[Signal]",
-) -> OperationProcessor:
-    return AsyncOperationProcessor(
-        container_id=container_id,
-        container_type=container_type,
-        backend=backend,
-        lock=lock,
-        sleep_time=sleep_time,
-        batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
-        queue=queue,
-    )
-
-
 def get_operation_processor(
     mode: Mode,
-    container_id: UniqueId,
+    custom_id: CustomId,
     container_type: ContainerType,
-    backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
     queue: "Queue[Signal]",
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
-        return build_async_operation_processor(
-            container_id=container_id,
+        return AsyncOperationProcessor(
+            custom_id=custom_id,
             container_type=container_type,
-            backend=backend,
             lock=lock,
             sleep_time=flush_period,
-            queue=queue,
+            batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
+            signal_queue=queue,
         )
-    elif mode == Mode.SYNC:
-        return SyncOperationProcessor(container_id, container_type, backend)
-    elif mode == Mode.DEBUG:
-        return SyncOperationProcessor(container_id, container_type, backend)
+    elif mode in {Mode.SYNC, Mode.DEBUG}:
+        return SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
     elif mode == Mode.OFFLINE:
-        # the object was returned by mocked backend and has some random ID.
-        return OfflineOperationProcessor(container_id, container_type, lock)
+        return OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=lock)
     elif mode == Mode.READ_ONLY:
         return ReadOnlyOperationProcessor()
     else:

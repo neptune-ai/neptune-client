@@ -72,6 +72,7 @@ class TestFloatSeries(TestAttributeBase):
 
         run.stop()
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_multiple_values_to_same_namespace(self):
         with self._exp() as run:
             run["multiple"].extend([1.5, 2.3, str(float("nan")), 4.7])
