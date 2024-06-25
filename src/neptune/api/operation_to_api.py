@@ -15,7 +15,7 @@
 #
 
 import neptune.api.operations as api_operations
-from neptune.api.operations import ProtoSerializable
+from neptune.api.operations import Serializable
 from neptune.core.operations import (
     AssignBool,
     AssignDatetime,
@@ -29,27 +29,27 @@ from neptune.core.operations.operation_visitor import OperationVisitor
 from neptune.internal.utils.paths import path_to_str
 
 
-class OperationToApiVisitor(OperationVisitor[ProtoSerializable]):
-    def visit_assign_float(self, op: AssignFloat) -> ProtoSerializable:
+class OperationToApiVisitor(OperationVisitor[Serializable]):
+    def visit_assign_float(self, op: AssignFloat) -> Serializable:
         return api_operations.AssignFloat(path_to_str(op.path), op.value)
 
-    def visit_assign_int(self, op: AssignInt) -> ProtoSerializable:
+    def visit_assign_int(self, op: AssignInt) -> Serializable:
         return api_operations.AssignInteger(path_to_str(op.path), op.value)
 
-    def visit_assign_bool(self, op: AssignBool) -> ProtoSerializable:
+    def visit_assign_bool(self, op: AssignBool) -> Serializable:
         return api_operations.AssignBool(path_to_str(op.path), op.value)
 
-    def visit_assign_datetime(self, op: AssignDatetime) -> ProtoSerializable:
+    def visit_assign_datetime(self, op: AssignDatetime) -> Serializable:
         return api_operations.AssignDatetime(path_to_str(op.path), op.value)
 
-    def visit_assign_string(self, op: AssignString) -> ProtoSerializable:
+    def visit_assign_string(self, op: AssignString) -> Serializable:
         return api_operations.AssignString(path_to_str(op.path), op.value)
 
-    def visit_log_floats(self, op: LogFloats) -> ProtoSerializable:
+    def visit_log_floats(self, op: LogFloats) -> Serializable:
         return api_operations.LogFloats(
             path_to_str(op.path),
             [api_operations.FloatValue(val.ts, val.value, val.step) for val in op.values],
         )
 
-    def visit_run_creation(self, op: RunCreation) -> ProtoSerializable:
+    def visit_run_creation(self, op: RunCreation) -> Serializable:
         return api_operations.Run(op.created_at, op.custom_id)

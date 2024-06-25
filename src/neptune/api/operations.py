@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 __all__ = [
-    "ProtoSerializable",
+    "Serializable",
     "Run",
     "FloatValue",
     "LogFloats",
@@ -41,38 +41,25 @@ import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
 import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 
 
-class ProtoSerializable(abc.ABC):
-    @property
+class Serializable(abc.ABC):
     @abc.abstractmethod
-    def create(self) -> Optional[common_pb2.Run]: ...
-
-    @property
-    @abc.abstractmethod
-    def update(self) -> Optional[common_pb2.UpdateRunSnapshot]: ...
-
-
-class SerializableCreation(ProtoSerializable, abc.ABC):
-    @property
-    def update(self) -> Optional[common_pb2.UpdateRunSnapshot]:
-        return None
-
-
-class SerializableUpdate(ProtoSerializable, abc.ABC):
-    @property
-    def create(self) -> Optional[common_pb2.Run]:
-        return None
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        pass
 
 
 @dataclass
-class Run(SerializableCreation):
+class Run(Serializable):
     created_at: datetime
     custom_id: str
 
-    @property
-    def create(self) -> common_pb2.Run:
-        return common_pb2.Run(
-            run_id=self.custom_id,
-            creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            create=common_pb2.Run(
+                creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
+                run_id=self.custom_id,
+            ),
+            update=None,
+            api_key=b"",
         )
 
 
@@ -84,9 +71,30 @@ class FloatValue:
 
 
 @dataclass
-class LogFloats(SerializableUpdate):
+class LogFloats(Serializable):
     path: str
     items: List[FloatValue]
+
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        first_item = self.items[0]
+
+        step = (
+            common_pb2.Step(whole=int(first_item.step), micro=int((first_item.step - int(first_item.step)) * 1e6))
+            if first_item.step is not None
+            else None
+        )
+
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                step=step,
+                append={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(float64=first_item.value),
+                },
+                timestamp=timestamp_pb2.Timestamp(seconds=int(first_item.timestamp)),
+            ),
+            api_key=b"",
+        )
 
     @property
     def update(self) -> common_pb2.UpdateRunSnapshot:
@@ -109,77 +117,87 @@ class LogFloats(SerializableUpdate):
 
 
 @dataclass
-class AssignInteger(SerializableUpdate):
+class AssignInteger(Serializable):
     path: str
     value: int
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        return common_pb2.UpdateRunSnapshot(
-            assign={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(int64=self.value),
-            },
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                assign={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(int64=self.value),
+                },
+            ),
+            api_key=b"",
         )
 
 
 @dataclass
-class AssignFloat(SerializableUpdate):
+class AssignFloat(Serializable):
     path: str
     value: float
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        return common_pb2.UpdateRunSnapshot(
-            assign={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(float64=self.value),
-            },
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                assign={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(float64=self.value),
+                },
+            ),
+            api_key=b"",
         )
 
 
 @dataclass
-class AssignBool(SerializableUpdate):
+class AssignBool(Serializable):
     path: str
     value: bool
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        return common_pb2.UpdateRunSnapshot(
-            assign={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(bool=self.value),
-            },
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                assign={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(bool=self.value),
+                },
+            ),
+            api_key=b"",
         )
 
 
 @dataclass
-class AssignString(SerializableUpdate):
+class AssignString(Serializable):
     path: str
     value: str
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        return common_pb2.UpdateRunSnapshot(
-            assign={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(string=self.value),
-            },
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                assign={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(string=self.value),
+                },
+            ),
+            api_key=b"",
         )
 
 
 @dataclass
-class AssignDatetime(SerializableUpdate):
+class AssignDatetime(Serializable):
     path: str
     value: datetime
 
-    @property
-    def update(self) -> common_pb2.UpdateRunSnapshot:
-        return common_pb2.UpdateRunSnapshot(
-            assign={
-                "path": common_pb2.Value(string=self.path),
-                "value": common_pb2.Value(timestamp=timestamp_pb2.Timestamp(seconds=int(self.value.timestamp()))),
-            },
+    def to_proto(self) -> ingest_pb2.RunOperation:
+        return ingest_pb2.RunOperation(
+            update=common_pb2.UpdateRunSnapshot(
+                assign={
+                    "path": common_pb2.Value(string=self.path),
+                    "value": common_pb2.Value(timestamp=timestamp_pb2.Timestamp(seconds=int(self.value.timestamp()))),
+                },
+            ),
+            api_key=b"",
         )
 
 
@@ -187,14 +205,16 @@ class AssignDatetime(SerializableUpdate):
 class RunOperation:
     project: str
     run_id: str
-    operation: ProtoSerializable
+    operation: Serializable
 
     def to_proto(self) -> ingest_pb2.RunOperation:
+        serialized_op = self.operation.to_proto()
+
         return ingest_pb2.RunOperation(
             project=self.project,
             run_id=self.run_id,
             create_missing_project=False,
-            create=self.operation.create,
-            update=self.operation.update,
+            create=serialized_op.create if serialized_op.create.ListFields() else None,
+            update=serialized_op.update if serialized_op.update.ListFields() else None,
             api_key=b"",
         )
