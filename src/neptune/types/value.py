@@ -29,5 +29,4 @@ Ret = TypeVar("Ret")
 
 class Value:
     @abc.abstractmethod
-    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret: ...

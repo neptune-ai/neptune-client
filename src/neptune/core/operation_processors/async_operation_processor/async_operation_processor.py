@@ -63,6 +63,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         data_path: Optional[Path] = None,
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict(),
         should_print_logs: bool = True,
+        sleep_time: float = 5.0,
     ) -> None:
         self._should_print_logs = should_print_logs
         self._accepts_operations: bool = True
@@ -79,7 +80,7 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
         )
 
         self._consumer = ConsumerThread(
-            sleep_time=5,
+            sleep_time=sleep_time,
             processing_resources=self._processing_resources,
         )
 

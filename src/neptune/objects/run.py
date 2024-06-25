@@ -73,13 +73,13 @@ from neptune.internal.warnings import (
     warn_once,
 )
 from neptune.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
+from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
     temporarily_disabled,
 )
 from neptune.types import StringSeries
-from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
     from neptune.internal.background_job import BackgroundJob

@@ -35,6 +35,7 @@ from neptune.exceptions import (
 )
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class AbstractExperimentTestMixin:
     @staticmethod
     @abstractmethod
@@ -46,6 +47,7 @@ class AbstractExperimentTestMixin:
             with self.call_init(mode="srtgj"):
                 pass
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_debug_mode(self):
         with self.call_init(mode="debug") as exp:
             exp["some/variable"] = 13

@@ -31,5 +31,4 @@ Ret = TypeVar("Ret")
 
 class Atom(Value):
     @abc.abstractmethod
-    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        pass
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret: ...

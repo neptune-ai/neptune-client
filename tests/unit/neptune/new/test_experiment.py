@@ -31,6 +31,7 @@ from neptune import (
     init_project,
     init_run,
 )
+from neptune.core.operation_processors.factory import get_operation_processor
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -44,7 +45,6 @@ from neptune.exceptions import (
     NeptuneProtectedPathException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.objects import (
     Model,
@@ -60,6 +60,7 @@ from neptune.types.series import (
 )
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestExperiment(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:

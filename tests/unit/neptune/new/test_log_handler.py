@@ -32,6 +32,7 @@ from neptune.integrations.python_logger import NeptuneHandler
 from neptune.objects.neptune_object import NeptuneObject
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",

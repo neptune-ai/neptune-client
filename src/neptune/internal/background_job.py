@@ -27,21 +27,16 @@ if TYPE_CHECKING:
 
 class BackgroundJob:
     @abc.abstractmethod
-    def start(self, container: "NeptuneObject"):
-        pass
+    def start(self, container: "NeptuneObject") -> None: ...
 
     @abc.abstractmethod
-    def stop(self):
-        pass
+    def stop(self) -> None: ...
 
     @abc.abstractmethod
-    def join(self, seconds: Optional[float] = None):
-        pass
+    def join(self, seconds: Optional[float] = None) -> None: ...
 
     @abc.abstractmethod
-    def pause(self):
-        pass
+    def pause(self) -> None: ...
 
     @abc.abstractmethod
-    def resume(self):
-        pass
+    def resume(self) -> None: ...
