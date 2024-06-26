@@ -41,10 +41,10 @@ def neptune_api():
         ),
     )
 
-    with (
-        patch("neptune_api.api.backend.get_client_config.sync") as get_client_config_mock,
-        patch("neptune_api.client.Client.get_httpx_client") as httpx_client_get_mock,
-    ):
+    with patch("neptune_api.api.backend.get_client_config.sync") as get_client_config_mock, patch(
+        "neptune_api.client.Client.get_httpx_client"
+    ) as httpx_client_get_mock:
+
         get_client_config_mock.return_value = config
         httpx_client_get_mock.get.return_value = Mock(
             json=Mock(
