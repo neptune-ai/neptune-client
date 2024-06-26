@@ -17,19 +17,24 @@
 __all__ = ["HostedNeptuneBackendV2"]
 
 
+from typing import cast
+
 from neptune_api.api.backend import get_project
 from neptune_api.credentials import Credentials
-from neptune_api.models import ProjectDTO
+from neptune_api.models import (
+    Error,
+    ProjectDTO,
+)
+from neptune_api.types import Response
 
 from neptune.internal.backends.api_client import (
     create_auth_api_client,
     get_config_and_token_urls,
 )
-from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.id_formats import QualifiedName
 
 
-class HostedNeptuneBackendV2(NeptuneBackend):
+class HostedNeptuneBackendV2:
     def __init__(self, credentials: Credentials) -> None:
         self.credentials = credentials
 
@@ -38,5 +43,9 @@ class HostedNeptuneBackendV2(NeptuneBackend):
 
     # only happy path is implemented
     def get_project(self, project_identifier: QualifiedName) -> ProjectDTO:
-        response = get_project.sync_detailed(client=self.auth_client, project_identifier=project_identifier)
-        return response.parsed
+        response: Response[Error | ProjectDTO] = get_project.sync_detailed(
+            client=self.auth_client, project_identifier=project_identifier
+        )
+        if response.parsed is None:
+            raise RuntimeError(response.content.decode("utf-8"))
+        return cast(ProjectDTO, response.parsed)

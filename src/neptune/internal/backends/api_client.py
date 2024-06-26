@@ -27,7 +27,10 @@ from neptune_api import (
 from neptune_api.api.backend import get_client_config
 from neptune_api.auth_helpers import exchange_api_key
 from neptune_api.credentials import Credentials
-from neptune_api.models import ClientConfig
+from neptune_api.models import (
+    ClientConfig,
+    Error,
+)
 
 
 @dataclass
@@ -45,6 +48,8 @@ class TokenRefreshingURLs:
 def get_config_and_token_urls(credentials: Credentials) -> Tuple[ClientConfig, TokenRefreshingURLs]:
     with Client(base_url=credentials.base_url) as client:
         config = get_client_config.sync(client=client)
+        if config is None or isinstance(config, Error):
+            raise RuntimeError(f"Failed to get client config: {config}")
         response = client.get_httpx_client().get(config.security.open_id_discovery)
         token_urls = TokenRefreshingURLs.from_dict(response.json())
     return config, token_urls
