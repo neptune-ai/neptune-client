@@ -249,5 +249,7 @@ module = [
     "neptune.internal.container_type",
     "neptune.internal.patches",
     "neptune.internal.utils",
+    "neptune.internal.backends.api_client",
+    "neptune.internal.backends.hosted_neptune_backend_v2"
 ]
 ignore_errors = "True"
