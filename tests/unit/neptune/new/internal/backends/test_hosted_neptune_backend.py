@@ -33,7 +33,6 @@ from mock import (
     MagicMock,
     patch,
 )
-from packaging.version import Version
 
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
@@ -240,10 +239,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
         swagger_client.api.executeOperations.assert_has_calls([execution_operation_call, execution_operation_call])
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
@@ -253,8 +249,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("2.0.0-alpha4+dev1234"),
+        "neptune.internal.backends.hosted_client.__version__",
+        "2.0.0-alpha4+dev1234",
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_pre_release_version_ok(self, swagger_client_factory):
@@ -264,10 +260,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
@@ -279,10 +272,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         self.assertTrue("minimum required version is >=0.5.14" in str(ex.exception))
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
@@ -291,10 +281,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given

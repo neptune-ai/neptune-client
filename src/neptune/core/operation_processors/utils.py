@@ -43,9 +43,9 @@ RANDOM_KEY_LENGTH = 8
 
 
 def get_neptune_version() -> str:
-    from neptune.version import __version__ as neptune_version
+    from neptune.version import __version__
 
-    return neptune_version
+    return __version__
 
 
 def random_key(length: int) -> str:
