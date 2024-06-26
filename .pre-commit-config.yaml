@@ -33,7 +33,11 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
-        additional_dependencies: [ types-click, mypy-protobuf, neptune-api ]
+        additional_dependencies:
+          - types-click
+          - mypy-protobuf
+          - neptune-api
+          - packaging
 exclude: |
   (?x)(
      ^tests/unit/data/|

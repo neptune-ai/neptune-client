@@ -245,7 +245,6 @@ module = [
     "neptune.objects.run",
     "neptune.types.type_casting",
     "neptune.api.requests_utils",
-    "neptune.version",
     "neptune.internal.container_type",
     "neptune.internal.patches",
     "neptune.internal.utils",
