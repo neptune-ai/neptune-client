@@ -26,7 +26,6 @@ from neptune.exceptions import NeptuneInvalidQueryException
 from neptune.metadata_containers import Model
 from tests.e2e.base import (
     BaseE2ETest,
-    are_group_tags_enabled,
     fake,
 )
 from tests.e2e.utils import a_key
@@ -60,7 +59,6 @@ class TestFetchTable(BaseE2ETest):
         assert len(runs) == 1
         assert runs[0].get_attribute_value("sys/id") == run_id1
 
-    @pytest.mark.skipif(not are_group_tags_enabled(), reason="Group tags are not enabled")
     def test_fetch_runs_by_group_tag(self, environment, project):
         tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
 
