@@ -29,6 +29,3 @@ class BaseE2ETest:
         # Get test name
         caller_name = inspect.stack()[1][3]
         return f"{self.__class__.__name__}/{caller_name}/{fake.unique.slug()}"
-
-
-NEPTUNE_GROUP_TAGS_ENABLED = "NEPTUNE_GROUP_TAGS_ENABLED"
