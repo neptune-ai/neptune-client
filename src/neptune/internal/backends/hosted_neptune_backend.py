@@ -119,7 +119,7 @@ from neptune.internal.warnings import (
 )
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.typing import ProgressBarType
-from neptune.version import version as neptune_version
+from neptune.version import __version__
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
@@ -346,13 +346,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             "projectIdentifier": project_id,
             "parentId": parent_id,
             "type": container_type.to_api(),
-            "cliVersion": str(neptune_version),
+            "cliVersion": __version__,
             **additional_params,
         }
 
         kwargs = {
             "experimentCreationParams": params,
-            "X-Neptune-CliVersion": str(neptune_version),
+            "X-Neptune-CliVersion": __version__,
             **DEFAULT_REQUEST_KWARGS,
         }
 
