@@ -76,5 +76,4 @@ component_management:
         - src/neptune/objects/**
         - src/neptune/new/**
         - src/neptune/types/**
-        - src/neptune/vendor/**
         - src/neptune/*.py
