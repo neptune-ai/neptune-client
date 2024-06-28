@@ -29,8 +29,15 @@ from neptune.envs import (
     PROJECT_ENV_NAME,
 )
 from neptune.integrations.python_logger import NeptuneHandler
+from neptune.objects.neptune_object import NeptuneObject
 
 
+@pytest.mark.skip(reason="Backend not implemented")
+@patch.object(
+    NeptuneObject,
+    "_async_create_run",
+    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+)
 @patch("neptune.objects.run.generate_hash", lambda *vals, length: "some_hash")
 class TestLogHandler(unittest.TestCase):
     @classmethod

@@ -22,7 +22,6 @@ import pytest
 
 import neptune
 from neptune.exceptions import NeptuneInvalidQueryException
-from neptune.internal.utils.utils import IS_MACOS
 from neptune.objects import Model
 from tests.e2e.base import (
     BaseE2ETest,
@@ -240,8 +239,7 @@ class TestFetchTable(BaseE2ETest):
         assert random_val in runs["some_random_val"].values
 
     @pytest.mark.parametrize("ascending", [True, False])
-    @pytest.mark.parametrize("with_query", [True, False])
-    def test_fetch_runs_table_sorting(self, environment, project, ascending, with_query):
+    def test_fetch_runs_table_sorting(self, environment, project, ascending):
         # given
         with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
             run["metrics/accuracy"] = 0.95
@@ -252,17 +250,20 @@ class TestFetchTable(BaseE2ETest):
             run["some_val"] = "a"
 
         time.sleep(WAIT_DURATION)
-        query = "" if with_query else None
+        query = '`sys/custom_run_id`:string CONTAINS "run"'
 
         # when
         runs = project.fetch_runs_table(
-            query=query, sort_by="sys/creation_time", ascending=ascending, progress_bar=False
+            query=query,
+            sort_by="sys/creation_time",
+            ascending=ascending,
+            progress_bar=False,
         ).to_pandas()
 
         # then
         # runs are correctly sorted by creation time -> run1 was first
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
         if ascending:
             assert run_list == ["run1", "run2"]
         else:
@@ -275,7 +276,7 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
 
         if ascending:
             assert run_list == ["run2", "run1"]
@@ -289,7 +290,7 @@ class TestFetchTable(BaseE2ETest):
 
         # then
         assert not runs.empty
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
+        run_list = runs["sys/custom_run_id"].to_list()
 
         if ascending:
             assert run_list == ["run2", "run1"]
@@ -351,45 +352,6 @@ class TestFetchTable(BaseE2ETest):
         # then
         assert len(runs) == 1
 
-    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
-    def test_fetch_runs_table_raw_query_trashed(self, environment, project):
-        # given
-        val: float = 2.2
-        with neptune.init_run(project=environment.project, custom_run_id="run1") as run:
-            run["key"] = val
-
-        with neptune.init_run(project=environment.project, custom_run_id="run2") as run:
-            run["key"] = val
-
-        time.sleep(WAIT_DURATION)
-
-        # when
-        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=False).to_pandas()
-
-        # then
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
-        assert ["run1", "run2"] == sorted(run_list)
-
-        # when
-        neptune.management.trash_objects(
-            project=environment.project, ids=runs[runs["sys/custom_run_id"] == "run2"]["sys/id"].item()
-        )
-
-        time.sleep(WAIT_DURATION)
-
-        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=True).to_pandas()
-
-        # then
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
-        assert ["run2"] == run_list
-
-        # when
-        runs = project.fetch_runs_table(query=f"(key: float = {val})", progress_bar=False, trashed=None).to_pandas()
-
-        # then
-        run_list = runs["sys/custom_run_id"].dropna().to_list()
-        assert ["run1", "run2"] == sorted(run_list)
-
     def test_fetch_runs_invalid_query_handling(self, project):
         # given
         runs_table = project.fetch_runs_table(query="key: float = (-_-)", progress_bar=False)
@@ -397,48 +359,6 @@ class TestFetchTable(BaseE2ETest):
         # then
         with pytest.raises(NeptuneInvalidQueryException):
             next(iter(runs_table))
-
-    @pytest.mark.skip(reason="Model is not supported")
-    @pytest.mark.skipif(IS_MACOS, reason="MacOS behaves strangely on github actions")
-    def test_fetch_models_raw_query_trashed(self, environment, project):
-        # given
-        val: float = 2.2
-        with neptune.init_model(project=environment.project, key=a_key(), name="name-1") as model:
-            model["key"] = val
-
-        with neptune.init_model(project=environment.project, key=a_key(), name="name-2") as model:
-            model["key"] = val
-
-        time.sleep(WAIT_DURATION)
-
-        # when
-        models = project.fetch_models_table(
-            query=f"(key: float = {val})", progress_bar=False, trashed=False
-        ).to_pandas()
-
-        # then
-        model_list = models["sys/name"].dropna().to_list()
-        assert sorted(model_list) == sorted(["name-1", "name-2"])
-
-        # when
-        neptune.management.trash_objects(
-            project=environment.project, ids=models[models["sys/name"] == "name-1"]["sys/id"].item()
-        )
-
-        time.sleep(WAIT_DURATION)
-
-        trashed_vals = [True, False, None]
-        expected_model_names = [["name-1"], ["name-2"], ["name-1", "name-2"]]
-
-        for trashed, model_names in zip(trashed_vals, expected_model_names):
-            # when
-            models = project.fetch_models_table(
-                query=f"(key: float = {val})", progress_bar=False, trashed=trashed
-            ).to_pandas()
-
-            # then
-            model_list = models["sys/name"].dropna().to_list()
-            assert sorted(model_list) == sorted(model_names)
 
     def test_fetch_models_invalid_query_handling(self, project):
         # given

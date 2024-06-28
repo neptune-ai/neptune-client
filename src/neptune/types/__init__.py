@@ -14,35 +14,25 @@
 # limitations under the License.
 #
 __all__ = [
-    "Artifact",
     "Boolean",
     "Datetime",
-    "File",
     "Float",
-    "GitRef",
     "Integer",
     "String",
-    "FileSet",
     "StringSet",
-    "FileSeries",
     "FloatSeries",
     "StringSeries",
 ]
 
 
 from .atoms import (
-    Artifact,
     Boolean,
     Datetime,
-    File,
     Float,
-    GitRef,
     Integer,
     String,
 )
-from .file_set import FileSet
 from .series import (
-    FileSeries,
     FloatSeries,
     StringSeries,
 )

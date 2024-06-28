@@ -13,19 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["version", "__version__"]
+__all__ = ["__version__"]
 
-import sys
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as version_parser
 from typing import Optional
-
-from packaging.version import parse
-
-if sys.version_info >= (3, 8):
-    from importlib.metadata import PackageNotFoundError
-    from importlib.metadata import version as version_parser
-else:
-    from importlib_metadata import PackageNotFoundError
-    from importlib_metadata import version as version_parser
 
 
 def check_version(package_name: str) -> Optional[str]:
@@ -46,4 +38,3 @@ def detect_version() -> str:
 
 
 __version__ = detect_version()
-version = parse(__version__)

@@ -14,11 +14,9 @@
 # limitations under the License.
 #
 __all__ = [
-    "FileSeries",
     "FloatSeries",
     "StringSeries",
 ]
 
-from .file_series import FileSeries
 from .float_series import FloatSeries
 from .string_series import StringSeries

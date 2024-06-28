@@ -16,10 +16,8 @@
 from __future__ import annotations
 
 __all__ = (
-    "FileEntry",
     "Field",
     "FieldType",
-    "GitCommit",
     "LeaderboardEntry",
     "LeaderboardEntriesSearchResult",
     "FieldVisitor",
@@ -28,22 +26,16 @@ __all__ = (
     "BoolField",
     "StringField",
     "DateTimeField",
-    "FileField",
-    "FileSetField",
     "FloatSeriesField",
     "StringSeriesField",
-    "ImageSeriesField",
     "StringSetField",
-    "GitRefField",
     "ObjectStateField",
     "NotebookRefField",
-    "ArtifactField",
     "FieldDefinition",
     "FloatSeriesValues",
     "FloatPointValue",
     "StringSeriesValues",
     "StringPointValue",
-    "ImageSeriesValues",
     "QueryFieldDefinitionsResult",
     "NextPage",
     "QueryFieldsResult",
@@ -72,7 +64,6 @@ from typing import (
 
 from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributeDefinitionDTO
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
-    ProtoAttributeDTO,
     ProtoAttributesDTO,
     ProtoBoolAttributeDTO,
     ProtoDatetimeAttributeDTO,
@@ -89,34 +80,17 @@ from neptune.internal.utils.run_state import RunState
 Ret = TypeVar("Ret")
 
 
-@dataclass
-class FileEntry:
-    name: str
-    size: int
-    mtime: datetime
-    file_type: str
-
-    @classmethod
-    def from_dto(cls, file_dto: Any) -> "FileEntry":
-        return cls(name=file_dto.name, size=file_dto.size, mtime=file_dto.mtime, file_type=file_dto.fileType)
-
-
 class FieldType(Enum):
     FLOAT = "float"
     INT = "int"
     BOOL = "bool"
     STRING = "string"
     DATETIME = "datetime"
-    FILE = "file"
-    FILE_SET = "fileSet"
     FLOAT_SERIES = "floatSeries"
     STRING_SERIES = "stringSeries"
-    IMAGE_SERIES = "imageSeries"
     STRING_SET = "stringSet"
-    GIT_REF = "gitRef"
     OBJECT_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
-    ARTIFACT = "artifact"
 
 
 @dataclass
@@ -181,34 +155,19 @@ class FieldVisitor(Generic[Ret], abc.ABC):
     def visit_datetime(self, field: DateTimeField) -> Ret: ...
 
     @abc.abstractmethod
-    def visit_file(self, field: FileField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_file_set(self, field: FileSetField) -> Ret: ...
-
-    @abc.abstractmethod
     def visit_float_series(self, field: FloatSeriesField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_string_series(self, field: StringSeriesField) -> Ret: ...
 
     @abc.abstractmethod
-    def visit_image_series(self, field: ImageSeriesField) -> Ret: ...
-
-    @abc.abstractmethod
     def visit_string_set(self, field: StringSetField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_git_ref(self, field: GitRefField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_object_state(self, field: ObjectStateField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_notebook_ref(self, field: NotebookRefField) -> Ret: ...
-
-    @abc.abstractmethod
-    def visit_artifact(self, field: ArtifactField) -> Ret: ...
 
 
 @dataclass
@@ -314,48 +273,6 @@ class DateTimeField(Field, field_type=FieldType.DATETIME):
 
 
 @dataclass
-class FileField(Field, field_type=FieldType.FILE):
-    name: str
-    ext: str
-    size: int
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_file(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> FileField:
-        return FileField(path=data["attributeName"], name=data["name"], ext=data["ext"], size=int(data["size"]))
-
-    @staticmethod
-    def from_model(model: Any) -> FileField:
-        return FileField(path=model.attributeName, name=model.name, ext=model.ext, size=model.size)
-
-    @staticmethod
-    def from_proto(data: Any) -> FileField:
-        raise NotImplementedError()
-
-
-@dataclass
-class FileSetField(Field, field_type=FieldType.FILE_SET):
-    size: int
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_file_set(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> FileSetField:
-        return FileSetField(path=data["attributeName"], size=int(data["size"]))
-
-    @staticmethod
-    def from_model(model: Any) -> FileSetField:
-        return FileSetField(path=model.attributeName, size=model.size)
-
-    @staticmethod
-    def from_proto(data: Any) -> FileSetField:
-        raise NotImplementedError()
-
-
-@dataclass
 class FloatSeriesField(Field, field_type=FieldType.FLOAT_SERIES):
     last: Optional[float]
 
@@ -399,27 +316,6 @@ class StringSeriesField(Field, field_type=FieldType.STRING_SERIES):
 
 
 @dataclass
-class ImageSeriesField(Field, field_type=FieldType.IMAGE_SERIES):
-    last_step: Optional[float]
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_image_series(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ImageSeriesField:
-        last_step = float(data["lastStep"]) if "lastStep" in data else None
-        return ImageSeriesField(path=data["attributeName"], last_step=last_step)
-
-    @staticmethod
-    def from_model(model: Any) -> ImageSeriesField:
-        return ImageSeriesField(path=model.attributeName, last_step=model.lastStep)
-
-    @staticmethod
-    def from_proto(data: Any) -> ImageSeriesField:
-        raise NotImplementedError()
-
-
-@dataclass
 class StringSetField(Field, field_type=FieldType.STRING_SET):
     values: Set[str]
 
@@ -437,46 +333,6 @@ class StringSetField(Field, field_type=FieldType.STRING_SET):
     @staticmethod
     def from_proto(data: ProtoStringSetAttributeDTO) -> StringSetField:
         return StringSetField(path=data.attribute_name, values=set(data.value))
-
-
-@dataclass
-class GitCommit:
-    commit_id: Optional[str]
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> GitCommit:
-        commit_id = str(data["commitId"]) if "commitId" in data else None
-        return GitCommit(commit_id=commit_id)
-
-    @staticmethod
-    def from_model(model: Any) -> GitCommit:
-        return GitCommit(commit_id=model.commitId)
-
-    @staticmethod
-    def from_proto(data: Any) -> GitCommit:
-        raise NotImplementedError()
-
-
-@dataclass
-class GitRefField(Field, field_type=FieldType.GIT_REF):
-    commit: Optional[GitCommit]
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_git_ref(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> GitRefField:
-        commit = GitCommit.from_dict(data["commit"]) if "commit" in data else None
-        return GitRefField(path=data["attributeName"], commit=commit)
-
-    @staticmethod
-    def from_model(model: Any) -> GitRefField:
-        commit = GitCommit.from_model(model.commit) if model.commit is not None else None
-        return GitRefField(path=model.attributeName, commit=commit)
-
-    @staticmethod
-    def from_proto(data: ProtoAttributeDTO) -> GitRefField:
-        raise NotImplementedError()
 
 
 @dataclass
@@ -519,26 +375,6 @@ class NotebookRefField(Field, field_type=FieldType.NOTEBOOK_REF):
 
     @staticmethod
     def from_proto(data: Any) -> NotebookRefField:
-        raise NotImplementedError()
-
-
-@dataclass
-class ArtifactField(Field, field_type=FieldType.ARTIFACT):
-    hash: str
-
-    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
-        return visitor.visit_artifact(self)
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ArtifactField:
-        return ArtifactField(path=data["attributeName"], hash=str(data["hash"]))
-
-    @staticmethod
-    def from_model(model: Any) -> ArtifactField:
-        return ArtifactField(path=model.attributeName, hash=model.hash)
-
-    @staticmethod
-    def from_proto(data: Any) -> ArtifactField:
         raise NotImplementedError()
 
 
@@ -822,21 +658,4 @@ class StringPointValue:
 
     @staticmethod
     def from_proto(data: Any) -> StringPointValue:
-        raise NotImplementedError()
-
-
-@dataclass
-class ImageSeriesValues:
-    total: int
-
-    @staticmethod
-    def from_dict(data: Dict[str, Any]) -> ImageSeriesValues:
-        return ImageSeriesValues(total=data["totalItemCount"])
-
-    @staticmethod
-    def from_model(model: Any) -> ImageSeriesValues:
-        return ImageSeriesValues(total=model.totalItemCount)
-
-    @staticmethod
-    def from_proto(data: Any) -> ImageSeriesValues:
         raise NotImplementedError()

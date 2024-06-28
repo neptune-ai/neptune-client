@@ -19,7 +19,7 @@ repos:
     rev: v1.5.4
     hooks:
       - id: insert-license
-        files: ^src/neptune/(?!new/|vendor/)[^/]+(?:/[^/]+)*\.py$
+        files: ^src/neptune/(?!new/)[^/]+(?:/[^/]+)*\.py$
         args: [ "--license-filepath", ".github/license_header.txt", "--allow-past-years"]
   - repo: https://github.com/pycqa/flake8
     rev: 7.0.0
@@ -33,7 +33,11 @@ repos:
       - id: mypy
         args: [ --config-file, pyproject.toml ]
         pass_filenames: false
-        additional_dependencies: [ types-click, mypy-protobuf ]
+        additional_dependencies:
+          - types-click
+          - mypy-protobuf
+          - neptune-api
+          - packaging
 exclude: |
   (?x)(
      ^tests/unit/data/|

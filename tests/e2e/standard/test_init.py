@@ -21,7 +21,6 @@ from neptune.objects import (
     Model,
     Project,
 )
-from neptune.types import GitRef
 from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
@@ -30,7 +29,6 @@ from tests.e2e.base import (
 from tests.e2e.utils import (
     initialize_container,
     reinitialize_container,
-    with_check_if_file_appears,
 )
 
 
@@ -47,56 +45,6 @@ class TestInitRun(BaseE2ETest):
             assert exp2[key].fetch() == val
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_send_source_code(self, environment):
-        with neptune.init_run(
-            source_files="**/*.py",
-            name="E2e init source code",
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            with with_check_if_file_appears("files.zip"):
-                exp["source_code/files"].download()
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_git_client_repository(self, environment):
-        with neptune.init_run(
-            git_ref=GitRef(repository_path="."),
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            assert exp.exists("source_code/git")
-
-        with neptune.init_run(
-            git_ref=True,
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            assert exp.exists("source_code/git")
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_git_disabled(self, environment, recwarn):
-        with neptune.init_run(
-            git_ref=GitRef.DISABLED,
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            assert not exp.exists("source_code/git")
-
-        with neptune.init_run(
-            git_ref=False,
-            project=environment.project,
-        ) as exp:
-            # download sources
-            exp.sync()
-            assert not exp.exists("source_code/git")
-
-        assert len(recwarn) == 0  # upload was not skipped due to an exception that would raise a warning
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_infer_dependencies(self, environment):
         with neptune.init_run(
             project=environment.project,
@@ -107,23 +55,6 @@ class TestInitRun(BaseE2ETest):
             assert exp.exists("source_code/requirements")
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_upload_dependency_file(self, environment):
-        filename = fake.file_name(extension="txt")
-        with open(filename, "w") as file:
-            file.write("some-dependency==1.0.0")
-
-        with neptune.init_run(
-            project=environment.project,
-            dependencies=filename,
-        ) as exp:
-            exp.sync()
-
-            exp["source_code/requirements"].download("requirements.txt")
-
-        with open("requirements.txt", "r") as file:
-            assert file.read() == "some-dependency==1.0.0"
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_warning_raised_if_dependency_file_non_existent(self, capsys, environment):
         with neptune.init_run(dependencies="some_non_existent_file", project=environment.project):
             ...
@@ -131,21 +62,6 @@ class TestInitRun(BaseE2ETest):
         captured = capsys.readouterr()
         assert "'some_non_existent_file' does not exist" in captured.out
         assert "ERROR" in captured.out
-
-    @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
-    def test_tracking_uncommitted_changes(self, repo, environment):
-        file = repo.working_dir + "/some_file.txt"
-        with open(file, "w") as fp:
-            fp.write("some-content\n")
-
-        repo.git.add(file)
-
-        with neptune.init_run(project=environment.project, git_ref=GitRef(repository_path=repo.working_dir)) as run:
-            run.sync()
-            assert run.exists("source_code/diff")
-            run["source_code/diff"].download()
-            with open("diff.patch") as fp:
-                assert "some-content" in fp.read()
 
 
 @pytest.mark.skip(reason="Project is not supported")

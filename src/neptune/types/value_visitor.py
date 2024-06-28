@@ -25,15 +25,10 @@ from typing import (
 
 from neptune.attributes.attribute import Attribute
 from neptune.types import (
-    Artifact,
     Boolean,
     Datetime,
-    File,
-    FileSeries,
-    FileSet,
     Float,
     FloatSeries,
-    GitRef,
     Integer,
     String,
     StringSeries,
@@ -70,18 +65,6 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_artifact(self, value: Artifact) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_file(self, value: File) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_file_set(self, value: FileSet) -> Ret:
-        pass
-
-    @abc.abstractmethod
     def visit_float_series(self, value: FloatSeries) -> Ret:
         pass
 
@@ -90,15 +73,7 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_image_series(self, value: FileSeries) -> Ret:
-        pass
-
-    @abc.abstractmethod
     def visit_string_set(self, value: StringSet) -> Ret:
-        pass
-
-    @abc.abstractmethod
-    def visit_git_ref(self, value: GitRef) -> Ret:
         pass
 
     @abc.abstractmethod

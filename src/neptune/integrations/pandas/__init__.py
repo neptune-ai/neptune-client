@@ -29,16 +29,11 @@ from typing import (
 import pandas as pd
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     FieldVisitor,
-    FileField,
-    FileSetField,
     FloatField,
     FloatSeriesField,
-    GitRefField,
-    ImageSeriesField,
     IntField,
     LeaderboardEntry,
     NotebookRefField,
@@ -71,9 +66,6 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
     def visit_datetime(self, field: DateTimeField) -> datetime:
         return field.value
 
-    def visit_file(self, field: FileField) -> None:
-        return None
-
     def visit_string_set(self, field: StringSetField) -> Optional[str]:
         return ",".join(field.values)
 
@@ -83,23 +75,11 @@ class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
     def visit_string_series(self, field: StringSeriesField) -> Optional[str]:
         return field.last
 
-    def visit_image_series(self, field: ImageSeriesField) -> None:
-        return None
-
-    def visit_file_set(self, field: FileSetField) -> None:
-        return None
-
-    def visit_git_ref(self, field: GitRefField) -> Optional[str]:
-        return field.commit.commit_id if field.commit is not None else None
-
     def visit_object_state(self, field: ObjectStateField) -> str:
         return field.value
 
     def visit_notebook_ref(self, field: NotebookRefField) -> Optional[str]:
         return field.notebook_name
-
-    def visit_artifact(self, field: ArtifactField) -> str:
-        return field.hash
 
 
 def make_row(entry: LeaderboardEntry, to_value_visitor: FieldVisitor) -> Dict[str, PANDAS_AVAILABLE_TYPES]:

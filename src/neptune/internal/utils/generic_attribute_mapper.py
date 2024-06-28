@@ -45,14 +45,6 @@ value_set_attribute_types_map = {
     FieldType.STRING_SET.value: "stringSetProperties",
 }
 
-# TODO: nicer mapping?
-_unmapped_attribute_types_map = {
-    FieldType.FILE_SET.value: "fileSetProperties",  # TODO: return size?
-    FieldType.FILE.value: "fileProperties",  # TODO: name? size?
-    FieldType.IMAGE_SERIES.value: "imageSeriesProperties",  # TODO: return last step?
-    FieldType.GIT_REF.value: "gitRefProperties",  # TODO: commit? branch?
-}
-
 
 def map_attribute_result_to_value(attribute):
     for attribute_map, value_key in [

@@ -34,18 +34,18 @@ _logger = get_logger()
 
 
 class TracebackJob(BackgroundJob):
-    def __init__(self, path: str, fail_on_exception: bool = True):
+    def __init__(self, path: str, fail_on_exception: bool = True) -> None:
         self._uuid = uuid.uuid4()
         self._started = False
         self._path = path
         self._fail_on_exception = fail_on_exception
 
-    def start(self, container: "NeptuneObject"):
+    def start(self, container: "NeptuneObject") -> None:
         if not self._started:
             path = self._path
             fail_on_exception = self._fail_on_exception
 
-            def log_traceback(stacktrace_lines: List[str]):
+            def log_traceback(stacktrace_lines: List[str]) -> None:
                 container[path].log(stacktrace_lines)
                 if fail_on_exception:
                     container[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
@@ -53,14 +53,14 @@ class TracebackJob(BackgroundJob):
             traceback_handler.register(self._uuid, log_traceback)
         self._started = True
 
-    def stop(self):
+    def stop(self) -> None:
         traceback_handler.unregister(self._uuid)
 
-    def join(self, seconds: Optional[float] = None):
+    def join(self, seconds: Optional[float] = None) -> None:
         pass
 
-    def pause(self):
+    def pause(self) -> None:
         pass
 
-    def resume(self):
+    def resume(self) -> None:
         pass

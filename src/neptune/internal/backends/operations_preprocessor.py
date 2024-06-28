@@ -28,29 +28,21 @@ from neptune.exceptions import MetadataInconsistency
 from neptune.internal.exceptions import InternalClientError
 from neptune.internal.operation import (
     AddStrings,
-    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
     AssignInt,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     CopyAttribute,
     DeleteAttribute,
-    DeleteFiles,
     LogFloats,
-    LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToArtifact,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
 )
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.internal.utils.paths import path_to_str
@@ -65,7 +57,6 @@ class RequiresPreviousCompleted(Exception):
 @dataclasses.dataclass
 class AccumulatedOperations:
     upload_operations: List[Operation] = dataclasses.field(default_factory=list)
-    artifact_operations: List[TrackFilesToArtifact] = dataclasses.field(default_factory=list)
     other_operations: List[Operation] = dataclasses.field(default_factory=list)
 
     errors: List[MetadataInconsistency] = dataclasses.field(default_factory=list)
@@ -90,25 +81,12 @@ class OperationsPreprocessor:
         target_acc.visit(op)
         return target_acc
 
-    @staticmethod
-    def is_file_op(op: Operation):
-        return isinstance(op, (UploadFile, UploadFileContent, UploadFileSet))
-
-    @staticmethod
-    def is_artifact_op(op: Operation):
-        return isinstance(op, TrackFilesToArtifact)
-
     def get_operations(self) -> AccumulatedOperations:
         result = AccumulatedOperations()
         for _, acc in sorted(self._accumulators.items()):
             acc: "_OperationsAccumulator"
             for op in acc.get_operations():
-                if self.is_artifact_op(op):
-                    result.artifact_operations.append(op)
-                elif self.is_file_op(op):
-                    result.upload_operations.append(op)
-                else:
-                    result.other_operations.append(op)
+                result.other_operations.append(op)
             result.errors.extend(acc.get_errors())
 
         return result
@@ -119,20 +97,10 @@ class _DataType(Enum):
     INT = "Int"
     BOOL = "Bool"
     STRING = "String"
-    FILE = "File"
     DATETIME = "Datetime"
-    FILE_SET = "File Set"
     FLOAT_SERIES = "Float Series"
     STRING_SERIES = "String Series"
-    IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
-    ARTIFACT = "Artifact"
-
-    def is_file_op(self) -> bool:
-        return self in (self.FILE, self.FILE_SET)
-
-    def is_artifact_op(self) -> bool:
-        return self in (self.ARTIFACT,)
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -149,12 +117,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
-
-    def _check_prerequisites(self, op: Operation):
-        if (OperationsPreprocessor.is_file_op(op) or OperationsPreprocessor.is_artifact_op(op)) and len(
-            self._delete_ops
-        ) > 0:
-            raise RequiresPreviousCompleted()
 
     def _process_modify_op(
         self,
@@ -177,7 +139,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
-            self._check_prerequisites(op)
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
 
@@ -197,7 +158,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
-            self._check_prerequisites(op)
             self._type = expected_type
             self._config_ops = [op]
 
@@ -215,21 +175,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_assign_datetime(self, op: AssignDatetime) -> None:
         self._process_modify_op(_DataType.DATETIME, op, self._assign_modifier())
-
-    def visit_upload_file(self, op: UploadFile) -> None:
-        self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
-
-    def visit_upload_file_content(self, op: UploadFileContent) -> None:
-        self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
-
-    def visit_assign_artifact(self, op: AssignArtifact) -> None:
-        self._process_modify_op(_DataType.ARTIFACT, op, self._assign_modifier())
-
-    def visit_upload_file_set(self, op: UploadFileSet) -> None:
-        if op.reset:
-            self._process_modify_op(_DataType.FILE_SET, op, self._assign_modifier())
-        else:
-            self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_log_floats(self, op: LogFloats) -> None:
         self._process_modify_op(
@@ -253,25 +198,11 @@ class _OperationsAccumulator(OperationVisitor[None]):
             ),
         )
 
-    def visit_log_images(self, op: LogImages) -> None:
-        self._process_modify_op(
-            _DataType.IMAGE_SERIES,
-            op,
-            self._log_modifier(
-                LogImages,
-                ClearImageLog,
-                lambda op1, op2: LogImages(op1.path, op1.values + op2.values),
-            ),
-        )
-
     def visit_clear_float_log(self, op: ClearFloatLog) -> None:
         self._process_modify_op(_DataType.FLOAT_SERIES, op, self._clear_modifier())
 
     def visit_clear_string_log(self, op: ClearStringLog) -> None:
         self._process_modify_op(_DataType.STRING_SERIES, op, self._clear_modifier())
-
-    def visit_clear_image_log(self, op: ClearImageLog) -> None:
-        self._process_modify_op(_DataType.IMAGE_SERIES, op, self._clear_modifier())
 
     def visit_add_strings(self, op: AddStrings) -> None:
         self._process_modify_op(_DataType.STRING_SET, op, self._add_modifier())
@@ -284,9 +215,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_config_float_series(self, op: ConfigFloatSeries) -> None:
         self._process_config_op(_DataType.FLOAT_SERIES, op)
-
-    def visit_delete_files(self, op: DeleteFiles) -> None:
-        self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_delete_attribute(self, op: DeleteAttribute) -> None:
         if self._type:
@@ -312,26 +240,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # If value has not been set locally yet and no delete operation was performed,
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
-
-    @staticmethod
-    def _artifact_log_modifier(
-        ops: List[TrackFilesToArtifact], new_op: TrackFilesToArtifact
-    ) -> List[TrackFilesToArtifact]:
-        if len(ops) == 0:
-            return [new_op]
-
-        # There should be exactly 1 operation, merge it with new_op
-        assert len(ops) == 1
-        op_old = ops[0]
-        assert op_old.path == new_op.path
-        assert op_old.project_id == new_op.project_id
-        return [TrackFilesToArtifact(op_old.path, op_old.project_id, op_old.entries + new_op.entries)]
-
-    def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> None:
-        self._process_modify_op(_DataType.ARTIFACT, op, self._artifact_log_modifier)
-
-    def visit_clear_artifact(self, op: ClearStringSet) -> None:
-        self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
     def visit_copy_attribute(self, op: CopyAttribute) -> None:
         raise MetadataInconsistency("No CopyAttribute should reach accumulator")

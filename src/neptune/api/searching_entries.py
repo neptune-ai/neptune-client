@@ -53,7 +53,7 @@ from neptune.internal.backends.nql import (
     NQLQueryAttribute,
 )
 from neptune.internal.backends.utils import construct_progress_bar
-from neptune.internal.init.parameters import MAX_SERVER_OFFSET
+from neptune.internal.parameters import MAX_SERVER_OFFSET
 from neptune.typing import ProgressBarType
 
 if TYPE_CHECKING:

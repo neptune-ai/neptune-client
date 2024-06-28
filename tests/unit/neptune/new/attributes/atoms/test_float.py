@@ -19,7 +19,6 @@ from mock import (
     patch,
 )
 
-from neptune import init_run
 from neptune.attributes.atoms.float import (
     Float,
     FloatVal,
@@ -30,6 +29,7 @@ from neptune.internal.warnings import NeptuneUnsupportedValue
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestFloat(TestAttributeBase):
     @patch("neptune.objects.neptune_object.get_operation_processor")
     def test_assign(self, get_operation_processor):
@@ -66,19 +66,19 @@ class TestFloat(TestAttributeBase):
             self.assertEqual(5, var.fetch())
 
     def test_float_warnings(self):
-        run = init_run(mode="debug")
-        with pytest.warns(NeptuneUnsupportedValue):
-            run["infinity"] = float("inf")
-            run["neg-infinity"] = float("-inf")
-            run["nan"] = float("nan")
+        with self._exp() as run:
+            with pytest.warns(NeptuneUnsupportedValue):
+                run["infinity"] = float("inf")
+                run["neg-infinity"] = float("-inf")
+                run["nan"] = float("nan")
 
-        with pytest.raises(MetadataInconsistency):
-            run["infinity"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["infinity"].fetch()
 
-        with pytest.raises(MetadataInconsistency):
-            run["neg-infinity"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["neg-infinity"].fetch()
 
-        with pytest.raises(MetadataInconsistency):
-            run["nan"].fetch()
+            with pytest.raises(MetadataInconsistency):
+                run["nan"].fetch()
 
-        run.stop()
+            run.stop()

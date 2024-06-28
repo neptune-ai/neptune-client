@@ -19,7 +19,6 @@ __all__ = [
     "create_http_client_with_auth",
     "create_backend_client",
     "create_leaderboard_client",
-    "create_artifacts_client",
 ]
 
 import os
@@ -32,6 +31,7 @@ from typing import (
 import requests
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
+from packaging.version import parse
 
 from neptune.envs import NEPTUNE_REQUEST_TIMEOUT
 from neptune.exceptions import NeptuneClientUpgradeRequiredError
@@ -49,11 +49,10 @@ from neptune.internal.backends.utils import (
 )
 from neptune.internal.credentials import Credentials
 from neptune.internal.oauth import NeptuneAuthenticator
-from neptune.version import version as neptune_version
+from neptune.version import __version__
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
-ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = int(os.getenv(NEPTUNE_REQUEST_TIMEOUT, "600"))
@@ -101,7 +100,7 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
     update_session_proxies(http_client.session, proxies)
 
     user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
-        lib_version=neptune_version,
+        lib_version=__version__,
         system=platform.platform(),
         python_version=platform.python_version(),
     )
@@ -136,16 +135,9 @@ def _get_token_client(
 def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
     backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
-    config = (
-        backend_client.api.getClientConfig(
-            X_Neptune_Api_Token=credentials.api_token,
-            alpha="true",
-            **DEFAULT_REQUEST_KWARGS,
-        )
-        .response()
-        .result
-    )
+    config = backend_client.api.getClientConfig(**DEFAULT_REQUEST_KWARGS).response().result
 
+    neptune_version = parse(__version__)
     client_config = ClientConfig.from_api_response(config)
     if not client_config.version_info:
         raise NeptuneClientUpgradeRequiredError(neptune_version, max_version="0.4.111")
@@ -160,6 +152,7 @@ def create_http_client_with_auth(
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
 
+    neptune_version = parse(__version__)
     verify_client_version(client_config, neptune_version)
 
     endpoint_url = None
@@ -197,16 +190,6 @@ def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClie
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
-            http_client,
-        )
-    )
-
-
-@cache
-def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
-    return SwaggerClientWrapper(
-        create_swagger_client(
-            build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
             http_client,
         )
     )

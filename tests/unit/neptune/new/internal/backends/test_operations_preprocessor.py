@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import uuid
-
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.operation import (
@@ -23,22 +20,17 @@ from neptune.internal.operation import (
     AssignFloat,
     AssignString,
     ClearFloatLog,
-    ClearImageLog,
     ClearStringSet,
     ConfigFloatSeries,
     DeleteAttribute,
     LogFloats,
-    LogImages,
     LogStrings,
     RemoveStrings,
-    TrackFilesToArtifact,
-    UploadFileSet,
 )
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 FLog = LogFloats.ValueType
 SLog = LogStrings.ValueType
-ILog = LogImages.ValueType
 
 
 class TestOperationsPreprocessor(TestAttributeBase):
@@ -66,7 +58,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -106,7 +97,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -141,16 +131,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
             LogFloats(["c"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
             LogStrings(["d"], [SLog("4", 111, 222)]),
             ClearFloatLog(["e"]),
-            LogImages(["f"], [ILog("1", 2, 3)]),
-            LogImages(["f"], [ILog("10", 20, 30), FLog("100", 200, 300)]),
-            LogImages(["f"], [ILog("1", 2, 3)]),
-            LogImages(["f"], [ILog("10", 20, 30), FLog("100", 200, 300)]),
-            ClearImageLog(["f"]),
-            LogImages(["f"], [ILog("3", 20, 30), FLog("4", 200, 300)]),
-            LogImages(["f"], [ILog("5", 2, 3)]),
-            LogImages(["f"], [ILog("8", 20, 30), FLog("1000", 200, 300)]),
-            LogImages(["g"], [ILog("10", 20, 30), FLog("100", 200, 300)]),
-            ClearImageLog(["g"]),
             AssignString(["h"], "44"),
             LogFloats(["h"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
             LogFloats(["i"], [FLog(1, 2, 3)]),
@@ -165,7 +145,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -177,18 +156,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
                 LogFloats(["c"], [FLog(1, 2, 3), FLog(10, 20, 30), FLog(100, 200, 300)]),
                 LogStrings(["d"], [SLog("4", 111, 222)]),
                 ClearFloatLog(["e"]),
-                ClearImageLog(["f"]),
-                LogImages(
-                    ["f"],
-                    [
-                        ILog("3", 20, 30),
-                        FLog("4", 200, 300),
-                        ILog("5", 2, 3),
-                        ILog("8", 20, 30),
-                        FLog("1000", 200, 300),
-                    ],
-                ),
-                ClearImageLog(["g"]),
                 AssignString(["h"], "44"),
                 ClearFloatLog(["i"]),
                 LogFloats(["i"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
@@ -236,7 +203,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # then
         result = processor.get_operations()
         self.assertEqual(result.upload_operations, [])
-        self.assertEqual(result.artifact_operations, [])
         self.assertEqual(
             result.other_operations,
             [
@@ -265,152 +231,3 @@ class TestOperationsPreprocessor(TestAttributeBase):
             ],
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
-
-    def test_file_set(self):
-        # given
-        processor = OperationsPreprocessor()
-
-        operations = [
-            UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
-            UploadFileSet(["a"], ["hhh", "gij"], reset=False),
-            UploadFileSet(["b"], ["abc", "defgh"], reset=True),
-            UploadFileSet(["c"], ["hhh", "gij"], reset=False),
-            UploadFileSet(["c"], ["abc", "defgh"], reset=True),
-            UploadFileSet(["c"], ["qqq"], reset=False),
-            UploadFileSet(["d"], ["hhh", "gij"], reset=False),
-            AssignFloat(["e"], 5),
-            UploadFileSet(["e"], [""], reset=False),
-        ]
-
-        # when
-        processor.process(operations)
-
-        # then
-        result = processor.get_operations()
-        self.assertEqual(
-            result.upload_operations,
-            [
-                UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
-                UploadFileSet(["a"], ["hhh", "gij"], reset=False),
-                UploadFileSet(["b"], ["abc", "defgh"], reset=True),
-                UploadFileSet(["c"], ["abc", "defgh"], reset=True),
-                UploadFileSet(["c"], ["qqq"], reset=False),
-                UploadFileSet(["d"], ["hhh", "gij"], reset=False),
-            ],
-        )
-        self.assertEqual(result.artifact_operations, [])
-        self.assertEqual(
-            result.other_operations,
-            [
-                AssignFloat(["e"], 5),
-            ],
-        )
-        self.assertEqual(
-            result.errors,
-            [MetadataInconsistency("Cannot perform UploadFileSet operation on e: Attribute is not a File Set")],
-        )
-        self.assertEqual(processor.processed_ops_count, len(operations))
-
-    def test_file_ops_delete(self):
-        # given
-        processor = OperationsPreprocessor()
-
-        operations = [
-            UploadFileSet(["b"], ["abc", "defgh"], reset=True),
-            UploadFileSet(["c"], ["hhh", "gij"], reset=False),
-            UploadFileSet(["c"], ["abc", "defgh"], reset=True),
-            UploadFileSet(["c"], ["qqq"], reset=False),
-            UploadFileSet(["d"], ["hhh", "gij"], reset=False),
-            DeleteAttribute(["a"]),
-            UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
-            UploadFileSet(["a"], ["hhh", "gij"], reset=False),
-            DeleteAttribute(["b"]),
-        ]
-
-        # when
-        processor.process(operations)
-
-        # then: there's a cutoff after DeleteAttribute(["a"])
-        result = processor.get_operations()
-        self.assertEqual(
-            result.upload_operations,
-            [
-                UploadFileSet(["b"], ["abc", "defgh"], reset=True),
-                UploadFileSet(["c"], ["abc", "defgh"], reset=True),
-                UploadFileSet(["c"], ["qqq"], reset=False),
-                UploadFileSet(["d"], ["hhh", "gij"], reset=False),
-            ],
-        )
-        self.assertEqual(result.artifact_operations, [])
-        self.assertEqual(
-            result.other_operations,
-            [
-                DeleteAttribute(["a"]),
-            ],
-        )
-        self.assertEqual(result.errors, [])
-        self.assertEqual(processor.processed_ops_count, 6)
-
-    def test_artifacts(self):
-        # given
-        processor = OperationsPreprocessor()
-        project_uuid = str(uuid.uuid4())
-
-        operations = [
-            TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-            DeleteAttribute(["a"]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["b"], project_uuid, [("dir4/dir5/", "dir4/")]),
-            AssignFloat(["c"], 5),
-            TrackFilesToArtifact(["c"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["d"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["d"], project_uuid, [("dir4/", None)]),
-            TrackFilesToArtifact(["e"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["e"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir1/", None)]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir2/dir3/", "dir2/")]),
-            TrackFilesToArtifact(["f"], project_uuid, [("dir4/", None)]),
-            TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-        ]
-
-        # when
-        processor.process(operations)
-
-        # then: there's a cutoff before second TrackFilesToArtifact(["a"]) due to DeleteAttribute(["a"])
-        result = processor.get_operations()
-        self.assertEqual(result.upload_operations, [])
-        self.assertEqual(
-            result.artifact_operations,
-            [
-                TrackFilesToArtifact(["a"], project_uuid, [("dir1/", None)]),
-                TrackFilesToArtifact(
-                    ["b"],
-                    project_uuid,
-                    [("dir1/", None), ("dir2/dir3/", "dir2/"), ("dir4/dir5/", "dir4/")],
-                ),
-                TrackFilesToArtifact(["d"], project_uuid, [("dir2/dir3/", "dir2/"), ("dir4/", None)]),
-                TrackFilesToArtifact(["e"], project_uuid, [("dir1/", None), ("dir2/dir3/", "dir2/")]),
-                TrackFilesToArtifact(
-                    ["f"],
-                    project_uuid,
-                    [("dir1/", None), ("dir2/dir3/", "dir2/"), ("dir4/", None)],
-                ),
-            ],
-        )
-        self.assertEqual(
-            result.other_operations,
-            [
-                DeleteAttribute(["a"]),
-                AssignFloat(["c"], 5),
-            ],
-        )
-        self.assertEqual(
-            result.errors,
-            [
-                MetadataInconsistency(
-                    "Cannot perform TrackFilesToArtifact operation on c: Attribute is not a Artifact"
-                ),
-            ],
-        )
-        self.assertEqual(processor.processed_ops_count, len(operations) - 1)

@@ -29,10 +29,9 @@ from neptune.exceptions import (
     InactiveProjectException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.init.parameters import (
+from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
@@ -44,6 +43,7 @@ from neptune.internal.utils import (
     verify_type,
     verify_value,
 )
+from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
@@ -53,7 +53,6 @@ from neptune.objects.utils import (
     prepare_nql_query,
 )
 from neptune.table import Table
-from neptune.types.mode import Mode
 from neptune.typing import (
     ProgressBarCallback,
     ProgressBarType,
@@ -68,9 +67,6 @@ class Project(NeptuneObject):
 
     You can also log (and fetch) metadata common to the whole project, such as information about datasets,
     links to documents, or key project metrics.
-
-    Note: If you want to instead create a project, use the
-    [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
 
     You can also use the Project object as a context manager (see examples).
 
@@ -166,6 +162,7 @@ class Project(NeptuneObject):
             raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
         super().__init__(
+            custom_id=None,
             project=project,
             api_token=api_token,
             mode=mode,
@@ -177,26 +174,9 @@ class Project(NeptuneObject):
             async_no_progress_threshold=async_no_progress_threshold,
         )
 
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        return ApiExperiment(
-            id=self._project_api_object.id,
-            type=ContainerType.PROJECT,
-            sys_id=self._project_api_object.sys_id,
-            workspace=self._project_api_object.workspace,
-            project_name=self._project_api_object.name,
-        )
-
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
             raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
-
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_project_url(
-            project_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-        )
 
     def fetch_runs_table(
         self,

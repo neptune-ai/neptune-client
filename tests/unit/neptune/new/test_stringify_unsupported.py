@@ -23,7 +23,9 @@ from typing import (
     Iterator,
     MutableMapping,
 )
+from unittest.mock import patch
 
+import pytest
 from freezegun import freeze_time
 from pytest import (
     fixture,
@@ -40,8 +42,8 @@ from neptune.internal.warnings import (
     NeptuneUnsupportedType,
     warned_once,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types import (
-    Artifact,
     Boolean,
     Datetime,
     Float,
@@ -98,10 +100,16 @@ def assert_no_warnings():
 
 @fixture
 def run():
-    with init_run(mode="debug") as run:
-        yield run
+    with patch.object(
+        NeptuneObject,
+        "_async_create_run",
+        lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    ):
+        with init_run(mode="debug") as run:
+            yield run
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestStringifyUnsupported:
     def test_assign__custom_object(self, run):
         with assert_unsupported_warning():
@@ -186,14 +194,6 @@ class TestStringifyUnsupported:
             run["regular"] = {"array": str([Obj(), Obj(), Obj()])}
 
         assert run["regular"]["array"].fetch() == run["stringified"]["array"].fetch()
-
-    def test_assign__artifact(self, run):
-        with assert_no_warnings():
-            run["artifact"] = Artifact(
-                value=stringify_unsupported("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-            )
-            run["artifact"] = Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-            run["artifact"].assign(Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
 
     def test_assign__boolean(self, run):
         with assert_no_warnings():

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import abc
-import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import (
@@ -23,7 +22,6 @@ from typing import (
     List,
     Optional,
     Set,
-    Tuple,
     Type,
     TypeVar,
 )
@@ -31,12 +29,6 @@ from typing import (
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import MalformedOperation
 from neptune.internal.container_type import ContainerType
-from neptune.internal.exceptions import (
-    InternalClientError,
-    NeptuneException,
-)
-from neptune.internal.types.file_types import FileType
-from neptune.types.atoms.file import File
 
 if TYPE_CHECKING:
     from neptune.attributes.attribute import Attribute
@@ -166,131 +158,6 @@ class AssignDatetime(Operation):
         return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
 
 
-@dataclass
-class AssignArtifact(Operation):
-
-    hash: str
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_assign_artifact(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["hash"] = self.hash
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "AssignArtifact":
-        return AssignArtifact(data["path"], str(data["hash"]))
-
-
-@dataclass
-class UploadFile(Operation):
-
-    ext: str
-    file_path: str = None
-    tmp_file_name: str = None
-    # `clean_after_upload` is for backward compatibility and should be removed in the future
-    clean_after_upload: bool = False
-
-    @classmethod
-    def of_file(cls, value: File, attribute_path: List[str], operation_storage: OperationStorage):
-        if value.file_type is FileType.LOCAL_FILE:
-            operation = UploadFile(
-                path=attribute_path,
-                ext=value.extension,
-                file_path=os.path.abspath(value.path),
-            )
-        elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
-            tmp_file_name = cls.get_tmp_file_name(attribute_path, value.extension)
-            value._save(operation_storage.upload_path / tmp_file_name)
-            operation = UploadFile(path=attribute_path, ext=value.extension, tmp_file_name=tmp_file_name)
-        else:
-            raise ValueError(f"Unexpected FileType: {value.file_type}")
-        return operation
-
-    def clean(self, operation_storage: OperationStorage):
-        if self.clean_after_upload or self.tmp_file_name:
-            os.remove(self.get_absolute_path(operation_storage))
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_upload_file(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["ext"] = self.ext
-        ret["file_path"] = self.file_path
-        ret["tmp_file_name"] = self.tmp_file_name
-        ret["clean_after_upload"] = self.clean_after_upload
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "UploadFile":
-        return UploadFile(
-            data["path"],
-            data["ext"],
-            data.get("file_path"),
-            data.get("tmp_file_name"),
-            data.get("clean_after_upload", False),
-        )
-
-    @staticmethod
-    def get_tmp_file_name(attribute_path: List[str], extension: str):
-        now = datetime.now()
-        tmp_file_name = (
-            f"{'_'.join(attribute_path)}-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}.{extension}"
-        )
-        return tmp_file_name
-
-    def get_absolute_path(self, operation_storage: OperationStorage) -> str:
-        if self.file_path:
-            return self.file_path
-        elif self.tmp_file_name:
-            return str(operation_storage.upload_path / self.tmp_file_name)
-
-        raise NeptuneException("Expected 'file_path' or 'tmp_file_name' to be filled.")
-
-
-@dataclass
-class UploadFileContent(Operation):
-
-    ext: str
-    file_content: str
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_upload_file_content(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["ext"] = self.ext
-        ret["file_content"] = self.file_content
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "UploadFileContent":
-        return UploadFileContent(data["path"], data["ext"], data["file_content"])
-
-
-@dataclass
-class UploadFileSet(Operation):
-
-    file_globs: List[str]
-    reset: bool
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_upload_file_set(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["file_globs"] = self.file_globs
-        ret["reset"] = str(self.reset)
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "UploadFileSet":
-        return UploadFileSet(data["path"], data["file_globs"], data["reset"] != str(False))
-
-
 class LogOperation(Operation, abc.ABC):
     pass
 
@@ -357,51 +224,6 @@ class LogStrings(LogOperation):
 
 
 @dataclass
-class ImageValue:
-    data: Optional[str]
-    name: Optional[str]
-    description: Optional[str]
-
-    @staticmethod
-    def serializer(obj: "ImageValue"):
-        return dict(data=obj.data, name=obj.name, description=obj.description)
-
-    @staticmethod
-    def deserializer(obj) -> "ImageValue":
-        if obj is None:
-            return ImageValue(None, None, None)
-        if isinstance(obj, str):
-            return ImageValue(data=obj, name=None, description=None)
-        if isinstance(obj, dict):
-            return ImageValue(data=obj["data"], name=obj["name"], description=obj["description"])
-        else:
-            raise InternalClientError("Run data on disk is malformed or was saved by newer version of Neptune Library")
-
-
-@dataclass
-class LogImages(LogOperation):
-
-    ValueType = LogSeriesValue[ImageValue]
-
-    values: List[ValueType]
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_log_images(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["values"] = [value.to_dict(ImageValue.serializer) for value in self.values]
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "LogImages":
-        return LogImages(
-            data["path"],
-            [LogImages.ValueType.from_dict(value, ImageValue.deserializer) for value in data["values"]],
-        )
-
-
-@dataclass
 class ClearFloatLog(Operation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_float_log(self)
@@ -419,16 +241,6 @@ class ClearStringLog(Operation):
     @staticmethod
     def from_dict(data: dict) -> "ClearStringLog":
         return ClearStringLog(data["path"])
-
-
-@dataclass
-class ClearImageLog(Operation):
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_clear_image_log(self)
-
-    @staticmethod
-    def from_dict(data: dict) -> "ClearImageLog":
-        return ClearImageLog(data["path"])
 
 
 @dataclass
@@ -500,24 +312,6 @@ class ClearStringSet(Operation):
 
 
 @dataclass
-class DeleteFiles(Operation):
-
-    file_paths: Set[str]
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_delete_files(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["file_paths"] = list(self.file_paths)
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "DeleteFiles":
-        return DeleteFiles(data["path"], set(data["file_paths"]))
-
-
-@dataclass
 class DeleteAttribute(Operation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_delete_attribute(self)
@@ -525,39 +319,6 @@ class DeleteAttribute(Operation):
     @staticmethod
     def from_dict(data: dict) -> "DeleteAttribute":
         return DeleteAttribute(data["path"])
-
-
-@dataclass
-class TrackFilesToArtifact(Operation):
-    project_id: str
-    entries: List[Tuple[str, Optional[str]]]
-
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_track_files_to_artifact(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["entries"] = self.entries
-        ret["project_id"] = self.project_id
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> "TrackFilesToArtifact":
-        return TrackFilesToArtifact(
-            path=data["path"],
-            project_id=data["project_id"],
-            entries=list(map(tuple, data["entries"])),
-        )
-
-
-@dataclass
-class ClearArtifact(Operation):
-    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
-        return visitor.visit_clear_artifact(self)
-
-    @staticmethod
-    def from_dict(data: dict) -> "ClearArtifact":
-        return ClearArtifact(data["path"])
 
 
 @dataclass

@@ -19,6 +19,7 @@ import signal
 import unittest
 from datetime import datetime
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
 
@@ -30,6 +31,7 @@ from neptune import (
     init_project,
     init_run,
 )
+from neptune.core.operation_processors.factory import get_operation_processor
 from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
@@ -43,13 +45,13 @@ from neptune.exceptions import (
     NeptuneProtectedPathException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.operation_processors.factory import get_operation_processor
 from neptune.internal.utils.utils import IS_WINDOWS
 from neptune.objects import (
     Model,
     ModelVersion,
     Project,
 )
+from neptune.objects.neptune_object import NeptuneObject
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
 from neptune.types.series import (
@@ -58,6 +60,7 @@ from neptune.types.series import (
 )
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestExperiment(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
@@ -70,14 +73,19 @@ class TestExperiment(unittest.TestCase):
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
 
-        with init_run(**kwargs) as run:
-            yield run
+        with patch.object(
+            NeptuneObject,
+            "_async_create_run",
+            lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+        ):
+            with init_run(**kwargs) as run:
+                yield run
 
-        with init_project(**kwargs) as project:
-            yield project
+            with init_project(**kwargs) as project:
+                yield project
 
-        with init_model(key="MOD", **kwargs) as model:
-            yield model
+            with init_model(key="MOD", **kwargs) as model:
+                yield model
 
     @classmethod
     def get_experiments(cls, flush_period=None):

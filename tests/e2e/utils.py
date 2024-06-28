@@ -14,46 +14,27 @@
 # limitations under the License.
 #
 __all__ = [
-    "with_check_if_file_appears",
     "tmp_context",
-    "a_project_name",
     "a_key",
     "Environment",
     "initialize_container",
     "reinitialize_container",
     "modified_environ",
     "catch_time",
-    "SIZE_1KB",
-    "SIZE_1MB",
 ]
 
-import io
 import os
 import random
 import string
 import tempfile
 from contextlib import contextmanager
-from datetime import datetime
-from math import sqrt
 from time import perf_counter
 
-import numpy
 from attr import dataclass
 
 import neptune
 from neptune.internal.container_type import ContainerType
 from tests.e2e.exceptions import MissingEnvironmentVariable
-
-
-def _remove_file_if_exists(filepath):
-    try:
-        os.remove(filepath)
-    except OSError:
-        pass
-
-
-SIZE_1MB = 2**20
-SIZE_1KB = 2**10
 
 # init kwargs which significantly reduce operations noise
 DISABLE_SYSLOG_KWARGS = {
@@ -61,19 +42,6 @@ DISABLE_SYSLOG_KWARGS = {
     "capture_stderr": False,
     "capture_hardware_metrics": False,
 }
-
-
-@contextmanager
-def with_check_if_file_appears(filepath):
-    """Checks if file will be present when leaving the block.
-    File is removed if exists when entering the block."""
-    _remove_file_if_exists(filepath)
-
-    try:
-        yield
-    finally:
-        assert os.path.exists(filepath)
-        _remove_file_if_exists(filepath)
 
 
 @contextmanager
@@ -93,32 +61,8 @@ def tmp_context():
             yield tmp
 
 
-def generate_image(*, size: int) -> "Image":  # noqa: F821
-    """generate image of size in bytes"""
-    from PIL import Image
-
-    width = int(sqrt(size / 3))  # 3 bytes per one pixel in square image
-    random_numbers = numpy.random.rand(width, width, 3) * 255
-    return Image.fromarray(random_numbers.astype("uint8")).convert("RGB")
-
-
-def image_to_png(*, image: "Image") -> "PngImageFile":  # noqa: F821
-    from PIL.PngImagePlugin import PngImageFile
-
-    png_buf = io.BytesIO()
-    image.save(png_buf, format="png")
-    png_buf.seek(0)
-    return PngImageFile(png_buf)
-
-
 def a_key():
     return "".join(random.choices(string.ascii_uppercase, k=10))
-
-
-def a_project_name(project_slug: str):
-    project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-
-    return project_name
 
 
 class RawEnvironment:
@@ -128,15 +72,7 @@ class RawEnvironment:
         env = os.environ
         try:
             # Target workspace name
-            self.workspace_name = env["WORKSPACE_NAME"]
-            # Admin user
-            self.admin_username = env["ADMIN_USERNAME"]
-            # Admin user API token
-            self.admin_neptune_api_token = env["ADMIN_NEPTUNE_API_TOKEN"]
-            # Member user
-            self.user_username = env["USER_USERNAME"]
-            # SA name
-            self.service_account_name = env["SERVICE_ACCOUNT_NAME"]
+            self.project_name = env["NEPTUNE_PROJECT"]
             # Member user or SA API token
             self.neptune_api_token = env["NEPTUNE_API_TOKEN"]
         except KeyError as e:
@@ -145,13 +81,8 @@ class RawEnvironment:
 
 @dataclass
 class Environment:
-    workspace: str
     project: str
-    user_token: str  # token of `user` or `service_account`
-    admin_token: str
-    admin: str
-    user: str
-    service_account: str
+    user_token: str
 
 
 def initialize_container(container_type, project, **extra_args):
@@ -164,16 +95,6 @@ def initialize_container(container_type, project, **extra_args):
     if container_type == "run":
         return neptune.init_run(project=project, **extra_args)
 
-    if container_type == "model":
-        return neptune.init_model(key=a_key(), project=project, **extra_args)
-
-    if container_type == "model_version":
-        model = neptune.init_model(key=a_key(), project=project, **extra_args)
-        model_sys_id = model["sys/id"].fetch()
-        model.stop()
-
-        return neptune.init_model_version(model=model_sys_id, project=project, **extra_args)
-
     raise NotImplementedError(container_type)
 
 
@@ -184,12 +105,6 @@ def reinitialize_container(sys_id: str, container_type: str, project: str, **kwa
 
     if container_type == "run":
         return neptune.init_run(with_id=sys_id, project=project, **kwargs)
-
-    if container_type == "model":
-        return neptune.init_model(with_id=sys_id, project=project, **kwargs)
-
-    if container_type == "model_version":
-        return neptune.init_model_version(with_id=sys_id, project=project, **kwargs)
 
     raise NotImplementedError()
 

@@ -21,6 +21,14 @@
 - Removed `pillow` from requirements ([#1745](https://github.com/neptune-ai/neptune-client/pull/1745))
 - Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
 - Disabled file logging ([#1733](https://github.com/neptune-ai/neptune-client/pull/1733))
+- Upgraded minimal `python` version to `3.8` ([#1794](https://github.com/neptune-ai/neptune-client/pull/1794))
+- Remove Git support ([#1801](https://github.com/neptune-ai/neptune-client/pull/1801))
+- Removed artifacts feature ([#1800](https://github.com/neptune-ai/neptune-client/pull/1800))
+- Removed file support ([#1814](https://github.com/neptune-ai/neptune-client/pull/1814))
+- Removed management support ([#1816](https://github.com/neptune-ai/neptune-client/pull/1816))
+
+### Features
+- Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
@@ -30,6 +38,18 @@
 - Series values DTO conversion reworked with protocol buffer support ([#1738](https://github.com/neptune-ai/neptune-client/pull/1738))
 - Series values fetching reworked with protocol buffer support ([#1744](https://github.com/neptune-ai/neptune-client/pull/1744))
 - Added support for enhanced field definitions querying ([#1751](https://github.com/neptune-ai/neptune-client/pull/1751))
+- Added initial operations to the `core.operations` package ([#1759](https://github.com/neptune-ai/neptune-client/pull/1759))
+- Move some `OperationProcessor` implementations to `neptune.core.operation_processors` ([#1760](https://github.com/neptune-ai/neptune-client/pull/1760))
+- Changed handling of too long custom run id ([#1761](https://github.com/neptune-ai/neptune-client/pull/1761))
+- Skip tests that require `GitPython` when not installed ([#1752](https://github.com/neptune-ai/neptune-client/pull/1752))
+- Moved and refactored `AsyncOperationProcessor` to `neptune.core.operation_processors` ([#1770](https://github.com/neptune-ai/neptune-client/pull/1770))
+- Moved and refactored `SyncOperationProcessor` to `neptune.core.operation_processors` ([#1779](https://github.com/neptune-ai/neptune-client/pull/1779))
+- Added docstring for the `pop()` function ([#1776](https://github.com/neptune-ai/neptune-client/pull/1776))
+- Added `httpx[http2]` as dependency ([#1808](https://github.com/neptune-ai/neptune-client/pull/1808))
+- Decreased `batch_size` for `FloatSeries` from 100 to 1 ([#1793](https://github.com/neptune-ai/neptune-client/pull/1793))
+- Introduced `RunCreation` operation ([#1817](https://github.com/neptune-ai/neptune-client/pull/1817))
+- Added serialization of operations to protocol buffers ([#1822](https://github.com/neptune-ai/neptune-client/pull/1822))
+- Introduced `neptune-api` as dependency ([#1823](https://github.com/neptune-ai/neptune-client/pull/1823))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))

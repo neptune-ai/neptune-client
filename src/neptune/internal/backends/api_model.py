@@ -20,8 +20,6 @@ __all__ = [
     "OptionalFeatures",
     "VersionInfo",
     "ClientConfig",
-    "ArtifactModel",
-    "MultipartConfig",
 ]
 
 from dataclasses import dataclass
@@ -37,23 +35,6 @@ from neptune.internal.id_formats import (
     SysId,
     UniqueId,
 )
-
-
-@dataclass(frozen=True)
-class MultipartConfig:
-    min_chunk_size: int
-    max_chunk_size: int
-    max_chunk_count: int
-    max_single_part_size: int
-
-    @staticmethod
-    def get_default() -> "MultipartConfig":
-        return MultipartConfig(
-            min_chunk_size=5242880,
-            max_chunk_size=1073741824,
-            max_chunk_count=1000,
-            max_single_part_size=5242880,
-        )
 
 
 @dataclass
@@ -93,10 +74,6 @@ class ApiExperiment:
 
 class OptionalFeatures:
     VERSION_INFO = "version_info"
-    ARTIFACTS = "artifacts"
-    ARTIFACTS_HASH_EXCLUDE_METADATA = "artifacts_hash_exclude_metadata"
-    ARTIFACTS_EXCLUDE_DIRECTORY_FILES = "artifact_exclude_directory_files"
-    MULTIPART_UPLOAD = "multipart_upload"
 
 
 @dataclass(frozen=True)
@@ -121,10 +98,8 @@ class VersionInfo:
 @dataclass(frozen=True)
 class ClientConfig:
     api_url: str
-    display_url: str
     _missing_features: FrozenSet[str]
     version_info: VersionInfo
-    multipart_config: MultipartConfig
 
     def has_feature(self, feature_name: str) -> bool:
         return feature_name not in self._missing_features
@@ -142,41 +117,8 @@ class ClientConfig:
             min_compatible = getattr(version_info_obj, "minCompatibleVersion", None)
             max_compatible = getattr(version_info_obj, "maxCompatibleVersion", None)
 
-        multipart_upload_config_obj = getattr(config, "multiPartUpload", None)
-        has_multipart_upload = getattr(multipart_upload_config_obj, "enabled", False)
-        if not has_multipart_upload:
-            missing_features.append(OptionalFeatures.MULTIPART_UPLOAD)
-            multipart_upload_config = None
-        else:
-            min_chunk_size = getattr(multipart_upload_config_obj, "minChunkSize")
-            max_chunk_size = getattr(multipart_upload_config_obj, "maxChunkSize")
-            max_chunk_count = getattr(multipart_upload_config_obj, "maxChunkCount")
-            max_single_part_size = getattr(multipart_upload_config_obj, "maxSinglePartSize")
-            multipart_upload_config = MultipartConfig(
-                min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
-            )
-
-        artifacts_config_obj = getattr(config, "artifacts", None)
-        has_artifacts = getattr(artifacts_config_obj, "enabled", False)
-        if not has_artifacts:
-            missing_features.append(OptionalFeatures.ARTIFACTS)
-
-        artifacts_api_version = getattr(artifacts_config_obj, "apiVersion", 1)
-        if artifacts_api_version == 1:
-            missing_features.append(OptionalFeatures.ARTIFACTS_HASH_EXCLUDE_METADATA)
-            missing_features.append(OptionalFeatures.ARTIFACTS_EXCLUDE_DIRECTORY_FILES)
-
         return ClientConfig(
             api_url=config.apiUrl,
-            display_url=config.applicationUrl,
             _missing_features=frozenset(missing_features),
             version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
-            multipart_config=multipart_upload_config,
         )
-
-
-@dataclass
-class ArtifactModel:
-    received_metadata: bool
-    hash: str
-    size: int

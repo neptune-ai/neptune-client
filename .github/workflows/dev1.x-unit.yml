@@ -1,0 +1,21 @@
+name: dev1.x-unit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+
+env:
+  WORKSPACE_NAME: e2e-tests
+  BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+  USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+  ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+
+jobs:
+  unit_dev1_x:
+    uses: neptune-ai/neptune-client/.github/workflows/unit.yml@dev/1.x
+    secrets: inherit
+    with:
+      neptune_ref: refs/heads/dev/1.x

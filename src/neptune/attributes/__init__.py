@@ -15,18 +15,13 @@
 #
 
 __all__ = [
-    "Artifact",
     "Boolean",
     "Datetime",
-    "File",
     "Float",
-    "GitRef",
     "Integer",
     "NotebookRef",
     "RunState",
     "String",
-    "FileSet",
-    "FileSeries",
     "FloatSeries",
     "StringSeries",
     "StringSet",
@@ -35,20 +30,15 @@ __all__ = [
 
 
 from .atoms import (
-    Artifact,
     Boolean,
     Datetime,
-    File,
     Float,
-    GitRef,
     Integer,
     NotebookRef,
     RunState,
     String,
 )
-from .file_set import FileSet
 from .series import (
-    FileSeries,
     FloatSeries,
     StringSeries,
 )

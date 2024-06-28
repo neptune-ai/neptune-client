@@ -17,12 +17,14 @@ __all__ = ["NeptuneObject"]
 
 import abc
 import atexit
+import datetime
 import itertools
 import logging
 import os
 import threading
 import time
 import traceback
+import uuid
 from contextlib import AbstractContextManager
 from functools import (
     partial,
@@ -40,21 +42,32 @@ from typing import (
     Union,
 )
 
+from typing_extensions import (
+    ParamSpec,
+    TypeVar,
+)
+
 from neptune.api.models import FieldType
 from neptune.attributes import create_attribute_from_type
 from neptune.attributes.attribute import Attribute
 from neptune.attributes.namespace import Namespace as NamespaceAttr
 from neptune.attributes.namespace import NamespaceBuilder
+from neptune.core.operation_processors.factory import get_operation_processor
+from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
+from neptune.core.operation_processors.operation_processor import OperationProcessor
+from neptune.core.operations.operation import RunCreation
+from neptune.core.typing.id_formats import CustomId
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
     NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK,
 )
-from neptune.exceptions import MetadataInconsistency
-from neptune.handler import Handler
-from neptune.internal.backends.api_model import (
-    ApiExperiment,
-    Project,
+from neptune.exceptions import (
+    MetadataInconsistency,
+    NeptuneException,
+    NeptuneUnsupportedFunctionalityException,
 )
+from neptune.handler import Handler
+from neptune.internal.backends.api_model import Project
 from neptune.internal.backends.factory import get_backend
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.nql import NQLQuery
@@ -66,24 +79,24 @@ from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import UNIX_STYLES
 from neptune.internal.id_formats import (
     QualifiedName,
-    SysId,
     UniqueId,
     conform_optional,
 )
-from neptune.internal.init.parameters import (
+from neptune.internal.operation import DeleteAttribute
+from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
 )
-from neptune.internal.operation import DeleteAttribute
-from neptune.internal.operation_processors.factory import get_operation_processor
-from neptune.internal.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
-from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.signals_processing.background_job import CallbacksMonitor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     verify_optional_callable,
     verify_type,
+)
+from neptune.internal.utils.limits import (
+    CUSTOM_RUN_ID_LENGTH,
+    custom_run_id_exceeds_length,
 )
 from neptune.internal.utils.logger import (
     get_disabled_logger,
@@ -94,8 +107,8 @@ from neptune.internal.utils.uncaught_exception_handler import instance as uncaug
 from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
+from neptune.objects.mode import Mode
 from neptune.table import Table
-from neptune.types.mode import Mode
 from neptune.types.type_casting import cast_value
 from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback
@@ -105,6 +118,9 @@ if TYPE_CHECKING:
 
 
 NeptuneObjectCallback = Callable[["NeptuneObject"], None]
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 def ensure_not_stopped(fun):
@@ -116,12 +132,23 @@ def ensure_not_stopped(fun):
     return inner_fun
 
 
+def temporarily_disabled(func: Callable[P, R]) -> Callable[P, R]:
+    def wrapper(*_: P.args, **__: P.kwargs):
+        if func.__name__ == "_get_background_jobs":
+            return []
+        else:
+            return None
+
+    return wrapper
+
+
 class NeptuneObject(AbstractContextManager):
     container_type: ContainerType
 
     def __init__(
         self,
         *,
+        custom_id: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         mode: Mode = Mode.ASYNC,
@@ -132,6 +159,7 @@ class NeptuneObject(AbstractContextManager):
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
+        verify_type("custom_id", custom_id, (str, type(None)))
         verify_type("project", project, (str, type(None)))
         verify_type("api_token", api_token, (str, type(None)))
         verify_type("mode", mode, Mode)
@@ -141,6 +169,12 @@ class NeptuneObject(AbstractContextManager):
         verify_optional_callable("async_lag_callback", async_lag_callback)
         verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
         verify_optional_callable("async_no_progress_callback", async_no_progress_callback)
+
+        if custom_run_id_exceeds_length(custom_id):
+            raise NeptuneException(
+                f"Custom run ID can't be longer than {CUSTOM_RUN_ID_LENGTH} characters. "
+                f"Ensure that the `custom_run_id` argument doesn't exceed the limit."
+            )
 
         self._mode: Mode = mode
         self._flush_period = flush_period
@@ -157,13 +191,10 @@ class NeptuneObject(AbstractContextManager):
         self._project_api_object: Project = project_name_lookup(
             backend=self._backend, name=self._project_qualified_name
         )
+        self._workspace: str = self._project_api_object.workspace
+        self._project_name: str = self._project_api_object.name
         self._project_id: UniqueId = self._project_api_object.id
-
-        self._api_object: ApiExperiment = self._get_or_create_api_object()
-        self._id: UniqueId = self._api_object.id
-        self._sys_id: SysId = self._api_object.sys_id
-        self._workspace: str = self._api_object.workspace
-        self._project_name: str = self._api_object.project_name
+        self._custom_id: str = custom_id or str(uuid.uuid4())
 
         self._async_lag_threshold = async_lag_threshold
         self._async_lag_callback = NeptuneObject._get_callback(
@@ -178,19 +209,17 @@ class NeptuneObject(AbstractContextManager):
 
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
-            container_id=self._id,
+            custom_id=CustomId(self._custom_id),
             container_type=self.container_type,
-            backend=self._backend,
             lock=self._lock,
             flush_period=flush_period,
             queue=self._signals_queue,
         )
 
+        self._async_create_run()
+
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
-
-        if self._mode != Mode.OFFLINE:
-            self.sync(wait=False)
 
         if self._mode != Mode.READ_ONLY:
             self._write_initial_attributes()
@@ -214,6 +243,12 @@ class NeptuneObject(AbstractContextManager):
 
     On Linux it looks like it does not help much but does not break anything either.
     """
+
+    @temporarily_disabled
+    def _async_create_run(self):
+        """placeholder for async run creation"""
+        operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)
+        self._op_processor.enqueue_operation(operation, wait=False)
 
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:
@@ -243,7 +278,7 @@ class NeptuneObject(AbstractContextManager):
                 operation_processor_getter=partial(
                     get_operation_processor,
                     mode=self._mode,
-                    container_id=self._id,
+                    container_id=self._custom_id,
                     container_type=self.container_type,
                     backend=self._backend,
                     lock=self._lock,
@@ -296,10 +331,6 @@ class NeptuneObject(AbstractContextManager):
             )
 
         return BackgroundJobList(jobs)
-
-    @abc.abstractmethod
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        raise NotImplementedError
 
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         return []
@@ -376,7 +407,7 @@ class NeptuneObject(AbstractContextManager):
 
         You can use this method to retrieve metadata from a started or resumed run.
         The result preserves the hierarchical structure of the run's metadata, but only contains Atom fields.
-        This means fields that contain single values, as opposed to series, files, or sets.
+        This means fields that contain single values, as opposed to series, or sets.
 
         Returns:
             `dict` containing the values of all non-File Atom fields.
@@ -400,7 +431,7 @@ class NeptuneObject(AbstractContextManager):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping(self._id, self.container_type)
+        self._backend.ping(self._custom_id, self.container_type)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -453,10 +484,6 @@ class NeptuneObject(AbstractContextManager):
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
-
-        if self._mode not in {Mode.OFFLINE, Mode.DEBUG}:
-            metadata_url = self.get_url().rstrip("/") + "/metadata"
-            self._logger.info(f"Explore the metadata in the Neptune app: {metadata_url}")
         self._backend.close()
 
         with self._forking_cond:
@@ -624,7 +651,7 @@ class NeptuneObject(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._id, self.container_type)
+            attributes = self._backend.get_attributes(self._custom_id, self.container_type)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
@@ -636,7 +663,6 @@ class NeptuneObject(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
-    @abc.abstractmethod
     def get_url(self) -> str:
         """Returns a link to the object in the Neptune app.
 
@@ -644,11 +670,11 @@ class NeptuneObject(AbstractContextManager):
 
         API reference: https://docs.neptune.ai/api/universal/#get_url
         """
-        ...
+        raise NeptuneUnsupportedFunctionalityException
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            self._logger.info(f"Neptune initialized. Open in the app: {self.get_url()}")
+            self._logger.info(f"Neptune initialized. Object identifier: {self._custom_id}")
 
         self.start()
 

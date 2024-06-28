@@ -25,7 +25,6 @@ from unittest.mock import (
 
 import pytest
 from bravado.exception import (
-    HTTPNotFound,
     HTTPPaymentRequired,
     HTTPTooManyRequests,
     HTTPUnprocessableEntity,
@@ -34,12 +33,10 @@ from mock import (
     MagicMock,
     patch,
 )
-from packaging.version import Version
 
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.exceptions import (
     CannotResolveHostname,
-    FileSetNotFound,
     FileUploadError,
     MetadataInconsistency,
     NeptuneClientUpgradeRequiredError,
@@ -48,25 +45,19 @@ from neptune.exceptions import (
 from neptune.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
-    create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,
     create_leaderboard_client,
     get_client_config,
 )
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.internal.backends.utils import verify_host_resolution
 from neptune.internal.container_type import ContainerType
 from neptune.internal.credentials import Credentials
 from neptune.internal.operation import (
     AssignString,
     LogFloats,
-    TrackFilesToArtifact,
-    UploadFile,
-    UploadFileContent,
 )
-from neptune.internal.utils import base64_encode
 from tests.unit.neptune.backend_test_mixin import BackendTestMixin
 from tests.unit.neptune.new.utils import response_mock
 
@@ -92,12 +83,11 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         create_http_client_with_auth.cache_clear()
         create_backend_client.cache_clear()
         create_leaderboard_client.cache_clear()
-        create_artifacts_client.cache_clear()
 
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
         self.dummy_operation_storage = OperationStorage(Path("./tests/dummy_storage"))
 
-    @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("neptune.internal.backends.hosted_neptune_backend.create_backend_client")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
@@ -110,8 +100,6 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
         upload_mock.return_value = [FileUploadError("file1", "error2")]
-        some_text = "Some streamed text"
-        some_binary = b"Some streamed binary"
 
         for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
@@ -123,28 +111,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     container_id=container_uuid,
                     container_type=container_type,
                     operations=[
-                        UploadFile(
-                            path=["some", "files", "some_file"],
-                            ext="",
-                            file_path="path_to_file",
-                        ),
-                        UploadFileContent(
-                            path=["some", "files", "some_text_stream"],
-                            ext="txt",
-                            file_content=base64_encode(some_text.encode("utf-8")),
-                        ),
-                        UploadFileContent(
-                            path=["some", "files", "some_binary_stream"],
-                            ext="bin",
-                            file_content=base64_encode(some_binary),
-                        ),
                         LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
                         AssignString(["properties", "name"], "some text"),
-                        UploadFile(
-                            path=["some", "other", "file.txt"],
-                            ext="txt",
-                            file_path="other/file/path.txt",
-                        ),
                     ],
                     operation_storage=self.dummy_operation_storage,
                 )
@@ -175,52 +143,10 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     }
                 )
 
-                upload_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/other/file.txt",
-                            source="other/file/path.txt",
-                            ext="txt",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/files/some_file",
-                            source="path_to_file",
-                            ext="",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/files/some_text_stream",
-                            source=some_text.encode("utf-8"),
-                            ext="txt",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/files/some_binary_stream",
-                            source=some_binary,
-                            ext="bin",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
                 self.assertEqual(
                     (
-                        6,
+                        2,
                         [
-                            FileUploadError("file1", "error2"),
-                            FileUploadError("file1", "error2"),
-                            FileUploadError("file1", "error2"),
-                            FileUploadError("file1", "error2"),
                             MetadataInconsistency("error1"),
                         ],
                     ),
@@ -313,271 +239,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
         swagger_client.api.executeOperations.assert_has_calls([execution_operation_call, execution_operation_call])
 
-    @patch("neptune.internal.backends.hosted_neptune_backend.upload_file_attribute")
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
-        # given
-        self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        container_uuid = str(uuid.uuid4())
-
-        for container_type in self.container_types:
-            with self.subTest(msg=f"For type {container_type.value}"):
-                upload_mock.reset_mock()
-                swagger_client_factory.reset_mock()
-
-                # when
-                backend.execute_operations(
-                    container_id=container_uuid,
-                    container_type=container_type,
-                    operations=[
-                        UploadFile(
-                            path=["some", "path", "1", "var"],
-                            ext="",
-                            file_path="/path/to/file",
-                        ),
-                        UploadFile(
-                            path=["some", "path", "2", "var"],
-                            ext="txt",
-                            file_path="/some.file/with.dots.txt",
-                        ),
-                        UploadFile(
-                            path=["some", "path", "3", "var"],
-                            ext="jpeg",
-                            file_path="/path/to/some_image.jpeg",
-                        ),
-                    ],
-                    operation_storage=self.dummy_operation_storage,
-                )
-
-                # then
-                upload_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/path/1/var",
-                            source="/path/to/file",
-                            ext="",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/path/2/var",
-                            source="/some.file/with.dots.txt",
-                            ext="txt",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                        call(
-                            swagger_client=backend.leaderboard_client,
-                            container_id=container_uuid,
-                            attribute="some/path/3/var",
-                            source="/path/to/some_image.jpeg",
-                            ext="jpeg",
-                            multipart_config=backend._client_config.multipart_config,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
-    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_new_artifact")
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
-        # given
-        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        container_id = str(uuid.uuid4())
-        project_id = str(uuid.uuid4())
-
-        response_error = MagicMock()
-        response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
-        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=response_mock())
-        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
-
-        for container_type in self.container_types:
-            with self.subTest(msg=f"For type {container_type.value}"):
-                track_to_new_artifact_mock.reset_mock()
-                swagger_client_factory.reset_mock()
-
-                # when
-                backend.execute_operations(
-                    container_id=container_id,
-                    container_type=container_type,
-                    operations=[
-                        TrackFilesToArtifact(
-                            path=["sub", "one"],
-                            project_id=project_id,
-                            entries=[("/path/to/file", "/path/to")],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "two"],
-                            project_id=project_id,
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file1", None)],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file2", None)],
-                        ),
-                    ],
-                    operation_storage=self.dummy_operation_storage,
-                )
-
-                # then
-                track_to_new_artifact_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "one"],
-                            parent_identifier=str(container_id),
-                            entries=[("/path/to/file", "/path/to")],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "two"],
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "three"],
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                            exclude_metadata_from_hash=True,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
-    @patch("neptune.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
-        # given
-        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        container_id = str(uuid.uuid4())
-        project_id = str(uuid.uuid4())
-
-        response_error = MagicMock()
-        response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
-        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = "dummyHash"
-        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
-
-        for container_type in self.container_types:
-            track_to_existing_artifact_mock.reset_mock()
-            swagger_client_factory.reset_mock()
-
-            with self.subTest(msg=f"For type {container_type.value}"):
-                track_to_existing_artifact_mock.reset_mock()
-                swagger_client_factory.reset_mock()
-
-                # when
-                backend.execute_operations(
-                    container_id=container_id,
-                    container_type=container_type,
-                    operations=[
-                        TrackFilesToArtifact(
-                            path=["sub", "one"],
-                            project_id=project_id,
-                            entries=[("/path/to/file", "/path/to")],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "two"],
-                            project_id=project_id,
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file1", None)],
-                        ),
-                        TrackFilesToArtifact(
-                            path=["sub", "three"],
-                            project_id=project_id,
-                            entries=[("/path/to/file2", None)],
-                        ),
-                    ],
-                    operation_storage=self.dummy_operation_storage,
-                )
-
-                # then
-                track_to_existing_artifact_mock.assert_has_calls(
-                    [
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "one"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[("/path/to/file", "/path/to")],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "two"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                        ),
-                        call(
-                            swagger_client=swagger_client_wrapper,
-                            project_id=project_id,
-                            path=["sub", "three"],
-                            artifact_hash="dummyHash",
-                            parent_identifier=str(container_id),
-                            entries=[
-                                ("/path/to/file1", None),
-                                ("/path/to/file2", None),
-                            ],
-                            default_request_params=DEFAULT_REQUEST_KWARGS,
-                            exclude_directory_files=True,
-                        ),
-                    ],
-                    any_order=True,
-                )
-
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
@@ -587,8 +249,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         HostedNeptuneBackend(credentials)
 
     @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("2.0.0-alpha4+dev1234"),
+        "neptune.internal.backends.hosted_client.__version__",
+        "2.0.0-alpha4+dev1234",
     )
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_pre_release_version_ok(self, swagger_client_factory):
@@ -598,10 +260,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
@@ -613,10 +272,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         self.assertTrue("minimum required version is >=0.5.14" in str(ex.exception))
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
@@ -625,10 +281,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch(
-        "neptune.internal.backends.hosted_client.neptune_version",
-        Version("0.5.13"),
-    )
+    @patch("neptune.internal.backends.hosted_client.__version__", "0.5.13")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
@@ -698,17 +351,3 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ],
                         operation_storage=self.dummy_operation_storage,
                     )
-
-    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_list_fileset_files_exception(self, swagger_client_factory):
-        # given
-        self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
-        mock_leaderboard_client = MagicMock()
-        mock_leaderboard_client.api.lsFileSetAttribute.side_effect = HTTPNotFound(response_mock())
-
-        backend.leaderboard_client = mock_leaderboard_client
-
-        # then
-        with pytest.raises(FileSetNotFound):
-            backend.list_fileset_files(["mock"], "mock", ".")

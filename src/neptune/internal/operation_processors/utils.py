@@ -13,26 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["common_metadata", "get_container_full_path", "get_container_dir"]
+__all__ = ["get_container_dir"]
 
 import os
-import platform
 import random
 import string
-import sys
-from datetime import (
-    datetime,
-    timezone,
-)
-from pathlib import Path
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Dict,
-)
-
-from neptune.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.objects.structure_version import StructureVersion
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from neptune.internal.container_type import ContainerType
@@ -42,32 +28,8 @@ if TYPE_CHECKING:
 RANDOM_KEY_LENGTH = 8
 
 
-def get_neptune_version() -> str:
-    from neptune.version import __version__ as neptune_version
-
-    return neptune_version
-
-
-def common_metadata(mode: str, container_id: "UniqueId", container_type: "ContainerType") -> Dict[str, Any]:
-    return {
-        "mode": mode,
-        "containerId": container_id,
-        "containerType": container_type,
-        "structureVersion": StructureVersion.DIRECT_DIRECTORY.value,
-        "os": platform.platform(),
-        "pythonVersion": sys.version,
-        "neptuneClientVersion": get_neptune_version(),
-        "createdAt": datetime.now(timezone.utc).isoformat(),
-    }
-
-
 def get_container_dir(container_id: "UniqueId", container_type: "ContainerType") -> str:
     return f"{container_type.value}__{container_id}__{os.getpid()}__{random_key(RANDOM_KEY_LENGTH)}"
-
-
-def get_container_full_path(type_dir: str, container_id: "UniqueId", container_type: "ContainerType") -> Path:
-    neptune_data_dir = Path(os.getenv("NEPTUNE_DATA_DIRECTORY", NEPTUNE_DATA_DIRECTORY))
-    return neptune_data_dir / type_dir / get_container_dir(container_id=container_id, container_type=container_type)
 
 
 def random_key(length: int) -> str:

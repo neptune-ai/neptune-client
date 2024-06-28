@@ -22,15 +22,10 @@ from typing import (
 
 from neptune.api.models import FieldType
 from neptune.attributes import (
-    Artifact,
     Boolean,
     Datetime,
-    File,
-    FileSeries,
-    FileSet,
     Float,
     FloatSeries,
-    GitRef,
     Integer,
     NotebookRef,
     RunState,
@@ -50,16 +45,11 @@ _attribute_type_to_attr_class_map = {
     FieldType.BOOL: Boolean,
     FieldType.STRING: String,
     FieldType.DATETIME: Datetime,
-    FieldType.FILE: File,
-    FieldType.FILE_SET: FileSet,
     FieldType.FLOAT_SERIES: FloatSeries,
     FieldType.STRING_SERIES: StringSeries,
-    FieldType.IMAGE_SERIES: FileSeries,
     FieldType.STRING_SET: StringSet,
-    FieldType.GIT_REF: GitRef,
     FieldType.OBJECT_STATE: RunState,
     FieldType.NOTEBOOK_REF: NotebookRef,
-    FieldType.ARTIFACT: Artifact,
 }
 
 

@@ -24,18 +24,12 @@ from typing import (
     Dict,
     Iterable,
     Iterator,
-    List,
     Optional,
     Union,
 )
 
-from neptune.api.models import FileEntry
-from neptune.attributes import File
-from neptune.attributes.atoms.artifact import Artifact
 from neptune.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
-from neptune.attributes.file_set import FileSet
 from neptune.attributes.namespace import Namespace
-from neptune.attributes.series import FileSeries
 from neptune.attributes.series.float_series import FloatSeries
 from neptune.attributes.series.string_series import StringSeries
 from neptune.attributes.sets.string_set import StringSet
@@ -45,7 +39,6 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
     NeptuneUserApiInputException,
 )
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils import (
     is_collection,
@@ -54,7 +47,6 @@ from neptune.internal.utils import (
     is_float_like,
     is_string,
     is_stringify_value,
-    verify_collection_type,
     verify_type,
 )
 from neptune.internal.utils.paths import (
@@ -64,7 +56,6 @@ from neptune.internal.utils.paths import (
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.objects.abstract import SupportsNamespaces
-from neptune.types.atoms.file import File as FileVal
 from neptune.types.type_casting import cast_value_for_extend
 from neptune.types.value_copy import ValueCopy
 from neptune.typing import ProgressBarType
@@ -253,29 +244,10 @@ class Handler(SupportsNamespaces):
 
         """
         raise NeptuneUnsupportedFunctionalityException
-        value = FileVal.create_from(value)
-
-        with self._container.lock():
-            attr = self._container.get_attribute(self._path)
-            if attr is None:
-                attr = File(self._container, parse_path(self._path))
-                self._container.set_attribute(self._path, attr)
-            attr.upload(value, wait=wait)
 
     @check_protected_paths
     def upload_files(self, value: Union[str, Iterable[str]], *, wait: bool = False) -> None:
         raise NeptuneUnsupportedFunctionalityException
-        if is_collection(value):
-            verify_collection_type("value", value, str)
-        else:
-            verify_type("value", value, str)
-
-        with self._container.lock():
-            attr = self._container.get_attribute(self._path)
-            if attr is None:
-                attr = FileSet(self._container, parse_path(self._path))
-                self._container.set_attribute(self._path, attr)
-            attr.upload_files(value, wait=wait)
 
     @check_protected_paths
     def log(
@@ -293,8 +265,6 @@ class Handler(SupportsNamespaces):
 
             * `FloatSeries`
             * `StringSeries`
-            * `FileSeries`
-
 
         Args:
             value: Value or collection of values to be added to the field.
@@ -334,9 +304,6 @@ class Handler(SupportsNamespaces):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string(first_value):
                     attr = StringSeries(self._container, parse_path(self._path))
-                elif FileVal.is_convertable(first_value):
-                    raise NeptuneUnsupportedFunctionalityException
-                    attr = FileSeries(self._container, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif from_stringify_value:
@@ -368,7 +335,6 @@ class Handler(SupportsNamespaces):
 
             * `FloatSeries` - series of float values
             * `StringSeries` - series of strings
-            * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
         To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
@@ -389,7 +355,6 @@ class Handler(SupportsNamespaces):
             ...     run["train/epoch/loss"].append(loss)  # FloatSeries
             ...     token = str(...)
             ...     run["train/tokens"].append(token)  # StringSeries
-            ...     run["train/distribution"].append(plt_histogram, step=epoch)  # FileSeries
         """
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
@@ -417,7 +382,6 @@ class Handler(SupportsNamespaces):
 
             * `FloatSeries` - series of float values
             * `StringSeries` - series of strings
-            * `FileSeries` - series of files
 
         When you log the first value, the type of the value determines what type of field is created.
         To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
@@ -509,7 +473,7 @@ class Handler(SupportsNamespaces):
         return self._pass_call_to_attr(function_name="clear", wait=wait)
 
     def fetch(self):
-        """Fetches fields value or, in case of a namespace, fetches values of all non-File Atom fields as a dictionary.
+        """Fetches fields value or, in case of a namespace, fetches values of all atom fields as a dictionary.
 
         Available for the following field types:
 
@@ -592,7 +556,6 @@ class Handler(SupportsNamespaces):
             https://docs.neptune.ai/api/field_types#delete_files
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
     @check_protected_paths
     def download(
@@ -607,7 +570,6 @@ class Handler(SupportsNamespaces):
             * `File`
             * `FileSeries`
             * `FileSet`
-            * `Artifact`
 
         Args:
             destination (str, optional): Path to where the file(s) should be downloaded.
@@ -626,7 +588,6 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api-reference/field-types
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="download", destination=destination, progress_bar=progress_bar)
 
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored files to the working directory or to the specified destination.
@@ -642,7 +603,7 @@ class Handler(SupportsNamespaces):
         For more information, see the docs:
            https://docs.neptune.ai/api/field_types#download_last
         """
-        return self._pass_call_to_attr(function_name="download_last", destination=destination)
+        raise NeptuneUnsupportedFunctionalityException
 
     @feature_temporarily_unavailable
     def fetch_hash(self) -> str:
@@ -660,19 +621,17 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#fetch_extension
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="fetch_extension")
 
     @feature_temporarily_unavailable
-    def fetch_files_list(self) -> List[ArtifactFileData]:
+    def fetch_files_list(self) -> Any:
         """Fetches the list of files in an artifact and their metadata.
 
         You may also want to check the docs:
            https://docs.neptune.ai/api/field_types#fetch_files_list
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="fetch_files_list")
 
-    def list_fileset_files(self, path: Optional[str] = None) -> List[FileEntry]:
+    def list_fileset_files(self, path: Optional[str] = None) -> None:
         """Fetches metadata of the file set.
 
         If the top-level artifact of the field is a directory, only the metadata of this directory is returned.
@@ -708,7 +667,6 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#list_fileset_files
         """
         raise NeptuneUnsupportedFunctionalityException
-        return self._pass_call_to_attr(function_name="list_fileset_files", path=path)
 
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)
@@ -722,13 +680,6 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#track_files
         """
         raise NeptuneUnsupportedFunctionalityException
-        with self._container.lock():
-            attr = self._container.get_attribute(self._path)
-            if attr is None:
-                attr = Artifact(self._container, parse_path(self._path))
-                self._container.set_attribute(self._path, attr)
-
-            attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)
@@ -736,6 +687,20 @@ class Handler(SupportsNamespaces):
     @feature_temporarily_unavailable
     @check_protected_paths
     def pop(self, path: str = None, *, wait: bool = False) -> None:
+        """Completely removes the namespace and all associated metadata stored under the path.
+
+        Args:
+            path: Path of the namespace to be removed.
+            wait: By default, logged metadata is sent to the server in the background.
+                With this option set to `True`, Neptune first sends all data, then executes the call.
+
+        Example:
+            >>> import neptune
+            >>> run = neptune.init_run(with_id="RUN-100")
+            >>> run["large_dataset"].pop()
+
+        See also the API reference: https://docs.neptune.ai/api/client_index/#pop
+        """
         with self._container.lock():
             handler = self
             if path:

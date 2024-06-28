@@ -28,34 +28,30 @@ from neptune.attributes.constants import (
     SYSTEM_NAME_ATTRIBUTE_PATH,
     SYSTEM_STAGE_ATTRIBUTE_PATH,
 )
+from neptune.core.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
     InactiveModelVersionException,
-    NeedExistingModelVersionForReadOnlyMode,
-    NeptuneMissingRequiredInitParameter,
     NeptuneOfflineModeChangeStageException,
     NeptuneUnsupportedFunctionalityException,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import NeptuneException
-from neptune.internal.id_formats import QualifiedName
-from neptune.internal.init.parameters import (
+from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
     DEFAULT_FLUSH_PERIOD,
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
-from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.types.mode import Mode
 from neptune.types.model_version_stage import ModelVersionStage
 
 if TYPE_CHECKING:
@@ -213,32 +209,6 @@ class ModelVersion(NeptuneObject):
             async_no_progress_threshold=async_no_progress_threshold,
         )
 
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        project_workspace = self._project_api_object.workspace
-        project_name = self._project_api_object.name
-        project_qualified_name = f"{project_workspace}/{project_name}"
-
-        if self._with_id is not None:
-            # with_id (resume existing model_version) has priority over model (creating a new model_version)
-            return self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
-                expected_container_type=self.container_type,
-            )
-        elif self._model is not None:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingModelVersionForReadOnlyMode()
-
-            api_model = self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._model),
-                expected_container_type=ContainerType.MODEL,
-            )
-            return self._backend.create_model_version(project_id=self._project_api_object.id, model_id=api_model.id)
-        else:
-            raise NeptuneMissingRequiredInitParameter(
-                parameter_name="model",
-                called_function="init_model_version",
-            )
-
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         return [PingBackgroundJob()]
 
@@ -249,16 +219,6 @@ class ModelVersion(NeptuneObject):
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
             raise InactiveModelVersionException(label=self._sys_id)
-
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_model_version_url(
-            model_version_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-            sys_id=self._sys_id,
-            model_id=self["sys/model_id"].fetch(),
-        )
 
     def change_stage(self, stage: str) -> None:
         """Changes the stage of the model version.

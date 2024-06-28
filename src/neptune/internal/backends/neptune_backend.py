@@ -26,18 +26,14 @@ from typing import (
 )
 
 from neptune.api.models import (
-    ArtifactField,
     BoolField,
     DateTimeField,
     Field,
     FieldDefinition,
     FieldType,
-    FileEntry,
-    FileField,
     FloatField,
     FloatSeriesField,
     FloatSeriesValues,
-    ImageSeriesValues,
     IntField,
     LeaderboardEntry,
     NextPage,
@@ -49,7 +45,6 @@ from neptune.api.models import (
     StringSetField,
 )
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.internal.artifacts.types import ArtifactFileData
 from neptune.internal.backends.api_model import (
     ApiExperiment,
     Project,
@@ -63,7 +58,6 @@ from neptune.internal.id_formats import (
     UniqueId,
 )
 from neptune.internal.operation import Operation
-from neptune.internal.utils.git import GitInfo
 from neptune.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.typing import ProgressBarType
 
@@ -71,10 +65,6 @@ from neptune.typing import ProgressBarType
 class NeptuneBackend:
     def close(self) -> None:
         """No need for closing implementation"""
-
-    @abc.abstractmethod
-    def get_display_address(self) -> str:
-        pass
 
     def verify_feature_available(self, _: str) -> None:
         """
@@ -103,7 +93,6 @@ class NeptuneBackend:
     def create_run(
         self,
         project_id: UniqueId,
-        git_info: Optional[GitInfo] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
@@ -134,10 +123,6 @@ class NeptuneBackend:
     ) -> ApiExperiment:
         pass
 
-    @abc.abstractmethod
-    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
-        pass
-
     def ping(self, container_id: str, container_type: ContainerType):
         """Do nothing by default"""
 
@@ -156,28 +141,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def download_file(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        pass
-
-    @abc.abstractmethod
-    def download_file_set(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        destination: Optional[str] = None,
-        progress_bar: Optional[ProgressBarType] = None,
-    ):
-        pass
-
-    @abc.abstractmethod
     def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatField:
         pass
 
@@ -190,10 +153,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileField:
-        pass
-
-    @abc.abstractmethod
     def get_string_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> StringField:
         pass
 
@@ -201,16 +160,6 @@ class NeptuneBackend:
     def get_datetime_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> DateTimeField:
-        pass
-
-    @abc.abstractmethod
-    def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> ArtifactField:
-        pass
-
-    @abc.abstractmethod
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod
@@ -229,29 +178,6 @@ class NeptuneBackend:
     def get_string_set_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetField:
-        pass
-
-    @abc.abstractmethod
-    def download_file_series_by_index(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        index: int,
-        destination: str,
-        progress_bar: Optional[ProgressBarType],
-    ):
-        pass
-
-    @abc.abstractmethod
-    def get_image_series_values(
-        self,
-        container_id: str,
-        container_type: ContainerType,
-        path: List[str],
-        offset: int,
-        limit: int,
-    ) -> ImageSeriesValues:
         pass
 
     @abc.abstractmethod
@@ -274,29 +200,6 @@ class NeptuneBackend:
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
     ) -> FloatSeriesValues: ...
-
-    @abc.abstractmethod
-    def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
-        pass
-
-    @abc.abstractmethod
-    def get_project_url(self, project_id: str, workspace: str, project_name: str) -> str:
-        pass
-
-    @abc.abstractmethod
-    def get_model_url(self, model_id: str, workspace: str, project_name: str, sys_id: str) -> str:
-        pass
-
-    @abc.abstractmethod
-    def get_model_version_url(
-        self,
-        model_version_id: str,
-        model_id: str,
-        workspace: str,
-        project_name: str,
-        sys_id: str,
-    ) -> str:
-        pass
 
     # WARN: Used in Neptune Fetcher
     @abc.abstractmethod
@@ -332,10 +235,6 @@ class NeptuneBackend:
         progress_bar: Optional[ProgressBarType] = None,
         use_proto: Optional[bool] = None,
     ) -> Generator[LeaderboardEntry, None, None]:
-        pass
-
-    @abc.abstractmethod
-    def list_fileset_files(self, attribute: List[str], container_id: str, path: str) -> List[FileEntry]:
         pass
 
     @abc.abstractmethod

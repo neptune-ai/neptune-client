@@ -27,12 +27,12 @@ from typing import (
     Optional,
 )
 
-from neptune.internal.init.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
+from neptune.internal.daemon import Daemon
+from neptune.internal.parameters import IN_BETWEEN_CALLBACKS_MINIMUM_INTERVAL
 from neptune.internal.signals_processing.signals import (
     BatchLagSignal,
     SignalsVisitor,
 )
-from neptune.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
     from neptune.internal.signals_processing.signals import Signal
