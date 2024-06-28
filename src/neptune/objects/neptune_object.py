@@ -683,6 +683,19 @@ class NeptuneObject(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
+    def get_root_object(self) -> "NeptuneObject":
+        """Returns the same Neptune object."""
+        return self
+
+
+class ParentForProjectAndModel(NeptuneObject, AbstractContextManager):
+    @abc.abstractmethod
+    def _raise_if_stopped(self):
+        pass
+
+    def _async_create_run(self):
+        pass
+
     def _fetch_entries(
         self,
         child_type: ContainerType,
@@ -715,7 +728,3 @@ class NeptuneObject(AbstractContextManager):
             container_type=child_type,
             entries=leaderboard_entries,
         )
-
-    def get_root_object(self) -> "NeptuneObject":
-        """Returns the same Neptune object."""
-        return self
