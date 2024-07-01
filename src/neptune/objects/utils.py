@@ -16,14 +16,22 @@
 
 __all__ = [
     "prepare_nql_query",
+    "build_raw_query",
+    "temporarily_disabled",
+    "ensure_not_stopped",
 ]
 
+from functools import wraps
 from typing import (
+    Callable,
     Iterable,
     List,
     Optional,
+    TypeVar,
     Union,
 )
+
+from typing_extensions import ParamSpec
 
 from neptune.internal.backends.nql import (
     NQLAggregator,
@@ -35,6 +43,30 @@ from neptune.internal.backends.nql import (
     RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
+from neptune.objects.with_backend import WithBackend
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def ensure_not_stopped(func: Callable[P, R]) -> Callable[P, R]:
+    @wraps(func)
+    def inner_func(self: WithBackend, *args: P.args, **kwargs: P.kwargs) -> R:
+        self._raise_if_stopped()
+        return func(self, *args, **kwargs)
+
+    return inner_func
+
+
+def temporarily_disabled(func: Callable[P, R]) -> Callable[P, R]:
+    @wraps(func)
+    def wrapper(*_: P.args, **__: P.kwargs) -> Optional[R]:
+        if func.__name__ == "_get_background_jobs":
+            return []
+        else:
+            return None
+
+    return wrapper
 
 
 def prepare_nql_query(
