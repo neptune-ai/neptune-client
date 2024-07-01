@@ -15,7 +15,6 @@
 #
 __all__ = ["Project"]
 
-import os
 from typing import (
     Iterable,
     Optional,
@@ -24,18 +23,12 @@ from typing import (
 
 from typing_extensions import Literal
 
-from neptune.envs import CONNECTION_MODE
 from neptune.exceptions import (
     InactiveProjectException,
     NeptuneUnsupportedFunctionalityException,
 )
+from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
-from neptune.internal.exceptions import NeptuneException
-from neptune.internal.parameters import (
-    ASYNC_LAG_THRESHOLD,
-    ASYNC_NO_PROGRESS_THRESHOLD,
-    DEFAULT_FLUSH_PERIOD,
-)
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
@@ -44,10 +37,7 @@ from neptune.internal.utils import (
     verify_value,
 )
 from neptune.objects.mode import Mode
-from neptune.objects.neptune_object import (
-    NeptuneObject,
-    NeptuneObjectCallback,
-)
+from neptune.objects.neptune_object import WithBackend
 from neptune.objects.utils import (
     build_raw_query,
     prepare_nql_query,
@@ -59,7 +49,7 @@ from neptune.typing import (
 )
 
 
-class Project(NeptuneObject):
+class Project(WithBackend):
     """Starts a connection to an existing Neptune project.
 
     You can use the Project object to retrieve information about runs, models, and model versions
@@ -79,29 +69,6 @@ class Project(NeptuneObject):
             If left empty, the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
             Possible values are `async`, `sync`, `read-only`, and `debug`.
-        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
-            Defaults to 5 (every 5 seconds).
-        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-            For more information about proxies, see the Requests documentation.
-        async_lag_callback: Custom callback which is called if the lag between a queued operation and its
-            synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
-            should take a Project object as the argument and can contain any custom code, such as calling `stop()`
-            on the object.
-            Note: Instead of using this argument, you can use Neptune's default callback by setting the
-            `NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK` environment variable to `TRUE`.
-        async_lag_threshold: In seconds, duration between the queueing and synchronization of an operation.
-            If a lag callback (default callback enabled via environment variable or custom callback passed to the
-            `async_lag_callback` argument) is enabled, the callback is called when this duration is exceeded.
-        async_no_progress_callback: Custom callback which is called if there has been no synchronization progress
-            whatsoever for the duration defined by `async_no_progress_threshold`. The callback
-            should take a Project object as the argument and can contain any custom code, such as calling `stop()`
-            on the object.
-            Note: Instead of using this argument, you can use Neptune's default callback by setting the
-            `NEPTUNE_ENABLE_DEFAULT_ASYNC_NO_PROGRESS_CALLBACK` environment variable to `TRUE`.
-        async_no_progress_threshold: In seconds, for how long there has been no synchronization progress since the
-            object was initialized. If a no-progress callback (default callback enabled via environment variable or
-            custom callback passed to the `async_no_progress_callback` argument) is enabled, the callback is called
-            when this duration is exceeded.
 
     Returns:
         Project object that can be used to interact with the project as a whole,
@@ -143,35 +110,51 @@ class Project(NeptuneObject):
         *,
         api_token: Optional[str] = None,
         mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
-        flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
-        async_lag_callback: Optional[NeptuneObjectCallback] = None,
-        async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
-        async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
-        async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
-        if mode in {Mode.ASYNC.value, Mode.SYNC.value}:
+        if mode != Mode.READ_ONLY.value:
             raise NeptuneUnsupportedFunctionalityException
 
-        verify_type("mode", mode, (str, type(None)))
-
-        # make mode proper Enum instead of string
-        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
-
-        if mode == Mode.OFFLINE:
-            raise NeptuneException("Project can't be initialized in OFFLINE mode")
+        mode = Mode(mode)
 
         super().__init__(
-            custom_id=None,
             project=project,
             api_token=api_token,
             mode=mode,
-            flush_period=flush_period,
             proxies=proxies,
-            async_lag_callback=async_lag_callback,
-            async_lag_threshold=async_lag_threshold,
-            async_no_progress_callback=async_no_progress_callback,
-            async_no_progress_threshold=async_no_progress_threshold,
+        )
+
+    def _fetch_entries(
+        self,
+        child_type: ContainerType,
+        query: NQLQuery,
+        columns: Optional[Iterable[str]],
+        limit: Optional[int],
+        sort_by: str,
+        ascending: bool,
+        progress_bar: Optional[ProgressBarType],
+    ) -> Table:
+        if columns is not None:
+            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
+            columns = set(columns)
+            columns.add("sys/id")
+            columns.add(sort_by)
+
+        leaderboard_entries = self._backend.search_leaderboard_entries(
+            project_id=self._project_id,
+            types=[child_type],
+            query=query,
+            columns=columns,
+            limit=limit,
+            sort_by=sort_by,
+            ascending=ascending,
+            progress_bar=progress_bar,
+        )
+
+        return Table(
+            backend=self._backend,
+            container_type=child_type,
+            entries=leaderboard_entries,
         )
 
     def _raise_if_stopped(self):
@@ -307,8 +290,7 @@ class Project(NeptuneObject):
         else:
             nql_query = prepare_nql_query(ids, states, owners, tags, trashed)
 
-        return NeptuneObject._fetch_entries(
-            self,
+        return self._fetch_entries(
             child_type=ContainerType.RUN,
             query=nql_query,
             columns=columns,
@@ -390,8 +372,7 @@ class Project(NeptuneObject):
 
         query = query if query is not None else ""
         nql = build_raw_query(query=query, trashed=trashed)
-        return NeptuneObject._fetch_entries(
-            self,
+        return self._fetch_entries(
             child_type=ContainerType.MODEL,
             query=nql,
             columns=columns,
