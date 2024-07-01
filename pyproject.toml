@@ -243,6 +243,8 @@ module = [
     "neptune.objects.model_version",
     "neptune.objects.project",
     "neptune.objects.run",
+    "neptune.objects.with_backend",
+    "neptune.objects.utils",
     "neptune.types.type_casting",
     "neptune.api.requests_utils",
     "neptune.internal.container_type",
