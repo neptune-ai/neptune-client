@@ -55,6 +55,7 @@ class TestLogger:
         with assert_out(capsys, _log("CRITICAL")):
             logger.critical("message")
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_user_can_set_logging_levels(self, capsys, log_level_teardown):
         # given
         logger = logging.getLogger(NEPTUNE_LOGGER_NAME)

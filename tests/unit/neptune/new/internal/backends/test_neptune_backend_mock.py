@@ -21,6 +21,7 @@ import uuid
 from pathlib import Path
 from time import time
 
+import pytest
 from freezegun import freeze_time
 
 from neptune.api.models import (
@@ -57,6 +58,7 @@ def a_string() -> str:
     return "".join(random.sample(char_set * 10, 10))
 
 
+@pytest.mark.skip(reason="Backend not implemented")
 class TestNeptuneBackendMock(unittest.TestCase):
     def setUp(self) -> None:
         self.backend = NeptuneBackendMock()

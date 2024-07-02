@@ -29,6 +29,7 @@ from neptune.core.operation_processors.sync_operation_processor import SyncOpera
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import CustomId
 from neptune.envs import NEPTUNE_ASYNC_BATCH_SIZE
+from neptune.internal.backends.hosted_neptune_backend_v2 import HostedNeptuneBackendV2
 from neptune.objects.mode import Mode
 
 if TYPE_CHECKING:
@@ -37,6 +38,8 @@ if TYPE_CHECKING:
 
 def get_operation_processor(
     mode: Mode,
+    project: str,
+    client: "HostedNeptuneBackendV2",
     custom_id: CustomId,
     container_type: ContainerType,
     lock: threading.RLock,
@@ -53,7 +56,9 @@ def get_operation_processor(
             signal_queue=queue,
         )
     elif mode in {Mode.SYNC, Mode.DEBUG}:
-        return SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+        return SyncOperationProcessor(
+            project=project, custom_id=custom_id, client=client, container_type=container_type
+        )
     elif mode == Mode.OFFLINE:
         return OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=lock)
     elif mode == Mode.READ_ONLY:

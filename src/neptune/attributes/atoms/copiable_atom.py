@@ -38,7 +38,7 @@ class CopiableAtom(Atom):
             self._enqueue_operation(
                 CopyAttribute(
                     self._path,
-                    container_id=source_attr._container_id,
+                    container_id=source_attr._custom_id,
                     container_type=source_attr._container_type,
                     source_path=parse_path(source_path),
                     source_attr_cls=source_attr.__class__,

@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.exceptions import MetadataInconsistency
+import pytest
+
+from neptune.exceptions import (
+    MetadataInconsistency,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.internal.operation import (
     AddStrings,
@@ -116,6 +121,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
 
+    @pytest.mark.xfail(reason="cli commands are disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_series(self):
         # given
         processor = OperationsPreprocessor()

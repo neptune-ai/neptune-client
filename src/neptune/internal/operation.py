@@ -27,7 +27,10 @@ from typing import (
 )
 
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.exceptions import MalformedOperation
+from neptune.exceptions import (
+    MalformedOperation,
+    NeptuneUnsupportedFunctionalityException,
+)
 from neptune.internal.container_type import ContainerType
 
 if TYPE_CHECKING:
@@ -208,6 +211,7 @@ class LogStrings(LogOperation):
     values: List[ValueType]
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        raise NeptuneUnsupportedFunctionalityException()
         return visitor.visit_log_strings(self)
 
     def to_dict(self) -> dict:

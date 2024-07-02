@@ -88,10 +88,7 @@ from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.objects.mode import Mode
-from neptune.objects.utils import (
-    ensure_not_stopped,
-    temporarily_disabled,
-)
+from neptune.objects.utils import ensure_not_stopped
 from neptune.objects.with_backend import WithBackend
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
@@ -111,7 +108,7 @@ class NeptuneObject(WithBackend, ABC):
         custom_id: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
-        mode: Mode = Mode.ASYNC,
+        mode: Mode = Mode.SYNC,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
@@ -157,6 +154,8 @@ class NeptuneObject(WithBackend, ABC):
 
         self._op_processor: OperationProcessor = get_operation_processor(
             mode=mode,
+            project=self._project_qualified_name,
+            client=self._client,
             custom_id=CustomId(self._custom_id),
             container_type=self.container_type,
             lock=self._lock,
@@ -192,7 +191,6 @@ class NeptuneObject(WithBackend, ABC):
     On Linux it looks like it does not help much but does not break anything either.
     """
 
-    @temporarily_disabled
     def _async_create_run(self):
         """placeholder for async run creation"""
         operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)

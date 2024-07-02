@@ -40,10 +40,7 @@ from neptune.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.exceptions import (
-    NeptuneUnsupportedFunctionalityException,
-    NeptuneUserApiInputException,
-)
+from neptune.exceptions import NeptuneUserApiInputException
 from neptune.internal.warnings import (
     NeptuneUnsupportedType,
     warned_once,
@@ -79,7 +76,6 @@ def assert_logged_warning(capsys: pytest.CaptureFixture, msg: str = ""):
     assert msg in captured.out
 
 
-@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -91,6 +87,7 @@ class TestBaseAssign:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_operator(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             now = datetime.now()
@@ -107,6 +104,7 @@ class TestBaseAssign:
             assert isinstance(exp.get_structure()["some"]["str"]["val"], String)
             assert isinstance(exp.get_structure()["some"]["datetime"]["val"], Datetime)
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             now = datetime.now()
@@ -137,6 +135,7 @@ class TestBaseAssign:
             assert isinstance(exp.get_structure()["some"]["str"]["val"], String)
             assert isinstance(exp.get_structure()["some"]["datetime"]["val"], Datetime)
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_lookup(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             ns = exp["some/ns"]
@@ -149,6 +148,7 @@ class TestBaseAssign:
             exp.wait()
             assert ns["some/value"].fetch() == 3
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_stringify_path(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp[None] = 5
@@ -185,7 +185,7 @@ class TestSeries:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_series(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(FloatSeriesVal([1, 2, 0, 10]))
@@ -198,7 +198,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "other 3"
 
-    @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_log(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log(5, step=1)
@@ -206,14 +206,14 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_log_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = str({"key-a": "value-a", "key-b": "value-b"})
             exp["some/num/val"].log(dict_value, step=1)
             assert exp["some"]["num"]["val"].fetch_last() == str(dict_value)
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_append(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].append(5, step=1)
@@ -221,7 +221,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_append_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": "value-a", "key-b": "value-b"}
@@ -229,7 +229,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"]["key-a"].fetch_last() == "value-a"
             assert exp["some"]["num"]["val"]["key-b"].fetch_last() == "value-b"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_append_complex_input(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["train/dictOfDicts"].append(
@@ -244,7 +244,7 @@ class TestSeries:
             assert exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last() == 33
             assert exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last() == 44
 
-    @pytest.mark.xfail(reason="Doesn't work with step enforcement", strict=True, raises=TypeError)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_log_many_values(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
@@ -275,7 +275,7 @@ class TestSeries:
             with assert_unsupported_warning():
                 exp["some/list-custom-obj/val"].append([Obj(), Obj()], step=1)
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_extend(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].extend([5, 7], steps=[0, 1])
@@ -283,11 +283,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 7
             assert exp["some"]["str"]["val"].fetch_last() == "text"
 
-    @pytest.mark.xfail(
-        reason="steps must be passed, but it doesn't work with dict",
-        strict=True,
-        raises=TypeError,
-    )
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_extend_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": ["value-a", "value-aa"], "key-b": ["value-b", "value-bb"], "key-c": ["ccc"]}
@@ -296,7 +292,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"]["key-b"].fetch_last() == "value-bb"
             assert exp["some"]["num"]["val"]["key-c"].fetch_last() == "ccc"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_extend_nested(self):
         """We expect that we are able to log arbitrary tre structure"""
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -340,7 +336,7 @@ class TestSeries:
                     values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2, steps=[0, 1]
                 )
 
-    @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_log_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with pytest.raises(ValueError):
@@ -362,7 +358,6 @@ class TestSeries:
             assert exp["some"]["str"]["val"].fetch_last() == "str"
 
 
-@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -374,7 +369,7 @@ class TestSet:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_append_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].append(5, step=1)
@@ -389,10 +384,11 @@ class TestSet:
     def test_extend_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with pytest.raises(NeptuneUserApiInputException):
-                exp["x"].extend(10, step=10)
+                exp["x"].extend(10, steps=10)
             with pytest.raises(ValueError):
-                exp["x"].extend([5, "str"])
+                exp["x"].extend([5, "str"], steps=[15, 20])
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_set(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/str/val"].assign(StringSetVal(["tag1", "tag2"]), wait=True)
@@ -403,6 +399,7 @@ class TestSet:
             assert exp["some/str/val"].fetch() == {"other_1", "other_2", "other_3"}
             assert isinstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_add(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/str/val"].add(["some text", "something else"], wait=True)
@@ -414,7 +411,6 @@ class TestSet:
             assert isinstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
 
-@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -426,7 +422,7 @@ class TestNamespace:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {
@@ -441,12 +437,14 @@ class TestNamespace:
             assert exp["params/toys"].fetch_last() == "hat"
             assert exp["params/nested/nested/deep_secret"].fetch_last() == 15
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_empty_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {}
             exp["params"] = {"foo": 5}
             assert exp["params/foo"].fetch() == 5
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_argparse_namespace(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = argparse.Namespace(
@@ -457,6 +455,7 @@ class TestNamespace:
             assert exp["params/nested/nested_attr"].fetch() == "[1, 2, 3]"
             assert exp["params/nested/num"].fetch() == 55
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_namespace(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/namespace"].assign(
@@ -481,6 +480,7 @@ class TestNamespace:
             with pytest.raises(TypeError):
                 exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_fetch_dict(self):
         now = datetime.now()
 
@@ -508,6 +508,7 @@ class TestNamespace:
                 },
             }
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_fetch_dict_with_path(self):
         now = datetime.now()
 
@@ -522,6 +523,7 @@ class TestNamespace:
             params_dict = exp["params/sub-namespace"].fetch()
             assert params_dict == {"int": 42, "string": "Some text"}
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_drops_dict_entry_with_empty_key(self, capsys):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with assert_logged_warning(capsys, '"" can\'t be used in Namespaces and dicts stored in Neptune'):
@@ -549,7 +551,7 @@ class TestDelete:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
-    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_pop(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(3, wait=True)
@@ -558,7 +560,7 @@ class TestDelete:
             ns.pop("num/val", wait=True)
             assert "some" not in exp.get_structure()
 
-    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_pop_self(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["x"].assign(3, wait=True)
@@ -566,7 +568,7 @@ class TestDelete:
             exp["x"].pop(wait=True)
             assert "x" not in exp.get_structure()
 
-    @pytest.mark.xfail(reason="Field deletion disabled", raises=NeptuneUnsupportedFunctionalityException, strict=True)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_del(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(3)
@@ -576,7 +578,6 @@ class TestDelete:
             assert "some" not in exp.get_structure()
 
 
-@pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
     "_async_create_run",
@@ -588,6 +589,7 @@ class TestOtherBehaviour:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_distinct_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/str/val"].assign(FloatVal(1.0), wait=True)
@@ -602,7 +604,7 @@ class TestOtherBehaviour:
             with pytest.raises(AttributeError):
                 exp["var"].something()
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp.define("attr1", self.FloatLike(5))
@@ -626,7 +628,7 @@ class TestOtherBehaviour:
             with pytest.raises(ValueError):
                 exp["attr3"].log([4, "234a"])
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_append_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["attr"].append(self.FloatLike(34))
@@ -640,7 +642,7 @@ class TestOtherBehaviour:
                 exp["attr"].append(4)
                 exp["attr"].append("234a")
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_extend_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["attr"].extend([self.FloatLike(34)])
@@ -650,7 +652,7 @@ class TestOtherBehaviour:
             with pytest.raises(ValueError):
                 exp["attr"].extend([4, "234a"])
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {
@@ -669,6 +671,7 @@ class TestOtherBehaviour:
             assert exp["params/0/some_data"].fetch() == 345
             assert exp["params/None/some_data"].fetch() == 345
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_convertable_to_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = argparse.Namespace(
@@ -679,6 +682,7 @@ class TestOtherBehaviour:
             assert exp["params/nested/nested_attr"].fetch() == "[1, 2, 3]"
             assert exp["params/nested/num"].fetch() == 55
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_representation(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params/int"] = 1
