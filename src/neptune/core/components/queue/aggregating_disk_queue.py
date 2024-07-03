@@ -149,7 +149,7 @@ class AggregatingDiskQueue(WithResources, Generic[T, K]):
         self._disk_queue.ack(version)
 
     def size(self) -> int:
-        return self._disk_queue.size()
+        return self._disk_queue.size() + self._stored_element.size if self._stored_element else 0
 
     def is_empty(self) -> bool:
         return self._disk_queue.is_empty() and self._stored_element is None
