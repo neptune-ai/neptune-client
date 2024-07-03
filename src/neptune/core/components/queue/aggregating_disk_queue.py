@@ -23,10 +23,12 @@ from typing import (
     Generic,
     List,
     Optional,
+    Tuple,
     Type,
     TypeVar,
 )
 
+from neptune.core.components.abstract import WithResources
 from neptune.core.components.queue.disk_queue import (
     DiskQueue,
     QueueElement,
@@ -56,7 +58,7 @@ def from_dict_factory(from_dict: Callable[[dict], T]) -> Callable[[dict], Catego
     return _from_dict
 
 
-class AggregatingDiskQueue(Generic[T]):
+class AggregatingDiskQueue(WithResources, Generic[T]):
     def __init__(
         self,
         data_path: Path,
@@ -141,3 +143,14 @@ class AggregatingDiskQueue(Generic[T]):
 
     def is_empty(self) -> bool:
         return self._disk_queue.is_empty()
+
+    def cleanup(self) -> None:
+        self._disk_queue.cleanup()
+
+    @property
+    def resources(self) -> Tuple[DiskQueue[CategoryQueueElement[T]]]:
+        return (self._disk_queue,)
+
+    @property
+    def data_path(self) -> Path:
+        return self._disk_queue.data_path
