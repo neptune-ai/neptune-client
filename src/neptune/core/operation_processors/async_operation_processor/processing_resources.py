@@ -36,7 +36,7 @@ from neptune.core.components.abstract import (
 )
 from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.core.components.queue.disk_queue import DiskQueue
+from neptune.core.components.queue.aggregating_disk_queue import AggregatingDiskQueue
 from neptune.core.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
@@ -68,7 +68,7 @@ class ProcessingResources(WithResources):
             metadata=common_metadata(mode="async", custom_id=custom_id, container_type=container_type),
         )
         self.operation_storage = OperationStorage(data_path=self._data_path)
-        self.disk_queue = DiskQueue(
+        self.disk_queue = AggregatingDiskQueue(
             data_path=self._data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,

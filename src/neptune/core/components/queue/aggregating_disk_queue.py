@@ -66,7 +66,7 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
-        max_batch_size_bytes: int | None = None,
+        max_batch_size_bytes: Optional[int] = None,
         extension: str = "log",
     ) -> None:
         self._disk_queue = DiskQueue[CategoryQueueElement[T]](
@@ -79,6 +79,7 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
             extension=extension,
         )
         self._stored_element: Optional[QueueElement[CategoryQueueElement[T]]] = None
+        self._empty_cond = threading.Condition(threading.Lock())
 
     def put(self, obj: T, category: Optional[int] = None) -> int:
         return self._disk_queue.put(CategoryQueueElement(obj, category))
@@ -139,10 +140,10 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
         self._disk_queue.ack(version)
 
     def size(self) -> int:
-        return self._disk_queue.size()
+        return self._disk_queue.size() + self._stored_element.size if self._stored_element else 0
 
     def is_empty(self) -> bool:
-        return self._disk_queue.is_empty()
+        return self._disk_queue.is_empty() and self._stored_element is None
 
     def cleanup(self) -> None:
         self._disk_queue.cleanup()
@@ -154,3 +155,6 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
     @property
     def data_path(self) -> Path:
         return self._disk_queue.data_path
+
+    def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
+        return self._disk_queue.wait_for_empty(seconds) and self._empty_cond.wait_for(self.is_empty, timeout=seconds)

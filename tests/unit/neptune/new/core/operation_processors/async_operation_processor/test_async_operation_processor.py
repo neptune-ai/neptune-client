@@ -73,7 +73,10 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     )
     # these patches prevent the side effect of creating test directories
     @patch("neptune.core.components.operation_storage.os.makedirs", new=lambda *_, **__: None)
-    @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+    @patch(
+        "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+        new=Mock,
+    )
     def test_data_path(self, mock_get_container_full_path):
         # given
         test_cases = [
@@ -102,7 +105,9 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
-@patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+@patch(
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue", new=Mock
+)
 class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_check_queue_size(self):
         assert not _queue_has_enough_space(queue_size=1, batch_size=10)
@@ -177,7 +182,9 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
-@patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+@patch(
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue", new=Mock
+)
 class TestAsyncOperationProcessorWait(unittest.TestCase):
     def test_async_operation_processor_wait(self):
         # given
