@@ -291,8 +291,6 @@ class NeptuneObject(WithBackend, ABC):
             traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
-        super().__exit__(exc_type, exc_val, exc_tb)
-
     def __getattr__(self, item):
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
@@ -434,6 +432,7 @@ class NeptuneObject(WithBackend, ABC):
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
+        self.close()
 
         with self._forking_cond:
             self._state = ContainerState.STOPPED

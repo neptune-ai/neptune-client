@@ -17,11 +17,7 @@ __all__ = ["WithBackend"]
 
 import abc
 from contextlib import AbstractContextManager
-from types import TracebackType
-from typing import (
-    Optional,
-    Type,
-)
+from typing import Optional
 
 from neptune.internal.backends.api_model import Project
 from neptune.internal.backends.factory import get_backend
@@ -63,10 +59,5 @@ class WithBackend(AbstractContextManager, abc.ABC):
         self._project_name: str = self._project_api_object.name
         self._project_id: UniqueId = self._project_api_object.id
 
-    def __exit__(
-        self,
-        __exc_type: Optional[Type[BaseException]],
-        __exc_value: Optional[BaseException],
-        __traceback: Optional[TracebackType],
-    ) -> None:
+    def close(self) -> None:
         self._backend.close()
