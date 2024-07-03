@@ -16,11 +16,11 @@
 __all__ = ["WithBackend"]
 
 import abc
-import traceback
 from contextlib import AbstractContextManager
+from types import TracebackType
 from typing import (
     Optional,
-    Union,
+    Type,
 )
 
 from neptune.internal.backends.api_model import Project
@@ -33,7 +33,6 @@ from neptune.internal.id_formats import (
     UniqueId,
     conform_optional,
 )
-from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
 from neptune.objects.mode import Mode
 
@@ -57,23 +56,17 @@ class WithBackend(AbstractContextManager, abc.ABC):
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
         self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
         self._project_api_object: Project = project_name_lookup(
-            backend=self._backend, name=self._project_qualified_name
+            backend=self._backend,
+            name=QualifiedName(self._project_qualified_name) if self._project_qualified_name is not None else None,
         )
         self._workspace: str = self._project_api_object.workspace
         self._project_name: str = self._project_api_object.name
         self._project_id: UniqueId = self._project_api_object.id
 
-        self._state: ContainerState = ContainerState.CREATED
-
-    @abc.abstractmethod
-    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def _raise_if_stopped(self) -> None:
-        raise NotImplementedError
-
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
-        if exc_tb is not None:
-            traceback.print_exception(exc_type, exc_val, exc_tb)
-        self.stop()
+    def __exit__(
+        self,
+        __exc_type: Optional[Type[BaseException]],
+        __exc_value: Optional[BaseException],
+        __traceback: Optional[TracebackType],
+    ) -> None:
+        self._backend.close()

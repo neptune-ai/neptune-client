@@ -15,6 +15,7 @@
 #
 __all__ = ["NeptuneObject"]
 
+import abc
 import atexit
 import datetime
 import itertools
@@ -22,6 +23,7 @@ import logging
 import os
 import threading
 import time
+import traceback
 import uuid
 from abc import ABC
 from functools import partial
@@ -136,6 +138,7 @@ class NeptuneObject(WithBackend, ABC):
         self._lock: threading.RLock = threading.RLock()
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
+        self._state = ContainerState.CREATED
         self._signals_queue: "Queue[Signal]" = Queue()
         self._logger: logging.Logger = get_logger()
 
@@ -283,8 +286,19 @@ class NeptuneObject(WithBackend, ABC):
     def _write_initial_attributes(self):
         pass
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is not None:
+            traceback.print_exception(exc_type, exc_val, exc_tb)
+        self.stop()
+
+        super().__exit__(exc_type, exc_val, exc_tb)
+
     def __getattr__(self, item):
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    @abc.abstractmethod
+    def _raise_if_stopped(self):
+        raise NotImplementedError
 
     def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
@@ -420,7 +434,6 @@ class NeptuneObject(WithBackend, ABC):
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
-        self._backend.close()
 
         with self._forking_cond:
             self._state = ContainerState.STOPPED

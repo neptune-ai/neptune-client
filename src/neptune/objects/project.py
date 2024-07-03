@@ -23,13 +23,9 @@ from typing import (
 
 from typing_extensions import Literal
 
-from neptune.exceptions import (
-    InactiveProjectException,
-    NeptuneUnsupportedFunctionalityException,
-)
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.backends.nql import NQLQuery
 from neptune.internal.container_type import ContainerType
-from neptune.internal.state import ContainerState
 from neptune.internal.utils import (
     as_list,
     verify_collection_type,
@@ -70,6 +66,7 @@ class Project(WithBackend):
             If left empty, the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
             Possible values are `async`, `sync`, `read-only`, and `debug`.
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
 
     Returns:
         Project object that can be used to interact with the project as a whole,
@@ -127,15 +124,6 @@ class Project(WithBackend):
             proxies=proxies,
         )
 
-    def stop(self, *, seconds: Optional[Union[float, int]] = None) -> None:
-        verify_type("seconds", seconds, (float, int, type(None)))
-        if self._state != ContainerState.STARTED:
-            return
-
-        self._backend.close()
-
-        self._state = ContainerState.STOPPED
-
     @ensure_not_stopped
     def _fetch_entries(
         self,
@@ -169,10 +157,6 @@ class Project(WithBackend):
             container_type=child_type,
             entries=leaderboard_entries,
         )
-
-    def _raise_if_stopped(self):
-        if self._state == ContainerState.STOPPED:
-            raise InactiveProjectException(label=f"{self._workspace}/{self._project_name}")
 
     def fetch_runs_table(
         self,
