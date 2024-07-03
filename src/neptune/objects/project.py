@@ -35,7 +35,6 @@ from neptune.internal.utils import (
 from neptune.objects.mode import Mode
 from neptune.objects.utils import (
     build_raw_query,
-    ensure_not_stopped,
     prepare_nql_query,
 )
 from neptune.objects.with_backend import WithBackend
@@ -124,7 +123,6 @@ class Project(WithBackend):
             proxies=proxies,
         )
 
-    @ensure_not_stopped
     def _fetch_entries(
         self,
         child_type: ContainerType,

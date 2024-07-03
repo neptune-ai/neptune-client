@@ -23,6 +23,7 @@ __all__ = [
 
 from functools import wraps
 from typing import (
+    TYPE_CHECKING,
     Callable,
     Iterable,
     List,
@@ -43,7 +44,10 @@ from neptune.internal.backends.nql import (
     RawNQLQuery,
 )
 from neptune.internal.utils.run_state import RunState
-from neptune.objects.with_backend import WithBackend
+
+if TYPE_CHECKING:
+    from neptune.objects import NeptuneObject
+
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -51,7 +55,7 @@ R = TypeVar("R")
 
 def ensure_not_stopped(func: Callable[P, R]) -> Callable[P, R]:
     @wraps(func)
-    def inner_func(self: WithBackend, *args: P.args, **kwargs: P.kwargs) -> R:
+    def inner_func(self: "NeptuneObject", *args: P.args, **kwargs: P.kwargs) -> R:
         self._raise_if_stopped()
         return func(self, *args, **kwargs)
 
