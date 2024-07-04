@@ -61,6 +61,21 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
                     self.get_table(state=incorrect_state)
 
     @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+    def test_fetch_runs_table_raises_if_query_used_with_params(self):
+        query = "some_query"
+        with self.assertRaises(ValueError):
+            self.get_table(query=query, state="active")
+
+        with self.assertRaises(ValueError):
+            self.get_table(query=query, id="some_id")
+
+        with self.assertRaises(ValueError):
+            self.get_table(query=query, tag="some_tag")
+
+        with self.assertRaises(ValueError):
+            self.get_table(query=query, owner="some_owner")
+
+    @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
     @patch(
         "neptune.internal.backends.neptune_backend_mock.NeptuneBackendMock.search_leaderboard_entries",
         new=lambda *args, **kwargs: [

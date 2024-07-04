@@ -25,26 +25,17 @@ import threading
 import time
 import traceback
 import uuid
-from contextlib import AbstractContextManager
-from functools import (
-    partial,
-    wraps,
-)
+from abc import ABC
+from functools import partial
 from queue import Queue
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Dict,
-    Iterable,
     List,
     Optional,
     Union,
-)
-
-from typing_extensions import (
-    ParamSpec,
-    TypeVar,
 )
 
 from neptune.api.models import FieldType
@@ -67,21 +58,10 @@ from neptune.exceptions import (
     NeptuneUnsupportedFunctionalityException,
 )
 from neptune.handler import Handler
-from neptune.internal.backends.api_model import Project
-from neptune.internal.backends.factory import get_backend
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.backends.nql import NQLQuery
-from neptune.internal.backends.project_name_lookup import project_name_lookup
 from neptune.internal.backgroud_job_list import BackgroundJobList
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.container_structure import ContainerStructure
-from neptune.internal.container_type import ContainerType
 from neptune.internal.exceptions import UNIX_STYLES
-from neptune.internal.id_formats import (
-    QualifiedName,
-    UniqueId,
-    conform_optional,
-)
 from neptune.internal.operation import DeleteAttribute
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -108,9 +88,12 @@ from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.objects.mode import Mode
-from neptune.table import Table
+from neptune.objects.utils import (
+    ensure_not_stopped,
+    temporarily_disabled,
+)
+from neptune.objects.with_backend import WithBackend
 from neptune.types.type_casting import cast_value
-from neptune.typing import ProgressBarType
 from neptune.utils import stop_synchronization_callback
 
 if TYPE_CHECKING:
@@ -119,31 +102,8 @@ if TYPE_CHECKING:
 
 NeptuneObjectCallback = Callable[["NeptuneObject"], None]
 
-P = ParamSpec("P")
-R = TypeVar("R")
 
-
-def ensure_not_stopped(fun):
-    @wraps(fun)
-    def inner_fun(self: "NeptuneObject", *args, **kwargs):
-        self._raise_if_stopped()
-        return fun(self, *args, **kwargs)
-
-    return inner_fun
-
-
-def temporarily_disabled(func: Callable[P, R]) -> Callable[P, R]:
-    def wrapper(*_: P.args, **__: P.kwargs):
-        if func.__name__ == "_get_background_jobs":
-            return []
-        else:
-            return None
-
-    return wrapper
-
-
-class NeptuneObject(AbstractContextManager):
-    container_type: ContainerType
+class NeptuneObject(WithBackend, ABC):
 
     def __init__(
         self,
@@ -160,11 +120,7 @@ class NeptuneObject(AbstractContextManager):
         async_no_progress_threshold: float = ASYNC_NO_PROGRESS_THRESHOLD,
     ):
         verify_type("custom_id", custom_id, (str, type(None)))
-        verify_type("project", project, (str, type(None)))
-        verify_type("api_token", api_token, (str, type(None)))
-        verify_type("mode", mode, Mode)
         verify_type("flush_period", flush_period, (int, float))
-        verify_type("proxies", proxies, (dict, type(None)))
         verify_type("async_lag_threshold", async_lag_threshold, (int, float))
         verify_optional_callable("async_lag_callback", async_lag_callback)
         verify_type("async_no_progress_threshold", async_no_progress_threshold, (int, float))
@@ -176,24 +132,16 @@ class NeptuneObject(AbstractContextManager):
                 f"Ensure that the `custom_run_id` argument doesn't exceed the limit."
             )
 
-        self._mode: Mode = mode
+        super().__init__(api_token=api_token, project=project, mode=mode, proxies=proxies)
+
         self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()
         self._forking_cond: threading.Condition = threading.Condition()
         self._forking_state: bool = False
-        self._state: ContainerState = ContainerState.CREATED
+        self._state = ContainerState.CREATED
         self._signals_queue: "Queue[Signal]" = Queue()
         self._logger: logging.Logger = get_logger()
 
-        self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
-
-        self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
-        self._project_api_object: Project = project_name_lookup(
-            backend=self._backend, name=self._project_qualified_name
-        )
-        self._workspace: str = self._project_api_object.workspace
-        self._project_name: str = self._project_api_object.name
-        self._project_id: UniqueId = self._project_api_object.id
         self._custom_id: str = custom_id or str(uuid.uuid4())
 
         self._async_lag_threshold = async_lag_threshold
@@ -484,7 +432,7 @@ class NeptuneObject(AbstractContextManager):
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
-        self._backend.close()
+        self.close()
 
         with self._forking_cond:
             self._state = ContainerState.STOPPED
@@ -682,39 +630,6 @@ class NeptuneObject(AbstractContextManager):
 
     def _shutdown_hook(self):
         self.stop()
-
-    def _fetch_entries(
-        self,
-        child_type: ContainerType,
-        query: NQLQuery,
-        columns: Optional[Iterable[str]],
-        limit: Optional[int],
-        sort_by: str,
-        ascending: bool,
-        progress_bar: Optional[ProgressBarType],
-    ) -> Table:
-        if columns is not None:
-            # always return entries with 'sys/id' and the column chosen for sorting when filter applied
-            columns = set(columns)
-            columns.add("sys/id")
-            columns.add(sort_by)
-
-        leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id,
-            types=[child_type],
-            query=query,
-            columns=columns,
-            limit=limit,
-            sort_by=sort_by,
-            ascending=ascending,
-            progress_bar=progress_bar,
-        )
-
-        return Table(
-            backend=self._backend,
-            container_type=child_type,
-            entries=leaderboard_entries,
-        )
 
     def get_root_object(self) -> "NeptuneObject":
         """Returns the same Neptune object."""

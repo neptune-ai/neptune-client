@@ -50,6 +50,7 @@
 - Introduced `RunCreation` operation ([#1817](https://github.com/neptune-ai/neptune-client/pull/1817))
 - Added serialization of operations to protocol buffers ([#1822](https://github.com/neptune-ai/neptune-client/pull/1822))
 - Introduced `neptune-api` as dependency ([#1823](https://github.com/neptune-ai/neptune-client/pull/1823))
+- Add a super class to handle backend connection for neptune objects ([#1832](https://github.com/neptune-ai/neptune-client/pull/1832))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))
