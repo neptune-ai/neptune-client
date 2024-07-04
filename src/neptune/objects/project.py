@@ -15,11 +15,9 @@
 #
 __all__ = ["Project"]
 
-from types import TracebackType
 from typing import (
     Iterable,
     Optional,
-    Type,
     Union,
 )
 
@@ -124,14 +122,6 @@ class Project(WithBackend):
             mode=mode,
             proxies=proxies,
         )
-
-    def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
-    ) -> None:
-        self.close()
 
     def _fetch_entries(
         self,
