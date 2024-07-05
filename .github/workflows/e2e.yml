@@ -9,8 +9,8 @@ on:
         required: false
   workflow_dispatch:
   push:
-    branches:
-      - dev/1.x
+   #  branches:
+   #   - dev/1.x
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
@@ -29,17 +29,7 @@ jobs:
     environment: "Production 1.x"
     needs: [ set_neptune_ref ]
     timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.7", "3.12" ]
-        os: [ ubuntu, windows ]
-        include:
-          - python-version:  "3.8"
-            os: macos
-          - python-version: "3.12"
-            os: macos
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: self-hosted
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
