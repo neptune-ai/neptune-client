@@ -3,6 +3,9 @@ name: e2e
 on:
   workflow_call:
   workflow_dispatch:
+  push:
+    branches:
+      - self-hosted-test
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
@@ -17,12 +20,7 @@ jobs:
   e2e:
     environment: Production
     timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ "3.8", "3.12" ]
-        os: [ ubuntu, windows, macos ]
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: self-hosted
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
@@ -36,11 +34,10 @@ jobs:
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: "not integrations"
+          python-version: 3.10
+          os: ubuntu
           name: "standard"
-          report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report_job: 'standard (ubuntu - py3.10)'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
   e2e-tests-notify:
