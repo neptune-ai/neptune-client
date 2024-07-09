@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import TracebackType
 from typing import (
+    Any,
     Callable,
     Generic,
     List,
@@ -35,30 +36,31 @@ from neptune.core.components.queue.disk_queue import (
 )
 
 T = TypeVar("T")
+K = TypeVar("K")
 Timestamp = float
 
 
 @dataclass
-class CategoryQueueElement(Generic[T]):
+class CategoryQueueElement(Generic[T, K]):
     obj: T
-    category: Optional[int] = None
+    category: Optional[K] = None
 
 
-def to_dict_factory(to_dict: Callable[[T], dict]) -> Callable[[CategoryQueueElement[T]], dict]:
-    def _to_dict(obj: CategoryQueueElement[T]) -> dict:
+def to_dict_factory(to_dict: Callable[[T], dict]) -> Callable[[CategoryQueueElement[T, K]], dict]:
+    def _to_dict(obj: CategoryQueueElement[T, K]) -> dict:
         return {"obj": to_dict(obj.obj), "cat": obj.category}
 
     return _to_dict
 
 
-def from_dict_factory(from_dict: Callable[[dict], T]) -> Callable[[dict], CategoryQueueElement[T]]:
-    def _from_dict(data: dict) -> CategoryQueueElement[T]:
+def from_dict_factory(from_dict: Callable[[dict], T]) -> Callable[[dict], CategoryQueueElement[T, Any]]:
+    def _from_dict(data: dict) -> CategoryQueueElement[T, Any]:
         return CategoryQueueElement(from_dict(data["obj"]), data["cat"])
 
     return _from_dict
 
 
-class AggregatingDiskQueue(WithResources, Generic[T]):
+class AggregatingDiskQueue(WithResources, Generic[T, K]):
     def __init__(
         self,
         data_path: Path,
@@ -69,7 +71,7 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
         max_batch_size_bytes: Optional[int] = None,
         extension: str = "log",
     ) -> None:
-        self._disk_queue = DiskQueue[CategoryQueueElement[T]](
+        self._disk_queue = DiskQueue[CategoryQueueElement[T, K]](
             data_path=data_path,
             to_dict=to_dict_factory(to_dict),
             from_dict=from_dict_factory(from_dict),
@@ -78,18 +80,18 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
             max_batch_size_bytes=max_batch_size_bytes,
             extension=extension,
         )
-        self._stored_element: Optional[QueueElement[CategoryQueueElement[T]]] = None
+        self._stored_element: Optional[QueueElement[CategoryQueueElement[T, K]]] = None
         self._empty_cond = threading.Condition(threading.Lock())
 
-    def put(self, obj: T, category: Optional[int] = None) -> int:
+    def put(self, obj: T, category: Optional[K] = None) -> int:
         return self._disk_queue.put(CategoryQueueElement(obj, category))
 
-    def get(self) -> Optional[QueueElement[CategoryQueueElement[T]]]:
+    def get(self) -> Optional[QueueElement[CategoryQueueElement[T, K]]]:
         return self._disk_queue.get()
 
-    def get_batch(self, size: int) -> List[QueueElement[CategoryQueueElement[T]]]:
+    def get_batch(self, size: int) -> List[QueueElement[CategoryQueueElement[T, K]]]:
         if self._stored_element is not None:
-            first: QueueElement[CategoryQueueElement[T]] = self._stored_element
+            first: QueueElement[CategoryQueueElement[T, K]] = self._stored_element
             self._stored_element = None
         else:
             possible_first = self._disk_queue.get()
@@ -119,7 +121,7 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
             ret.append(next_obj)
         return ret
 
-    def __enter__(self) -> "AggregatingDiskQueue[T]":
+    def __enter__(self) -> "AggregatingDiskQueue[T, K]":
         return self
 
     def __exit__(
@@ -149,7 +151,7 @@ class AggregatingDiskQueue(WithResources, Generic[T]):
         self._disk_queue.cleanup()
 
     @property
-    def resources(self) -> Tuple[DiskQueue[CategoryQueueElement[T]]]:
+    def resources(self) -> Tuple[DiskQueue[CategoryQueueElement[T, K]]]:
         return (self._disk_queue,)
 
     @property

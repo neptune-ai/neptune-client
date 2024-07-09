@@ -68,7 +68,7 @@ class ProcessingResources(WithResources):
             metadata=common_metadata(mode="async", custom_id=custom_id, container_type=container_type),
         )
         self.operation_storage = OperationStorage(data_path=self._data_path)
-        self.disk_queue = AggregatingDiskQueue(
+        self.disk_queue = AggregatingDiskQueue[Operation, float](
             data_path=self._data_path,
             to_dict=serializer,
             from_dict=Operation.from_dict,

@@ -17,6 +17,7 @@
 import datetime
 import random
 import string
+from typing import TypeVar
 
 import pytest
 
@@ -30,6 +31,8 @@ from neptune.core.operations import (
 )
 from neptune.core.operations.operation import FieldOperation
 from neptune.exceptions import MalformedOperation
+
+T = TypeVar("T")
 
 
 class TestAssignInt:

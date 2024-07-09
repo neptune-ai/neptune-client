@@ -41,6 +41,7 @@ from neptune.core.operation_processors.async_operation_processor.processing_reso
 from neptune.core.operation_processors.async_operation_processor.queue_observer import QueueObserver
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operations.operation import Operation
+from neptune.core.operations.utils import try_get_step
 from neptune.core.typing.container_type import ContainerType
 from neptune.core.typing.id_formats import CustomId
 from neptune.exceptions import NeptuneSynchronizationAlreadyStoppedException
@@ -109,7 +110,8 @@ class AsyncOperationProcessor(WithResources, OperationProcessor):
             warn_once("Not accepting operations", exception=NeptuneWarning)
             return
 
-        self._last_version = self.processing_resources.disk_queue.put(op)
+        step = try_get_step(op)
+        self._last_version = self.processing_resources.disk_queue.put(op, category=step)
 
         if _queue_has_enough_space(self.processing_resources.disk_queue.size(), self._processing_resources.batch_size):
             self._consumer.wake_up()

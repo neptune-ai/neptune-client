@@ -46,7 +46,7 @@ def mock_time():
 
 def test_put():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -65,7 +65,7 @@ def test_put():
 
 def test_multiple_files():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -93,7 +93,7 @@ def test_multiple_files():
 
 def test_get_batch_no_category():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -128,7 +128,7 @@ def test_get_batch_no_category():
 )
 def test_get_batch_with_category(category_series_and_expected: Tuple[List[Optional[int]], List[Tuple[int, int]]]):
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -154,7 +154,7 @@ def test_get_batch_with_category(category_series_and_expected: Tuple[List[Option
 
 def test_batch_limit():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -178,7 +178,7 @@ def test_batch_limit():
 def test_resuming_queue_when_on_new_category():
     category_series = [1, 1, 1, 2, 2, 2]
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -203,7 +203,7 @@ def test_resuming_queue_when_on_new_category():
             queue.ack(version)
 
         # Resume queue
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -219,7 +219,7 @@ def test_resuming_queue_when_on_new_category():
 
 def test_resuming_queue():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -247,7 +247,7 @@ def test_resuming_queue():
             assert 1 == len([ver for ver in data_files_versions if ver <= version_to_ack])
 
         # Resume queue
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -261,7 +261,7 @@ def test_resuming_queue():
 
 def test_ack():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -285,7 +285,7 @@ def test_ack():
 
 def test_cleaning_up():
     with TemporaryDirectory() as data_path:
-        with AggregatingDiskQueue[Obj](
+        with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
             to_dict=serializer,
             from_dict=deserializer,
@@ -323,7 +323,7 @@ def get_obj_size_bytes(obj: Obj, version, at: Optional[int] = None, category: Op
 
 def get_queue_element(
     obj: Obj, version, at: Optional[int] = None, category: Optional[int] = None
-) -> QueueElement[CategoryQueueElement[Obj]]:
+) -> QueueElement[CategoryQueueElement[Obj, int]]:
     obj_size = get_obj_size_bytes(obj, version=version, at=at, category=category)
     return QueueElement(CategoryQueueElement(obj=obj, category=category), version, obj_size, at)
 
