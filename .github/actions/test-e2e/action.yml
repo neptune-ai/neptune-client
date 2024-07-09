@@ -24,6 +24,11 @@ runs:
     - name: Install package
       uses: ./.github/actions/install-package
 
+    - name: Debug
+      run: |
+        env
+      shell: bash
+
     - name: E2E - ${{ inputs.module }}
       run: |
         python -m pytest --cov=neptune --cov-report xml \
