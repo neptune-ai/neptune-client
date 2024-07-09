@@ -26,7 +26,7 @@ runs:
 
     - name: E2E - ${{ inputs.module }}
       run: |
-        pytest --cov=neptune --cov-report xml \
+        python -m pytest --cov=neptune --cov-report xml \
         -v ./tests/e2e/ -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
         --color=yes \
