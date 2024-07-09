@@ -21,7 +21,7 @@ jobs:
     environment: Production
     timeout-minutes: 75
     runs-on: self-hosted
-    name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
+    name: 'standard (ubuntu - py3.10)'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
