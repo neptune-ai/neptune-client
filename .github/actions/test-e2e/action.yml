@@ -17,23 +17,12 @@ inputs:
   report_job:
     description: "Job name to update by JUnit report"
     required: true
-  codecov-token:
-    description: "Codecov token"
-    required: false
-    default: ""
-  pip_url:
-    description: "Pip URL for integration installation"
-    required: false
 
 runs:
   using: "composite"
   steps:
     - name: Install package
       uses: ./.github/actions/install-package
-      with:
-        python-version: ${{ inputs.python-version }}
-        os: ${{ inputs.os }}-latest
-        pip_url: ${{ inputs.pip_url }}
 
     - name: E2E - ${{ inputs.module }}
       run: |
@@ -53,14 +42,6 @@ runs:
         include_passed: true
         annotate_notice: true
         job_name: ${{ inputs.report_job }}
-
-    - name: Upload Pull Request coverage report do Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        token: ${{ inputs.codecov-token }}
-        files: ./coverage.xml
-        flags: e2e,e2e-${{ inputs.name }},${{ inputs.os }},py${{ inputs.python-version }}
-        fail_ci_if_error: false
 
     - uses: actions/upload-artifact@v3
       if: always()

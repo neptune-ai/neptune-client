@@ -1,41 +1,9 @@
 ---
 name: Package
 description: Install python and package
-inputs:
-  python-version:
-    description: "Python version"
-    required: true
-  os:
-    description: "Operating system"
-    required: true
-  pip_url:
-    description: "Pip URL for integration installation"
-    required: false
-
 runs:
     using: "composite"
     steps:
-      - name: Get current date
-        id: date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - uses: actions/cache@v3
-        id: cache
-        with:
-          path: ~/.cache/pip
-          key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
-
-      - name: Install Python ${{ inputs.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ inputs.python-version }}
-
-      - name: Install integration packages (if applicable)
-        run: |
-            pip install ${{ inputs.pip_url }}
-        shell: bash
-        if: inputs.pip_url
 
       - name: Install dependencies
         run: |

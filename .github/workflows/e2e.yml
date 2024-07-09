@@ -34,11 +34,10 @@ jobs:
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
-          python-version: 3.10
+          python-version: "3.10"
           os: ubuntu
           name: "standard"
           report_job: 'standard (ubuntu - py3.10)'
-          codecov-token: ${{ secrets.CODECOV_TOKEN }}
 #
 #  e2e-tests-notify:
 #    needs: [ e2e, ]
