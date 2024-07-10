@@ -18,12 +18,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
 import seaborn as sns
-from bokeh import (
-    models,
-    palettes,
-    plotting,
-    sampledata,
-)
+from bokeh.plotting import figure
 from PIL import Image
 from vega_datasets import data
 
@@ -54,7 +49,9 @@ def generate_altair_chart():
         alt.Chart(source)
         .mark_point()
         .encode(
-            x="Horsepower:Q", y="Miles_per_Gallon:Q", color=alt.condition(brush, "Origin:N", alt.value("lightgray"))
+            x="Horsepower:Q",
+            y="Miles_per_Gallon:Q",
+            color=alt.condition(brush, "Origin:N", alt.value("lightgray")),
         )
         .add_selection(brush)
     )
@@ -70,50 +67,18 @@ def generate_altair_chart():
 
 
 def generate_brokeh_figure():
-    sampledata.download()
+    N = 500
+    x = np.linspace(0, 10, N)
+    y = np.linspace(0, 10, N)
+    xx, yy = np.meshgrid(x, y)
+    d = np.sin(xx) * np.cos(yy)
 
-    from bokeh.sampledata.unemployment import data as unemployment
-    from bokeh.sampledata.us_counties import data as counties
+    bokeh_figure = figure(tooltips=[("x", "$x"), ("y", "$y"), ("value", "@image")])
+    bokeh_figure.x_range.range_padding = bokeh_figure.y_range.range_padding = 0
 
-    palette2 = tuple(reversed(palettes.Viridis6))
-
-    cnts = {code: county for code, county in counties.items() if county["state"] == "tx"}
-
-    county_xs = [county["lons"] for county in cnts.values()]
-    county_ys = [county["lats"] for county in cnts.values()]
-
-    county_names = [county["name"] for county in cnts.values()]
-    county_rates = [unemployment[county_id] for county_id in cnts]
-    color_mapper = models.LogColorMapper(palette=palette2)
-
-    chart_data = dict(
-        x=county_xs,
-        y=county_ys,
-        name=county_names,
-        rate=county_rates,
-    )
-
-    TOOLS = "pan,wheel_zoom,reset,hover,save"
-
-    bokeh_figure = plotting.figure(
-        title="Texas Unemployment, 2009",
-        tools=TOOLS,
-        x_axis_location=None,
-        y_axis_location=None,
-        tooltips=[("Name", "@name"), ("Unemployment rate", "@rate%"), ("(Long, Lat)", "($x, $y)")],
-    )
-    bokeh_figure.grid.grid_line_color = None
-    bokeh_figure.hover.point_policy = "follow_mouse"
-
-    bokeh_figure.patches(
-        "x",
-        "y",
-        source=chart_data,
-        fill_color={"field": "rate", "transform": color_mapper},
-        fill_alpha=0.7,
-        line_color="white",
-        line_width=0.5,
-    )
+    # must give a vector of image data for image parameter
+    bokeh_figure.image(image=[d], x=0, y=0, dw=10, dh=10, palette="Spectral11", level="image")
+    bokeh_figure.grid.grid_line_width = 0.5
 
     return bokeh_figure
 
@@ -128,6 +93,11 @@ def generate_plotly_figure():
 def generate_seaborn_figure():
     sample_size = 30
     x = np.random.rand(sample_size) * 2 * np.pi
-    data = {"x": x, "y": np.sin(x), "c": np.random.randint(0, 2, sample_size), "arch": x > np.pi}
+    data = {
+        "x": x,
+        "y": np.sin(x),
+        "c": np.random.randint(0, 2, sample_size),
+        "arch": x > np.pi,
+    }
     seaborn_fig = sns.relplot(data=data, x="x", y="y", hue="c", col="arch")
     return seaborn_fig
