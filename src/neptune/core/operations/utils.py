@@ -24,7 +24,7 @@ from neptune.core.operations.operation import (
 
 def try_get_step(operation: Operation) -> Optional[float]:
     if isinstance(operation, LogFloats):
-        # assumtion: all there is at most one value in the list
+        # assumtion: there is at most one value in the LogFloats values list
         return operation.values[0].step if operation.values else None
     else:
         return None

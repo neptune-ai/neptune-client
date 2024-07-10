@@ -116,7 +116,7 @@ def test_get_batch_no_category():
 
 
 @pytest.mark.parametrize(
-    "category_series_and_expected",
+    ("category_series", "expected_batch_summary"),
     [
         ([1, 1, 1, 1, 1], [(5, 1)]),
         ([1, 1, None, None, 1, 1], [(6, 1)]),
@@ -126,7 +126,7 @@ def test_get_batch_no_category():
         ([None, None, None, None], [(4, None)]),
     ],
 )
-def test_get_batch_with_category(category_series_and_expected: Tuple[List[Optional[int]], List[Tuple[int, int]]]):
+def test_get_batch_with_category(category_series: List[Optional[int]], expected_batch_summary: List[Tuple[int, int]]):
     with TemporaryDirectory() as data_path:
         with AggregatingDiskQueue[Obj, int](
             data_path=Path(data_path),
@@ -135,7 +135,6 @@ def test_get_batch_with_category(category_series_and_expected: Tuple[List[Option
             lock=threading.RLock(),
             max_file_size=100,
         ) as queue:
-            category_series, expected_batch_summary = category_series_and_expected
             # given
             for i, cat in enumerate(category_series):
                 obj = Obj(i, str(i))
@@ -197,8 +196,6 @@ def test_resuming_queue_when_on_new_category():
             batch_1 = queue.get_batch(10)
 
             assert [get_queue_element(Obj(i, str(i)), i + 1, 1234 + i, category=1) for i in range(3)] == batch_1
-            assert len(batch_1) == 3
-            assert all([e.obj.category == 1 for e in batch_1])
             version = batch_1[-1].ver
             queue.ack(version)
 
@@ -212,8 +209,6 @@ def test_resuming_queue_when_on_new_category():
         ) as queue:
             # then
             batch_2 = queue.get_batch(10)
-            assert len(batch_2) == 3
-            assert all([e.obj.category == 2 for e in batch_2])
             assert [get_queue_element(Obj(i, str(i)), i + 1, 1234 + i, category=2) for i in range(3, 6)] == batch_2
 
 
