@@ -75,7 +75,7 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     @patch("neptune.core.components.operation_storage.os.makedirs", new=lambda *_, **__: None)
     @patch(
         "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
-        new=Mock,
+        new=MagicMock(),
     )
     def test_data_path(self, mock_get_container_full_path):
         # given
@@ -106,7 +106,8 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
 @patch(
-    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue", new=Mock
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+    new=MagicMock(),
 )
 @patch(
     "neptune.core.operation_processors.async_operation_processor.async_operation_processor.try_get_step",
@@ -187,7 +188,8 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
 @patch(
-    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue", new=Mock
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+    new=MagicMock(),
 )
 class TestAsyncOperationProcessorWait(unittest.TestCase):
     def test_async_operation_processor_wait(self):

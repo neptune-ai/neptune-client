@@ -87,7 +87,12 @@ class AggregatingDiskQueue(WithResources, Generic[T, K]):
         return self._disk_queue.put(CategoryQueueElement(obj, category))
 
     def get(self) -> Optional[QueueElement[CategoryQueueElement[T, K]]]:
-        return self._disk_queue.get()
+        if self._stored_element is not None:
+            tmp = self._stored_element
+            self._stored_element = None
+            return tmp
+        else:
+            return self._disk_queue.get()
 
     def get_batch(self, size: int) -> List[QueueElement[CategoryQueueElement[T, K]]]:
         if self._stored_element is not None:
@@ -139,10 +144,12 @@ class AggregatingDiskQueue(WithResources, Generic[T, K]):
         self._disk_queue.flush()
 
     def ack(self, version: int) -> None:
+        if self._stored_element and self._stored_element.ver <= version:
+            self._stored_element = None
         self._disk_queue.ack(version)
 
     def size(self) -> int:
-        return self._disk_queue.size() + self._stored_element.size if self._stored_element else 0
+        return self._disk_queue.size()
 
     def is_empty(self) -> bool:
         return self._disk_queue.is_empty() and self._stored_element is None
