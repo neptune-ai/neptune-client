@@ -73,7 +73,10 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     )
     # these patches prevent the side effect of creating test directories
     @patch("neptune.core.components.operation_storage.os.makedirs", new=lambda *_, **__: None)
-    @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+    @patch(
+        "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+        new=MagicMock(),
+    )
     def test_data_path(self, mock_get_container_full_path):
         # given
         test_cases = [
@@ -102,7 +105,14 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
-@patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+@patch(
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+    new=MagicMock(),
+)
+@patch(
+    "neptune.core.operation_processors.async_operation_processor.async_operation_processor.try_get_step",
+    new=lambda _: 10,
+)
 class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_check_queue_size(self):
         assert not _queue_has_enough_space(queue_size=1, batch_size=10)
@@ -129,7 +139,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         processor.enqueue_operation(op, wait=False)
 
         # then
-        processor.processing_resources.disk_queue.put.assert_called_once_with(op)
+        processor.processing_resources.disk_queue.put.assert_called_once_with(op, category=10)
         mock_wait.assert_not_called()
 
     def test_enqueue_operation_with_wait(self):
@@ -152,7 +162,7 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
         processor.enqueue_operation(op, wait=True)
 
         # then
-        processor.processing_resources.disk_queue.put.assert_called_once_with(op)
+        processor.processing_resources.disk_queue.put.assert_called_once_with(op, category=10)
         mock_wait.assert_called_once()
 
     def test_enqueue_operation_not_accepting_operations_raises_warning_and_doesnt_put_to_queue(self):
@@ -177,7 +187,10 @@ class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
 
 
 @patch("neptune.core.operation_processors.async_operation_processor.processing_resources.MetadataFile", new=Mock)
-@patch("neptune.core.operation_processors.async_operation_processor.processing_resources.DiskQueue", new=Mock)
+@patch(
+    "neptune.core.operation_processors.async_operation_processor.processing_resources.AggregatingDiskQueue",
+    new=MagicMock(),
+)
 class TestAsyncOperationProcessorWait(unittest.TestCase):
     def test_async_operation_processor_wait(self):
         # given

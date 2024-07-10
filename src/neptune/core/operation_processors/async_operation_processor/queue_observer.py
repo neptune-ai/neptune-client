@@ -20,8 +20,12 @@ __all__ = ["QueueObserver"]
 from dataclasses import dataclass
 from queue import Queue
 from time import monotonic
-from typing import Optional
+from typing import (
+    Optional,
+    Union,
+)
 
+from neptune.core.components.queue.aggregating_disk_queue import AggregatingDiskQueue
 from neptune.core.components.queue.disk_queue import DiskQueue
 from neptune.core.operation_processors.async_operation_processor.consumer_thread import ConsumerThread
 from neptune.core.operation_processors.async_operation_processor.operation_logger import (
@@ -44,7 +48,7 @@ class QueueWaitCycleResults:
 class QueueObserver:
     def __init__(
         self,
-        disk_queue: DiskQueue,
+        disk_queue: Union[DiskQueue, AggregatingDiskQueue],
         consumer: ConsumerThread,
         should_print_logs: bool,
         stop_queue_max_time_no_connection_seconds: float,
@@ -149,7 +153,9 @@ class QueueObserver:
         return cycle_results
 
 
-def _calculate_wait_cycle_results(disk_queue: DiskQueue, initial_queue_size: int) -> QueueWaitCycleResults:
+def _calculate_wait_cycle_results(
+    disk_queue: Union[DiskQueue, AggregatingDiskQueue], initial_queue_size: int
+) -> QueueWaitCycleResults:
     size_remaining = disk_queue.size()
     already_synced = initial_queue_size - size_remaining
     already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
