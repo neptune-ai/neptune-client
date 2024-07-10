@@ -17,6 +17,7 @@ vega_datasets
 backoff
 altair
 bokeh
+bokeh_sampledata
 matplotlib
 seaborn
 plotly
