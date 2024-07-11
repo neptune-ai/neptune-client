@@ -282,7 +282,9 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api-reference/field-types
 
         """
-        verify_type("step", step, (int, float, type(None)))
+        if step is None:
+            raise NeptuneUserApiInputException("Step must be provided")
+        verify_type("step", step, (int, float))
         verify_type("timestamp", timestamp, (int, float, type(None)))
 
         with self._container.lock():
@@ -356,7 +358,9 @@ class Handler(SupportsNamespaces):
             ...     token = str(...)
             ...     run["train/tokens"].append(token)  # StringSeries
         """
-        verify_type("step", step, (int, float, type(None)))
+        if step is None:
+            raise NeptuneUserApiInputException("Step must be provided")
+        verify_type("step", step, (int, float))
         verify_type("timestamp", timestamp, (int, float, type(None)))
         if step is not None:
             step = [step]
@@ -738,6 +742,8 @@ class ExtendUtils:
     def validate_values_for_extend(values, steps, timestamps):
         """Validates if the input data is a collection or a namespace with collections leafs.
         If steps or timestamps are passed, check if its length is equal to all given values."""
+        if steps is None:
+            raise NeptuneUserApiInputException("Steps must be provided")
         collections_lengths = set(ExtendUtils.generate_leaf_collection_lengths(values))
 
         if len(collections_lengths) > 1:
