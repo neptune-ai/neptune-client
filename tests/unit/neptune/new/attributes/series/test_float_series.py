@@ -61,10 +61,10 @@ class TestFloatSeries(TestAttributeBase):
     def test_float_warnings(self):
         with self._exp() as run:
             with pytest.warns(NeptuneUnsupportedValue):
-                run["train"].append({"supported_1": 1, "supported_2": 2})
-                run["train"].append({"unsupported": float("nan"), "supported_3": float(3)})
-                run["train"].append({"nef_infinity": float("-inf")})
-                run["train"].append({"infinity": float("inf")})
+                run["train"].append({"supported_1": 1, "supported_2": 2}, step=0)
+                run["train"].append({"unsupported": float("nan"), "supported_3": float(3)}, step=1)
+                run["train"].append({"nef_infinity": float("-inf")}, step=2)
+                run["train"].append({"infinity": float("inf")}, step=3)
 
                 assert run["train/supported_1"].fetch_last() == 1
                 assert run["train/supported_2"].fetch_last() == 2

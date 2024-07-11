@@ -201,8 +201,8 @@ class TestSeries:
     @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["some/num/val"].log(5)
-            exp["some/str/val"].log("some text")
+            exp["some/num/val"].log(5, step=1)
+            exp["some/str/val"].log("some text", step=1)
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
 
@@ -210,14 +210,14 @@ class TestSeries:
     def test_log_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = str({"key-a": "value-a", "key-b": "value-b"})
-            exp["some/num/val"].log(dict_value)
+            exp["some/num/val"].log(dict_value, step=1)
             assert exp["some"]["num"]["val"].fetch_last() == str(dict_value)
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["some/num/val"].append(5)
-            exp["some/str/val"].append("some text")
+            exp["some/num/val"].append(5, step=1)
+            exp["some/str/val"].append("some text", step=1)
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
 
@@ -225,7 +225,7 @@ class TestSeries:
     def test_append_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": "value-a", "key-b": "value-b"}
-            exp["some/num/val"].append(dict_value)
+            exp["some/num/val"].append(dict_value, step=1)
             assert exp["some"]["num"]["val"]["key-a"].fetch_last() == "value-a"
             assert exp["some"]["num"]["val"]["key-b"].fetch_last() == "value-b"
 
@@ -236,14 +236,15 @@ class TestSeries:
                 {
                     "key-a": {"aa": 11, "ab": 22},
                     "key-b": {"ba": 33, "bb": 44},
-                }
+                },
+                step=1,
             )
             assert exp["train"]["dictOfDicts"]["key-a"]["aa"].fetch_last() == 11
             assert exp["train"]["dictOfDicts"]["key-a"]["ab"].fetch_last() == 22
             assert exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last() == 33
             assert exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last() == 44
 
-    @pytest.mark.xfail(reason="File logging disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(reason="Doesn't work with step enforcement", strict=True, raises=NeptuneUserApiInputException)
     def test_log_many_values(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
@@ -254,35 +255,39 @@ class TestSeries:
     def test_append_many_values_cause_error(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with assert_unsupported_warning():
-                exp["some/empty-list/val"].append([])
+                exp["some/empty-list/val"].append([], step=1)
 
             with assert_unsupported_warning():
-                exp["some/tuple/val"].append(())
+                exp["some/tuple/val"].append((), step=1)
 
             with assert_unsupported_warning():
-                exp["some/list/val"].append([5, 10, 15])
+                exp["some/list/val"].append([5, 10, 15], step=1)
 
             with assert_unsupported_warning():
-                exp["some/str-tuple/val"].append(("some text", "other"))
+                exp["some/str-tuple/val"].append(("some text", "other"), step=1)
 
             with assert_unsupported_warning():
-                exp["some/dict-list/val"].append({"key-a": [1, 2]})
+                exp["some/dict-list/val"].append({"key-a": [1, 2]}, step=1)
 
             with assert_unsupported_warning():
-                exp["some/custom-obj/val"].append(Obj())
+                exp["some/custom-obj/val"].append(Obj(), step=1)
 
             with assert_unsupported_warning():
-                exp["some/list-custom-obj/val"].append([Obj(), Obj()])
+                exp["some/list-custom-obj/val"].append([Obj(), Obj()], step=1)
 
     @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["some/num/val"].extend([5, 7])
-            exp["some/str/val"].extend(["some", "text"])
+            exp["some/num/val"].extend([5, 7], steps=[0, 1])
+            exp["some/str/val"].extend(["some", "text"], steps=[0, 1])
             assert exp["some"]["num"]["val"].fetch_last() == 7
             assert exp["some"]["str"]["val"].fetch_last() == "text"
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.xfail(
+        reason="steps must be passed, but it doesn't work with dict",
+        strict=True,
+        raises=NeptuneUserApiInputException,
+    )
     def test_extend_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": ["value-a", "value-aa"], "key-b": ["value-b", "value-bb"], "key-c": ["ccc"]}
@@ -295,11 +300,12 @@ class TestSeries:
     def test_extend_nested(self):
         """We expect that we are able to log arbitrary tre structure"""
         with init_run(mode="debug", flush_period=0.5) as exp:
-            exp["train/simple_dict"].extend({"list1": [1, 2, 3], "list2": [10, 20, 30]})
+            exp["train/simple_dict"].extend({"list1": [1, 2, 3], "list2": [10, 20, 30]}, steps=[1, 2, 3])
             exp["train/simple_dict"].extend(
                 {
                     "list1": [4, 5, 6],
-                }
+                },
+                steps=[1, 2, 3],
             )
             assert exp["train"]["simple_dict"]["list1"].fetch_last() == 6
             assert list(exp["train"]["simple_dict"]["list1"].fetch_values().value) == [1, 2, 3, 4, 5, 6]
@@ -307,9 +313,9 @@ class TestSeries:
             assert list(exp["train"]["simple_dict"]["list2"].fetch_values().value) == [10, 20, 30]
 
             exp["train/different-depths"].extend(
-                {"lvl1": {"lvl1.1": [1, 2, 3], "lvl1.2": {"lvl1.2.1": [1]}}, "lvl2": [10, 20]}
+                {"lvl1": {"lvl1.1": [1, 2, 3], "lvl1.2": {"lvl1.2.1": [1]}}, "lvl2": [10, 20]}, step=1
             )
-            exp["train/different-depths/lvl1"].extend({"lvl1.2": {"lvl1.2.1": [2, 3]}})
+            exp["train/different-depths/lvl1"].extend({"lvl1.2": {"lvl1.2.1": [2, 3]}}, step=1)
             assert exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_last() == 3
             assert list(exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_values().value) == [1, 2, 3]
             assert exp["train"]["different-depths"]["lvl1"]["lvl1.2"]["lvl1.2.1"].fetch_last() == 3
@@ -338,19 +344,19 @@ class TestSeries:
     def test_log_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             with pytest.raises(ValueError):
-                exp["x"].log([])
+                exp["x"].log([], step=1)
             with pytest.raises(ValueError):
-                exp["x"].log([5, "str"])
+                exp["x"].log([5, "str"], step=1)
             with pytest.raises(ValueError):
                 exp["x"].log([5, 10], step=10)
 
             exp["some/num/val"].log([5], step=1)
-            exp["some/num/val"].log([])
+            exp["some/num/val"].log([], step=1)
             with pytest.raises(ValueError):
-                exp["some/num/val"].log("str")
+                exp["some/num/val"].log("str", step=1)
 
             exp["some/str/val"].log(["str"], step=1)
-            exp["some/str/val"].log([])
+            exp["some/str/val"].log([], step=1)
 
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "str"
