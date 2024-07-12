@@ -244,7 +244,7 @@ class TestSeries:
             assert exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last() == 33
             assert exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last() == 44
 
-    @pytest.mark.xfail(reason="Doesn't work with step enforcement", strict=True, raises=NeptuneUserApiInputException)
+    @pytest.mark.xfail(reason="Doesn't work with step enforcement", strict=True, raises=TypeError)
     def test_log_many_values(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
@@ -286,7 +286,7 @@ class TestSeries:
     @pytest.mark.xfail(
         reason="steps must be passed, but it doesn't work with dict",
         strict=True,
-        raises=NeptuneUserApiInputException,
+        raises=TypeError,
     )
     def test_extend_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -337,7 +337,7 @@ class TestSeries:
             with pytest.raises(NeptuneUserApiInputException):
                 # wrong number of timestamps
                 exp["train/simple_dict"].extend(
-                    values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
+                    values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2, steps=[0, 1]
                 )
 
     @pytest.mark.xfail(reason="Fetch last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
