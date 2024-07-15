@@ -113,10 +113,6 @@ class TestAsyncOperationProcessorInit(unittest.TestCase):
     "neptune.core.operation_processors.async_operation_processor.async_operation_processor.try_get_step",
     new=lambda _: 10,
 )
-@patch(
-    "neptune.core.operation_processors.async_operation_processor.async_operation_processor.try_get_step",
-    new=lambda _: 10,
-)
 class TestAsyncOperationProcessorEnqueueOperation(unittest.TestCase):
     def test_check_queue_size(self):
         assert not _queue_has_enough_space(queue_size=1, batch_size=10)
