@@ -25,7 +25,8 @@ NONE_RATIO = 0.1
 BATCH_SIZE = 2**10
 RESULT_PATH = Path("./performance-raport/queue")
 SEQUENCE_BATCH_SIZE = SEQUENCE_SIZE // 10
-FLUSH_INTERVAL = 10
+FILE_SIZE_INTERVAL = SEQUENCE_SIZE // 1000
+FLUSH_INTERVAL = 1
 PRECISION = 7
 
 
@@ -83,6 +84,11 @@ def get_step_sequence(sequence_type: Literal["random", "batched"]) -> List[Optio
         raise ValueError("Invalid sequence generator type")
 
 
+def dir_size(path: Path) -> int:
+    """Returns the size of the directory in bytes"""
+    return sum(f.stat().st_size for f in path.glob("**/*") if f.is_file())
+
+
 @pytest.mark.performance
 def test_put_performance():
     with TemporaryDirectory() as tmp_dir:
@@ -105,11 +111,13 @@ def test_put_performance():
             if flush:
                 queue.flush()
             t2 = time.time()
+            path_size = dir_size(queue.data_path) if iter % FILE_SIZE_INTERVAL == 0 else None
 
             record.append(
                 {
                     "put_dt": t1 - t0,
                     "flush_dt": (t2 - t1) / flush_ammount if flush else None,
+                    "file_size": path_size,
                 }
             )
 
@@ -129,6 +137,9 @@ def test_put_performance():
     path.parent.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(record)
     describe(df).round(PRECISION).to_csv(RESULT_PATH / "put_performance_summary.csv")
+    file_size_df = df[["file_size"]].dropna()
+    file_size_df["file_size_mb"] = file_size_df["file_size"] / 1024**2
+    file_size_df["file_size_mb"].round(PRECISION).to_csv(RESULT_PATH / "put_performance_file_size.csv")
 
 
 @pytest.mark.performance
