@@ -64,7 +64,7 @@ class Project(WithBackend):
         mode: Connection mode in which the tracking will work.
             If left empty, the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
-            Possible values are `async`, `sync`, `read-only`, and `debug`.
+            Possible values are `async`, `sync`, `read-only`, and `disabled`.
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
 
     Returns:
@@ -106,7 +106,7 @@ class Project(WithBackend):
         project: Optional[str] = None,
         *,
         api_token: Optional[str] = None,
-        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "disabled"]] = None,
         proxies: Optional[dict] = None,
     ):
         mode = mode or Mode.READ_ONLY.value

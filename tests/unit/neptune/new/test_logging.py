@@ -64,7 +64,7 @@ class TestLogger:
 
         # then
         with assert_out(capsys, out_msg="", err_msg=""):
-            with neptune.init_run(mode="debug"):
+            with neptune.init_run(mode="disabled"):
                 ...
 
     def test_disabled_logger(self, capsys):

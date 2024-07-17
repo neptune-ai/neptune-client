@@ -52,7 +52,7 @@ def get_operation_processor(
             batch_size=int(os.environ.get(NEPTUNE_ASYNC_BATCH_SIZE) or "1000"),
             signal_queue=queue,
         )
-    elif mode in {Mode.SYNC, Mode.DEBUG}:
+    elif mode in {Mode.SYNC, Mode.DISABLED}:
         return SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
     elif mode == Mode.OFFLINE:
         return OfflineOperationProcessor(custom_id=custom_id, container_type=container_type, lock=lock)

@@ -126,37 +126,37 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.core.components.operation_storage.os.listdir", new=lambda path: [])
     @patch("neptune.core.components.metadata_file.open", mock_open())
     def test_entrypoint(self):
-        with init_run(mode="debug") as exp:
+        with init_run(mode="disabled") as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        with init_run(mode="debug", source_files=[]) as exp:
+        with init_run(mode="disabled", source_files=[]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        with init_run(mode="debug", source_files=["../*"]) as exp:
+        with init_run(mode="disabled", source_files=["../*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "main_dir/main.py")
 
-        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+        with init_run(mode="disabled", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main.py")
 
-        with init_run(mode="debug", source_files=["../other_dir/*"]) as exp:
+        with init_run(mode="disabled", source_files=["../other_dir/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
     @pytest.mark.skip(reason="File functionality disabled")
     @patch("neptune.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
-        with init_run(mode="debug") as exp:
+        with init_run(mode="disabled") as exp:
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
-        with init_run(mode="debug", source_files=[]) as exp:
+        with init_run(mode="disabled", source_files=[]) as exp:
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
-        with init_run(mode="debug", source_files=["../*"]) as exp:
+        with init_run(mode="disabled", source_files=["../*"]) as exp:
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
-        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+        with init_run(mode="disabled", source_files=["internal/*"]) as exp:
             with self.assertRaises(MissingFieldException):
                 exp["source_code/entrypoint"].fetch()
 
@@ -167,7 +167,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.objects.run.StderrCaptureBackgroundJob")
     @patch("neptune.objects.run.StdoutCaptureBackgroundJob")
     def test_monitoring_disabled_in_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
-        with init_run(mode="debug", monitoring_namespace="monitoring"):
+        with init_run(mode="disabled", monitoring_namespace="monitoring"):
             assert not stdout_job.called
             assert not stderr_job.called
             assert not hardware_job.called
@@ -180,7 +180,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.objects.run.StderrCaptureBackgroundJob")
     @patch("neptune.objects.run.StdoutCaptureBackgroundJob")
     def test_monitoring_enabled_in_non_interactive_python(self, stdout_job, stderr_job, hardware_job, traceback_job):
-        with init_run(mode="debug", monitoring_namespace="monitoring"):
+        with init_run(mode="disabled", monitoring_namespace="monitoring"):
             stdout_job.assert_called_once_with(attribute_name="monitoring/stdout")
             stderr_job.assert_called_once_with(attribute_name="monitoring/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring")
@@ -194,7 +194,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.objects.run.StdoutCaptureBackgroundJob")
     def test_monitoring_in_interactive_explicitly_enabled(self, stdout_job, stderr_job, hardware_job, traceback_job):
         with init_run(
-            mode="debug",
+            mode="disabled",
             monitoring_namespace="monitoring",
             capture_stdout=True,
             capture_stderr=True,
@@ -220,10 +220,10 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.core.components.operation_storage.os.listdir", new=lambda path: [])
     @patch("neptune.core.components.metadata_file.open", mock_open())
     def test_entrypoint_without_common_root(self):
-        with init_run(mode="debug", source_files=["../*"]) as exp:
+        with init_run(mode="disabled", source_files=["../*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
-        with init_run(mode="debug", source_files=["internal/*"]) as exp:
+        with init_run(mode="disabled", source_files=["internal/*"]) as exp:
             self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
@@ -233,7 +233,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.objects.run.StderrCaptureBackgroundJob")
     @patch("neptune.objects.run.StdoutCaptureBackgroundJob")
     def test_monitoring_namespace_based_on_hash(self, stdout_job, stderr_job, hardware_job, traceback_job):
-        with init_run(mode="debug"):
+        with init_run(mode="disabled"):
             stdout_job.assert_called_once_with(attribute_name="monitoring/some_hash/stdout")
             stderr_job.assert_called_once_with(attribute_name="monitoring/some_hash/stderr")
             hardware_job.assert_called_once_with(attribute_namespace="monitoring/some_hash")
@@ -245,7 +245,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.objects.run.os.getpid", lambda *vals: 1234)
     @patch("neptune.objects.run.threading.get_ident", lambda: 56789)
     def test_that_hostname_and_process_info_were_logged(self):
-        with init_run(mode="debug") as exp:
+        with init_run(mode="disabled") as exp:
             assert exp["monitoring/some_hash/hostname"].fetch() == "localhost"
             assert exp["monitoring/some_hash/pid"].fetch() == "1234"
             assert exp["monitoring/some_hash/tid"].fetch() == "56789"
@@ -253,18 +253,18 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.dependency_tracking.InferDependenciesStrategy.log_dependencies")
     def test_infer_dependency_strategy_called(self, mock_infer_method):
-        with init_run(mode="debug", dependencies="infer"):
+        with init_run(mode="disabled", dependencies="infer"):
             mock_infer_method.assert_called_once()
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     @patch("neptune.internal.utils.dependency_tracking.FileDependenciesStrategy.log_dependencies")
     def test_file_dependency_strategy_called(self, mock_file_method):
-        with init_run(mode="debug", dependencies="some_file_path.txt"):
+        with init_run(mode="disabled", dependencies="some_file_path.txt"):
             mock_file_method.assert_called_once()
 
     def test_monitoring_namespace_not_created_if_no_monitoring_enabled(self):
         with init_run(
-            mode="debug",
+            mode="disabled",
             capture_traceback=False,
             capture_stdout=False,
             capture_stderr=False,
@@ -277,7 +277,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         for perm in set(itertools.permutations([True, False, False, False])):
             ct, cso, cse, chm = perm
             with init_run(
-                mode="debug",
+                mode="disabled",
                 capture_traceback=ct,
                 capture_stdout=cso,
                 capture_stderr=cse,
@@ -293,11 +293,11 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             with self.subTest(is_valid=is_valid, length=length):
                 custom_run_id = "a" * length
                 if is_valid:
-                    init_run(mode="debug", custom_run_id=custom_run_id)
+                    init_run(mode="disabled", custom_run_id=custom_run_id)
                 else:
                     with self.assertRaises(NeptuneException):
-                        init_run(mode="debug", custom_run_id=custom_run_id)
+                        init_run(mode="disabled", custom_run_id=custom_run_id)
 
     def test_custom_run_id_generation(self):
-        with init_run(mode="debug") as run:
+        with init_run(mode="disabled") as run:
             assert isinstance(run._custom_run_id, str)

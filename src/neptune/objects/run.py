@@ -121,7 +121,7 @@ class Run(NeptuneObject):
         mode: Connection mode in which the tracking will work.
             If left empty, the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
-            Possible values are `async`, `sync`, `offline`, `read-only`, and `debug`.
+            Possible values are `async`, `sync`, `offline`, `read-only`, and `disabled`.
         name: Custom name for the run. You can add it as a column in the runs table ("sys/name").
             You can also edit the name in the app: Open the run menu and access the run information.
         description:  Custom description of the run. You can add it as a column in the runs table
@@ -262,7 +262,7 @@ class Run(NeptuneObject):
         project: Optional[str] = None,
         api_token: Optional[str] = None,
         custom_run_id: Optional[str] = None,
-        mode: Optional[Literal["async", "sync", "offline", "read-only", "debug"]] = None,
+        mode: Optional[Literal["async", "sync", "offline", "read-only", "disabled"]] = None,
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[List[str], str]] = None,
@@ -349,7 +349,7 @@ class Run(NeptuneObject):
         if with_id and custom_run_id:
             raise NeptuneRunResumeAndCustomIdCollision()
 
-        if mode == Mode.OFFLINE or mode == Mode.DEBUG:
+        if mode == Mode.OFFLINE or mode == Mode.DISABLED:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
         if self._custom_run_id is None and mode != Mode.READ_ONLY:

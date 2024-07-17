@@ -172,7 +172,7 @@ class NeptuneObject(WithBackend, ABC):
         if self._mode != Mode.READ_ONLY:
             self._write_initial_attributes()
 
-        self._startup(debug_mode=mode == Mode.DEBUG)
+        self._startup(mode=self._mode)
 
         try:
             os.register_at_fork(
@@ -425,10 +425,12 @@ class NeptuneObject(WithBackend, ABC):
             self._state = ContainerState.STOPPING
 
         ts = time.time()
-        self._logger.info("Shutting down background jobs, please wait a moment...")
-        self._bg_job.stop()
-        self._bg_job.join(seconds)
-        self._logger.info("Done!")
+
+        if self._mode != Mode.DISABLED:
+            self._logger.info("Shutting down background jobs, please wait a moment...")
+            self._bg_job.stop()
+            self._bg_job.join(seconds)
+            self._logger.info("Done!")
 
         sec_left = None if seconds is None else seconds - (time.time() - ts)
         self._op_processor.stop(sec_left)
@@ -620,8 +622,8 @@ class NeptuneObject(WithBackend, ABC):
         """
         raise NeptuneUnsupportedFunctionalityException
 
-    def _startup(self, debug_mode):
-        if not debug_mode:
+    def _startup(self, mode: Mode):
+        if mode != Mode.DISABLED:
             self._logger.info(f"Neptune initialized. Object identifier: {self._custom_id}")
 
         self.start()

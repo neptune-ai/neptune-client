@@ -69,7 +69,7 @@ class TestExperiment(unittest.TestCase):
 
     @classmethod
     def get_all_experiments(cls, flush_period=None):
-        kwargs = {"mode": "debug"}
+        kwargs = {"mode": "disabled"}
         if flush_period is not None:
             kwargs["flush_period"] = flush_period
 
@@ -270,8 +270,8 @@ class TestExperiment(unittest.TestCase):
 
     @pytest.mark.xfail(reason="Model is not supported", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_protected_paths(self):
-        model = init_model(key="MOD", mode="debug")
-        model_version = init_model_version(model=model["sys/id"].fetch(), mode="debug")
+        model = init_model(key="MOD", mode="disabled")
+        model_version = init_model_version(model=model["sys/id"].fetch(), mode="disabled")
         with self.assertRaises(NeptuneProtectedPathException):
             model_version["sys/stage"] = "production"
 

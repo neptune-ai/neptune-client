@@ -94,7 +94,7 @@ class Model(NeptuneObject):
         mode: Connection mode in which the tracking will work.
             If `None` (default), the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, "async" is used by default.
-            Possible values are `async`, `sync`, `read-only`, and `debug`.
+            Possible values are `async`, `sync`, `read-only`, and `disabled`.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
             (in seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
@@ -170,7 +170,7 @@ class Model(NeptuneObject):
         key: Optional[str] = None,
         project: Optional[str] = None,
         api_token: Optional[str] = None,
-        mode: Optional[Literal["async", "sync", "read-only", "debug"]] = None,
+        mode: Optional[Literal["async", "sync", "read-only", "disabled"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
@@ -197,7 +197,7 @@ class Model(NeptuneObject):
         if mode == Mode.OFFLINE:
             raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-        if mode == Mode.DEBUG:
+        if mode == Mode.DISABLED:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
         super().__init__(

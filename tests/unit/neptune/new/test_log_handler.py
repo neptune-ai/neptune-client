@@ -55,7 +55,7 @@ class TestLogHandler(unittest.TestCase):
             NeptuneHandler(run="PET-1")
 
     def test_default_attribute(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp)
             logger = logging.getLogger()
             logger.addHandler(handler)
@@ -66,7 +66,7 @@ class TestLogHandler(unittest.TestCase):
             self.assertListEqual(log_entries, ["error message", "test message"])
 
     def test_custom_monitoring_namespace(self):
-        with init_run(mode="debug", flush_period=0.5, monitoring_namespace="watching") as exp:
+        with init_run(mode="disabled", flush_period=0.5, monitoring_namespace="watching") as exp:
             handler = NeptuneHandler(run=exp)
             logger = logging.getLogger()
             logger.addHandler(handler)
@@ -78,7 +78,7 @@ class TestLogHandler(unittest.TestCase):
 
     @pytest.mark.skip("Temporarily disabled - will be brought back in 2.0.0")
     def test_custom_target_attribute(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp, path="logging/my/logger")
             logger = logging.getLogger()
             logger.addHandler(handler)
@@ -90,7 +90,7 @@ class TestLogHandler(unittest.TestCase):
             self.assertNotIn("python_logger", exp.get_structure()["monitoring"]["some_hash"])
 
     def test_custom_level(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp, level=logging.ERROR)
             logger = logging.getLogger()
             logger.addHandler(handler)
@@ -101,7 +101,7 @@ class TestLogHandler(unittest.TestCase):
             self.assertListEqual(log_entries, ["error message"])
 
     def test_formatter_works(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp)
             handler.setFormatter(logging.Formatter("%(levelname)s|%(name)s: %(message)s"))
             logger = logging.getLogger()
@@ -113,7 +113,7 @@ class TestLogHandler(unittest.TestCase):
             self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
 
     def test_log_level_works(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp)
             logger = logging.getLogger()
             logger.addHandler(handler)
@@ -127,7 +127,7 @@ class TestLogHandler(unittest.TestCase):
             self._log_messages(logger)
 
     def test_log_level_works_with_level(self):
-        with init_run(mode="debug", flush_period=0.5) as exp:
+        with init_run(mode="disabled", flush_period=0.5) as exp:
             handler = NeptuneHandler(run=exp, level=logging.WARNING)
             logger = logging.getLogger()
             logger.addHandler(handler)
