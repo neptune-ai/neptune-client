@@ -35,10 +35,9 @@ from typing import (
     Optional,
 )
 
+import neptune_api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
+import neptune_api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 from google.protobuf import timestamp_pb2
-
-import neptune.api.proto.neptune_pb.ingest.v1.common_pb2 as common_pb2
-import neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 as ingest_pb2
 
 
 class Serializable(abc.ABC):
@@ -59,8 +58,9 @@ class Run(Serializable):
             create=common_pb2.Run(
                 creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
                 run_id=self.custom_id,
+                experiment_id=self.custom_id,
+                family=self.custom_id,
             ),
-            api_key=b"",
         )
 
 
@@ -90,13 +90,9 @@ class LogFloats(Serializable):
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 step=step,
-                append={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(float64=first_item.value),
-                },
+                append={f"{self.path}": common_pb2.Value(float64=first_item.value)},
                 timestamp=timestamp_pb2.Timestamp(seconds=int(first_item.timestamp)),
             ),
-            api_key=b"",
         )
 
 
@@ -110,12 +106,8 @@ class AssignInteger(Serializable):
             project=run_op.project,
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
-                assign={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(int64=self.value),
-                },
+                assign={f"{self.path}": common_pb2.Value(int64=self.value)},
             ),
-            api_key=b"",
         )
 
 
@@ -129,12 +121,8 @@ class AssignFloat(Serializable):
             project=run_op.project,
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
-                assign={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(float64=self.value),
-                },
+                assign={f"{self.path}": common_pb2.Value(float64=self.value)},
             ),
-            api_key=b"",
         )
 
 
@@ -148,12 +136,8 @@ class AssignBool(Serializable):
             project=run_op.project,
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
-                assign={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(bool=self.value),
-                },
+                assign={f"{self.path}": common_pb2.Value(bool=self.value)},
             ),
-            api_key=b"",
         )
 
 
@@ -167,12 +151,8 @@ class AssignString(Serializable):
             project=run_op.project,
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
-                assign={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(string=self.value),
-                },
+                assign={f"{self.path}": common_pb2.Value(string=self.value)},
             ),
-            api_key=b"",
         )
 
 
@@ -187,11 +167,11 @@ class AssignDatetime(Serializable):
             run_id=run_op.run_id,
             update=common_pb2.UpdateRunSnapshot(
                 assign={
-                    "path": common_pb2.Value(string=self.path),
-                    "value": common_pb2.Value(timestamp=timestamp_pb2.Timestamp(seconds=int(self.value.timestamp()))),
+                    f"{self.path}": common_pb2.Value(
+                        timestamp=timestamp_pb2.Timestamp(seconds=int(self.value.timestamp()))
+                    )
                 },
             ),
-            api_key=b"",
         )
 
 

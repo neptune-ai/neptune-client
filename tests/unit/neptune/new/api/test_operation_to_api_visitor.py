@@ -2,17 +2,17 @@ from datetime import datetime
 
 import pytest
 from google.protobuf import timestamp_pb2
-
-import neptune.core.operations.operation as core_operations
-from neptune.api.operation_to_api import OperationToApiVisitor
-from neptune.api.operations import RunOperation
-from neptune.api.proto.neptune_pb.ingest.v1.common_pb2 import (
+from neptune_api.proto.neptune_pb.ingest.v1.common_pb2 import (
     Run,
     Step,
     UpdateRunSnapshot,
     Value,
 )
-from neptune.api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 import RunOperation as ProtoRunOperation
+from neptune_api.proto.neptune_pb.ingest.v1.pub.ingest_pb2 import RunOperation as ProtoRunOperation
+
+import neptune.core.operations.operation as core_operations
+from neptune.api.operation_to_api import OperationToApiVisitor
+from neptune.api.operations import RunOperation
 
 
 @pytest.fixture(scope="module")
@@ -27,12 +27,8 @@ def build_expected_atom_proto_run_operation(path: str, value: Value) -> ProtoRun
         create_missing_project=False,
         create=None,
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string=path),
-                "value": value,
-            },
+            assign={f"{path}": value},
         ),
-        api_key=b"",
     )
 
 
@@ -45,10 +41,7 @@ def build_expected_series_proto_run_operation(path: str, value: Value) -> ProtoR
         update=UpdateRunSnapshot(
             step=Step(whole=1, micro=0),
             timestamp=timestamp_pb2.Timestamp(seconds=1),
-            append={
-                "path": Value(string=path),
-                "value": value,
-            },
+            append={f"{path}": value},
         ),
         api_key=b"",
     )
@@ -68,15 +61,12 @@ def test_operation_to_api_visitor_run_creation():
     expected_create = Run(
         run_id="custom_id",
         creation_time=timestamp_pb2.Timestamp(seconds=int(created_at.timestamp())),
+        experiment_id="custom_id",
+        family="custom_id",
     )
 
     expected = ProtoRunOperation(
-        project="project",
-        run_id="run_id",
-        create_missing_project=False,
-        create=expected_create,
-        update=None,
-        api_key=b"",
+        project="project", run_id="run_id", create_missing_project=False, create=expected_create, update=None
     )
 
     assert res == expected
