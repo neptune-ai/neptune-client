@@ -115,17 +115,24 @@ def test_log_floats():
 
 
 def test_run_creation():
-    op = Run(datetime(2021, 1, 1), "run_id")
+    # given
+    created_at = datetime(2021, 1, 2, 3, 4, 5, 678062).timestamp()  # 1609553045.678062
 
-    run_op = RunOperation("project", "run_id", op)
+    # and
+    operation = Run(created_at=created_at, custom_id="run_id")
 
-    serialized = op.to_proto(run_op)
+    # and
+    run_operation = RunOperation(project="project", run_id="run_id", operation=operation)
 
+    # when
+    serialized = operation.to_proto(run_operation)
+
+    # then
     assert serialized == ingest_pb2.RunOperation(
         project="project",
         run_id="run_id",
         create=ProtoRun(
-            creation_time=timestamp_pb2.Timestamp(seconds=int(datetime(2021, 1, 1).timestamp())),
+            creation_time=timestamp_pb2.Timestamp(seconds=1609553045, nanos=int((created_at - 1609553045) * 1e9)),
             run_id="run_id",
             family="run_id",
             experiment_id="run_id",

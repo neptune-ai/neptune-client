@@ -75,7 +75,7 @@ class TestExperiment(unittest.TestCase):
 
         with patch.object(
             NeptuneObject,
-            "_async_create_run",
+            "_create_object",
             lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
         ):
             with init_run(**kwargs) as run:

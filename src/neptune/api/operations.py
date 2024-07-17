@@ -48,7 +48,7 @@ class Serializable(abc.ABC):
 
 @dataclass
 class Run(Serializable):
-    created_at: datetime
+    created_at: float
     custom_id: str
 
     def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
@@ -56,7 +56,9 @@ class Run(Serializable):
             project=run_op.project,
             run_id=run_op.run_id,
             create=common_pb2.Run(
-                creation_time=timestamp_pb2.Timestamp(seconds=int(self.created_at.timestamp())),
+                creation_time=timestamp_pb2.Timestamp(
+                    seconds=int(self.created_at), nanos=int((self.created_at - int(self.created_at)) * 1e9)
+                ),
                 run_id=self.custom_id,
                 experiment_id=self.custom_id,
                 family=self.custom_id,

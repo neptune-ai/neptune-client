@@ -17,7 +17,6 @@ __all__ = ["NeptuneObject"]
 
 import abc
 import atexit
-import datetime
 import itertools
 import logging
 import os
@@ -46,7 +45,7 @@ from neptune.attributes.namespace import NamespaceBuilder
 from neptune.core.operation_processors.factory import get_operation_processor
 from neptune.core.operation_processors.lazy_operation_processor_wrapper import LazyOperationProcessorWrapper
 from neptune.core.operation_processors.operation_processor import OperationProcessor
-from neptune.core.operations.operation import RunCreation
+from neptune.core.operations.operation import CreateRun
 from neptune.core.typing.id_formats import CustomId
 from neptune.envs import (
     NEPTUNE_ENABLE_DEFAULT_ASYNC_LAG_CALLBACK,
@@ -88,10 +87,7 @@ from neptune.internal.utils.utils import reset_internal_ssl_state
 from neptune.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.internal.warnings import warn_about_unsupported_type
 from neptune.objects.mode import Mode
-from neptune.objects.utils import (
-    ensure_not_stopped,
-    temporarily_disabled,
-)
+from neptune.objects.utils import ensure_not_stopped
 from neptune.objects.with_backend import WithBackend
 from neptune.types.type_casting import cast_value
 from neptune.utils import stop_synchronization_callback
@@ -163,7 +159,7 @@ class NeptuneObject(WithBackend, ABC):
             queue=self._signals_queue,
         )
 
-        self._async_create_run()
+        self._create_object()
 
         self._bg_job: BackgroundJobList = self._prepare_background_jobs_if_non_read_only()
         self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
@@ -182,20 +178,8 @@ class NeptuneObject(WithBackend, ABC):
         except AttributeError:
             pass
 
-    """
-    OpenSSL's internal random number generator does not properly handle forked processes.
-    Applications must change the PRNG state of the parent process if they use any SSL feature with os.fork().
-    Any successful call of RAND_add(), RAND_bytes() or RAND_pseudo_bytes() is sufficient.
-    https://docs.python.org/3/library/ssl.html#multi-processing
-
-    On Linux it looks like it does not help much but does not break anything either.
-    """
-
-    @temporarily_disabled
-    def _async_create_run(self):
-        """placeholder for async run creation"""
-        operation = RunCreation(created_at=datetime.datetime.now(), custom_id=self._custom_id)
-        self._op_processor.enqueue_operation(operation, wait=False)
+    def _create_object(self):
+        self._op_processor.enqueue_operation(CreateRun(created_at=time.time(), custom_id=self._custom_id), wait=False)
 
     @staticmethod
     def _get_callback(provided: Optional[NeptuneObjectCallback], env_name: str) -> Optional[NeptuneObjectCallback]:

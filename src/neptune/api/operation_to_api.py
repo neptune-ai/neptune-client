@@ -24,7 +24,7 @@ from neptune.core.operations import (
     AssignString,
     LogFloats,
 )
-from neptune.core.operations.operation import RunCreation
+from neptune.core.operations.operation import CreateRun
 from neptune.core.operations.operation_visitor import OperationVisitor
 from neptune.internal.utils.paths import path_to_str
 
@@ -51,5 +51,5 @@ class OperationToApiVisitor(OperationVisitor[Serializable]):
             [api_operations.FloatValue(val.ts, val.value, val.step) for val in op.values],
         )
 
-    def visit_run_creation(self, op: RunCreation) -> Serializable:
+    def visit_run_creation(self, op: CreateRun) -> Serializable:
         return api_operations.Run(op.created_at, op.custom_id)
