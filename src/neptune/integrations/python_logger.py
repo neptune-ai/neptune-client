@@ -45,7 +45,7 @@ class NeptuneHandler(logging.Handler):
         >>> from neptune.integrations.python_logger import NeptuneHandler
 
         >>> logger = logging.getLogger("root_experiment")
-        >>> logger.setLevel(logging.DISABLED)
+        >>> logger.setLevel(logging.DEBUG)
 
         >>> run = neptune.init_run(project="neptune/sandbox")
         >>> npt_handler = NeptuneHandler(run=run)
