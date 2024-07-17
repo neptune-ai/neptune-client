@@ -23,10 +23,7 @@ __all__ = [
 
 import os
 import platform
-from typing import (
-    Dict,
-    Tuple,
-)
+from typing import Tuple
 
 import requests
 from bravado.http_client import HttpClient
@@ -42,7 +39,6 @@ from neptune.internal.backends.utils import (
     build_operation_url,
     cache,
     create_swagger_client,
-    update_session_proxies,
     verify_client_version,
     verify_host_resolution,
     with_api_exceptions_handler,
@@ -89,15 +85,13 @@ def _set_pool_size(http_client: RequestsClient) -> None:
     _ = http_client
 
 
-def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
+def create_http_client(ssl_verify: bool) -> RequestsClient:
     http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
 
     _set_pool_size(http_client)
 
     _close_connections_on_fork(http_client.session)
-
-    update_session_proxies(http_client.session, proxies)
 
     user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
         lib_version=__version__,
@@ -113,14 +107,12 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 def _get_token_client(
     credentials: Credentials,
     ssl_verify: bool,
-    proxies: Dict[str, str],
     endpoint_url: str = None,
 ) -> SwaggerClientWrapper:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
-    if proxies is None:
-        verify_host_resolution(config_api_url)
+    verify_host_resolution(config_api_url)
 
-    token_http_client = create_http_client(ssl_verify, proxies)
+    token_http_client = create_http_client(ssl_verify)
 
     return SwaggerClientWrapper(
         create_swagger_client(
@@ -132,8 +124,8 @@ def _get_token_client(
 
 @cache
 @with_api_exceptions_handler
-def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
-    backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
+def get_client_config(credentials: Credentials, ssl_verify: bool) -> ClientConfig:
+    backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify)
 
     config = backend_client.api.getClientConfig(**DEFAULT_REQUEST_KWARGS).response().result
 
@@ -145,10 +137,8 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
 
 
 @cache
-def create_http_client_with_auth(
-    credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
-) -> Tuple[RequestsClient, ClientConfig]:
-    client_config = get_client_config(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
+def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool) -> Tuple[RequestsClient, ClientConfig]:
+    client_config = get_client_config(credentials=credentials, ssl_verify=ssl_verify)
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
 
@@ -159,17 +149,15 @@ def create_http_client_with_auth(
     if config_api_url != client_config.api_url:
         endpoint_url = build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH)
 
-    http_client = create_http_client(ssl_verify=ssl_verify, proxies=proxies)
+    http_client = create_http_client(ssl_verify=ssl_verify)
     http_client.authenticator = NeptuneAuthenticator(
         credentials.api_token,
         _get_token_client(
             credentials=credentials,
             ssl_verify=ssl_verify,
-            proxies=proxies,
             endpoint_url=endpoint_url,
         ),
         ssl_verify,
-        proxies,
     )
 
     return http_client, client_config

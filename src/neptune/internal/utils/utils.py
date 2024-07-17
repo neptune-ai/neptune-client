@@ -34,14 +34,6 @@ def reset_internal_ssl_state():
     ssl.RAND_bytes(100)
 
 
-def update_session_proxies(session, proxies):
-    if proxies is not None:
-        try:
-            session.proxies.update(proxies)
-        except (TypeError, ValueError):
-            raise ValueError("Wrong proxies format: {}".format(proxies))
-
-
 def is_ipython():
     try:
         import IPython

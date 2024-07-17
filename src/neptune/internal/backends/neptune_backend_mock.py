@@ -123,7 +123,7 @@ class NeptuneBackendMock(NeptuneBackend):
     PROJECT_KEY = SysId("OFFLINE")
     MODEL_SYS_ID = SysId("OFFLINE-MOD")
 
-    def __init__(self, credentials=None, proxies=None):
+    def __init__(self, credentials=None):
         self._project_id: UniqueId = UniqueId(str(uuid.uuid4()))
         self._containers: Dict[(UniqueId, ContainerType), ContainerStructure[Value, dict]] = dict()
         self._next_run = 1  # counter for runs

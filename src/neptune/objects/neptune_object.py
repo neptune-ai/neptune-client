@@ -113,7 +113,6 @@ class NeptuneObject(WithBackend, ABC):
         api_token: Optional[str] = None,
         mode: Mode = Mode.ASYNC,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
-        proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
@@ -132,7 +131,7 @@ class NeptuneObject(WithBackend, ABC):
                 f"Ensure that the `custom_run_id` argument doesn't exceed the limit."
             )
 
-        super().__init__(api_token=api_token, project=project, mode=mode, proxies=proxies)
+        super().__init__(api_token=api_token, project=project, mode=mode)
 
         self._flush_period = flush_period
         self._lock: threading.RLock = threading.RLock()

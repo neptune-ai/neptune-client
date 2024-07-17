@@ -26,16 +26,16 @@ from .neptune_backend_mock import NeptuneBackendMock
 from .offline_neptune_backend import OfflineNeptuneBackend
 
 
-def get_backend(mode: Mode, api_token: Optional[str] = None, proxies: Optional[dict] = None) -> NeptuneBackend:
+def get_backend(mode: Mode, api_token: Optional[str] = None) -> NeptuneBackend:
     if mode == Mode.ASYNC:
-        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
+        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token))
     elif mode == Mode.SYNC:
-        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
+        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token))
     elif mode == Mode.DISABLED:
         return NeptuneBackendMock()
     elif mode == Mode.OFFLINE:
         return OfflineNeptuneBackend()
     elif mode == Mode.READ_ONLY:
-        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
+        return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token))
     else:
         raise ValueError(f"mode should be one of {[m for m in Mode]}")

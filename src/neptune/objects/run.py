@@ -153,8 +153,6 @@ class Run(NeptuneObject):
             to ensure that it's unique for each process.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
             (in seconds).
-        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-            For more information about proxies, see the Requests documentation.
         capture_traceback: Whether to log the traceback of the run in case of an exception.
             The tracked metadata is stored in the "<monitoring_namespace>/traceback" namespace (see the
             `monitoring_namespace` parameter).
@@ -273,7 +271,6 @@ class Run(NeptuneObject):
         fail_on_exception: bool = True,
         monitoring_namespace: Optional[str] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
-        proxies: Optional[dict] = None,
         capture_traceback: bool = True,
         dependencies: Optional[Union[str, os.PathLike]] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
@@ -361,7 +358,6 @@ class Run(NeptuneObject):
             api_token=api_token,
             mode=mode,
             flush_period=flush_period,
-            proxies=proxies,
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,

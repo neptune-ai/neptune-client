@@ -28,14 +28,13 @@ from neptune.internal.websockets.websocket_client_adapter import (
 
 
 class ReconnectingWebsocket(object):
-    def __init__(self, url, oauth2_session, shutdown_event, proxies=None):
+    def __init__(self, url, oauth2_session, shutdown_event):
         self.url = url
         self.client = WebsocketClientAdapter()
         self._shutdown_event = shutdown_event
         self._oauth2_session = oauth2_session
         self._reconnect_counter = ReconnectCounter()
         self._token = oauth2_session.token
-        self._proxies = proxies
 
     def shutdown(self):
         self._shutdown_event.set()
@@ -76,7 +75,7 @@ class ReconnectingWebsocket(object):
             self._request_token_refresh()
             if self.client.connected:
                 self.client.shutdown()
-            self.client.connect(url=self.url, token=self._token, proxies=self._proxies)
+            self.client.connect(url=self.url, token=self._token)
         except Exception:
             self._shutdown_event.wait(self._reconnect_counter.calculate_delay())
 

@@ -28,7 +28,6 @@ from requests_oauthlib import OAuth2Session
 
 from neptune.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.exceptions import NeptuneInvalidApiTokenException
-from neptune.internal.utils.utils import update_session_proxies
 
 _decoding_options = {
     "verify_signature": False,
@@ -88,7 +87,7 @@ class NeptuneAuth(AuthBase):
 
 
 class NeptuneAuthenticator(Authenticator):
-    def __init__(self, api_token, backend_client, ssl_verify, proxies):
+    def __init__(self, api_token, backend_client, ssl_verify):
         super(NeptuneAuthenticator, self).__init__(host="")
 
         # We need to pass a lambda to be able to re-create fresh session at any time when needed
@@ -117,7 +116,6 @@ class NeptuneAuthenticator(Authenticator):
             )
             session.verify = ssl_verify
 
-            update_session_proxies(session, proxies)
             return session
 
         self.auth = NeptuneAuth(session_factory)

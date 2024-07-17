@@ -22,7 +22,6 @@ import typing
 from typing import (
     TYPE_CHECKING,
     Any,
-    Dict,
     Generator,
     Iterable,
     List,
@@ -140,15 +139,12 @@ ATOMIC_ATTRIBUTE_TYPES = {
 
 
 class HostedNeptuneBackend(NeptuneBackend):
-    def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
+    def __init__(self, credentials: Credentials):
         self.credentials = credentials
-        self.proxies = proxies
         self.missing_features = []
         self.use_proto = os.getenv(NEPTUNE_USE_PROTOCOL_BUFFERS, "False").lower() in {"true", "1", "y"}
 
-        http_client, client_config = create_http_client_with_auth(
-            credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
-        )
+        http_client, client_config = create_http_client_with_auth(credentials=credentials, ssl_verify=ssl_verify())
         self._http_client: "RequestsClient" = http_client
         self._client_config: "ClientConfig" = client_config
 
@@ -164,7 +160,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         return WebsocketsFactory(
             url=build_operation_url(base_url, f"/api/notifications/v1/runs/{project_id}/{run_id}/signal"),
             session=self._http_client.authenticator.auth.session,
-            proxies=self.proxies,
         )
 
     @with_api_exceptions_handler

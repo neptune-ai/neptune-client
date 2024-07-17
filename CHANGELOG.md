@@ -28,6 +28,7 @@
 - Removed management support ([#1816](https://github.com/neptune-ai/neptune-client/pull/1816))
 - Enforced passing step(s) to `log`, `append` and `extend` ([#1839](https://github.com/neptune-ai/neptune-client/pull/1839))
 - Connection mode `debug` renamed to `disabled` ([#1844](https://github.com/neptune-ai/neptune-client/pull/1844))
+- `proxies` parameter removed ([]())
 
 ### Features
 - Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))

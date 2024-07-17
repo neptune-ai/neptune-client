@@ -91,8 +91,6 @@ class ModelVersion(NeptuneObject):
             Possible values are `async`, `sync`, `read-only`, and `disabled`.
         flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered
             (in seconds).
-        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-            For more information about proxies, see the Requests documentation.
         async_lag_callback: Custom callback which is called if the lag between a queued operation and its
             synchronization with the server exceeds the duration defined by `async_lag_threshold`. The callback
             should take a ModelVersion object as the argument and can contain any custom code, such as calling
@@ -169,7 +167,6 @@ class ModelVersion(NeptuneObject):
         api_token: Optional[str] = None,
         mode: Optional[Literal["async", "sync", "read-only", "disabled"]] = None,
         flush_period: float = DEFAULT_FLUSH_PERIOD,
-        proxies: Optional[dict] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
         async_no_progress_callback: Optional[NeptuneObjectCallback] = None,
@@ -202,7 +199,6 @@ class ModelVersion(NeptuneObject):
             api_token=api_token,
             mode=mode,
             flush_period=flush_period,
-            proxies=proxies,
             async_lag_callback=async_lag_callback,
             async_lag_threshold=async_lag_threshold,
             async_no_progress_callback=async_no_progress_callback,

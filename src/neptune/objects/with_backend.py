@@ -45,15 +45,13 @@ class WithBackend(AbstractContextManager, abc.ABC):
         api_token: Optional[str] = None,
         project: Optional[str] = None,
         mode: Mode = Mode.ASYNC,
-        proxies: Optional[dict] = None,
     ) -> None:
         verify_type("api_token", api_token, (str, type(None)))
         verify_type("mode", mode, Mode)
-        verify_type("proxies", proxies, (dict, type(None)))
         verify_type("project", project, (str, type(None)))
 
         self._mode = mode
-        self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
+        self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token)
         self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
         self._project_api_object: Project = project_name_lookup(
             backend=self._backend,
