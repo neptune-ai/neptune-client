@@ -1,6 +1,13 @@
 from datetime import datetime
 
 from google.protobuf import timestamp_pb2
+from neptune_api.proto.neptune_pb.ingest.v1.common_pb2 import Run as ProtoRun
+from neptune_api.proto.neptune_pb.ingest.v1.common_pb2 import (
+    Step,
+    UpdateRunSnapshot,
+    Value,
+)
+from neptune_api.proto.neptune_pb.ingest.v1.pub import ingest_pb2
 
 from neptune.api.operations import (
     AssignBool,
@@ -13,13 +20,6 @@ from neptune.api.operations import (
     Run,
     RunOperation,
 )
-from neptune.api.proto.neptune_pb.ingest.v1.common_pb2 import Run as ProtoRun
-from neptune.api.proto.neptune_pb.ingest.v1.common_pb2 import (
-    Step,
-    UpdateRunSnapshot,
-    Value,
-)
-from neptune.api.proto.neptune_pb.ingest.v1.pub import ingest_pb2
 
 
 def test_assign_float():
@@ -32,12 +32,8 @@ def test_assign_float():
         project="project",
         run_id="run_id",
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string="path"),
-                "value": Value(float64=1.0),
-            },
+            assign={"path": Value(float64=1.0)},
         ),
-        api_key=b"",
     )
 
 
@@ -51,12 +47,8 @@ def test_assign_int():
         project="project",
         run_id="run_id",
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string="path"),
-                "value": Value(int64=1),
-            },
+            assign={"path": Value(int64=1)},
         ),
-        api_key=b"",
     )
 
 
@@ -70,12 +62,8 @@ def test_assign_bool():
         project="project",
         run_id="run_id",
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string="path"),
-                "value": Value(bool=True),
-            },
+            assign={"path": Value(bool=True)},
         ),
-        api_key=b"",
     )
 
 
@@ -89,12 +77,8 @@ def test_assign_string():
         project="project",
         run_id="run_id",
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string="path"),
-                "value": Value(string="value"),
-            },
+            assign={"path": Value(string="value")},
         ),
-        api_key=b"",
     )
 
 
@@ -108,12 +92,8 @@ def test_assign_datetime():
         project="project",
         run_id="run_id",
         update=UpdateRunSnapshot(
-            assign={
-                "path": Value(string="path"),
-                "value": Value(timestamp=timestamp_pb2.Timestamp(seconds=int(datetime(2021, 1, 1).timestamp()))),
-            },
+            assign={"path": Value(timestamp=timestamp_pb2.Timestamp(seconds=int(datetime(2021, 1, 1).timestamp())))},
         ),
-        api_key=b"",
     )
 
 
@@ -129,12 +109,8 @@ def test_log_floats():
         update=UpdateRunSnapshot(
             step=Step(whole=1, micro=0),
             timestamp=timestamp_pb2.Timestamp(seconds=1),
-            append={
-                "path": Value(string="path"),
-                "value": Value(float64=1.0),
-            },
+            append={"path": Value(float64=1.0)},
         ),
-        api_key=b"",
     )
 
 
@@ -151,6 +127,7 @@ def test_run_creation():
         create=ProtoRun(
             creation_time=timestamp_pb2.Timestamp(seconds=int(datetime(2021, 1, 1).timestamp())),
             run_id="run_id",
+            family="run_id",
+            experiment_id="run_id",
         ),
-        api_key=b"",
     )
