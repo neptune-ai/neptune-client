@@ -105,7 +105,7 @@ def run():
         "_async_create_run",
         lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
     ):
-        with init_run(mode="debug") as run:
+        with init_run(mode="disabled") as run:
             yield run
 
 

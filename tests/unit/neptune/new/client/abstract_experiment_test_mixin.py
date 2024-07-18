@@ -48,8 +48,8 @@ class AbstractExperimentTestMixin:
                 pass
 
     @pytest.mark.skip(reason="Backend not implemented")
-    def test_debug_mode(self):
-        with self.call_init(mode="debug") as exp:
+    def test_disabled_mode(self):
+        with self.call_init(mode="disabled") as exp:
             exp["some/variable"] = 13
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertNotIn(str(exp._custom_id), os.listdir(".neptune"))
@@ -131,18 +131,18 @@ class AbstractExperimentTestMixin:
         self.assertIn("NeptuneSynchronizationAlreadyStopped", stream.getvalue())
 
     def test_missing_attribute(self):
-        with self.call_init(mode="debug") as exp:
+        with self.call_init(mode="disabled") as exp:
             with self.assertRaises(MissingFieldException):
                 exp["non/existing/path"].fetch()
 
     def test_wrong_function(self):
-        with self.call_init(mode="debug") as exp:
+        with self.call_init(mode="disabled") as exp:
             with self.assertRaises(AttributeError):
                 exp["non/existing/path"].foo()
 
     @pytest.mark.skip(reason="File functionality disabled")
     def test_wrong_per_type_function(self):
-        with self.call_init(mode="debug") as exp:
+        with self.call_init(mode="disabled") as exp:
             exp["some/path"] = "foo"
             with self.assertRaises(TypeDoesNotSupportAttributeException):
                 exp["some/path"].download()

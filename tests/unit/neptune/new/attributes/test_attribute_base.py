@@ -37,7 +37,7 @@ class TestAttributeBase(unittest.TestCase):
             lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
         ):
             with Run(
-                mode="debug",
+                mode="disabled",
                 capture_stderr=False,
                 capture_traceback=False,
                 capture_stdout=False,

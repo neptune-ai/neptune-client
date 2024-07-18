@@ -20,7 +20,7 @@ from enum import Enum
 
 class Mode(str, Enum):
     OFFLINE = "offline"
-    DEBUG = "debug"
+    DISABLED = "disabled"
     ASYNC = "async"
     SYNC = "sync"
     READ_ONLY = "read-only"

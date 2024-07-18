@@ -31,7 +31,7 @@ def get_backend(mode: Mode, api_token: Optional[str] = None, proxies: Optional[d
         return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
     elif mode == Mode.SYNC:
         return HostedNeptuneBackend(credentials=Credentials.from_token(api_token=api_token), proxies=proxies)
-    elif mode == Mode.DEBUG:
+    elif mode == Mode.DISABLED:
         return NeptuneBackendMock()
     elif mode == Mode.OFFLINE:
         return OfflineNeptuneBackend()
