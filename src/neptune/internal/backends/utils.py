@@ -17,7 +17,6 @@ __all__ = [
     "verify_host_resolution",
     "create_swagger_client",
     "verify_client_version",
-    "update_session_proxies",
     "build_operation_url",
     "handle_server_raw_response_messages",
     "NeptuneResponseAdapter",
@@ -78,10 +77,7 @@ from bravado.requests_client import RequestsResponseAdapter
 from bravado_core.formatter import SwaggerFormat
 from bravado_core.util import RecursiveCallException
 from packaging.version import Version
-from requests import (
-    Response,
-    Session,
-)
+from requests import Response
 from requests.exceptions import ChunkedEncodingError
 from urllib3.exceptions import NewConnectionError
 
@@ -297,14 +293,6 @@ def verify_client_version(client_config: ClientConfig, version: Version):
             version,
             min_recommended,
         )
-
-
-def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
-    if proxies:
-        try:
-            session.proxies.update(proxies)
-        except (TypeError, ValueError):
-            raise ValueError(f"Wrong proxies format: {proxies}")
 
 
 def build_operation_url(base_api: str, operation_url: str) -> str:

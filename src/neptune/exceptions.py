@@ -679,9 +679,6 @@ The Neptune client library was not able to resolve hostname {underline}{host}{en
 What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer is supposed to be using a proxy to access the internet.
-      If so, you may want to use the {python}proxies{end} parameter of the {python}init_run(){end} function.
-      See https://docs.neptune.ai/api/universal/#proxies
-      and https://requests.readthedocs.io/en/latest/user/advanced/#proxies
     - Check the status of Neptune services: https://status.neptune.ai/
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help

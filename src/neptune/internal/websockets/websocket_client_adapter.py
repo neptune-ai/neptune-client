@@ -16,7 +16,6 @@
 
 import os
 import ssl
-import urllib.parse
 
 from websocket import (
     ABNF,
@@ -28,28 +27,15 @@ class WebsocketClientAdapter(object):
     def __init__(self):
         self._ws_client = None
 
-    def connect(self, url, token, proxies=None):
+    def connect(self, url, token):
         sslopt = None
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             sslopt = {"cert_reqs": ssl.CERT_NONE}
-
-        proto = url.split(":")[0].replace("ws", "http")
-        proxy = proxies[proto] if proxies and proto in proxies else os.getenv("{}_PROXY".format(proto.upper()))
-
-        if proxy:
-            proxy_split = urllib.parse.urlparse(proxy).netloc.split(":")
-            proxy_host = proxy_split[0]
-            proxy_port = proxy_split[1] if len(proxy_split) > 1 else "80" if proto == "http" else "443"
-        else:
-            proxy_host = None
-            proxy_port = None
 
         self._ws_client = create_connection(
             url,
             header=self._auth_header(token),
             sslopt=sslopt,
-            http_proxy_host=proxy_host,
-            http_proxy_port=proxy_port,
         )
 
     def recv(self):
