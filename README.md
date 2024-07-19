@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/Github-cover.png" width="1500" />
+    <img src="https://neptune.ai/wp-content/uploads/2024/07/Facebook-cover-image.png" width="1500" />
  <h1>neptune.ai</h1>
 </div>
 
@@ -21,9 +21,11 @@
 
 ## What is neptune.ai?
 
-Neptune is a lightweight experiment tracker for ML teams that struggle with debugging and reproducing experiments, sharing results, and messy model handover. <b>It offers a single place to track, compare, store, and collaborate on experiments and models.</b>
-
-With Neptune, Data Scientists can develop production-ready models faster, and ML Engineers can access model artifacts instantly in order to deploy them to production.
+Neptune is the most scalable experiment tracker for teams that train foundation models.  
+  
+Log millions of runs, view and compare them all in seconds. Effortlessly monitor and visualize months-long model training with multiple steps and branches.  
+  
+Deploy Neptune on your infra from day one, track 100% of your metadata and get to the next big AI breakthrough faster.
 &nbsp;
 
 <a href="https://www.youtube.com/watch?v=bQzgnqM5J6U"><b>Watch a 3min explainer video →</b></a>
