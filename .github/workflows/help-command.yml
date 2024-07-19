@@ -19,6 +19,5 @@ jobs:
             > /pre-commit-apply | Commit a pre-commit suggestions
             > /run-unit | Run unittests on full matrix *(win, mac, linux x py3.7-3.12)
             > /run-e2e | Run E2E tests on full matrix *(win, mac, linux x py3.7-3.12)
-            > /run-integrations | Run Client integrations on full matrix *(win, mac, linux x py3.7-3.12)
             > /run-all-test | Run all tests on full matrix *(win, mac, linux x py3.7-3.12)
           reaction-type: hooray

@@ -38,7 +38,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: "not integrations"
           name: "standard"
           report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
