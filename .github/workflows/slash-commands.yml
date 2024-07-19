@@ -16,7 +16,6 @@ jobs:
             help
             run-e2e
             run-unit
-            run-integrations
             run-all-test
           reaction-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
           token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}

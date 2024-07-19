@@ -32,6 +32,3 @@ jobs:
 
   invoke-e2e:
     uses: ./.github/workflows/e2e.yml
-
-  invoke-integrations:
-    uses: ./.github/workflows/integrations.yml
