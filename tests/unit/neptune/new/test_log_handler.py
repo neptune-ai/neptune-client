@@ -36,7 +36,7 @@ from neptune.objects.neptune_object import NeptuneObject
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 @patch("neptune.objects.run.generate_hash", lambda *vals, length: "some_hash")
 class TestLogHandler(unittest.TestCase):

@@ -368,7 +368,7 @@ class Run(NeptuneObject):
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._custom_id)
+        websockets_factory = self._legacy_backend.websockets_factory(self._project_api_object.id, self._custom_id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 

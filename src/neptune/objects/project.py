@@ -136,7 +136,7 @@ class Project(WithBackend):
             columns.add("sys/id")
             columns.add(sort_by)
 
-        leaderboard_entries = self._backend.search_leaderboard_entries(
+        leaderboard_entries = self._legacy_backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
             query=query,
@@ -148,7 +148,7 @@ class Project(WithBackend):
         )
 
         return Table(
-            backend=self._backend,
+            backend=self._legacy_backend,
             container_type=child_type,
             entries=leaderboard_entries,
         )

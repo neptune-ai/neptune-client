@@ -51,10 +51,10 @@ class WithBackend(AbstractContextManager, abc.ABC):
         verify_type("project", project, (str, type(None)))
 
         self._mode = mode
-        self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token)
+        self._legacy_backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token)
         self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
         self._project_api_object: Project = project_name_lookup(
-            backend=self._backend,
+            backend=self._legacy_backend,
             name=QualifiedName(self._project_qualified_name) if self._project_qualified_name is not None else None,
         )
         self._workspace: str = self._project_api_object.workspace
@@ -62,7 +62,7 @@ class WithBackend(AbstractContextManager, abc.ABC):
         self._project_id: UniqueId = self._project_api_object.id
 
     def close(self) -> None:
-        self._backend.close()
+        self._legacy_backend.close()
 
     def __exit__(
         self,

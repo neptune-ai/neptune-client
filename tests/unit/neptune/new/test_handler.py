@@ -83,7 +83,7 @@ def assert_logged_warning(capsys: pytest.CaptureFixture, msg: str = ""):
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestBaseAssign:
     @classmethod
@@ -177,7 +177,7 @@ class TestBaseAssign:
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestSeries:
     @classmethod
@@ -366,7 +366,7 @@ class TestSeries:
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestSet:
     @classmethod
@@ -418,7 +418,7 @@ class TestSet:
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestNamespace:
     @classmethod
@@ -541,7 +541,7 @@ class TestNamespace:
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestDelete:
     @classmethod
@@ -580,7 +580,7 @@ class TestDelete:
 @patch.object(
     NeptuneObject,
     "_create_object",
-    lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
+    lambda self: self._legacy_backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestOtherBehaviour:
     @classmethod
