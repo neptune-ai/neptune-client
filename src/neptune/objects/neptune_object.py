@@ -211,7 +211,7 @@ class NeptuneObject(WithBackend, ABC):
                     mode=self._mode,
                     container_id=self._custom_id,
                     container_type=self.container_type,
-                    backend=self._backend,
+                    backend=self._legacy_backend,
                     lock=self._lock,
                     flush_period=self._flush_period,
                     queue=self._signals_queue,
@@ -362,7 +362,7 @@ class NeptuneObject(WithBackend, ABC):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping(self._custom_id, self.container_type)
+        self._legacy_backend.ping(self._custom_id, self.container_type)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -584,7 +584,7 @@ class NeptuneObject(WithBackend, ABC):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._custom_id, self.container_type)
+            attributes = self._legacy_backend.get_attributes(self._custom_id, self.container_type)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)

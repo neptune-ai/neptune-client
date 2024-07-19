@@ -46,7 +46,7 @@ class Attribute:
 
     @property
     def _backend(self) -> NeptuneBackend:
-        return self._container._backend
+        return self._container._legacy_backend
 
     @property
     def _container_id(self) -> str:
