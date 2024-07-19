@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import (
+    datetime,
+    timezone,
+)
 
 import pytest
 from google.protobuf import timestamp_pb2
@@ -48,9 +51,16 @@ def build_expected_series_proto_run_operation(path: str, value: Value) -> ProtoR
 
 
 def test_operation_to_api_visitor_run_creation():
+    # given
     visitor = OperationToApiVisitor()
-    created_at = datetime(2021, 1, 1).timestamp()
-    run_creation = core_operations.CreateRun(created_at, "custom_id")
+
+    # and
+    created_at = datetime(2021, 1, 1, tzinfo=timezone.utc)
+    expected_creation_time = timestamp_pb2.Timestamp()
+    expected_creation_time.FromDatetime(created_at)
+
+    # and
+    run_creation = core_operations.CreateRun(created_at=created_at.timestamp(), custom_id="custom_id")
 
     # when
     api_operation = run_creation.accept(visitor)
@@ -63,10 +73,7 @@ def test_operation_to_api_visitor_run_creation():
         run_id="custom_id",
         experiment_id="custom_id",
         family="custom_id",
-        creation_time=timestamp_pb2.Timestamp(
-            seconds=int(created_at),
-            nanos=int((created_at - int(created_at)) * 1e9),
-        ),
+        creation_time=expected_creation_time,
     )
 
     expected = ProtoRunOperation(

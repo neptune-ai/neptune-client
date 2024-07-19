@@ -1,4 +1,7 @@
-from datetime import datetime
+from datetime import (
+    datetime,
+    timezone,
+)
 
 from google.protobuf import timestamp_pb2
 from neptune_api.proto.neptune_pb.ingest.v1.common_pb2 import Run as ProtoRun
@@ -116,10 +119,12 @@ def test_log_floats():
 
 def test_run_creation():
     # given
-    created_at = datetime(2021, 1, 2, 3, 4, 5, 678062).timestamp()  # 1609553045.678062
+    created_at = datetime(2021, 1, 2, 3, 4, 5, 678062, tzinfo=timezone.utc)
+    expected_creation_time = timestamp_pb2.Timestamp()
+    expected_creation_time.FromDatetime(created_at)
 
     # and
-    operation = Run(created_at=created_at, custom_id="run_id")
+    operation = Run(created_at=created_at.timestamp(), custom_id="run_id")
 
     # and
     run_operation = RunOperation(project="project", run_id="run_id", operation=operation)
@@ -132,7 +137,7 @@ def test_run_creation():
         project="project",
         run_id="run_id",
         create=ProtoRun(
-            creation_time=timestamp_pb2.Timestamp(seconds=1609553045, nanos=int((created_at - 1609553045) * 1e9)),
+            creation_time=expected_creation_time,
             run_id="run_id",
             family="run_id",
             experiment_id="run_id",

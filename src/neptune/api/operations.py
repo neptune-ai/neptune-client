@@ -52,13 +52,14 @@ class Run(Serializable):
     custom_id: str
 
     def to_proto(self, run_op: "RunOperation") -> ingest_pb2.RunOperation:
+        creation_time = timestamp_pb2.Timestamp()
+        creation_time.FromMicroseconds(int(self.created_at * 1e6))
+
         return ingest_pb2.RunOperation(
             project=run_op.project,
             run_id=run_op.run_id,
             create=common_pb2.Run(
-                creation_time=timestamp_pb2.Timestamp(
-                    seconds=int(self.created_at), nanos=int((self.created_at - int(self.created_at)) * 1e9)
-                ),
+                creation_time=creation_time,
                 run_id=self.custom_id,
                 experiment_id=self.custom_id,
                 family=self.custom_id,
