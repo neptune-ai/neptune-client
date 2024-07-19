@@ -77,8 +77,8 @@ from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
-    temporarily_disabled,
 )
+from neptune.objects.utils import temporarily_disabled
 from neptune.types import StringSeries
 
 if TYPE_CHECKING:

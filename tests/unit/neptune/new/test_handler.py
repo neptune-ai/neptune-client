@@ -82,7 +82,7 @@ def assert_logged_warning(capsys: pytest.CaptureFixture, msg: str = ""):
 @pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestBaseAssign:
@@ -176,7 +176,7 @@ class TestBaseAssign:
 
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestSeries:
@@ -365,7 +365,7 @@ class TestSeries:
 @pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestSet:
@@ -417,7 +417,7 @@ class TestSet:
 @pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestNamespace:
@@ -540,7 +540,7 @@ class TestNamespace:
 
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestDelete:
@@ -579,7 +579,7 @@ class TestDelete:
 @pytest.mark.skip(reason="Backend not implemented")
 @patch.object(
     NeptuneObject,
-    "_async_create_run",
+    "_create_object",
     lambda self: self._backend._create_container(self._custom_id, self.container_type, self._project_id),
 )
 class TestOtherBehaviour:

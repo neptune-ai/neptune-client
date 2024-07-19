@@ -22,7 +22,7 @@ __all__ = [
     "LogFloats",
     "Operation",
     "FieldOperation",
-    "RunCreation",
+    "CreateRun",
 ]
 
 import abc
@@ -81,8 +81,8 @@ class Operation(abc.ABC):
 
 
 @dataclass
-class RunCreation(Operation):
-    created_at: datetime
+class CreateRun(Operation):
+    created_at: float
     custom_id: str
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
