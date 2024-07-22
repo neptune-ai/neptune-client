@@ -36,7 +36,7 @@ repos:
         additional_dependencies:
           - types-click
           - mypy-protobuf
-          - neptune-api
+          - neptune-api==0.3.0
           - packaging
 exclude: |
   (?x)(
