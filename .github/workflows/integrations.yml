@@ -10,19 +10,24 @@ on:
   workflow_dispatch:
 
 env:
-  WORKSPACE_NAME: e2e-tests
-  NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+  NEPTUNE_PROJECT: ${{ vars.E2E_WORKSPACE_NAME }}/integrations
+  WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
+  NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
   SLACK_WEBHOOK_URL: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+  BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+  USER_USERNAME: ${{ vars.E2E_USER_USERNAME }}
+  ADMIN_USERNAME: ${{ vars.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ vars.E2E_SERVICE_ACCOUNT_NAME }}
 
 jobs:
   set_neptune_ref:
-    uses: ./.github/workflows/set_neptune_ref.yml
+    uses: ./.github/workflows/set-neptune-ref.yml
     with:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   fastai:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -30,10 +35,10 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, windows-latest ]
         include:
-          - python-version: "3.7.16"
-            os: macos-latest
+          - python-version: "3.8"
+            os: macos-13
           - python-version: "3.10"
-            os: macos-latest
+            os: macos-13
     runs-on: ${{ matrix.os }}
     name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -57,7 +62,7 @@ jobs:
   fastai-notify:
     needs: [fastai, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -66,15 +71,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.fastai.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   kedro:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -104,7 +110,7 @@ jobs:
   kedro-notify:
     needs: [kedro, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -113,15 +119,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.kedro.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   prophet:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -129,7 +136,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
@@ -156,7 +163,7 @@ jobs:
   prophet-notify:
     needs: [prophet, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -165,15 +172,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.prophet.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   keras:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -181,7 +189,7 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, windows-latest ]
         include:
-          - python-version: "3.7.16"
+          - python-version: "3.8"
             os: macos-latest
           - python-version: "3.10"
             os: macos-latest
@@ -208,7 +216,7 @@ jobs:
   keras-notify:
     needs: [keras, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -217,19 +225,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.keras.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   lightning:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -237,10 +242,10 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest ]
         include:
-          - python-version: "3.7.16"
-            os: macos-latest
+          - python-version: "3.8"
+            os: macos-13
           - python-version: "3.10"
-            os: macos-latest
+            os: macos-13
     runs-on: ${{ matrix.os }}
     name: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -262,7 +267,7 @@ jobs:
   lightning-notify:
     needs: [lightning, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -271,19 +276,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.lightning.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   huggingface:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -292,9 +294,9 @@ jobs:
         os: [ ubuntu-latest ]
         include:
           - python-version: "3.8"
-            os: macos-latest
+            os: macos-13
           - python-version: "3.10"
-            os: macos-latest
+            os: macos-13
     runs-on: ${{ matrix.os }}
     name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -316,7 +318,7 @@ jobs:
   huggingface-notify:
     needs: [huggingface, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -325,19 +327,17 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.huggingface.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   zenml:
     needs: [set_neptune_ref]
+    environment: "Production 1.x"
     env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
       ZENML_ANALYTICS_OPT_IN: false
     timeout-minutes: 75
     strategy:
@@ -366,7 +366,7 @@ jobs:
   zenml-notify:
     needs: [zenml, set_neptune_ref]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -375,19 +375,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.zenml.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   mosaicml:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -415,7 +412,7 @@ jobs:
   mosaicml-notify:
     needs: [ mosaicml, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -424,19 +421,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mosaicml.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   tensorflow-images:
     needs: [set_neptune_ref]
-    env:
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -467,7 +461,7 @@ jobs:
   tensorflow-images-notify:
     needs: [ tensorflow-images, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -476,15 +470,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.tensorflow-images.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   detectron2:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -514,7 +509,7 @@ jobs:
   detectron2-notify:
     needs: [ detectron2, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -523,15 +518,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.detectron2.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   rlang:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -560,7 +556,7 @@ jobs:
   rlang-notify:
     needs: [ rlang, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -569,21 +565,27 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.rlang.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   sklearn:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.9" ]
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest ]
+        include:
+          - python-version: "3.8"
+            os: macos-latest
+          - python-version: "3.9"
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     name: 'sklearn (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -607,7 +609,7 @@ jobs:
   sklearn-notify:
     needs: [ sklearn, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -616,21 +618,27 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sklearn.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   xgboost:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.9" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest ]
+        include:
+          - python-version: "3.8"
+            os: macos-latest
+          - python-version: "3.9"
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     name: 'xgboost (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -654,7 +662,7 @@ jobs:
   xgboost-notify:
     needs: [ xgboost, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -663,21 +671,27 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.xgboost.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   sacred:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, windows-latest ]
+        include:
+          - python-version: "3.8"
+            os: macos-latest
+          - python-version: "3.10"
+            os: macos-latest
     runs-on: ${{ matrix.os }}
     name: 'sacred (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -701,7 +715,7 @@ jobs:
   sacred-notify:
     needs: [ sacred, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -710,15 +724,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.sacred.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   mlflow:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -748,7 +763,7 @@ jobs:
   mlflow-notify:
     needs: [ mlflow, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -757,15 +772,16 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.mlflow.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
+
 
   airflow:
     needs: [set_neptune_ref]
-    env:
-      NEPTUNE_PROJECT: e2e-tests/integrations
+    environment: "Production 1.x"
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -801,7 +817,7 @@ jobs:
   airflow-notify:
     needs: [ airflow, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -810,7 +826,8 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/job-notify
+        uses: ./.github/actions/job-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
           job-status: ${{ needs.airflow.result }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}

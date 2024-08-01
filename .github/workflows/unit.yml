@@ -14,7 +14,7 @@ on:
 
 jobs:
   set_neptune_ref:
-    uses: ./.github/workflows/set_neptune_ref.yml
+    uses: ./.github/workflows/set-neptune-ref.yml
     with:
       workflow_call_input_neptune_ref: ${{ inputs.neptune_ref }}
   test:
@@ -26,8 +26,6 @@ jobs:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu, windows]
         include:
-          - python-version: "3.7.16"
-            os: macos
           - python-version: "3.8"
             os: macos
           - python-version: "3.9"
@@ -59,7 +57,7 @@ jobs:
   unit-tests-notify:
     needs: [ test, set_neptune_ref ]
     runs-on: ubuntu-latest
-    if: (success() || failure()) && github.ref == 'refs/heads/dev/1.x'
+    if: (success() || failure()) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -68,6 +66,7 @@ jobs:
           ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}
 
       - name: Notify
-        uses: ./.github/actions/workflow-notify
+        uses: ./.github/actions/workflow-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
+          neptune-ref: ${{ needs.set_neptune_ref.outputs.neptune_ref }}

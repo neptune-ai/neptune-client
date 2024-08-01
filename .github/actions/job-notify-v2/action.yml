@@ -1,0 +1,81 @@
+---
+name: Notify about job status
+description: Send Slack channel notification about job finish status
+inputs:
+  slack-webhook:
+    description: "A Slack Webhook to post a notification"
+    required: true
+  job-status:
+    description: "Finish status of a preceding job"
+    required: true
+  neptune-ref:
+    description: "A Neptune ref obtanied from set-netpune-ref workflow"
+    required: true
+
+
+
+runs:
+  using: "composite"
+  steps:
+    - uses: 8398a7/action-slack@v3
+      env:
+        SLACK_WEBHOOK_URL: ${{ inputs.slack-webhook }}
+      with:
+        status: custom
+        fields: job,repo,ref,author,took,message,eventName
+        custom_payload: |
+          {
+            blocks: [
+              {
+                type: 'section',
+                text: {
+                  type: 'mrkdwn',
+                  text: '${{ inputs.job-status }}' === 'success' ? ':sunglasses::100::fire: Github Workflow Finished With Success' : ':dizzy_face::clown_face::fire: Github Workflow Failed'
+                }
+              }
+            ],
+            attachments: [
+              {
+                color: '${{ inputs.job-status }}' === 'success' ? '#4bb543' : '#fc100d',
+                blocks: [
+                  {
+                    type: 'section',
+                    fields: [
+                      {
+                        type: 'mrkdwn',
+                        text: `*Author:*\n${process.env.AS_AUTHOR}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: '*Environment:*\n' + ('${{ inputs.neptune-ref }}' === 'refs/heads/master' ? 'Production' : ('${{ inputs.neptune-ref }}' === 'refs/heads/dev/1.x' ? 'Production 1.x' : 'Unknown'))
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Repo:*\n${process.env.AS_REPO}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Ref:*\n${'${{ inputs.neptune-ref }}'}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Message:*\n${process.env.AS_MESSAGE}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Job:*\n${process.env.AS_JOB}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Event:*\n${process.env.AS_EVENT_NAME}`
+                      },
+                      {
+                        type: 'mrkdwn',
+                        text: `*Took:*\n${process.env.AS_TOOK}`
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
