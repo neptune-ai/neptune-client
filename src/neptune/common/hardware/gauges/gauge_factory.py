@@ -21,6 +21,7 @@ from neptune.common.hardware.gauges.gauge_mode import GaugeMode
 from neptune.common.hardware.gauges.gpu import (
     GpuMemoryGauge,
     GpuUsageGauge,
+    GpuPowerGauge
 )
 from neptune.common.hardware.gauges.memory import (
     CGroupMemoryUsageGauge,
@@ -55,6 +56,10 @@ class GaugeFactory(object):
     @staticmethod
     def create_gpu_memory_gauge(card_index):
         return GpuMemoryGauge(card_index=card_index)
+    
+    @staticmethod
+    def create_gpu_power_gauge(card_index):
+        return GpuPowerGauge(card_index=card_index)
 
     def __invalid_gauge_mode_exception(self):
         return ValueError(str("Invalid gauge mode: {}".format(self.__gauge_mode)))

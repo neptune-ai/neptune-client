@@ -22,11 +22,13 @@ class SystemResourceInfo(object):
         memory_amount_bytes,
         gpu_card_indices,
         gpu_memory_amount_bytes,
+        gpu_max_power_watts,
     ):
         self.__cpu_core_count = cpu_core_count
         self.__memory_amount_bytes = memory_amount_bytes
         self.__gpu_card_indices = gpu_card_indices
         self.__gpu_memory_amount_bytes = gpu_memory_amount_bytes
+        self.__gpu_max_power_watts = gpu_max_power_watts
 
     @property
     def cpu_core_count(self):
@@ -47,6 +49,10 @@ class SystemResourceInfo(object):
     @property
     def gpu_memory_amount_bytes(self):
         return self.__gpu_memory_amount_bytes
+    
+    @property
+    def gpu_max_power_watts(self):
+        return self.__gpu_max_power_watts
 
     def has_gpu(self):
         return self.gpu_card_count > 0

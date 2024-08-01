@@ -33,12 +33,14 @@ class MetricsFactory(object):
         has_gpu = self.__system_resource_info.has_gpu()
         gpu_usage_metric = self.__create_gpu_usage_metric() if has_gpu else None
         gpu_memory_metric = self.__create_gpu_memory_metric() if has_gpu else None
+        gpu_power_usage_metric = self.__create_gpu_power_usage_metric() if has_gpu else None
 
         return MetricsContainer(
             cpu_usage_metric=cpu_usage_metric,
             memory_metric=memory_metric,
             gpu_usage_metric=gpu_usage_metric,
             gpu_memory_metric=gpu_memory_metric,
+            gpu_power_usage_metric=gpu_power_usage_metric,
         )
 
     def __create_cpu_usage_metric(self):
@@ -87,6 +89,20 @@ class MetricsFactory(object):
             max_value=self.__system_resource_info.gpu_memory_amount_bytes / float(BYTES_IN_ONE_GB),
             gauges=[
                 self.__gauge_factory.create_gpu_memory_gauge(card_index=card_index)
+                for card_index in self.__system_resource_info.gpu_card_indices
+            ],
+        )
+
+    def __create_gpu_power_usage_metric(self):
+        return Metric(
+            name="GPU - power usage",
+            description="{} cards".format(self.__system_resource_info.gpu_card_count),
+            resource_type=MetricResourceType.GPU_POWER,
+            unit="W",
+            min_value=0,
+            max_value=self.__system_resource_info.gpu_max_power_watts,
+            gauges=[
+                self.__gauge_factory.create_gpu_power_gauge(card_index=card_index)
                 for card_index in self.__system_resource_info.gpu_card_indices
             ],
         )
