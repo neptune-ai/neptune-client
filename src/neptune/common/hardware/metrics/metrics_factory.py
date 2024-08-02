@@ -99,7 +99,7 @@ class MetricsFactory(object):
             description="{} cards".format(self.__system_resource_info.gpu_card_count),
             resource_type=MetricResourceType.GPU_POWER,
             unit="W",
-            min_value=0,
+            min_value=0.0,
             max_value=self.__system_resource_info.gpu_max_power_watts,
             gauges=[
                 self.__gauge_factory.create_gpu_power_gauge(card_index=card_index)

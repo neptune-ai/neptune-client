@@ -40,6 +40,7 @@ class TestMetricReporterIntegration(unittest.TestCase):
                 memory_amount_bytes=64 * BYTES_IN_ONE_GB,
                 gpu_card_indices=[0, 2],
                 gpu_memory_amount_bytes=32 * BYTES_IN_ONE_GB,
+                gpu_max_power_watts=100.0,
             ),
         ).create_metrics_container()
 
@@ -110,6 +111,23 @@ class TestMetricReporterIntegration(unittest.TestCase):
                         running_time=expected_time,
                         gauge_name="2",
                         value=self.fixture.gpu1_memory_gauge_value,
+                    ),
+                ],
+            ),
+            MetricReport(
+                metric=self.metrics_container.gpu_power_usage_metric,
+                values=[
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name="0",
+                        value=self.fixture.gpu0_power_gauge_value,
+                    ),
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name="2",
+                        value=self.fixture.gpu1_power_gauge_value,
                     ),
                 ],
             ),
