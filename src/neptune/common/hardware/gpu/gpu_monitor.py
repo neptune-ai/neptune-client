@@ -22,9 +22,9 @@ from neptune.common.warnings import (
 from neptune.vendor.pynvml import (
     NVMLError,
     nvmlDeviceGetCount,
+    nvmlDeviceGetEnforcedPowerLimit,
     nvmlDeviceGetHandleByIndex,
     nvmlDeviceGetMemoryInfo,
-    nvmlDeviceGetPowerManagementLimit,
     nvmlDeviceGetPowerUsage,
     nvmlDeviceGetUtilizationRates,
     nvmlInit,
@@ -32,7 +32,6 @@ from neptune.vendor.pynvml import (
 
 
 class GPUMonitor(object):
-
     nvml_error_printed = False
 
     def get_card_count(self):
@@ -55,16 +54,14 @@ class GPUMonitor(object):
         def read_max_power_rating():
             return self.__nvml_get_or_else(
                 lambda: [
-                    nvmlDeviceGetPowerManagementLimit(nvmlDeviceGetHandleByIndex(card_index)) // WATTS_TO_MILLIWATTS
+                    nvmlDeviceGetEnforcedPowerLimit(nvmlDeviceGetHandleByIndex(card_index)) // WATTS_TO_MILLIWATTS
                     for card_index in range(nvmlDeviceGetCount())
                 ],
                 default=0,
             )
 
         power_rating_per_card = read_max_power_rating()
-        if not power_rating_per_card:
-            return 0
-        return max(power_rating_per_card)
+        return max(power_rating_per_card) if power_rating_per_card else 0
 
     def get_top_card_memory_in_bytes(self):
         def read_top_card_memory_in_bytes():
@@ -77,9 +74,7 @@ class GPUMonitor(object):
             )
 
         memory_per_card = read_top_card_memory_in_bytes()
-        if not memory_per_card:
-            return 0
-        return max(memory_per_card)
+        return max(memory_per_card) if memory_per_card else 0
 
     def __nvml_get_or_else(self, getter, default=None):
         try:

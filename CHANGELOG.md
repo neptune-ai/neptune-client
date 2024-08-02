@@ -2,7 +2,7 @@
 
 ### Changes
 - Added docstring for the `pop()` function ([#1781](https://github.com/neptune-ai/neptune-client/pull/1781))
-
+- Added GPU power consumption monitoring ([#1854](https://github.com/neptune-ai/neptune-client/pull/1854))
 
 ## neptune 1.10.4
 

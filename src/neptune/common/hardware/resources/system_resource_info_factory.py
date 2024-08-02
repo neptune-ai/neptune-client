@@ -35,7 +35,7 @@ class SystemResourceInfoFactory(object):
         elif gauge_mode == GaugeMode.CGROUP:
             return self.__create_cgroup_resource_info()
         else:
-            raise ValueError(str("Unknown gauge mode: {}".format(gauge_mode)))
+            raise ValueError(f"Unknown gauge mode: {gauge_mode}")
 
     def __create_whole_system_resource_info(self):
         return SystemResourceInfo(

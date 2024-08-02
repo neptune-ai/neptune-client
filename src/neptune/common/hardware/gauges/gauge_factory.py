@@ -62,4 +62,4 @@ class GaugeFactory(object):
         return GpuPowerGauge(card_index=card_index)
 
     def __invalid_gauge_mode_exception(self):
-        return ValueError(str("Invalid gauge mode: {}".format(self.__gauge_mode)))
+        return ValueError(f"Invalid gauge mode: {self.__gauge_mode}")
