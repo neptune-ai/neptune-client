@@ -49,7 +49,7 @@ class SystemResourceInfo(object):
     @property
     def gpu_memory_amount_bytes(self):
         return self.__gpu_memory_amount_bytes
-    
+
     @property
     def gpu_max_power_watts(self):
         return self.__gpu_max_power_watts
