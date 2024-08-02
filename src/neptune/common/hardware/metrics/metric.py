@@ -96,4 +96,5 @@ class MetricResourceType(object):
     RAM = "MEMORY"
     GPU = "GPU"
     GPU_RAM = "GPU_MEMORY"
+    GPU_POWER = "GPU_POWER"
     OTHER = "OTHER"
