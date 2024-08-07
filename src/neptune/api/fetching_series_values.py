@@ -34,10 +34,7 @@ PointValue = TypeVar("PointValue", StringPointValue, FloatPointValue)
 
 
 def fetch_series_values(
-    getter: Callable[..., Any],
-    path: str,
-    step_size: int = 1000,
-    progress_bar: Optional[ProgressBarType] = None,
+    getter: Callable[..., Any], path: str, step_size: int = 1000, progress_bar: Optional[ProgressBarType] = None
 ) -> Iterator[PointValue]:
     first_batch = getter(from_step=None, limit=1)
     data_count = 0
