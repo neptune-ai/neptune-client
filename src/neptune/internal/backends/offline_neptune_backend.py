@@ -112,7 +112,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
-        include_inherited: bool = True,
     ) -> StringSeriesValues:
         raise NeptuneOfflineModeFetchException
 
@@ -124,6 +123,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         limit: int,
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
+        include_inherited: bool = True,
     ) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 

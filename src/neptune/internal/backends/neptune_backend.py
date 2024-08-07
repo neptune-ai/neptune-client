@@ -262,7 +262,6 @@ class NeptuneBackend:
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
-        include_inherited: bool = True,
     ) -> StringSeriesValues: ...
 
     @abc.abstractmethod
@@ -274,6 +273,7 @@ class NeptuneBackend:
         limit: int,
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
+        include_inherited: bool = True,
     ) -> FloatSeriesValues: ...
 
     @abc.abstractmethod
