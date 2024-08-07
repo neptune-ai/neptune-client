@@ -17,6 +17,7 @@ __all__ = ["FetchableSeries"]
 
 import abc
 from datetime import datetime
+from functools import partial
 from typing import (
     Dict,
     Generic,
@@ -50,14 +51,22 @@ def make_row(entry: Row, include_timestamp: bool = True) -> Dict[str, Union[str,
 
 class FetchableSeries(Generic[Row]):
     @abc.abstractmethod
-    def _fetch_values_from_backend(self, limit: int, from_step: Optional[float] = None) -> Row: ...
+    def _fetch_values_from_backend(
+        self, limit: int, from_step: Optional[float] = None, include_inherited: bool = True
+    ) -> Row: ...
 
-    def fetch_values(self, *, include_timestamp: bool = True, progress_bar: Optional[ProgressBarType] = None):
+    def fetch_values(
+        self,
+        *,
+        include_timestamp: bool = True,
+        progress_bar: Optional[ProgressBarType] = None,
+        include_inherited: bool = True,
+    ):
         import pandas as pd
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         data = fetch_series_values(
-            getter=self._fetch_values_from_backend,
+            getter=partial(self._fetch_values_from_backend, include_inherited=include_inherited),
             path=path,
             progress_bar=progress_bar,
         )

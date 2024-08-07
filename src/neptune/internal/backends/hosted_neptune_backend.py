@@ -994,6 +994,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         limit: int,
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
+        include_inherited: bool = True,
     ) -> FloatSeriesValues:
         use_proto = use_proto if use_proto is not None else self.use_proto
 
@@ -1003,6 +1004,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             "limit": limit,
             "skipToStep": from_step,
         }
+
+        if not include_inherited:
+            params["lineage"] = "NONE"
+
         try:
             if use_proto:
                 result = (
