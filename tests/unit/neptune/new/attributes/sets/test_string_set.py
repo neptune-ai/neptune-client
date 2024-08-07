@@ -146,7 +146,7 @@ class TestStringSet(TestAttributeBase):
             var.clear(wait=wait)
             processor.enqueue_operation.assert_called_with(ClearStringSet(path), wait=wait)
 
-    @pytest.mark.xfail(reason="StringSet remove disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip("Backend not implemented")
     def test_get(self):
         with self._exp() as exp:
             var = StringSet(exp, self._random_path())

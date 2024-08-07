@@ -30,6 +30,7 @@
 
 ### Features
 - Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))
+- Added support for `sync` mode ([#1835](https://github.com/neptune-ai/neptune-client/pull/1835))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
