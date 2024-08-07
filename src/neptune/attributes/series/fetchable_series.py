@@ -17,6 +17,7 @@ __all__ = ["FetchableSeries"]
 
 import abc
 from datetime import datetime
+from functools import partial
 from typing import (
     Dict,
     Generic,
@@ -65,10 +66,9 @@ class FetchableSeries(Generic[Row]):
 
         path = path_to_str(self._path) if hasattr(self, "_path") else ""
         data = fetch_series_values(
-            getter=self._fetch_values_from_backend,
+            getter=partial(self._fetch_values_from_backend, include_inherited=include_inherited),
             path=path,
             progress_bar=progress_bar,
-            include_inherited=include_inherited,
         )
 
         rows = dict((n, make_row(entry=entry, include_timestamp=include_timestamp)) for (n, entry) in enumerate(data))

@@ -38,9 +38,8 @@ def fetch_series_values(
     path: str,
     step_size: int = 1000,
     progress_bar: Optional[ProgressBarType] = None,
-    include_inherited: bool = True,
 ) -> Iterator[PointValue]:
-    first_batch = getter(from_step=None, limit=1, include_inherited=include_inherited)
+    first_batch = getter(from_step=None, limit=1)
     data_count = 0
     total = first_batch.total
     last_step_value = (first_batch.values[-1].step - 1) if first_batch.values else None
@@ -54,7 +53,7 @@ def fetch_series_values(
         bar.update(by=data_count, total=total)
 
         while data_count < first_batch.total:
-            batch = getter(from_step=last_step_value, limit=step_size, include_inherited=include_inherited)
+            batch = getter(from_step=last_step_value, limit=step_size)
 
             bar.update(by=len(batch.values), total=total)
 
