@@ -457,6 +457,7 @@ class NeptuneBackendMock(NeptuneBackend):
         path: List[str],
         limit: int,
         from_step: Optional[float] = None,
+        include_inherited: bool = True,
     ) -> StringSeriesValues:
         val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesValues(
