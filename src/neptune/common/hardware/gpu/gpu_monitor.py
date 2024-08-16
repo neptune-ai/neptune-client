@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from neptune.common.hardware.constants import MILLIWATTS_IN_ONE_WATT
 from neptune.common.warnings import (
     NeptuneWarning,
     warn_once,
@@ -51,7 +52,7 @@ class GPUMonitor(object):
         def read_max_power_rating():
             return self.__nvml_get_or_else(
                 lambda: [
-                    nvmlDeviceGetEnforcedPowerLimit(nvmlDeviceGetHandleByIndex(card_index))
+                    nvmlDeviceGetEnforcedPowerLimit(nvmlDeviceGetHandleByIndex(card_index)) // MILLIWATTS_IN_ONE_WATT
                     for card_index in range(nvmlDeviceGetCount())
                 ],
                 default=0,
