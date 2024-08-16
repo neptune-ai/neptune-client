@@ -15,7 +15,7 @@
 #
 __all__ = ["GPUMonitor"]
 
-from neptune.common.hardware.constants import WATTS_TO_MILLIWATTS
+from neptune.common.hardware.constants import MILLIWATTS_IN_ONE_WATT
 from neptune.internal.utils.logger import get_logger
 from neptune.vendor.pynvml import (
     NVMLError,
@@ -60,14 +60,14 @@ class GPUMonitor(object):
 
     def get_card_power_usage(self, card_index):
         return self.__nvml_get_or_else(
-            lambda: int(nvmlDeviceGetPowerUsage(nvmlDeviceGetHandleByIndex(card_index)) // WATTS_TO_MILLIWATTS)
+            lambda: int(nvmlDeviceGetPowerUsage(nvmlDeviceGetHandleByIndex(card_index)) // MILLIWATTS_IN_ONE_WATT)
         )
 
     def get_card_max_power_rating(self):
         def read_max_power_rating():
             return self.__nvml_get_or_else(
                 lambda: [
-                    nvmlDeviceGetEnforcedPowerLimit(nvmlDeviceGetHandleByIndex(card_index)) // WATTS_TO_MILLIWATTS
+                    nvmlDeviceGetEnforcedPowerLimit(nvmlDeviceGetHandleByIndex(card_index)) // MILLIWATTS_IN_ONE_WATT
                     for card_index in range(nvmlDeviceGetCount())
                 ],
                 default=0,

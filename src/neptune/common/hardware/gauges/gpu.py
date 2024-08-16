@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.hardware.constants import BYTES_IN_ONE_GB
+from neptune.common.hardware.constants import (
+    BYTES_IN_ONE_GB,
+    MILLIWATTS_IN_ONE_WATT,
+)
 from neptune.common.hardware.gauges.gauge import Gauge
 from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 
@@ -33,7 +36,7 @@ class GpuUsageGauge(Gauge):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
 
     def __repr__(self):
-        return str("GpuUsageGauge")
+        return "GpuUsageGauge"
 
 
 class GpuMemoryGauge(Gauge):
@@ -51,7 +54,7 @@ class GpuMemoryGauge(Gauge):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
 
     def __repr__(self):
-        return str("GpuMemoryGauge")
+        return "GpuMemoryGauge"
 
 
 class GpuPowerGauge(Gauge):
@@ -63,10 +66,10 @@ class GpuPowerGauge(Gauge):
         return str(self.card_index)
 
     def value(self):
-        return self.__gpu_monitor.get_card_power_usage(self.card_index)
+        return self.__gpu_monitor.get_card_power_usage(self.card_index) // MILLIWATTS_IN_ONE_WATT
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
 
     def __repr__(self):
-        return str("GpuPowerGauge")
+        return "GpuPowerGauge"
