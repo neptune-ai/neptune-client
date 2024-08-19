@@ -21,6 +21,7 @@ from neptune.common.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.common.hardware.gauges.gauge_factory import (
     GaugeFactory,
     GpuMemoryGauge,
+    GpuPowerGauge,
     GpuUsageGauge,
     SystemMemoryUsageGauge,
 )
@@ -44,6 +45,7 @@ class TestMetricsFactory(unittest.TestCase):
             memory_amount_bytes=16 * BYTES_IN_ONE_GB,
             gpu_card_indices=[0, 1],
             gpu_memory_amount_bytes=8 * BYTES_IN_ONE_GB,
+            gpu_max_power_watts=100.0,
         )
         # and
         metrics_factory = MetricsFactory(self.gauge_factory, system_resource_info)
@@ -103,6 +105,19 @@ class TestMetricsFactory(unittest.TestCase):
             ),
             metrics_container.gpu_memory_metric,
         )
+        # and
+        self.assertEqual(
+            Metric(
+                name="GPU - power usage",
+                description="2 cards",
+                resource_type=MetricResourceType.GPU_POWER,
+                unit="W",
+                min_value=0.0,
+                max_value=100.0,
+                gauges=[GpuPowerGauge(card_index=0), GpuPowerGauge(card_index=1)],
+            ),
+            metrics_container.gpu_power_usage_metric,
+        )
 
     def test_create_metrics_without_gpu(self):
         # given
@@ -111,6 +126,7 @@ class TestMetricsFactory(unittest.TestCase):
             memory_amount_bytes=16 * BYTES_IN_ONE_GB,
             gpu_card_indices=[],
             gpu_memory_amount_bytes=0,
+            gpu_max_power_watts=0.0,
         )
         # and
         metrics_factory = MetricsFactory(self.gauge_factory, system_resource_info)
@@ -137,6 +153,7 @@ class TestMetricsFactory(unittest.TestCase):
             memory_amount_bytes=2 * BYTES_IN_ONE_GB,
             gpu_card_indices=[],
             gpu_memory_amount_bytes=0,
+            gpu_max_power_watts=0.0,
         )
         # and
         metrics_factory = MetricsFactory(self.gauge_factory, system_resource_info)

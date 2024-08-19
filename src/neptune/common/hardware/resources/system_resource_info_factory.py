@@ -35,7 +35,7 @@ class SystemResourceInfoFactory(object):
         elif gauge_mode == GaugeMode.CGROUP:
             return self.__create_cgroup_resource_info()
         else:
-            raise ValueError(str("Unknown gauge mode: {}".format(gauge_mode)))
+            raise ValueError(f"Unknown gauge mode: {gauge_mode}")
 
     def __create_whole_system_resource_info(self):
         return SystemResourceInfo(
@@ -43,6 +43,7 @@ class SystemResourceInfoFactory(object):
             memory_amount_bytes=self.__system_monitor.virtual_memory().total,
             gpu_card_indices=self.__gpu_card_indices_provider.get(),
             gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes(),
+            gpu_max_power_watts=self.__gpu_monitor.get_card_max_power_rating(),
         )
 
     def __create_cgroup_resource_info(self):
@@ -53,4 +54,5 @@ class SystemResourceInfoFactory(object):
             memory_amount_bytes=cgroup_monitor.get_memory_limit_in_bytes(),
             gpu_card_indices=self.__gpu_card_indices_provider.get(),
             gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes(),
+            gpu_max_power_watts=self.__gpu_monitor.get_card_max_power_rating(),
         )

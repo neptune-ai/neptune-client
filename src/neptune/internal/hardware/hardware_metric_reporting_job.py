@@ -26,6 +26,7 @@ from typing import (
 
 from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.common.hardware.gauges.gauge_mode import GaugeMode
+from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
 from neptune.common.hardware.metrics.reports.metric_reporter import MetricReporter
 from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
@@ -33,7 +34,6 @@ from neptune.common.hardware.resources.system_resource_info_factory import Syste
 from neptune.common.hardware.system.system_monitor import SystemMonitor
 from neptune.common.utils import in_docker
 from neptune.internal.background_job import BackgroundJob
-from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.internal.threading.daemon import Daemon
 from neptune.internal.utils.logger import get_logger
 from neptune.types.series import FloatSeries

@@ -1,8 +1,10 @@
-## [UNRELEASED] neptune 1.10.5
+## neptune 1.11.0
+
+### Features
+- Added GPU power consumption monitoring ([#1854](https://github.com/neptune-ai/neptune-client/pull/1854))
 
 ### Changes
 - Added docstring for the `pop()` function ([#1781](https://github.com/neptune-ai/neptune-client/pull/1781))
-
 
 ## neptune 1.10.4
 

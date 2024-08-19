@@ -22,6 +22,7 @@ from neptune.common.hardware.gauges.gauge_factory import (
 )
 from neptune.common.hardware.gauges.gpu import (
     GpuMemoryGauge,
+    GpuPowerGauge,
     GpuUsageGauge,
 )
 
@@ -38,6 +39,9 @@ class GaugesFixture(object):
 
         self.gpu0_memory_gauge_value = 5.0
         self.gpu1_memory_gauge_value = 6.0
+
+        self.gpu0_power_gauge_value = 15.0
+        self.gpu1_power_gauge_value = 25.0
 
         cpu_gauge = MagicMock(wraps=SystemCpuUsageGauge())
         cpu_gauge.value.return_value = self.cpu_gauge_value
@@ -64,4 +68,13 @@ class GaugesFixture(object):
         gpu_memory_gauge_2.value.return_value = self.gpu1_memory_gauge_value
         self.gauge_factory.create_gpu_memory_gauge.side_effect = lambda card_index: (
             gpu_memory_gauge_0 if card_index == 0 else gpu_memory_gauge_2
+        )
+
+        gpu_power_gauge_0 = MagicMock(wraps=GpuPowerGauge(card_index=0))
+        gpu_power_gauge_0.value.return_value = self.gpu0_power_gauge_value
+
+        gpu_power_gauge_2 = MagicMock(wraps=GpuPowerGauge(card_index=2))
+        gpu_power_gauge_2.value.return_value = self.gpu1_power_gauge_value
+        self.gauge_factory.create_gpu_power_gauge.side_effect = lambda card_index: (
+            gpu_power_gauge_0 if card_index == 0 else gpu_power_gauge_2
         )
