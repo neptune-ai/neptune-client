@@ -20,7 +20,10 @@ from mock import (
     patch,
 )
 
-from neptune.common.hardware.constants import BYTES_IN_ONE_GB
+from neptune.common.hardware.constants import (
+    BYTES_IN_ONE_GB,
+    MILLIWATTS_IN_ONE_WATT,
+)
 from neptune.common.hardware.gauges.gpu import (
     GpuMemoryGauge,
     GpuPowerGauge,
@@ -79,7 +82,7 @@ class TestGPUGauges(unittest.TestCase):
         gauge = GpuPowerGauge(card_index=self.card_index)
         # and
         gpu_power_info = MagicMock()
-        gpu_power_info.used = 15.0
+        gpu_power_info.used = 15.0 * MILLIWATTS_IN_ONE_WATT
         nvmlDeviceGetPowerUsage.side_effect = lambda handle: (
             gpu_power_info if handle == self.gpu_card_handle else None
         )
