@@ -46,7 +46,7 @@ class GPUMonitor(object):
         return self.__nvml_get_or_else(lambda: nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).used)
 
     def get_card_power_usage(self, card_index):
-        return self.__nvml_get_or_else(lambda: nvmlDeviceGetPowerUsage(nvmlDeviceGetHandleByIndex(card_index)).used)
+        return self.__nvml_get_or_else(lambda: nvmlDeviceGetPowerUsage(nvmlDeviceGetHandleByIndex(card_index)))
 
     def get_card_max_power_rating(self):
         def read_max_power_rating():

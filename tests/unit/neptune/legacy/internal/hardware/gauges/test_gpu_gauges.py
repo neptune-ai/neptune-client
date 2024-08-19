@@ -83,9 +83,7 @@ class TestGPUGauges(unittest.TestCase):
         # and
         gpu_power_info = MagicMock()
         gpu_power_info.used = 15.0 * MILLIWATTS_IN_ONE_WATT
-        nvmlDeviceGetPowerUsage.side_effect = lambda handle: (
-            gpu_power_info if handle == self.gpu_card_handle else None
-        )
+        nvmlDeviceGetPowerUsage.return_value = gpu_power_info.used
 
         # when
         power_watts = gauge.value()
