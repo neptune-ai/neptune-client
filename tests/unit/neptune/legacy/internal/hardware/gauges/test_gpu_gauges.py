@@ -73,23 +73,23 @@ class TestGPUGauges(unittest.TestCase):
         self.assertEqual(memory_gb, 3.0)
         self.assertEqual(float, type(memory_gb))
 
-        @patch("neptune.common.hardware.gpu.gpu_monitor.nvmlDeviceGetPowerUsage")
-        def test_gpu_power_gauge(self, nvmlDeviceGetPowerUsage):
-            # given
-            gauge = GpuPowerGauge(card_index=self.card_index)
-            # and
-            gpu_power_info = MagicMock()
-            gpu_power_info.used = 15.0
-            nvmlDeviceGetPowerUsage.side_effect = lambda handle: (
-                gpu_power_info if handle == self.gpu_card_handle else None
-            )
+    @patch("neptune.common.hardware.gpu.gpu_monitor.nvmlDeviceGetPowerUsage")
+    def test_gpu_power_gauge(self, nvmlDeviceGetPowerUsage):
+        # given
+        gauge = GpuPowerGauge(card_index=self.card_index)
+        # and
+        gpu_power_info = MagicMock()
+        gpu_power_info.used = 15.0
+        nvmlDeviceGetPowerUsage.side_effect = lambda handle: (
+            gpu_power_info if handle == self.gpu_card_handle else None
+        )
 
-            # when
-            power_watts = gauge.value()
+        # when
+        power_watts = gauge.value()
 
-            # then
-            self.assertEqual(power_watts, 15.0)
-            self.assertEqual(float, type(power_watts))
+        # then
+        self.assertEqual(power_watts, 15.0)
+        self.assertEqual(float, type(power_watts))
 
 
 if __name__ == "__main__":
