@@ -66,10 +66,7 @@ class GpuPowerGauge(Gauge):
         return str(self.card_index)
 
     def value(self):
-        power_usage = self.__gpu_monitor.get_card_power_usage(self.card_index)
-        if power_usage is None:
-            return None
-        return self.__gpu_monitor.get_card_power_usage(self.card_index) / MILLIWATTS_IN_ONE_WATT
+        return self.__gpu_monitor.get_card_power_usage(self.card_index) // MILLIWATTS_IN_ONE_WATT
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
