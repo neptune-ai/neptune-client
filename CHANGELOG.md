@@ -1,7 +1,7 @@
 ## neptune 1.11.1
 
 ### Fixes
-- Fixed GPU power consumption monitoring ([#1861](https://github.com/neptune-ai/neptune-client/pull/1861))
+- Fixed GPU power consumption monitoring on certain devices ([#1861](https://github.com/neptune-ai/neptune-client/pull/1861))
 
 ## neptune 1.11.0
 
