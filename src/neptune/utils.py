@@ -66,6 +66,8 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
     """
     if isinstance(value, MutableMapping):
         return {str(k): stringify_unsupported(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return {str(i): stringify_unsupported(v) for i, v in enumerate(value)}
 
     return StringifyValue(value=value)
 
