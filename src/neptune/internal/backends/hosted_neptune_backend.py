@@ -1092,17 +1092,26 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
-        params = {
-            "projectIdentifier": project_id,
-            "search": column,
-            "type": types,
-            "params": {},
-            **DEFAULT_REQUEST_KWARGS,
-        }
+    def _get_column_types(self, project_id: UniqueId, column: str) -> List[Any]:
         try:
-            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries
-        except HTTPNotFound as e:
+            project_name = [
+                f"{project.workspace}/{project.name}"
+                for project in self.get_available_projects()
+                if project.id == project_id
+            ][0]
+            params = {
+                "projectIdentifier": project_name,
+                "query": {
+                    "attributeNameFilter": {"mustMatchRegexes": [column]},
+                    "experimentIdsFilter": None,
+                },
+                **DEFAULT_REQUEST_KWARGS,
+            }
+
+            return (
+                self.leaderboard_client.api.queryAttributeDefinitionsWithinProject(**params).response().result.entries
+            )
+        except (HTTPNotFound, KeyError) as e:
             raise ProjectNotFound(project_id=project_id) from e
 
     @with_api_exceptions_handler
@@ -1132,7 +1141,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         elif sort_by == "sys/id":
             sort_by_column_type = FieldType.STRING.value
         else:
-            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
+            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by)
             sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
 
         try:
