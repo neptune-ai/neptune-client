@@ -249,6 +249,8 @@ def _get_pil_image_data(image: PILImage) -> bytes:
 
 
 def _get_figure_image_data(figure) -> bytes:
+    if figure.__class__.__name__ == "Axes":
+        figure = figure.figure
     with io.BytesIO() as image_buffer:
         figure.savefig(image_buffer, format="png", bbox_inches="tight")
         return image_buffer.getvalue()
@@ -283,7 +285,7 @@ def is_pil_image(image) -> bool:
 
 
 def is_matplotlib_figure(image):
-    return image.__class__.__module__.startswith("matplotlib.") and image.__class__.__name__ == "Figure"
+    return image.__class__.__module__.startswith("matplotlib.") and image.__class__.__name__ in ["Figure", "Axes"]
 
 
 def is_plotly_figure(chart):
