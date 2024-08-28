@@ -55,7 +55,6 @@ from neptune.api.models import (
     LeaderboardEntry,
     NextPage,
     QueryFieldDefinitionsResult,
-    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
@@ -1032,31 +1031,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 return FloatSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def query_fields_within_project(
-        self,
-        project_id: QualifiedName,
-        field_names_filter: Optional[List[str]] = None,
-        experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None,
-    ) -> QueryFieldsResult:
-        pagination = {"nextPage": next_page.to_dto()} if next_page else {}
-        params = {
-            "projectIdentifier": project_id,
-            "query": {
-                **pagination,
-                "attributeNamesFilter": field_names_filter,
-                "experimentIdsFilter": experiment_ids_filter,
-            },
-            **DEFAULT_REQUEST_KWARGS,
-        }
-
-        try:
-            result = self.leaderboard_client.api.queryAttributesWithinProject(**params).response().result
-            return QueryFieldsResult.from_model(result)
-        except HTTPNotFound:
-            raise ProjectNotFound(project_id=project_id)
 
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(
