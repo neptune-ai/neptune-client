@@ -119,6 +119,7 @@ keywords = [
 ]
 packages = [
     { include = "neptune", from = "src" },
+    { include = "neptune/py.typed", from = "src" },
 ]
 
 [tool.poetry.urls]
