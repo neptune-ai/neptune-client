@@ -68,6 +68,8 @@ def get_image_content(image):
 
 
 def _get_figure_as_image(figure):
+    if figure.__class__.__name__ == "Axes":
+        figure = figure.figure
     with io.BytesIO() as image_buffer:
         figure.savefig(image_buffer, format="png", bbox_inches="tight")
         return image_buffer.getvalue()
