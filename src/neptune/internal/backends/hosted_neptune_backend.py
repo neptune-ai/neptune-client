@@ -1093,25 +1093,19 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _get_column_types(self, project_id: UniqueId, column: str) -> List[Any]:
+        params = {
+            "projectIdentifier": project_id,
+            "query": {
+                "attributeNameFilter": {"mustMatchRegexes": [column]},
+                "experimentIdsFilter": None,
+            },
+            **DEFAULT_REQUEST_KWARGS,
+        }
         try:
-            project_name = [
-                f"{project.workspace}/{project.name}"
-                for project in self.get_available_projects()
-                if project.id == project_id
-            ][0]
-            params = {
-                "projectIdentifier": project_name,
-                "query": {
-                    "attributeNameFilter": {"mustMatchRegexes": [column]},
-                    "experimentIdsFilter": None,
-                },
-                **DEFAULT_REQUEST_KWARGS,
-            }
-
             return (
                 self.leaderboard_client.api.queryAttributeDefinitionsWithinProject(**params).response().result.entries
             )
-        except (HTTPNotFound, KeyError) as e:
+        except HTTPNotFound as e:
             raise ProjectNotFound(project_id=project_id) from e
 
     @with_api_exceptions_handler
