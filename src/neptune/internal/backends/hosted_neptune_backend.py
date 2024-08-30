@@ -1071,7 +1071,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             "projectIdentifier": project_id,
             "query": {
                 "attributeNameFilter": {"mustMatchRegexes": [column]},
-                "experimentIdsFilter": None,
             },
             **DEFAULT_REQUEST_KWARGS,
         }
