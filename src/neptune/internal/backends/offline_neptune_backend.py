@@ -38,7 +38,6 @@ from neptune.api.models import (
     LeaderboardEntry,
     NextPage,
     QueryFieldDefinitionsResult,
-    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
@@ -123,6 +122,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         limit: int,
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
+        include_inherited: bool = True,
     ) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 
@@ -184,13 +184,4 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         experiment_ids_filter: Optional[List[str]] = None,
         next_page: Optional[NextPage] = None,
     ) -> QueryFieldDefinitionsResult:
-        raise NeptuneOfflineModeFetchException
-
-    def query_fields_within_project(
-        self,
-        project_id: QualifiedName,
-        field_names_filter: Optional[List[str]] = None,
-        experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None,
-    ) -> QueryFieldsResult:
         raise NeptuneOfflineModeFetchException

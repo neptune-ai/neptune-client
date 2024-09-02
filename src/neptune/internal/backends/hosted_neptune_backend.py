@@ -55,7 +55,6 @@ from neptune.api.models import (
     LeaderboardEntry,
     NextPage,
     QueryFieldDefinitionsResult,
-    QueryFieldsResult,
     StringField,
     StringSeriesField,
     StringSeriesValues,
@@ -994,6 +993,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         limit: int,
         from_step: Optional[float] = None,
         use_proto: Optional[bool] = None,
+        include_inherited: bool = True,
     ) -> FloatSeriesValues:
         use_proto = use_proto if use_proto is not None else self.use_proto
 
@@ -1003,6 +1003,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             "limit": limit,
             "skipToStep": from_step,
         }
+
+        if not include_inherited:
+            params["lineage"] = "NONE"
+
         try:
             if use_proto:
                 result = (
@@ -1027,31 +1031,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 return FloatSeriesValues.from_model(result)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def query_fields_within_project(
-        self,
-        project_id: QualifiedName,
-        field_names_filter: Optional[List[str]] = None,
-        experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None,
-    ) -> QueryFieldsResult:
-        pagination = {"nextPage": next_page.to_dto()} if next_page else {}
-        params = {
-            "projectIdentifier": project_id,
-            "query": {
-                **pagination,
-                "attributeNamesFilter": field_names_filter,
-                "experimentIdsFilter": experiment_ids_filter,
-            },
-            **DEFAULT_REQUEST_KWARGS,
-        }
-
-        try:
-            result = self.leaderboard_client.api.queryAttributesWithinProject(**params).response().result
-            return QueryFieldsResult.from_model(result)
-        except HTTPNotFound:
-            raise ProjectNotFound(project_id=project_id)
 
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(
@@ -1087,16 +1066,18 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def _get_column_types(self, project_id: UniqueId, column: str, types: Optional[Iterable[str]] = None) -> List[Any]:
+    def _get_column_types(self, project_id: UniqueId, column: str) -> List[Any]:
         params = {
             "projectIdentifier": project_id,
-            "search": column,
-            "type": types,
-            "params": {},
+            "query": {
+                "attributeNameFilter": {"mustMatchRegexes": [column]},
+            },
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            return self.leaderboard_client.api.searchLeaderboardAttributes(**params).response().result.entries
+            return (
+                self.leaderboard_client.api.queryAttributeDefinitionsWithinProject(**params).response().result.entries
+            )
         except HTTPNotFound as e:
             raise ProjectNotFound(project_id=project_id) from e
 
@@ -1119,6 +1100,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         step_size = min(default_step_size, limit) if limit else default_step_size
 
+        columns = set(columns) | {sort_by} if columns else {sort_by}
+
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
@@ -1127,7 +1110,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         elif sort_by == "sys/id":
             sort_by_column_type = FieldType.STRING.value
         else:
-            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by, types_filter)
+            sort_by_column_type_candidates = self._get_column_types(project_id, sort_by)
             sort_by_column_type = _get_column_type_from_entries(sort_by_column_type_candidates, sort_by)
 
         try:
