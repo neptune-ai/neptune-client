@@ -52,7 +52,6 @@ from neptune.api.models import (
     LeaderboardEntry,
     NextPage,
     QueryFieldDefinitionsResult,
-    QueryFieldsResult,
     StringField,
     StringPointValue,
     StringSeriesField,
@@ -816,18 +815,6 @@ class NeptuneBackendMock(NeptuneBackend):
         next_page: Optional[NextPage] = None,
     ) -> QueryFieldDefinitionsResult:
         return QueryFieldDefinitionsResult(
-            entries=[],
-            next_page=NextPage(next_page_token=None, limit=0),
-        )
-
-    def query_fields_within_project(
-        self,
-        project_id: QualifiedName,
-        field_names_filter: Optional[List[str]] = None,
-        experiment_ids_filter: Optional[List[str]] = None,
-        next_page: Optional[NextPage] = None,
-    ) -> QueryFieldsResult:
-        return QueryFieldsResult(
             entries=[],
             next_page=NextPage(next_page_token=None, limit=0),
         )

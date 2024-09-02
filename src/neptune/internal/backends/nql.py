@@ -76,6 +76,7 @@ class NQLAttributeOperator(str, Enum):
     CONTAINS = "CONTAINS"
     GREATER_THAN = ">"
     LESS_THAN = "<"
+    MATCHES = "MATCHES"
 
 
 class NQLAttributeType(str, Enum):
