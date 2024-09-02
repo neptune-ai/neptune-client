@@ -1100,6 +1100,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         step_size = min(default_step_size, limit) if limit else default_step_size
 
+        columns = set(columns) | {sort_by} if columns else {sort_by}
+
         types_filter = list(map(lambda container_type: container_type.to_api(), types)) if types else None
         attributes_filter = {"attributeFilters": [{"path": column} for column in columns]} if columns else {}
 
