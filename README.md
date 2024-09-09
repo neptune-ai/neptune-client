@@ -136,12 +136,6 @@ Version, review, and access production-ready models and metadata associated with
 * <a href="https://docs.neptune.ai/model_registry/overview/"><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
 &nbsp;
 
-&nbsp;
-<div align="center">
-      <img border="0" alt="register models" src="https://neptune.ai/wp-content/uploads/2023/06/register_models.gif" width="600">
-    </a>
-</div>
-&nbsp;
 
 &nbsp;
 
