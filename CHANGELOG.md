@@ -31,6 +31,7 @@
 - Series values fetching reworked with protocol buffer support ([#1744](https://github.com/neptune-ai/neptune-client/pull/1744))
 - Added support for enhanced field definitions querying ([#1751](https://github.com/neptune-ai/neptune-client/pull/1751))
 - Added support for `NQL` `MATCHES` operator ([#1863](https://github.com/neptune-ai/neptune-client/pull/1863))
+- Pagination respecting `limit` parameter and page size ([#1866](https://github.com/neptune-ai/neptune-client/pull/1866))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))

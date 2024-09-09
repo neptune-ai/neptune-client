@@ -16,12 +16,13 @@
 __all__ = ("paginate_over",)
 
 import abc
+import itertools
 from dataclasses import dataclass
 from typing import (
     Any,
     Callable,
-    Iterable,
     Iterator,
+    List,
     Optional,
     TypeVar,
 )
@@ -46,15 +47,32 @@ class Paginatable(Protocol):
 
 def paginate_over(
     getter: Paginatable,
-    extract_entries: Callable[[T], Iterable[Entry]],
+    extract_entries: Callable[[T], List[Entry]],
+    page_size: int = 50,
+    limit: Optional[int] = None,
     **kwargs: Any,
 ) -> Iterator[Entry]:
     """
     Generic approach to pagination via `NextPage`
     """
-    data = getter(**kwargs, next_page=None)
-    yield from extract_entries(data)
+    counter = 0
+    data = getter(**kwargs, next_page=NextPage(limit=page_size, next_page_token=None))
+    results = extract_entries(data)
+    if limit is not None:
+        counter = len(results[:limit])
+
+    yield from itertools.islice(results, limit)
 
     while data.next_page is not None and data.next_page.next_page_token is not None:
-        data = getter(**kwargs, next_page=data.next_page)
-        yield from extract_entries(data)
+        to_fetch = page_size
+        if limit is not None:
+            if counter >= limit:
+                break
+            to_fetch = min(page_size, limit - counter)
+
+        data = getter(**kwargs, next_page=NextPage(limit=to_fetch, next_page_token=data.next_page.next_page_token))
+        results = extract_entries(data)
+        if limit is not None:
+            counter += len(results[:to_fetch])
+
+        yield from itertools.islice(results, to_fetch)
