@@ -127,3 +127,26 @@ def test__page_size():
         call(a=1, b=2, next_page=NextPage(next_page_token="aa", limit=10)),
         call(a=1, b=2, next_page=NextPage(next_page_token="bb", limit=10)),
     ]
+
+
+def test__limit():
+    # given
+    getter = Mock(
+        side_effect=[
+            Mock(next_page=NextPage(next_page_token="aa", limit=None)),
+            Mock(next_page=NextPage(next_page_token="bb", limit=None)),
+            Mock(next_page=None),
+        ]
+    )
+
+    # when
+    entries = list(paginate_over(getter=getter, extract_entries=extract_entries, page_size=3, limit=5, a=1, b=2))
+
+    # then
+    assert entries == [1, 2, 3, 1, 2]
+
+    assert getter.call_count == 2
+    assert getter.call_args_list == [
+        call(a=1, b=2, next_page=NextPage(next_page_token=None, limit=3)),
+        call(a=1, b=2, next_page=NextPage(next_page_token="aa", limit=2)),
+    ]
