@@ -55,9 +55,11 @@ def paginate_over(
     """
     Generic approach to pagination via `NextPage`
     """
+    counter = 0
     data = getter(**kwargs, next_page=NextPage(limit=page_size, next_page_token=None))
     results = extract_entries(data)
-    counter = len(results[:limit])
+    if limit is not None:
+        counter = len(results[:limit])
 
     yield from itertools.islice(results, limit)
 
