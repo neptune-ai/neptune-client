@@ -129,19 +129,13 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 Version, review, and access production-ready models and metadata associated with them in a single place.
 
-* <a href="https://docs.neptune.ai/model_registry/registering_model/"><b>Version models:</b></a> register models, create model versions, version external model artifacts.
+* <a href="https://docs.neptune.ai/model_registry/registering_model/"><b>Version models:</b></a> track model versions and external artifacts.
 
-* <a href="https://docs.neptune.ai/model_registry/managing_stage/"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata. You can move models between None/Staging/Production/Archived.
+* <a href="https://docs.neptune.ai/model_registry/managing_stage/"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata.
 
-* <a href="https://docs.neptune.ai/model_registry/overview/"><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
+* <a href="https://docs.neptune.ai/model_registry/overview/"><b>Access and share models:</b></a> all the tracked model metadata is accessible via the neptune.ai web app or through the API.
 &nbsp;
 
-&nbsp;
-<div align="center">
-      <img border="0" alt="register models" src="https://neptune.ai/wp-content/uploads/2023/06/register_models.gif" width="600">
-    </a>
-</div>
-&nbsp;
 
 &nbsp;
 
