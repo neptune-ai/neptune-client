@@ -1204,13 +1204,18 @@ class HostedNeptuneBackend(NeptuneBackend):
         # If we are provided with both explicit column names, and a regex,
         # we need to paste together all of them into a single regex (with OR between terms)
         if field_name_regex:
-            terms = [field_name_regex] + (field_names_filter or [])
+            terms = [field_name_regex]
+
+            if field_names_filter:
+                # Make sure we don't pass too broad regex for explicit column names
+                terms += [f'^{name}$' for name in field_names_filter]
+
             regex = '|'.join(terms)
             query['attributeNameFilter'] = {'mustMatchRegexes': [regex]}
         elif field_names_filter:
             query['attributeNamesFilter'] = field_names_filter
 
-        params = { "projectIdentifier": project_id, 'query': query }
+        params = {"projectIdentifier": project_id, 'query': query}
 
         try:
             data = (
