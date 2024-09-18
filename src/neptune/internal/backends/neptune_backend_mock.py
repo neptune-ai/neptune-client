@@ -828,6 +828,7 @@ class NeptuneBackendMock(NeptuneBackend):
         experiment_ids_filter: Optional[List[str]] = None,
         experiment_names_filter: Optional[List[str]] = None,
         next_page: Optional[NextPage] = None,
+        use_proto: Optional[bool] = None,
     ) -> QueryFieldsResult:
         return QueryFieldsResult(
             entries=[],

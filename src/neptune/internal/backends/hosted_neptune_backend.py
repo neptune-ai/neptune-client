@@ -61,7 +61,10 @@ from neptune.api.models import (
     StringSeriesValues,
     StringSetField,
 )
-from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import ProtoAttributesSearchResultDTO
+from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import (
+    ProtoAttributesSearchResultDTO,
+    ProtoQueryAttributesResultDTO,
+)
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import ProtoAttributesDTO
 from neptune.api.proto.neptune_pb.api.model.series_values_pb2 import ProtoFloatSeriesValuesDTO
 from neptune.api.searching_entries import iter_over_pages
@@ -1193,12 +1196,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         experiment_ids_filter: Optional[List[str]] = None,
         experiment_names_filter: Optional[List[str]] = None,
         next_page: Optional[NextPage] = None,
+        use_proto: Optional[bool] = None,
     ) -> QueryFieldsResult:
+        use_proto = use_proto if use_proto is not None else self.use_proto
 
         query = {
-                "experimentIdsFilter": experiment_ids_filter or None,
-                "experimentNamesFilter": experiment_names_filter or None,
-                "nextPage": next_page.to_dto() if next_page else None,
+            "experimentIdsFilter": experiment_ids_filter or None,
+            "experimentNamesFilter": experiment_names_filter or None,
+            "nextPage": next_page.to_dto() if next_page else None,
         }
 
         # If we are provided with both explicit column names, and a regex,
@@ -1208,28 +1213,39 @@ class HostedNeptuneBackend(NeptuneBackend):
 
             if field_names_filter:
                 # Make sure we don't pass too broad regex for explicit column names
-                terms += [f'^{name}$' for name in field_names_filter]
+                terms += [f"^{name}$" for name in field_names_filter]
 
-            regex = '|'.join(terms)
-            query['attributeNameFilter'] = {'mustMatchRegexes': [regex]}
+            regex = "|".join(terms)
+            query["attributeNameFilter"] = {"mustMatchRegexes": [regex]}
         elif field_names_filter:
-            query['attributeNamesFilter'] = field_names_filter
+            query["attributeNamesFilter"] = field_names_filter
 
-        params = {"projectIdentifier": project_id, 'query': query}
+        params = {"projectIdentifier": project_id, "query": query}
 
         try:
-            data = (
-                self.leaderboard_client.api.queryAttributesWithinProject(
-                    **params,
-                    **DEFAULT_REQUEST_KWARGS,
+            if use_proto:
+                result = (
+                    self.leaderboard_client.api.queryAttributesWithinProjectProto(
+                        **params,
+                        **DEFAULT_PROTO_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
                 )
-                .response()
-                .result
-            )
-            return QueryFieldsResult.from_model(data)
+                data = ProtoQueryAttributesResultDTO.FromString(result)
+                return QueryFieldsResult.from_proto(data)
+            else:
+                data = (
+                    self.leaderboard_client.api.queryAttributesWithinProject(
+                        **params,
+                        **DEFAULT_REQUEST_KWARGS,
+                    )
+                    .response()
+                    .result
+                )
+                return QueryFieldsResult.from_model(data)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
-
 
     def get_fields_definitions(
         self,

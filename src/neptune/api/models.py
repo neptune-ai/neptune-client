@@ -619,7 +619,7 @@ class NextPage:
 
     @staticmethod
     def from_proto(data: Any) -> NextPage:
-        raise NotImplementedError()
+        return NextPage(limit=data.limit, next_page_token=data.nextPageToken)
 
     def to_dto(self) -> Dict[str, Any]:
         return {
@@ -652,7 +652,11 @@ class QueryFieldsExperimentResult:
 
     @staticmethod
     def from_proto(data: Any) -> QueryFieldsExperimentResult:
-        raise NotImplementedError()
+        return QueryFieldsExperimentResult(
+            object_id=data.experimentId,
+            object_key=data.experimentShortId,
+            fields=[Field.from_proto(field) for field in data.attributes],
+        )
 
 
 @dataclass
@@ -676,7 +680,10 @@ class QueryFieldsResult:
 
     @staticmethod
     def from_proto(data: Any) -> QueryFieldsResult:
-        raise NotImplementedError()
+        return QueryFieldsResult(
+            entries=[QueryFieldsExperimentResult.from_proto(entry) for entry in data.entries],
+            next_page=NextPage.from_proto(data.nextPage),
+        )
 
 
 @dataclass

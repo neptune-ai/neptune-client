@@ -48,6 +48,11 @@ from neptune.api.models import (
     StringSeriesValues,
     StringSetField,
 )
+from neptune.api.proto.neptune_pb.api.model.attributes_pb2 import (
+    ProtoNextPageDTO,
+    ProtoQueryAttributesExperimentResultDTO,
+    ProtoQueryAttributesResultDTO,
+)
 from neptune.api.proto.neptune_pb.api.model.leaderboard_entries_pb2 import (
     ProtoAttributeDTO,
     ProtoAttributesDTO,
@@ -2340,11 +2345,14 @@ def test__next_page__from_model():
 
 def test__next_page__from_proto():
     # given
-    proto = Mock()
+    proto = ProtoNextPageDTO(nextPageToken="some-token", limit=10)
+
+    # when
+    result = NextPage.from_model(proto)
 
     # then
-    with pytest.raises(NotImplementedError):
-        NextPage.from_proto(proto)
+    assert result.next_page_token == "some-token"
+    assert result.limit == 10
 
 
 def test__query_field_definitions_result__from_dict():
@@ -2515,11 +2523,51 @@ def test__query_fields_experiment_result__from_model():
 
 def test__query_fields_experiment_result__from_proto():
     # given
-    proto = Mock()
+    proto = ProtoQueryAttributesExperimentResultDTO(
+        experimentId="some-id-1",
+        experimentShortId="some-key-1",
+        attributes=[
+            ProtoAttributeDTO(
+                name="some/float",
+                type="float",
+                float_properties=ProtoFloatAttributeDTO(
+                    attribute_name="some/float",
+                    attribute_type="float",
+                    value=18.5,
+                ),
+            ),
+            ProtoAttributeDTO(
+                name="some/int",
+                type="int",
+                int_properties=ProtoIntAttributeDTO(
+                    attribute_name="some/int",
+                    attribute_type="int",
+                    value=18,
+                ),
+            ),
+        ],
+    )
+
+    # when
+    result = QueryFieldsExperimentResult.from_proto(proto)
 
     # then
-    with pytest.raises(NotImplementedError):
-        QueryFieldsExperimentResult.from_proto(proto)
+    assert result.object_id == "some-id-1"
+    assert result.object_key == "some-key-1"
+
+    assert len(result.fields) == 2
+
+    field_1 = result.fields[0]
+    assert field_1.path == "some/float"
+    assert field_1.type == FieldType.FLOAT
+    assert isinstance(field_1, FloatField)
+    assert field_1.value == 18.5
+
+    field_2 = result.fields[1]
+    assert field_2.path == "some/int"
+    assert field_2.type == FieldType.INT
+    assert isinstance(field_2, IntField)
+    assert field_2.value == 18
 
 
 def test__query_fields_result__from_dict():
@@ -2677,8 +2725,84 @@ def test__query_fields_result__from_model():
 
 def test__query_fields_result__from_proto():
     # given
-    proto = Mock()
+    proto = ProtoQueryAttributesResultDTO(
+        entries=[
+            ProtoQueryAttributesExperimentResultDTO(
+                experimentId="some-id-1",
+                experimentShortId="some-key-1",
+                attributes=[
+                    ProtoAttributeDTO(
+                        name="some/float",
+                        type="float",
+                        float_properties=ProtoFloatAttributeDTO(
+                            attribute_name="some/float",
+                            attribute_type="float",
+                            value=18.5,
+                        ),
+                    ),
+                    ProtoAttributeDTO(
+                        name="some/int",
+                        type="int",
+                        int_properties=ProtoIntAttributeDTO(
+                            attribute_name="some/int",
+                            attribute_type="int",
+                            value=18,
+                        ),
+                    ),
+                ],
+            ),
+            ProtoQueryAttributesExperimentResultDTO(
+                experimentId="some-id-2",
+                experimentShortId="some-key-2",
+                attributes=[
+                    ProtoAttributeDTO(
+                        name="some/string",
+                        type="string",
+                        string_properties=ProtoStringAttributeDTO(
+                            attribute_name="some/string",
+                            attribute_type="string",
+                            value="hello",
+                        ),
+                    ),
+                ],
+            ),
+        ],
+        nextPage=ProtoNextPageDTO(nextPageToken="some-token", limit=2),
+    )
+
+    # when
+    result = QueryFieldsResult.from_proto(proto)
 
     # then
-    with pytest.raises(NotImplementedError):
-        QueryFieldsResult.from_proto(proto)
+    assert len(result.entries) == 2
+
+    entry_1 = result.entries[0]
+    assert entry_1.object_id == "some-id-1"
+    assert entry_1.object_key == "some-key-1"
+    assert len(entry_1.fields) == 2
+
+    field_1_1 = entry_1.fields[0]
+    assert field_1_1.path == "some/float"
+    assert field_1_1.type == FieldType.FLOAT
+    assert isinstance(field_1_1, FloatField)
+    assert field_1_1.value == 18.5
+
+    field_1_2 = entry_1.fields[1]
+    assert field_1_2.path == "some/int"
+    assert field_1_2.type == FieldType.INT
+    assert isinstance(field_1_2, IntField)
+    assert field_1_2.value == 18
+
+    entry_2 = result.entries[1]
+    assert entry_2.object_id == "some-id-2"
+    assert entry_2.object_key == "some-key-2"
+    assert len(entry_2.fields) == 1
+
+    field_2_1 = entry_2.fields[0]
+    assert field_2_1.path == "some/string"
+    assert field_2_1.type == FieldType.STRING
+    assert isinstance(field_2_1, StringField)
+    assert field_2_1.value == "hello"
+
+    assert result.next_page.next_page_token == "some-token"
+    assert result.next_page.limit == 2
