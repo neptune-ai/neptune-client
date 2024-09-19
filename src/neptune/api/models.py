@@ -47,6 +47,7 @@ __all__ = (
     "QueryFieldDefinitionsResult",
     "NextPage",
     "QueryFieldsResult",
+    "UnknownField",
 )
 
 import abc
@@ -102,6 +103,7 @@ class FileEntry:
 
 
 class FieldType(Enum):
+    UNKNOWN = "<unknown>"
     FLOAT = "float"
     INT = "int"
     BOOL = "bool"
@@ -150,7 +152,17 @@ class Field(abc.ABC):
     @staticmethod
     def from_proto(data: Any) -> Field:
         field_type = str(data.type)
-        return Field._registry[field_type].from_proto(data.__getattribute__(f"{camel_to_snake(field_type)}_properties"))
+
+        try:
+            # We might receive a field that is not (fully) supported
+            if field_type not in Field._registry:
+                raise AttributeError
+
+            attr = data.__getattribute__(f"{camel_to_snake(field_type)}_properties")
+        except AttributeError:
+            return UnknownField(path=data.name)
+
+        return Field._registry[field_type].from_proto(attr)
 
 
 def camel_to_snake(name: str) -> str:
@@ -164,6 +176,9 @@ class FieldVisitor(Generic[Ret], abc.ABC):
 
     def visit(self, field: Field) -> Ret:
         return field.accept(self)
+
+    @abc.abstractmethod
+    def visit_unknown(self, field: UnknownField) -> Ret: ...
 
     @abc.abstractmethod
     def visit_float(self, field: FloatField) -> Ret: ...
@@ -249,6 +264,26 @@ class IntField(Field, field_type=FieldType.INT):
     @staticmethod
     def from_proto(data: ProtoIntAttributeDTO) -> IntField:
         return IntField(path=data.attribute_name, value=data.value)
+
+
+@dataclass
+class UnknownField(Field, field_type=FieldType.UNKNOWN):
+    value: Optional[str] = None
+
+    def accept(self, visitor: FieldVisitor[Ret]) -> Ret:
+        return visitor.visit_unknown(self)
+
+    @staticmethod
+    def from_dict(data: Dict[str, Any]) -> UnknownField:
+        return UnknownField(path=data["attributeName"])
+
+    @staticmethod
+    def from_model(model: Any) -> UnknownField:
+        return UnknownField(path=model.attributeName)
+
+    @staticmethod
+    def from_proto(data: Any) -> UnknownField:
+        return UnknownField(path=data.name)
 
 
 @dataclass

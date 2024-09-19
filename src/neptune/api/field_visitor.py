@@ -39,11 +39,15 @@ from neptune.api.models import (
     StringField,
     StringSeriesField,
     StringSetField,
+    UnknownField,
 )
 from neptune.exceptions import MetadataInconsistency
 
 
 class FieldToValueVisitor(FieldVisitor[Any]):
+
+    def visit_unknown(self, field: UnknownField) -> None:
+        return None
 
     def visit_float(self, field: FloatField) -> float:
         return field.value

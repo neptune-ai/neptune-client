@@ -46,6 +46,7 @@ from neptune.api.models import (
     StringField,
     StringSeriesField,
     StringSetField,
+    UnknownField,
 )
 
 if TYPE_CHECKING:
@@ -55,6 +56,9 @@ PANDAS_AVAILABLE_TYPES = Union[str, float, int, bool, datetime, None]
 
 
 class FieldToPandasValueVisitor(FieldVisitor[PANDAS_AVAILABLE_TYPES]):
+
+    def visit_unknown(self, field: UnknownField) -> None:
+        return None
 
     def visit_float(self, field: FloatField) -> float:
         return field.value
