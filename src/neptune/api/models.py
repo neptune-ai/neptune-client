@@ -634,6 +634,18 @@ class QueryFieldsExperimentResult:
     object_key: str
     fields: List[Field]
 
+    # Any field the type of which is not in this set will not be
+    # returned to the user. Applies to protobuf calls only.
+    PROTO_SUPPORTED_FIELD_TYPES = {
+        FieldType.STRING.value,
+        FieldType.BOOL.value,
+        FieldType.INT.value,
+        FieldType.FLOAT.value,
+        FieldType.DATETIME.value,
+        FieldType.STRING_SET.value,
+        FieldType.FLOAT_SERIES.value,
+    }
+
     @staticmethod
     def from_dict(data: Dict[str, Any]) -> QueryFieldsExperimentResult:
         return QueryFieldsExperimentResult(
@@ -655,7 +667,11 @@ class QueryFieldsExperimentResult:
         return QueryFieldsExperimentResult(
             object_id=data.experimentId,
             object_key=data.experimentShortId,
-            fields=[Field.from_proto(field) for field in data.attributes],
+            fields=[
+                Field.from_proto(field)
+                for field in data.attributes
+                if field.type in QueryFieldsExperimentResult.PROTO_SUPPORTED_FIELD_TYPES
+            ],
         )
 
 
