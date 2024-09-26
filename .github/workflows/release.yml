@@ -72,14 +72,14 @@ jobs:
           path: dist/
 
 #      - name: Uploading to test PyPI
-#        uses: pypa/gh-action-pypi-publish@v1.9.0
+#        uses: pypa/gh-action-pypi-publish@v1.10.2
 #        with:
 #         user: __token__
 #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
 #         repository_url: https://test.pypi.org/legacy/
 
       - name: Uploading to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9.0
+        uses: pypa/gh-action-pypi-publish@v1.10.2
         with:
           user: __token__
           password: ${{ secrets.NEPTUNE_PYPI_API_TOKEN }}
