@@ -49,7 +49,6 @@ matplotlib.use("agg")
 
 
 class TestImage(unittest.TestCase):
-
     TEST_DIR = "/tmp/neptune/{}".format(uuid4())
 
     def setUp(self):
@@ -142,6 +141,12 @@ class TestImage(unittest.TestCase):
 
         # then
         self.assertEqual(get_image_content(grid), self._encode_figure(grid))
+
+        # given
+        figure = sns.lineplot(x=[1, 2, 3], y=[4, 5, 6])
+
+        # then
+        self.assertEqual(get_image_content(figure), self._encode_figure(figure))
 
     def test_get_html_from_matplotlib_figure(self):
         # given
@@ -262,6 +267,8 @@ class TestImage(unittest.TestCase):
 
     @staticmethod
     def _encode_figure(fig: Figure) -> bytes:
+        if fig.__class__.__name__ == "Axes":
+            fig = fig.figure
         with io.BytesIO() as image_buffer:
             fig.savefig(image_buffer, format="PNG", bbox_inches="tight")
             return image_buffer.getvalue()

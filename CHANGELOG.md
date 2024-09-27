@@ -1,3 +1,8 @@
+## neptune 1.11.2
+
+### Fixes
+- Fixed support for additional seaborn figure types ([#1864](https://github.com/neptune-ai/neptune-client/pull/1864))
+
 ## neptune 1.11.1
 
 ### Fixes
