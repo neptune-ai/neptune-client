@@ -16,7 +16,7 @@
 
 from typing import Optional
 
-from neptune.core.operations.operation import (
+from neptune.internal.operation import (
     LogFloats,
     Operation,
 )

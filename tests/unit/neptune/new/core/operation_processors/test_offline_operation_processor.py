@@ -29,7 +29,7 @@ from neptune.core.typing.id_formats import CustomId
 
 @patch("neptune.core.operation_processors.utils.random.choice")
 @patch("neptune.core.operation_processors.offline_operation_processor.Path.mkdir")
-@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.AggregatingDiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 @patch("neptune.core.operation_processors.utils.os.getpid", return_value=42)
@@ -54,7 +54,7 @@ def test_setup(_, __, ___, ____, mkdir_mock, random_choice_mock):
     )
 
 
-@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.AggregatingDiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
@@ -82,7 +82,7 @@ def test_flush(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.flush.assert_called_once()
 
 
-@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.AggregatingDiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
@@ -110,7 +110,7 @@ def test_close(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.close.assert_called_once()
 
 
-@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.AggregatingDiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
@@ -148,7 +148,7 @@ def test_stop(metadata_file_mock, operation_storage_mock, disk_queue_mock):
     metadata_file.cleanup.assert_not_called()
 
 
-@patch("neptune.core.operation_processors.offline_operation_processor.DiskQueue")
+@patch("neptune.core.operation_processors.offline_operation_processor.AggregatingDiskQueue")
 @patch("neptune.core.operation_processors.offline_operation_processor.OperationStorage")
 @patch("neptune.core.operation_processors.offline_operation_processor.MetadataFile")
 def test_metadata(metadata_file_mock, _, __):

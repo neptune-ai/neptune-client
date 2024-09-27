@@ -30,13 +30,14 @@ from neptune.constants import OFFLINE_DIRECTORY
 from neptune.core.components.abstract import WithResources
 from neptune.core.components.metadata_file import MetadataFile
 from neptune.core.components.operation_storage import OperationStorage
-from neptune.core.components.queue.disk_queue import DiskQueue
+from neptune.core.components.queue.aggregating_disk_queue import AggregatingDiskQueue
 from neptune.core.operation_processors.operation_processor import OperationProcessor
 from neptune.core.operation_processors.utils import (
     common_metadata,
     get_container_full_path,
 )
 from neptune.core.operations.operation import Operation
+from neptune.core.operations.utils import try_get_step
 from neptune.internal.utils.disk_utilization import ensure_disk_not_overutilize
 
 if TYPE_CHECKING:
@@ -60,7 +61,9 @@ class OfflineOperationProcessor(WithResources, OperationProcessor):
             metadata=common_metadata(mode="offline", custom_id=custom_id, container_type=container_type),
         )
         self._operation_storage = OperationStorage(data_path=self._data_path)
-        self._queue = DiskQueue(data_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock)
+        self._queue: AggregatingDiskQueue = AggregatingDiskQueue(
+            data_path=self._data_path, to_dict=serializer, from_dict=Operation.from_dict, lock=lock
+        )
 
     @property
     def operation_storage(self) -> "OperationStorage":
@@ -76,7 +79,8 @@ class OfflineOperationProcessor(WithResources, OperationProcessor):
 
     @ensure_disk_not_overutilize
     def enqueue_operation(self, op: Operation, *, wait: bool) -> None:
-        self._queue.put(op)
+        step = try_get_step(op)
+        self._queue.put(op, category=step)
 
     def wait(self) -> None:
         self.flush()
