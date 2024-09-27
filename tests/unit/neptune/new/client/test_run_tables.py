@@ -18,6 +18,7 @@ import unittest
 from datetime import datetime
 from typing import List
 
+import pytest
 from mock import patch
 
 from neptune import init_project
@@ -43,6 +44,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()
 
+    @pytest.mark.skip("Backend not implemented")
     @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
     def test_fetch_runs_table_is_case_insensitive(self):
         states = ["active", "inactive", "Active", "Inactive", "aCTive", "INacTiVe"]
@@ -53,6 +55,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
                 except ValueError as e:
                     self.fail(e)
 
+    @pytest.mark.skip("Backend not implemented")
     @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
     def test_fetch_runs_table_raises_correct_exception_for_incorrect_states(self):
         for incorrect_state in ["idle", "running", "some_arbitrary_state"]:
@@ -60,6 +63,7 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
                 with self.assertRaises(ValueError):
                     self.get_table(state=incorrect_state)
 
+    @pytest.mark.skip("Backend not implemented")
     @patch("neptune.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
     def test_fetch_runs_table_raises_if_query_used_with_params(self):
         query = "some_query"

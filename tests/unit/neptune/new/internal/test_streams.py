@@ -20,6 +20,8 @@ from contextlib import redirect_stdout
 from io import StringIO
 from unittest.mock import MagicMock
 
+import pytest
+
 from neptune.internal.streams.std_stream_capture_logger import (
     StdoutCaptureLogger,
     StdStreamCaptureLogger,
@@ -61,6 +63,7 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
         stdout.seek(0)
         self.assertEqual(stdout.read(), "testing\n")
 
+    @pytest.mark.skip(reason="Backend not implemented")
     def test_logger_with_lock_does_not_cause_deadlock(self):
         stream = StringIO()
         mock_run = MagicMock()

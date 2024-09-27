@@ -77,8 +77,8 @@ from neptune.objects.mode import Mode
 from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
-    temporarily_disabled,
 )
+from neptune.objects.utils import temporarily_disabled
 from neptune.types import StringSeries
 
 if TYPE_CHECKING:
@@ -330,7 +330,8 @@ class Run(NeptuneObject):
         )
 
         # for backward compatibility imports
-        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
+        # TODO: Get back to ASYNC
+        mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.SYNC.value)
 
         self._stdout_path: str = "{}/stdout".format(self._monitoring_namespace)
         self._capture_stdout: bool = capture_stdout

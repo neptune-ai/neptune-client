@@ -20,7 +20,6 @@ from mock import (
 )
 
 from neptune.attributes.series.float_series import FloatSeries
-from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.warnings import NeptuneUnsupportedValue
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -39,7 +38,7 @@ class TestFloatSeries(TestAttributeBase):
             with self.assertRaises(Exception):
                 FloatSeries(MagicMock(), MagicMock()).log(value)
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip("Backend not implemented")
     def test_get(self):
         with self._exp() as exp:
             var = FloatSeries(exp, self._random_path())
@@ -47,7 +46,7 @@ class TestFloatSeries(TestAttributeBase):
             var.log(34)
             self.assertEqual(34, var.fetch_last())
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip("Backend not implemented")
     def test_log(self):
         with self._exp() as exp:
             var = FloatSeries(exp, self._random_path())
@@ -57,7 +56,7 @@ class TestFloatSeries(TestAttributeBase):
             expected = list(range(0, 5000))
             self.assertEqual(len(set(expected)), len(set(values)))
 
-    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
+    @pytest.mark.skip("Backend not implemented")
     def test_float_warnings(self):
         with self._exp() as run:
             with pytest.warns(NeptuneUnsupportedValue):

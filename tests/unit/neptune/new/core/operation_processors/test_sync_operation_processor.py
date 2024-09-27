@@ -43,7 +43,9 @@ def test_setup(_, __, operation_storage_mock, mkdir_mock, random_choice_mock):
     op_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+    processor = SyncOperationProcessor(
+        custom_id=custom_id, client=None, container_type=container_type, project="test/project"
+    )
 
     # then
     mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
@@ -70,7 +72,9 @@ def test_flush(metadata_file_mock, operation_storage_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+    processor = SyncOperationProcessor(
+        custom_id=custom_id, client=None, container_type=container_type, project="test/project"
+    )
 
     # and
     processor.start()
@@ -95,7 +99,9 @@ def test_close(metadata_file_mock, operation_storage_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+    processor = SyncOperationProcessor(
+        custom_id=custom_id, client=None, container_type=container_type, project="test/project"
+    )
 
     # and
     processor.start()
@@ -121,7 +127,9 @@ def test_stop(metadata_file_mock, operation_storage_mock, rmdir_mock):
     operation_storage = operation_storage_mock.return_value
 
     # and
-    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+    processor = SyncOperationProcessor(
+        custom_id=custom_id, client=None, container_type=container_type, project="test/project"
+    )
 
     # and
     processor.start()
@@ -154,7 +162,9 @@ def test_cleanup_oserror_not_raising_toplevel_exception(rmdir_mock):
     container_type = ContainerType.RUN
 
     # and
-    processor = SyncOperationProcessor(custom_id=custom_id, container_type=container_type)
+    processor = SyncOperationProcessor(
+        custom_id=custom_id, client=None, container_type=container_type, project="test/project"
+    )
 
     # when
     processor.cleanup()  # no exception raised
@@ -171,7 +181,7 @@ def test_metadata(metadata_file_mock, _):
     container_type = ContainerType.RUN
 
     # when
-    SyncOperationProcessor(custom_id, container_type=container_type)
+    SyncOperationProcessor(custom_id=custom_id, client=None, container_type=container_type, project="test/project")
 
     # then
     metadata = metadata_file_mock.call_args_list[0][1]["metadata"]

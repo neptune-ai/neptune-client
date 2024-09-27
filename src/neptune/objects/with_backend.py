@@ -16,6 +16,7 @@
 __all__ = ["WithBackend"]
 
 import abc
+import os
 from contextlib import AbstractContextManager
 from types import TracebackType
 from typing import (
@@ -23,11 +24,18 @@ from typing import (
     Type,
 )
 
+from neptune_api.credentials import Credentials
+
+from neptune import ANONYMOUS_API_TOKEN
+from neptune.exceptions import NeptuneMissingApiTokenException
 from neptune.internal.backends.api_model import Project
 from neptune.internal.backends.factory import get_backend
+from neptune.internal.backends.hosted_neptune_backend_v2 import HostedNeptuneBackendV2
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.project_name_lookup import project_name_lookup
+from neptune.internal.constants import ANONYMOUS_API_TOKEN_CONTENT
 from neptune.internal.container_type import ContainerType
+from neptune.internal.envs import API_TOKEN_ENV_NAME
 from neptune.internal.id_formats import (
     QualifiedName,
     UniqueId,
@@ -54,6 +62,18 @@ class WithBackend(AbstractContextManager, abc.ABC):
 
         self._mode = mode
         self._backend: NeptuneBackend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
+
+        if api_token is None:
+            api_token = os.getenv(API_TOKEN_ENV_NAME)
+
+        if api_token == ANONYMOUS_API_TOKEN:
+            api_token = ANONYMOUS_API_TOKEN_CONTENT
+
+        if api_token is None:
+            raise NeptuneMissingApiTokenException()
+
+        self._client = HostedNeptuneBackendV2(Credentials.from_api_key(api_token)) if mode == Mode.SYNC else None
+
         self._project_qualified_name: Optional[str] = conform_optional(project, QualifiedName)
         self._project_api_object: Project = project_name_lookup(
             backend=self._backend,
