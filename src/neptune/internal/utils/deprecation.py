@@ -46,7 +46,11 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
         def inner(*args, **kwargs):
             if deprecated_kwarg_name in kwargs:
                 if required_kwarg_name in kwargs:
-                    raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
+                    raise NeptuneParametersCollision(
+                        required_kwarg_name,
+                        deprecated_kwarg_name,
+                        method_name=f.__name__,
+                    )
 
                 warn_once(
                     message=f"Parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
@@ -61,3 +65,17 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
         return inner
 
     return deco
+
+
+def model_registry_deprecation(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        warn_once(
+            "Neptune's model registry has been deprecated and will be removed by the end of the year."
+            "Use runs to store model metadata instead. For more, see https://docs.neptune.ai/model_registry/."
+            "If you are already using the model registry, you can migrate existing metadata to runs."
+            "Learn how: https://docs.neptune.ai/model_registry/migrate_to_runs/."
+        )
+        return func(*args, **kwargs)
+
+    return inner

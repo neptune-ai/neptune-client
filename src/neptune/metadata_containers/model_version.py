@@ -49,6 +49,7 @@ from neptune.internal.init.parameters import (
 from neptune.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.internal.state import ContainerState
 from neptune.internal.utils import verify_type
+from neptune.internal.utils.deprecation import model_registry_deprecation
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
@@ -160,6 +161,7 @@ class ModelVersion(MetadataContainer):
 
     container_type = ContainerType.MODEL_VERSION
 
+    @model_registry_deprecation
     def __init__(
         self,
         with_id: Optional[str] = None,

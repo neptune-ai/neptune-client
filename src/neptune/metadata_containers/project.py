@@ -41,6 +41,7 @@ from neptune.internal.utils import (
     verify_type,
     verify_value,
 )
+from neptune.internal.utils.deprecation import model_registry_deprecation
 from neptune.metadata_containers import MetadataContainer
 from neptune.metadata_containers.abstract import NeptuneObjectCallback
 from neptune.metadata_containers.utils import (
@@ -330,6 +331,7 @@ class Project(MetadataContainer):
             progress_bar=progress_bar,
         )
 
+    @model_registry_deprecation
     def fetch_models_table(
         self,
         *,

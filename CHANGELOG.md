@@ -1,3 +1,8 @@
+## neptune 1.12.0
+
+### Changes
+- Added deprecation notice to model/model_version endpoints ([#1876](https://github.com/neptune-ai/neptune-client/pull/1876))
+
 ## neptune 1.11.1
 
 ### Fixes
