@@ -1,3 +1,11 @@
+## neptune 1.12.0
+
+### Changes
+- Dropped support for Python 3.7 ([#1864](https://github.com/neptune-ai/neptune-client/pull/1864))
+
+### Fixes
+- Fixed support for additional Seaborn figure types ([#1864](https://github.com/neptune-ai/neptune-client/pull/1864))
+
 ## neptune 1.11.1
 
 ### Fixes

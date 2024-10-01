@@ -9,7 +9,7 @@ style = "semver"
 pattern = "default-unprefixed"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 
 # Python lack of functionalities from future versions
 importlib-metadata = { version = "*", python = "<3.8" }
@@ -42,7 +42,7 @@ pandas = "*"
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
-neptune-detectron2 = { version = "*", optional = true, python = ">=3.7"}
+neptune-detectron2 = { version = "*", optional = true, python = ">=3.8"}
 neptune-fastai = { version = "*", optional = true }
 neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
