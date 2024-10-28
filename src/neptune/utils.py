@@ -46,11 +46,16 @@ from neptune.typing import (
 logger = get_logger()
 
 
-def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
+def stringify_unsupported(
+    value: Any,
+    expand: bool = False,
+) -> Union[StringifyValue, Mapping]:
     """Helper function that converts unsupported values in a collection or dictionary to strings.
 
     Args:
         value (Any): A dictionary with values or a collection
+        expand (bool, optional): If True, the function will expand series to store each item as a key-value pair.
+            Otherwise, the entire series will be logged as a string. Defaults to False.
 
     Example:
         >>> import neptune
@@ -65,9 +70,9 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
     """
     if isinstance(value, MutableMapping):
-        return {str(k): stringify_unsupported(v) for k, v in value.items()}
-    if isinstance(value, list):
-        return {str(i): stringify_unsupported(v) for i, v in enumerate(value)}
+        return {str(k): stringify_unsupported(v, expand=expand) for k, v in value.items()}
+    if expand and isinstance(value, (list, tuple, set)):
+        return {str(i): stringify_unsupported(v, expand=True) for i, v in enumerate(value)}
 
     return StringifyValue(value=value)
 

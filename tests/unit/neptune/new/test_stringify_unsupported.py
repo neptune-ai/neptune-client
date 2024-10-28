@@ -322,7 +322,13 @@ class TestStringifyUnsupported:
 
     def test_assign__dict(self, run):
         with assert_unsupported_warning():
-            run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            run["unsupported"] = {
+                "a": Obj(),
+                "b": "Test",
+                "c": 25,
+                "d": 1997,
+                "e": {"f": Boolean(True)},
+            }
 
         with assert_no_warnings():
             run["stringified"] = stringify_unsupported(
@@ -330,21 +336,36 @@ class TestStringifyUnsupported:
             )
 
         with assert_no_warnings():
-            run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
+            run["regular"] = {
+                "a": str(Obj()),
+                "b": "Test",
+                "c": 25,
+                "d": 1997,
+                "e": {"f": Boolean(True)},
+            }
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
     def test_assign__mutable_mapping(self, run):
         with assert_no_warnings():
-
             run["stringified_mutable_mapping"] = stringify_unsupported(
                 CustomMutableMapping({5: None, "b": None, "c": (None, Obj())})
             )
 
     def test_assign__dict__reassign(self, run):
         with assert_unsupported_warning():
-            run["unsupported"] = {"a": Obj(), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
-            run["unsupported"] = {"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}}
+            run["unsupported"] = {
+                "a": Obj(),
+                "b": "Test",
+                "c": 25,
+                "d": 1997,
+                "e": {"f": Boolean(True)},
+            }
+            run["unsupported"] = {
+                "a": Obj(name="B"),
+                "d": 12,
+                "e": {"f": Boolean(False)},
+            }
 
         with assert_no_warnings():
             run["stringified"] = stringify_unsupported(
@@ -353,8 +374,18 @@ class TestStringifyUnsupported:
             run["stringified"] = stringify_unsupported({"a": Obj(name="B"), "d": 12, "e": {"f": Boolean(False)}})
 
         with assert_no_warnings():
-            run["regular"] = {"a": str(Obj()), "b": "Test", "c": 25, "d": 1997, "e": {"f": Boolean(True)}}
-            run["regular"] = {"a": str(Obj(name="B")), "d": 12, "e": {"f": Boolean(False)}}
+            run["regular"] = {
+                "a": str(Obj()),
+                "b": "Test",
+                "c": 25,
+                "d": 1997,
+                "e": {"f": Boolean(True)},
+            }
+            run["regular"] = {
+                "a": str(Obj(name="B")),
+                "d": 12,
+                "e": {"f": Boolean(False)},
+            }
 
         assert run["regular"].fetch() == run["stringified"].fetch()
 
@@ -461,16 +492,29 @@ class TestStringifyUnsupported:
 
     def test_extend__dict(self, run):
         with assert_unsupported_warning():
-            run["unsupported"].extend({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
+            run["unsupported"].extend(
+                {
+                    "zz": [1.0, 2.0, 3.0, 4.0, 5.0],
+                    "bb": [Obj(), Obj(), Obj(), Obj(), Obj()],
+                }
+            )
 
         with assert_no_warnings():
             run["stringified"].extend(
-                stringify_unsupported({"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [Obj(), Obj(), Obj(), Obj(), Obj()]})
+                stringify_unsupported(
+                    {
+                        "zz": [1.0, 2.0, 3.0, 4.0, 5.0],
+                        "bb": [Obj(), Obj(), Obj(), Obj(), Obj()],
+                    }
+                )
             )
 
         with assert_no_warnings():
             run["regular"].extend(
-                {"zz": [1.0, 2.0, 3.0, 4.0, 5.0], "bb": [str(Obj()), str(Obj()), str(Obj()), str(Obj()), str(Obj())]}
+                {
+                    "zz": [1.0, 2.0, 3.0, 4.0, 5.0],
+                    "bb": [str(Obj()), str(Obj()), str(Obj()), str(Obj()), str(Obj())],
+                }
             )
 
         assert run["regular/zz"].fetch_values().equals(run["stringified/zz"].fetch_values())
@@ -544,3 +588,18 @@ class TestStringifyUnsupported:
         assert run["neg_infinity"].fetch() == "-inf"
 
         assert math.isnan(float(run["nan"].fetch()))
+
+    def test_stringify_unsupported_expand(self, run):
+        data = {
+            "a": [1, 2, 3],
+            "b": {"c": 4, "d": 5},
+            "e": [{"f": (6, 7)}, {"g": 8}],
+        }
+
+        with assert_no_warnings():
+            run["data_expanded"] = stringify_unsupported(data, expand=True)
+
+        assert run["data_expanded/a/0"].fetch() == 1
+        assert run["data_expanded/b/c"].fetch() == 4
+        assert run["data_expanded/e/0/f/0"].fetch() == 6
+        assert run["data_expanded/e/1/g"].fetch() == 8
