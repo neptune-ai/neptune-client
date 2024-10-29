@@ -182,6 +182,12 @@ class TestImage(unittest.TestCase):
         # then
         self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
 
+        # when
+        result = get_html_content(fig, include_plotlyjs="cdn")
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
+
     def test_get_html_from_plotly(self):
         # given
         df = px.data.tips()
@@ -196,6 +202,12 @@ class TestImage(unittest.TestCase):
 
         # when
         result = get_html_content(fig)
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
+
+        # when
+        result = get_html_content(fig, include_plotlyjs="cdn")
 
         # then
         self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))

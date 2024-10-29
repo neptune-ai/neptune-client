@@ -75,8 +75,8 @@ def get_image_content(image, autoscale=True) -> Optional[bytes]:
     return content
 
 
-def get_html_content(chart) -> Optional[str]:
-    content = _to_html(chart)
+def get_html_content(chart, **kwargs) -> Optional[str]:
+    content = _to_html(chart, **kwargs)
 
     return content
 
@@ -112,14 +112,14 @@ def _image_to_bytes(image, autoscale) -> bytes:
     raise TypeError("image is {}".format(type(image)))
 
 
-def _to_html(chart) -> str:
+def _to_html(chart, **kwargs) -> str:
     if _is_matplotlib_pyplot(chart):
         chart = chart.gcf()
 
     if is_matplotlib_figure(chart):
         try:
             chart = _matplotlib_to_plotly(chart)
-            return _export_plotly_figure(chart)
+            return _export_plotly_figure(chart, **kwargs)
         except ImportError:
             logger.warning("Plotly not installed. Logging plot as an image.")
             return _image_content_to_html(_get_figure_image_data(chart))
@@ -133,7 +133,7 @@ def _to_html(chart) -> str:
         return _export_pandas_dataframe_to_html(chart)
 
     elif is_plotly_figure(chart):
-        return _export_plotly_figure(chart)
+        return _export_plotly_figure(chart, **kwargs)
 
     elif is_altair_chart(chart):
         return _export_altair_chart(chart)
@@ -316,9 +316,9 @@ def _export_pandas_dataframe_to_html(table):
     return buffer.getvalue()
 
 
-def _export_plotly_figure(image):
+def _export_plotly_figure(image, **kwargs):
     buffer = StringIO()
-    image.write_html(buffer)
+    image.write_html(buffer, include_plotlyjs=kwargs.get("include_plotlyjs", True))
     buffer.seek(0)
     return buffer.getvalue()
 

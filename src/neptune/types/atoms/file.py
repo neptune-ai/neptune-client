@@ -214,7 +214,10 @@ class File(Atom):
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
 
     @staticmethod
-    def as_html(chart) -> "File":
+    def as_html(
+        chart,
+        **kwargs,
+    ) -> "File":
         """Converts an object to an HTML File value object.
 
         This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts
@@ -224,6 +227,11 @@ class File(Atom):
             chart: An object to be converted.
                 Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib`, `Seaborn` interactive charts,
                 and `Pandas` `DataFrame` objects.
+            **kwargs: Optional keyword-only arguments.
+                Currently, the only accepted keyword argument is
+                [`include_plotlyjs`](https://plotly.com/python-api-reference/generated/plotly.io.write_html.html).
+                We recommend overriding the default value of `include_plotlyjs` to `"cdn"`
+                to reduce the size of uploaded Plotly charts when using Neptune SaaS.
 
         Returns:
             ``File``: value object with converted object.
@@ -251,7 +259,7 @@ class File(Atom):
         .. _as_html docs page:
            https://docs.neptune.ai/api/field_types#as_html
         """
-        content = get_html_content(chart)
+        content = get_html_content(chart, **kwargs)
         return File.from_content(content if content is not None else "", extension="html")
 
     @staticmethod
@@ -286,13 +294,13 @@ class File(Atom):
         return File.from_content(content if content is not None else b"", extension="pkl")
 
     @staticmethod
-    def create_from(value) -> "File":
+    def create_from(value, **kwargs) -> "File":
         if isinstance(value, str):
             return File(path=value)
         elif File.is_convertable_to_image(value):
             return File.as_image(value)
         elif File.is_convertable_to_html(value):
-            return File.as_html(value)
+            return File.as_html(value, **kwargs)
         elif is_numpy_array(value):
             raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
         elif is_pandas_dataframe(value):
@@ -317,10 +325,19 @@ class File(Atom):
 
     @staticmethod
     def is_convertable_to_image(value):
-        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure, is_seaborn_figure)
+        convertable_to_img_predicates = (
+            is_pil_image,
+            is_matplotlib_figure,
+            is_seaborn_figure,
+        )
         return any(predicate(value) for predicate in convertable_to_img_predicates)
 
     @staticmethod
     def is_convertable_to_html(value):
-        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure, is_seaborn_figure)
+        convertable_to_html_predicates = (
+            is_altair_chart,
+            is_bokeh_figure,
+            is_plotly_figure,
+            is_seaborn_figure,
+        )
         return any(predicate(value) for predicate in convertable_to_html_predicates)

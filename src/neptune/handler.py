@@ -119,11 +119,18 @@ class Handler(SupportsNamespaces):
         self[key].assign(value)
 
     def __getattr__(self, item: str):
-        run_level_methods = {"exists", "get_structure", "print_structure", "stop", "sync", "wait"}
+        run_level_methods = {
+            "exists",
+            "get_structure",
+            "print_structure",
+            "stop",
+            "sync",
+            "wait",
+        }
 
         if item in run_level_methods:
             raise AttributeError(
-                "You're invoking an object-level method on a handler for a namespace" "inside the object.",
+                "You're invoking an object-level method on a handler for a namespace inside the object.",
                 f"""
                                  For example: You're trying run[{self._path}].{item}()
                                  but you probably want run.{item}().
@@ -217,7 +224,7 @@ class Handler(SupportsNamespaces):
                 attr.process_assignment(value, wait=wait)
 
     @check_protected_paths
-    def upload(self, value, *, wait: bool = False) -> None:
+    def upload(self, value, *, wait: bool = False, **kwargs) -> None:
         """Uploads the provided file under the specified field path.
 
         Args:
@@ -225,7 +232,11 @@ class Handler(SupportsNamespaces):
             wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
                 Defaults to `False`.
-
+            **kwargs: Optional keyword-only arguments.
+                Currently, the only accepted keyword argument is
+                [`include_plotlyjs`](https://plotly.com/python-api-reference/generated/plotly.io.write_html.html).
+                We recommend overriding the default value of `include_plotlyjs` to `"cdn"`
+                to reduce the size of uploaded Plotly charts when using Neptune SaaS.
         Examples:
             >>> import neptune
             >>> run = neptune.init_run()
@@ -246,7 +257,7 @@ class Handler(SupportsNamespaces):
            https://docs.neptune.ai/api/field_types#upload
 
         """
-        value = FileVal.create_from(value)
+        value = FileVal.create_from(value, **kwargs)
 
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
@@ -571,7 +582,12 @@ class Handler(SupportsNamespaces):
         """
         return self._pass_call_to_attr(function_name="fetch_last")
 
-    def fetch_values(self, *, include_timestamp: Optional[bool] = True, progress_bar: Optional[ProgressBarType] = None):
+    def fetch_values(
+        self,
+        *,
+        include_timestamp: Optional[bool] = True,
+        progress_bar: Optional[ProgressBarType] = None,
+    ):
         """Fetches all values stored in the series from Neptune.
 
         Available for the following field types:
