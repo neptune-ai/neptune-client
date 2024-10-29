@@ -63,7 +63,7 @@ def stringify_unsupported(
         >>> complex_dict = {"tuple": ("hi", 1), "metric": 0.87}
         >>> run["complex_dict"] = complex_dict
         >>> # (as of 1.0.0) error - tuple is not a supported type
-        ... from neptune.utils import stringify_unsupported
+        >>> from neptune.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
         >>> run["complex_dict"].fetch()
         >>> # {'metric': 0.87, 'tuple': "('hi', 1)"} - tuple logged as string
@@ -72,7 +72,7 @@ def stringify_unsupported(
         >>> # {'metric': 0.87, 'tuple': {'0': 'hi', '1': 1} - tuple logged as an enumerated dictionary
 
         For more information, see:
-        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
+        https://docs.neptune.ai/api/utils/#stringify_unsupported
     """
     if isinstance(value, MutableMapping):
         return {str(k): stringify_unsupported(v, expand=expand) for k, v in value.items()}
