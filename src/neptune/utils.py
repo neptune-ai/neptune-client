@@ -54,8 +54,8 @@ def stringify_unsupported(
 
     Args:
         value (Any): A dictionary with values or a collection
-        expand (bool, optional): If True, the function will expand series to store each item as a key-value pair.
-            Otherwise, the entire series will be logged as a string. Defaults to False.
+        expand (bool, optional): If True, the function will expand series to store each item as an
+        enumerated key-value pair. Otherwise, the entire series will be logged as a string. Defaults to False.
 
     Example:
         >>> import neptune
@@ -65,6 +65,11 @@ def stringify_unsupported(
         >>> # (as of 1.0.0) error - tuple is not a supported type
         ... from neptune.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
+        >>> run["complex_dict"].fetch()
+        >>> # {'metric': 0.87, 'tuple': "('hi', 1)"} - tuple logged as string
+        >>> run["complex_dict_expanded"] = stringify_unsupported(complex_dict, expanded=True)
+        >>> run["complex_dict_expanded"].fetch()
+        >>> # {'metric': 0.87, 'tuple': {'0': 'hi', '1': 1} - tuple logged as an enumerated dictionary
 
         For more information, see:
         https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
