@@ -230,8 +230,7 @@ class File(Atom):
             **kwargs: Optional keyword-only arguments.
                 Currently, the only accepted keyword argument is
                 [`include_plotlyjs`](https://plotly.com/python-api-reference/generated/plotly.io.write_html.html).
-                We recommend overriding the default value of `include_plotlyjs` to `"cdn"`
-                to reduce the size of uploaded Plotly charts when using Neptune SaaS.
+                We recommend passing `include_plotlyjs="cdn"` for better performance when using Neptune SaaS.
 
         Returns:
             ``File``: value object with converted object.
