@@ -501,6 +501,7 @@ class TestPlotObjectsAssignment(BaseE2ETest):
     def test_matplotlib_figure(self, container: MetadataContainer):
         figure = generate_matplotlib_figure()
         container["matplotlib_figure"] = figure
+        container["matplotlib_figure_cdn"] = File.as_html(figure, include_plotlyjs="cdn")
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_altair_chart(self, container: MetadataContainer):
@@ -516,6 +517,7 @@ class TestPlotObjectsAssignment(BaseE2ETest):
     def test_plotly_figure(self, container: MetadataContainer):
         plotly_figure = generate_plotly_figure()
         container["plotly_figure"] = plotly_figure
+        container["plotly_figure_cdn"].upload(plotly_figure, include_plotlyjs="cdn")
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_seaborn_figure(self, container: MetadataContainer):
