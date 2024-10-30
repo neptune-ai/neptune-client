@@ -1,7 +1,7 @@
 ## neptune 1.13.0
 
 ### Features
-- Added optional `expand` flag to `stringify_unsupported` to expand series ([#1862](https://github.com/neptune-ai/neptune-client/pull/1862))
+- Added optional `expand` flag to `stringify_unsupported()` to expand series ([#1862](https://github.com/neptune-ai/neptune-client/pull/1862))
 
 ## neptune 1.12.0
 
