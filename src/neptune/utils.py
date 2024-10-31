@@ -46,11 +46,16 @@ from neptune.typing import (
 logger = get_logger()
 
 
-def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
+def stringify_unsupported(
+    value: Any,
+    expand: bool = False,
+) -> Union[StringifyValue, Mapping]:
     """Helper function that converts unsupported values in a collection or dictionary to strings.
 
     Args:
         value (Any): A dictionary with values or a collection
+        expand (bool, optional): If True, the function expands series to store each item as an
+        enumerated key-value pair. Otherwise, the entire series is logged as a string. Defaults to False.
 
     Example:
         >>> import neptune
@@ -58,14 +63,21 @@ def stringify_unsupported(value: Any) -> Union[StringifyValue, Mapping]:
         >>> complex_dict = {"tuple": ("hi", 1), "metric": 0.87}
         >>> run["complex_dict"] = complex_dict
         >>> # (as of 1.0.0) error - tuple is not a supported type
-        ... from neptune.utils import stringify_unsupported
+        >>> from neptune.utils import stringify_unsupported
         >>> run["complex_dict"] = stringify_unsupported(complex_dict)
+        >>> run["complex_dict"].fetch()
+        >>> # {'metric': 0.87, 'tuple': "('hi', 1)"} - tuple logged as string
+        >>> run["complex_dict_expanded"] = stringify_unsupported(complex_dict, expand=True)
+        >>> run["complex_dict_expanded"].fetch()
+        >>> # {'metric': 0.87, 'tuple': {'0': 'hi', '1': 1} - tuple logged as an enumerated dictionary
 
         For more information, see:
-        https://docs.neptune.ai/setup/neptune-client_1-0_release_changes/#no-more-implicit-casting-to-string
+        https://docs.neptune.ai/api/utils/#stringify_unsupported
     """
     if isinstance(value, MutableMapping):
-        return {str(k): stringify_unsupported(v) for k, v in value.items()}
+        return {str(k): stringify_unsupported(v, expand=expand) for k, v in value.items()}
+    if expand and isinstance(value, (list, tuple, set)):
+        return {str(i): stringify_unsupported(v, expand=True) for i, v in enumerate(value)}
 
     return StringifyValue(value=value)
 

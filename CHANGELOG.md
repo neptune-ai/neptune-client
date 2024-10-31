@@ -1,6 +1,7 @@
 ## neptune 1.13.0
 
 ### Features
+- Added optional `expand` flag to `stringify_unsupported()` to expand series ([#1862](https://github.com/neptune-ai/neptune-client/pull/1862))
 - Added optional `include_plotlyjs` keyword-only parameter to `upload()` and `File.as_html()` methods to fetch Plotly.js library from CDN ([#1881](https://github.com/neptune-ai/neptune-client/pull/1876))
 
 ## neptune 1.12.0
