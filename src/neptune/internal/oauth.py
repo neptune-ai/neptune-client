@@ -63,7 +63,7 @@ class NeptuneAuth(AuthBase):
 
     @with_api_exceptions_handler
     def refresh_token_if_needed(self, force=False):
-        if self.token_expires_at - time.time() < 30 or force:
+        if (self.token_expires_at - time.time()) < 30 or force:
             self._refresh_token()
 
     def _refresh_token(self):
