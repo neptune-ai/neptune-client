@@ -52,7 +52,7 @@ class NeptuneAuth(AuthBase):
         try:
             return self._add_token(r)
         except TokenExpiredError:
-            self._refresh_token()
+            self.refresh_token_if_needed(force=True)
             return self._add_token(r)
 
     def _add_token(self, r):
@@ -62,8 +62,8 @@ class NeptuneAuth(AuthBase):
         return r
 
     @with_api_exceptions_handler
-    def refresh_token_if_needed(self):
-        if self.token_expires_at - time.time() < 30:
+    def refresh_token_if_needed(self, force=False):
+        if self.token_expires_at - time.time() < 30 or force:
             self._refresh_token()
 
     def _refresh_token(self):
