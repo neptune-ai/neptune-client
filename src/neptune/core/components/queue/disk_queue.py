@@ -75,6 +75,7 @@ class DiskQueue(WithResources, Generic[T]):
         max_file_size: int = 64 * 1024**2,
         max_batch_size_bytes: Optional[int] = None,
         extension: str = "log",
+        no_cleanup: Optional[bool] = False,
     ) -> None:
         self._data_path: Path = data_path.resolve()
         self._to_dict: Callable[[T], dict] = to_dict
@@ -97,6 +98,8 @@ class DiskQueue(WithResources, Generic[T]):
         self._should_skip_to_ack = True
 
         self._empty_cond = threading.Condition(lock)
+
+        self._no_cleanup = no_cleanup
 
     @property
     def data_path(self) -> Path:
@@ -239,7 +242,7 @@ class DiskQueue(WithResources, Generic[T]):
     ) -> None:
         self.flush()
         self.close()
-        if self.is_empty():
+        if self.is_empty() and not self._no_cleanup:
             self.cleanup()
 
 
@@ -250,12 +253,17 @@ def get_all_log_files(data_path: Path, extension: str) -> Deque[LogFile]:
         return deque([LogFile(data_path, 1, extension=extension)])
 
     sorted_local_data_files = sorted(
-        local_data_files, key=lambda file_path: extract_version_from_file_name(Path(file_path), extension)
+        local_data_files,
+        key=lambda file_path: extract_version_from_file_name(Path(file_path), extension),
     )
 
     return deque(
         [
-            LogFile(data_path, extract_version_from_file_name(Path(file_path), extension), extension=extension)
+            LogFile(
+                data_path,
+                extract_version_from_file_name(Path(file_path), extension),
+                extension=extension,
+            )
             for file_path in sorted_local_data_files
         ]
     )
