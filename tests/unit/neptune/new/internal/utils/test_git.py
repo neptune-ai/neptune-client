@@ -95,7 +95,7 @@ def test_get_repo_from_git_ref():
 @patch("git.Repo")
 def test_get_diff(mock_repo):
     # when
-    get_diff(mock_repo, "some_ref", no_ext_diff=True)
+    get_diff(mock_repo, "some_ref")
 
     # then
     mock_repo.git.diff.assert_called_once_with("some_ref", index=False, no_ext_diff=True)
@@ -107,7 +107,7 @@ def test_get_diff_command_error(mock_repo):
     mock_repo.git.diff.side_effect = git.GitCommandError("diff")
 
     # when
-    diff = get_diff(mock_repo, "some_ref", no_ext_diff=True)
+    diff = get_diff(mock_repo, "some_ref")
 
     # then
     mock_repo.git.diff.assert_called_once_with("some_ref", index=False, no_ext_diff=True)
