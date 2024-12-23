@@ -1,7 +1,7 @@
 ## neptune 1.14.0
 
 ### Features
-- Added `--no-cleanup` flag to `neptune sync` to prevent cleanup of local logs after synchronization
+- Added `--no-cleanup` flag to `neptune sync` to prevent cleanup of local logs after synchronization ([#1892](https://github.com/neptune-ai/neptune-client/pull/1892))
 
 ## neptune 1.13.0
 
