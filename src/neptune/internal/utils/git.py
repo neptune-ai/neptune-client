@@ -71,7 +71,9 @@ def get_git_repo(repo_path):
         warnings.warn("GitPython could not be initialized")
 
 
-def get_repo_from_git_ref(git_ref: Union[GitRef, GitRefDisabled]) -> Optional["git.Repo"]:
+def get_repo_from_git_ref(
+    git_ref: Union[GitRef, GitRefDisabled],
+) -> Optional["git.Repo"]:
     if git_ref == GitRef.DISABLED:
         return None
 
@@ -134,7 +136,7 @@ def get_diff(repo: "git.Repo", commit_ref: str) -> Optional[str]:
         from git.exc import GitCommandError
 
         try:
-            diff = repo.git.diff(commit_ref, index=False)
+            diff = repo.git.diff(commit_ref, index=False, no_ext_diff=True)
 
             # add a newline at the end (required to be a valid `patch` file)
             if diff and diff[-1] != "\n":
@@ -183,7 +185,6 @@ def get_upstream_index_sha(repo: "git.Repo") -> Optional[str]:
     upstream_commit = get_relevant_upstream_commit(repo)
 
     if upstream_commit and upstream_commit != repo.head.commit:
-
         return upstream_commit.hexsha
 
 
