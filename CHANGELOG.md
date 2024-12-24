@@ -1,3 +1,8 @@
+## neptune 1.14.0
+
+### Changes
+- Neptune captures diffs in standard git format ([#1891](https://github.com/neptune-ai/neptune-client/pull/1891))
+
 ## neptune 1.13.0
 
 ### Features
