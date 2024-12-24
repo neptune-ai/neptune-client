@@ -140,12 +140,13 @@ class Daemon(threading.Thread):
                                     " To increase the limits for your workspace, please reach out to sales@neptune.ai.",
                                     exception=NeptuneWarning,
                                 )
-                            logger.warning(
-                                "Experiencing connection interruptions."
-                                " Will try to reestablish communication with Neptune."
-                                " Internal exception was: %s",
-                                e.cause.__class__.__name__,
-                            )
+                            else:
+                                logger.warning(
+                                    "Experiencing connection interruptions."
+                                    " Will try to reestablish communication with Neptune."
+                                    " Internal exception was: %s",
+                                    e.cause.__class__.__name__,
+                                )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)

@@ -154,12 +154,13 @@ class ExecutionDirectory:
                                 " To increase the limits for your workspace, please reach out to sales@neptune.ai.",
                                 exception=NeptuneWarning,
                             )
-                        logger.warning(
-                            "Experiencing connection interruptions."
-                            " Will try to reestablish communication with Neptune."
-                            " Internal exception was: %s",
-                            ex.cause.__class__.__name__,
-                        )
+                        else:
+                            logger.warning(
+                                "Experiencing connection interruptions."
+                                " Will try to reestablish communication with Neptune."
+                                " Internal exception was: %s",
+                                ex.cause.__class__.__name__,
+                            )
 
     def move(
         self,
