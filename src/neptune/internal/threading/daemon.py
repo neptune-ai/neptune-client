@@ -21,6 +21,10 @@ import threading
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
@@ -78,7 +82,10 @@ class Daemon(threading.Thread):
 
     def _is_interrupted(self) -> bool:
         with self._wait_condition:
-            return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
+            return self._state in (
+                Daemon.DaemonState.INTERRUPTED,
+                Daemon.DaemonState.STOPPED,
+            )
 
     def run(self):
         with self._wait_condition:
@@ -125,6 +132,14 @@ class Daemon(threading.Thread):
                         return result
                     except NeptuneConnectionLostException as e:
                         if self_.last_backoff_time == 0:
+                            if e.cause.__class__.__name__ == "HTTPTooManyRequests":
+                                warn_once(
+                                    "Looks like you're reaching the default workspace logging-rate limit."
+                                    " You can optimize your logging calls to reduce requests,"
+                                    " as mentioned here: https://docs.neptune.ai/help/reducing_requests/.\n"
+                                    " To increase the limits for your workspace, please reach out to sales@neptune.ai.",
+                                    exception=NeptuneWarning,
+                                )
                             logger.warning(
                                 "Experiencing connection interruptions."
                                 " Will try to reestablish communication with Neptune."

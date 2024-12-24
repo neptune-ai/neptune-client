@@ -19,7 +19,6 @@ __all__ = [
     "OfflineContainer",
     "AsyncContainer",
 ]
-
 import os
 import shutil
 import threading
@@ -40,6 +39,10 @@ from typing import (
 
 from neptune.cli.utils import get_qualified_name
 from neptune.common.exceptions import NeptuneConnectionLostException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.constants import ASYNC_DIRECTORY
 from neptune.core.components.operation_storage import OperationStorage
 from neptune.core.components.queue.disk_queue import DiskQueue
@@ -67,7 +70,13 @@ retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
 class ExecutionDirectory:
-    def __init__(self, path: Path, synced: bool, structure_version: StructureVersion, parent: Optional[Path] = None):
+    def __init__(
+        self,
+        path: Path,
+        synced: bool,
+        structure_version: StructureVersion,
+        parent: Optional[Path] = None,
+    ):
         self._path = path
         self._synced = synced
         self._structure_version = structure_version
@@ -93,7 +102,13 @@ class ExecutionDirectory:
         if self.path.exists():
             remove_directory_structure(self.path)
 
-    def sync(self, *, backend: "NeptuneBackend", container_id: UniqueId, container_type: ContainerType) -> None:
+    def sync(
+        self,
+        *,
+        backend: "NeptuneBackend",
+        container_id: UniqueId,
+        container_type: ContainerType,
+    ) -> None:
         operation_storage = OperationStorage(self.path)
         serializer: Callable[[Operation], Dict[str, Any]] = lambda op: op.to_dict()
 
@@ -131,6 +146,14 @@ class ExecutionDirectory:
                     except NeptuneConnectionLostException as ex:
                         if time.monotonic() - start_time > retries_timeout:
                             raise ex
+                        elif ex.cause.__class__.__name__ == "HTTPTooManyRequests":
+                            warn_once(
+                                "Looks like you're reaching the default workspace logging-rate limit."
+                                " You can optimize your logging calls to reduce requests,"
+                                " as mentioned here: https://docs.neptune.ai/help/reducing_requests/.\n"
+                                " To increase the limits for your workspace, please reach out to sales@neptune.ai.",
+                                exception=NeptuneWarning,
+                            )
                         logger.warning(
                             "Experiencing connection interruptions."
                             " Will try to reestablish communication with Neptune."
@@ -138,7 +161,13 @@ class ExecutionDirectory:
                             ex.cause.__class__.__name__,
                         )
 
-    def move(self, *, base_path: Path, target_container_id: UniqueId, container_type: ContainerType) -> None:
+    def move(
+        self,
+        *,
+        base_path: Path,
+        target_container_id: UniqueId,
+        container_type: ContainerType,
+    ) -> None:
         new_online_dir = get_container_dir(container_id=target_container_id, container_type=container_type)
         try:
             (base_path / ASYNC_DIRECTORY).mkdir(parents=True, exist_ok=True)
@@ -165,7 +194,13 @@ class Container(ABC):
         return all(map(lambda execution_dir: execution_dir.synced, self.execution_dirs))
 
     @abstractmethod
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None: ...
+    def sync(
+        self,
+        *,
+        base_path: Path,
+        backend: "NeptuneBackend",
+        project: Optional["Project"] = None,
+    ) -> None: ...
 
     def clear(self) -> None:
         for execution_dir in self.execution_dirs:
@@ -212,7 +247,13 @@ class AsyncContainer(Container):
     def experiment(self) -> Optional["ApiExperiment"]:
         return self._experiment
 
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
+    def sync(
+        self,
+        *,
+        base_path: Path,
+        backend: "NeptuneBackend",
+        project: Optional["Project"] = None,
+    ) -> None:
         assert self.experiment is not None  # mypy fix
 
         qualified_container_name = get_qualified_name(self.experiment)
@@ -227,7 +268,11 @@ class AsyncContainer(Container):
                 )
 
         self.clear()
-        logger.info("Synchronization of %s %s completed.", self.experiment.type.value, qualified_container_name)
+        logger.info(
+            "Synchronization of %s %s completed.",
+            self.experiment.type.value,
+            qualified_container_name,
+        )
 
 
 class OfflineContainer(Container):
@@ -259,7 +304,13 @@ class OfflineContainer(Container):
     def found(self) -> bool:
         return self._found
 
-    def sync(self, *, base_path: Path, backend: "NeptuneBackend", project: Optional["Project"] = None) -> None:
+    def sync(
+        self,
+        *,
+        base_path: Path,
+        backend: "NeptuneBackend",
+        project: Optional["Project"] = None,
+    ) -> None:
         assert project is not None  # mypy fix
 
         experiment = register_offline_container(
@@ -281,7 +332,11 @@ class OfflineContainer(Container):
             return
 
         qualified_container_name = get_qualified_name(experiment)
-        logger.info("Offline container %s registered as %s", self.container_id, qualified_container_name)
+        logger.info(
+            "Offline container %s registered as %s",
+            self.container_id,
+            qualified_container_name,
+        )
         logger.info("Synchronising %s", qualified_container_name)
 
         for execution_dir in self.execution_dirs:
@@ -292,7 +347,11 @@ class OfflineContainer(Container):
             )
 
         self.clear()
-        logger.info("Synchronization of %s %s completed.", experiment.type.value, qualified_container_name)
+        logger.info(
+            "Synchronization of %s %s completed.",
+            experiment.type.value,
+            qualified_container_name,
+        )
 
 
 def remove_directory(path: Path) -> None:
