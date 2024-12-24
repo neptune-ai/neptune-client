@@ -1,8 +1,8 @@
 # These owners will be the default owners for everything in
 # the repo. Unless a later match takes precedence,
-# @PatrykGala and @kgodlewski will be requested for
+# @neptune-ai/python-dev will be requested for
 # review when someone opens a pull request.
-/*               @PatrykGala @kgodlewski
+/*               @neptune-ai/python-devs
 
 # File/directory specific owners
-/README.md       @normandy7 @PatrykGala @kgodlewski
+/README.md       @neptune-ai/tech-writers @neptune-ai/python-devs
