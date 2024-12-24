@@ -1,3 +1,8 @@
+## neptune 1.14.0
+
+### Features
+- More descriptive warning message on hitting workspace logging-rate limits ([#1895](https://github.com/neptune-ai/neptune-client/pull/1895))
+
 ## neptune 1.13.0
 
 ### Features
