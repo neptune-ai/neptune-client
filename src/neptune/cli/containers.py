@@ -149,7 +149,8 @@ class ExecutionDirectory:
                         elif ex.cause.__class__.__name__ == "HTTPTooManyRequests":
                             warn_once(
                                 "You're hitting the logging-rate limit for your workspace."
-                                " See how to optimize the logging calls to reduce requests: https://docs.neptune.ai/help/reducing_requests/."
+                                " See how to optimize the logging calls to reduce requests: "
+                                "https://docs.neptune.ai/help/reducing_requests/."
                                 " To increase the limit for your workspace, contact sales@neptune.ai.",
                                 exception=NeptuneWarning,
                             )
