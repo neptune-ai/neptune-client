@@ -60,11 +60,12 @@ def status(path: Path) -> None:
 @click.command()
 @path_option
 @click.option(
+    "-o",
     "--object",
     "object_names",
     multiple=True,
     metavar="<object-name>",
-    help="object name (workspace/project/short-id or UUID for offline runs) to synchronize.",
+    help="object name (workspace/project/short-id or UUID for offline runs) to synchronize",
 )
 @click.option(
     "-p",
@@ -81,11 +82,21 @@ def status(path: Path) -> None:
     default=False,
     help="synchronize only the offline runs inside '.neptune' directory",
 )
+@click.option(
+    "-n",
+    "--num-threads",
+    "num_threads",
+    multiple=False,
+    type=int,
+    metavar="<num-threads>",
+    help="maximum number of parallel threads to use for synchronization",
+)
 def sync(
     path: Path,
     object_names: List[str],
     project_name: Optional[str],
     offline_only: Optional[bool],
+    num_threads: Optional[int],
 ) -> None:
     """Synchronizes objects with unsent data to the server.
 
@@ -125,7 +136,14 @@ def sync(
     \b
     # Synchronize only the offline runs to project "workspace/project"
     neptune sync --project workspace/project --offline-only
+
+    \b
+    # Synchronize all objects in the current directory using 5 parallel threads
+    neptune sync --num-threads 5
     """
+
+    if num_threads is not None and num_threads < 1:
+        raise click.BadParameter("num-threads must be greater than 0")
 
     backend = HostedNeptuneBackend(Credentials.from_token())
 
@@ -133,12 +151,28 @@ def sync(
         if object_names:
             raise click.BadParameter("--object and --offline-only are mutually exclusive")
 
-        SyncRunner.sync_all_offline(backend=backend, base_path=path, project_name=project_name)
+        SyncRunner.sync_all_offline(
+            backend=backend,
+            base_path=path,
+            project_name=project_name,
+            num_threads=num_threads,
+        )
 
     elif object_names:
-        SyncRunner.sync_selected(backend=backend, base_path=path, project_name=project_name, object_names=object_names)
+        SyncRunner.sync_selected(
+            backend=backend,
+            base_path=path,
+            project_name=project_name,
+            object_names=object_names,
+            num_threads=num_threads,
+        )
     else:
-        SyncRunner.sync_all(backend=backend, base_path=path, project_name=project_name)
+        SyncRunner.sync_all(
+            backend=backend,
+            base_path=path,
+            project_name=project_name,
+            num_threads=num_threads,
+        )
 
 
 @click.command()

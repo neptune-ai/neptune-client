@@ -1,3 +1,9 @@
+## neptune 1.14.0
+
+### Features
+- Added multithreading support to `neptune sync` with the new `--num-threads` parameter ([#1897](https://github.com/neptune-ai/neptune-client/pull/1897))
+- List of objects to be synced using `neptune sync` can now be specified using the `-o` short parameter ([#1897](https://github.com/neptune-ai/neptune-client/pull/1897))
+
 ## neptune 1.13.0
 
 ### Features
