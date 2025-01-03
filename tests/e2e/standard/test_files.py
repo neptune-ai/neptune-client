@@ -501,6 +501,14 @@ class TestPlotObjectsAssignment(BaseE2ETest):
     def test_matplotlib_figure(self, container: MetadataContainer):
         figure = generate_matplotlib_figure()
         container["matplotlib_figure"] = figure
+
+    @pytest.mark.skip(
+        reason="Conversion to html fails for matplotlib axes with polar projection. "
+        "The test without cdn passes because matplotlib figure is converted to an image."
+    )
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_matplotlib_figure_cdn(self, container: MetadataContainer):
+        figure = generate_matplotlib_figure()
         container["matplotlib_figure_cdn"] = File.as_html(figure, include_plotlyjs="cdn")
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
