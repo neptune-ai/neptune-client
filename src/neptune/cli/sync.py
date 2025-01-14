@@ -50,37 +50,58 @@ logger = get_logger(with_prefix=False)
 
 class SyncRunner:
     @staticmethod
-    def sync_all_offline(*, backend: "NeptuneBackend", base_path: Path, project_name: Optional[str] = None) -> None:
+    def sync_all_offline(
+        *,
+        backend: "NeptuneBackend",
+        base_path: Path,
+        project_name: Optional[str] = None,
+        no_cleanup: Optional[bool] = False,
+    ) -> None:
         containers = collect_containers(path=base_path, backend=backend)
 
-        project = get_project(project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend)
+        project = get_project(
+            project_name_flag=QualifiedName(project_name) if project_name else None,
+            backend=backend,
+        )
         if not project:
             raise CannotSynchronizeOfflineRunsWithoutProject
 
         for container in containers.offline_containers:
-            container.sync(base_path=base_path, backend=backend, project=project)
+            container.sync(base_path=base_path, backend=backend, project=project, no_cleanup=no_cleanup)
 
     @staticmethod
-    def sync_all(*, backend: "NeptuneBackend", base_path: Path, project_name: Optional[str] = None) -> None:
+    def sync_all(
+        *,
+        backend: "NeptuneBackend",
+        base_path: Path,
+        project_name: Optional[str] = None,
+        no_cleanup: Optional[bool] = False,
+    ) -> None:
         containers = collect_containers(path=base_path, backend=backend)
 
         if containers.unsynced_containers:
             for async_container in containers.unsynced_containers:
-                async_container.sync(base_path=base_path, backend=backend, project=None)
+                async_container.sync(base_path=base_path, backend=backend, project=None, no_cleanup=no_cleanup)
 
         if containers.offline_containers:
             project = get_project(
-                project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend
+                project_name_flag=QualifiedName(project_name) if project_name else None,
+                backend=backend,
             )
             if not project:
                 raise CannotSynchronizeOfflineRunsWithoutProject
 
             for offline_container in containers.offline_containers:
-                offline_container.sync(base_path=base_path, backend=backend, project=project)
+                offline_container.sync(base_path=base_path, backend=backend, project=project, no_cleanup=no_cleanup)
 
     @staticmethod
     def sync_selected(
-        *, backend: "NeptuneBackend", base_path: Path, project_name: Optional[str] = None, object_names: Sequence[str]
+        *,
+        backend: "NeptuneBackend",
+        base_path: Path,
+        project_name: Optional[str] = None,
+        object_names: Sequence[str],
+        no_cleanup: Optional[bool] = False,
     ) -> None:
         containers = collect_containers(path=base_path, backend=backend)
         async_selected = [QualifiedName(name) for name in object_names if not name.startswith(OFFLINE_NAME_PREFIX)]
@@ -91,6 +112,7 @@ class SyncRunner:
                 base_path=base_path,
                 container_names=async_selected,
                 containers=containers.async_containers,
+                no_cleanup=no_cleanup,
             )
 
         offline_selected = [
@@ -103,6 +125,7 @@ class SyncRunner:
                 container_names=offline_selected,
                 containers=containers.offline_containers,
                 project_name=project_name,
+                no_cleanup=no_cleanup,
             )
 
 
@@ -112,6 +135,7 @@ def sync_selected_async(
     base_path: Path,
     container_names: List["QualifiedName"],
     containers: List["AsyncContainer"],
+    no_cleanup: Optional[bool] = False,
 ) -> None:
     async_containers_ids = set()
     for container_name in container_names:
@@ -127,7 +151,7 @@ def sync_selected_async(
     selected_async_containers = [x for x in containers if x.container_id in async_containers_ids]
 
     for container in selected_async_containers:
-        container.sync(base_path=base_path, backend=backend, project=None)
+        container.sync(base_path=base_path, backend=backend, project=None, no_cleanup=no_cleanup)
 
 
 def sync_selected_offline(
@@ -137,8 +161,12 @@ def sync_selected_offline(
     container_names: List["UniqueId"],
     containers: List["OfflineContainer"],
     project_name: Optional[str] = None,
+    no_cleanup: Optional[bool] = False,
 ) -> None:
-    project = get_project(project_name_flag=QualifiedName(project_name) if project_name else None, backend=backend)
+    project = get_project(
+        project_name_flag=QualifiedName(project_name) if project_name else None,
+        backend=backend,
+    )
     if not project:
         raise CannotSynchronizeOfflineRunsWithoutProject
 
@@ -152,4 +180,4 @@ def sync_selected_offline(
             logger.warning("Offline container %s not found on disk.", container_id)
 
     for container in selected_offline_containers:
-        container.sync(base_path=base_path, backend=backend, project=project)
+        container.sync(base_path=base_path, backend=backend, project=project, no_cleanup=no_cleanup)

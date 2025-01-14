@@ -81,15 +81,23 @@ def status(path: Path) -> None:
     default=False,
     help="synchronize only the offline runs inside '.neptune' directory",
 )
+@click.option(
+    "--no-cleanup",
+    "no_cleanup",
+    is_flag=True,
+    default=False,
+    help="do not delete local logs after synchronization.",
+)
 def sync(
     path: Path,
     object_names: List[str],
     project_name: Optional[str],
     offline_only: Optional[bool],
+    no_cleanup: Optional[bool],
 ) -> None:
     """Synchronizes objects with unsent data to the server.
 
-     Neptune stores object data on disk in the '.neptune' directory. If an object executes offline
+    Neptune stores object data on disk in the '.neptune' directory. If an object executes offline
     or if the network is unavailable as the run executes,  the object data can be synchronized
     with the server with this command line utility.
 
@@ -125,6 +133,10 @@ def sync(
     \b
     # Synchronize only the offline runs to project "workspace/project"
     neptune sync --project workspace/project --offline-only
+
+    \b
+    # Do not delete local logs after synchronization
+    neptune sync --no-cleanup
     """
 
     backend = HostedNeptuneBackend(Credentials.from_token())
@@ -133,12 +145,23 @@ def sync(
         if object_names:
             raise click.BadParameter("--object and --offline-only are mutually exclusive")
 
-        SyncRunner.sync_all_offline(backend=backend, base_path=path, project_name=project_name)
+        SyncRunner.sync_all_offline(
+            backend=backend,
+            base_path=path,
+            project_name=project_name,
+            no_cleanup=no_cleanup,
+        )
 
     elif object_names:
-        SyncRunner.sync_selected(backend=backend, base_path=path, project_name=project_name, object_names=object_names)
+        SyncRunner.sync_selected(
+            backend=backend,
+            base_path=path,
+            project_name=project_name,
+            object_names=object_names,
+            no_cleanup=no_cleanup,
+        )
     else:
-        SyncRunner.sync_all(backend=backend, base_path=path, project_name=project_name)
+        SyncRunner.sync_all(backend=backend, base_path=path, project_name=project_name, no_cleanup=no_cleanup)
 
 
 @click.command()
