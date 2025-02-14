@@ -62,7 +62,7 @@ runs:
         flags: e2e,e2e-${{ inputs.name }},${{ inputs.os }},py${{ inputs.python-version }}
         fail_ci_if_error: false
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-artifacts
