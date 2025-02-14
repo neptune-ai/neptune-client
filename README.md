@@ -12,8 +12,6 @@
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://github.com/neptune-ai/examples">Examples</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/resources">Resource center</a>
-  <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://neptune.ai/blog">Blog</a>
 &nbsp;
   <hr />
@@ -21,19 +19,14 @@
 
 ## What is neptune.ai?
 
-Neptune is the most scalable experiment tracker for teams that train foundation models.<br>
+Neptune is an experiment tracker purpose-built for foundation model training.<br>
 <br>
-Log millions of runs, view and compare them all in seconds. Effortlessly monitor and visualize months-long model training with multiple steps and branches.<br>
-<br>
-Deploy Neptune on your infra from day one, track 100% of your metadata and get to the next big AI breakthrough faster.<br>
+With Neptune, you can monitor thousands of per-layer metrics—losses, gradients, and activations—at any scale. Visualize them with no lag and no missed spikes. Drill down into logs and debug training issues fast. Keep your model training stable while reducing wasted GPU cycles.<br>
 
-<a href="https://www.youtube.com/watch?v=bQzgnqM5J6U"><b>Watch a 3min explainer video →</b></a>
+<a href="https://youtu.be/0J4dsEq8i08"><b>Watch a 3min explainer video →</b></a>
 &nbsp;
 
-<a href="https://neptune.ai/demo"><b>Watch a 20min product demo →</b></a>
-&nbsp;
-
-<a href="https://app.neptune.ai/o/showcase/org/onboarding-project/runs/table?viewId=98f66b32-2279-4b73-8210-863021c440ac&product_tour_id=444083"><b>Play with a live example project in the Neptune app  →</b></a>
+<a href="https://scale.neptune.ai/o/neptune/org/LLM-training-example/runs/compare?viewId=9d0e032a-5a78-4a0e-81d1-98e0a7c81a8f&detailsTab=metadata&dash=charts&type=run&experimentOnly=true&compare=u0MsW4a1PJIUJ75nglpjHa9XUKFfAmcBRbLhNatCHX20"><b>Play with a live example project in the Neptune app  →</b></a>
 &nbsp;
 ## Getting started
 
@@ -56,107 +49,6 @@ run["test_accuracy"] = 0.84
 ```
 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-neptune/notebooks/hello_neptune.ipynb)
-&nbsp;
-
-&nbsp;
-## Core features
-
-**Log and display**
-
-Add a snippet to any step of your ML pipeline once. Decide what and how you want to log. Run a million times.
-
-* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, fastai, PyTorch, Lightning, TensorFlow/Keras, scikit-learn, 🤗 Transformers, XGBoost, Optuna.
-
-* <a href="https://docs.neptune.ai/logging/what_you_can_log/"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
-
-* <a href="https://docs.neptune.ai/usage/best_practices/"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
-&nbsp;
-
-&nbsp;
-<div align="center">
-      <img border="0" alt="all metadata metrics" src="https://neptune.ai/wp-content/uploads/2023/06/log_metrics.gif" width="600">
-    </a>
-</div>
-&nbsp;
-
-&nbsp;
-
-**Organize experiments**
-
-Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
-
-* <a href="https://docs.neptune.ai/about/namespaces_and_fields/"><b>Nested metadata structure:</b></a> the flexible API lets you customize the metadata logging structure however you want. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
-
-* <a href="https://docs.neptune.ai/app/custom_dashboard/"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
-
-* <a href="https://docs.neptune.ai/app/custom_views/"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
-&nbsp;
-
-&nbsp;
-<div align="center">
-      <img border="0" alt="organize dashboards" src="https://neptune.ai/wp-content/uploads/2023/06/organize_custom_dashboards.gif" width="600">
-    </a>
-</div>
-&nbsp;
-
-&nbsp;
-
-**Compare results**
-
-Visualize training live in the neptune.ai web app. See how different parameters and configs affect the results. Optimize models quicker.
-
-* <a href="https://docs.neptune.ai/app/comparison/"><b>Compare:</b></a> learning curves, parameters, images, datasets.
-
-* <a href="https://docs.neptune.ai/app/searching_table/"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
-
-* <a href="https://docs.neptune.ai/app/runs_table/"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
-
-* <a href="https://docs.neptune.ai/tutorials/monitoring_training_live/"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
-
-* <a href="https://docs.neptune.ai/app/group_by/"><b>Group by:</b></a> dataset versions, parameters.
-&nbsp;
-
-&nbsp;
-<div align="center">
-      <img border="0" alt="compare, search, filter" src="https://neptune.ai/wp-content/uploads/2023/06/organize_search_sort_filter.gif" width="600">
-    </a>
-</div>
-&nbsp;
-
-&nbsp;
-
-**Version models**
-
-Version, review, and access production-ready models and metadata associated with them in a single place.
-
-* <a href="https://docs.neptune.ai/model_registry/registering_model/"><b>Version models:</b></a> track model versions and external artifacts.
-
-* <a href="https://docs.neptune.ai/model_registry/managing_stage/"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata.
-
-* <a href="https://docs.neptune.ai/model_registry/overview/"><b>Access and share models:</b></a> all the tracked model metadata is accessible via the neptune.ai web app or through the API.
-&nbsp;
-
-
-&nbsp;
-
-**Share results**
-
-Have a single place where your team can see the results and access all models and experiments.
-
-* <a href="https://docs.neptune.ai/about/collaboration/"><b>Send a link:</b></a> share every chart, dashboard, table view, or anything else you see in the neptune.ai app by copying and sending persistent URLs.
-
-* <a href="https://docs.neptune.ai/usage/querying_metadata/"><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
-
-* <a href="https://docs.neptune.ai/management/"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
-
-* <a href="https://neptune.ai/pricing"><b>Add your entire org:</b></a> you can collaborate with a team on every plan, even the Free one. So, invite your entire organization, including product managers and subject matter experts, to increase the visibility from the very beginning.
-&nbsp;
-
-&nbsp;
-<div align="center">
-      <img border="0" alt="share persistent link" src="https://neptune.ai/wp-content/uploads/2023/06/share_send_link.gif" width="600">
-    </a>
-</div>
 &nbsp;
 
 &nbsp;
@@ -198,20 +90,12 @@ trainer.fit(my_model, my_dataloader)
 
 &nbsp;
 ## neptune.ai is trusted by great companies
-<div align="center">
-    <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/github-customers.png" width="1500" />
-</div>
-&nbsp;
-
 Read how various customers use Neptune to <a href="https://neptune.ai/customers">improve their workflow</a>.
-&nbsp;
-
 &nbsp;
 ## Support
 
 If you get stuck or simply want to talk to us about something, here are your options:
 * Check our <a href="https://docs.neptune.ai/getting_help/#faq">FAQ page</a>.
-* Take a look at our <a href="https://neptune.ai/resources">resource center</a>.
 * Chat! In the app, click the <a href="https://docs.neptune.ai/getting_help/#chat">blue message icon</a> in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 &nbsp;
