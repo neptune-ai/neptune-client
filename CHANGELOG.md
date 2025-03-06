@@ -1,3 +1,8 @@
+## neptune 1.13.1
+
+### Fixes
+- Fix missing distutils dependency error that could appear when installing on Python 3.12+
+
 ## neptune 1.13.0
 
 ### Features
