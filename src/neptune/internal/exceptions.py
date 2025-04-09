@@ -118,9 +118,9 @@ and skip the {bold}api_token{end} argument of the {bold}init_run(){end} function
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/setup/setting_api_token/
+    - https://docs-legacy.neptune.ai/setup/setting_api_token/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(env_api_token=API_TOKEN_ENV_NAME, **STYLES))
 
@@ -136,7 +136,7 @@ The Neptune client library encountered an unexpected internal error:
 
 Please contact Neptune support.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(msg=msg, **STYLES))
 
@@ -156,7 +156,7 @@ The server response was:
 
 Verify the correctness of your call or contact Neptune support.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(status=status, response=response, **STYLES))
 
@@ -184,7 +184,7 @@ You don't have permission to access the given resource.
 
    - Ask your organization administrator to grant you the necessary privileges to the project.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
 
@@ -208,7 +208,7 @@ You don't have permission to access the given resource.
 
    - Ask your organization administrator to grant you the necessary privileges to the project.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         message = msg if msg is not None else default_message
         super().__init__(message.format(**STYLES))
@@ -232,7 +232,7 @@ The server response was:
 
 Please try again later or contact Neptune support.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(response=response, **STYLES))
 
@@ -255,13 +255,13 @@ What should I do?
         {python}run = neptune.init_run(mode="offline"){end}
 
 You can find detailed instructions on the following doc pages:
-    - https://docs.neptune.ai/api/connection_modes/#offline-mode
-    - https://docs.neptune.ai/api/neptune_sync/
+    - https://docs-legacy.neptune.ai/api/connection_modes/#offline-mode
+    - https://docs-legacy.neptune.ai/api/neptune_sync/
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/connection_modes/#connectivity-issues
+    - https://docs-legacy.neptune.ai/api/connection_modes/#connectivity-issues
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         super().__init__(message.format(**STYLES))
 
@@ -309,10 +309,10 @@ In your code cell:
     {bash}%env NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/environment_variables/#neptune_allow_self_signed_certificate
+    - https://docs-legacy.neptune.ai/api/environment_variables/#neptune_allow_self_signed_certificate
 
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         super().__init__(message.format(**STYLES))
 
@@ -398,6 +398,6 @@ You're trying to write to a project that was archived.
 
 Set the project as active again or use mode="read-only" at initialization to fetch metadata from it.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/help/error_writing_to_archived_project/
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/help/error_writing_to_archived_project/
 """
         super(WritingToArchivedProjectException, self).__init__(message.format(**STYLES))

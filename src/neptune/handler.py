@@ -158,7 +158,7 @@ class Handler(SupportsNamespaces):
             >>> pretraining_run.stop()  # The root run is stopped
 
         For more information, see the docs:
-        https://docs.neptune.ai/api/field_types/#get_root_object
+        https://docs-legacy.neptune.ai/api/field_types/#get_root_object
         """
         return self._container
 
@@ -202,7 +202,7 @@ class Handler(SupportsNamespaces):
             >>> run['parameters'] = params
 
         For more information, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
         """
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
@@ -240,7 +240,7 @@ class Handler(SupportsNamespaces):
             >>> run["dataset/data_sample"].upload(File("sample_data.csv"))
 
         For more information, see the docs:
-           https://docs.neptune.ai/api/field_types#upload
+           https://docs-legacy.neptune.ai/api/field_types#upload
 
         """
         raise NeptuneUnsupportedFunctionalityException
@@ -279,7 +279,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `False`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
 
         """
         if step is None:
@@ -339,7 +339,7 @@ class Handler(SupportsNamespaces):
             * `StringSeries` - series of strings
 
         When you log the first value, the type of the value determines what type of field is created.
-        To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
+        To learn more about field types, see the docs: https://docs-legacy.neptune.ai/api/field_types
 
         Args:
             value: Value to be added to the series field.
@@ -347,7 +347,7 @@ class Handler(SupportsNamespaces):
             timestamp: Optional time index of the log entry being appended, in Unix time format.
                 If None, the current time (obtained with `time.time()`) is used.
             wait: If True, the client sends all tracked metadata to the server before executing the call.
-                For more information, see: https://docs.neptune.ai/api/universal/#wait
+                For more information, see: https://docs-legacy.neptune.ai/api/universal/#wait
 
         Examples:
             >>> import neptune
@@ -388,7 +388,7 @@ class Handler(SupportsNamespaces):
             * `StringSeries` - series of strings
 
         When you log the first value, the type of the value determines what type of field is created.
-        To learn more about field types, see the docs: https://docs.neptune.ai/api/field_types
+        To learn more about field types, see the docs: https://docs-legacy.neptune.ai/api/field_types
 
         Args:
             values: Values to be added to the series field, as a dictionary or collection.
@@ -396,7 +396,7 @@ class Handler(SupportsNamespaces):
             timestamps: Optional collection of time indeces for the entries being appended, in Unix time format.
                 If None, the current time (obtained with `time.time()`) is used.
             wait: If True, the client sends all tracked metadata to the server before executing the call.
-                For details, see https://docs.neptune.ai/api/universal/#wait
+                For details, see https://docs-legacy.neptune.ai/api/universal/#wait
 
         Example:
             The following example reads a CSV file into a pandas DataFrame and extracts the values
@@ -437,7 +437,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `False`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api/field_types#add
+           https://docs-legacy.neptune.ai/api/field_types#add
         """
         verify_type("values", values, (str, Iterable))
         with self._container.lock():
@@ -458,7 +458,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `False`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api/field_types#remove
+           https://docs-legacy.neptune.ai/api/field_types#remove
         """
         return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
 
@@ -472,7 +472,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `False`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api/field_types#clear
+           https://docs-legacy.neptune.ai/api/field_types#clear
         """
         return self._pass_call_to_attr(function_name="clear", wait=wait)
 
@@ -494,7 +494,7 @@ class Handler(SupportsNamespaces):
             If called on a namespace, returns a dictionary containing the values of all non-Atom fields.
 
         For more information on field types, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="fetch")
 
@@ -510,7 +510,7 @@ class Handler(SupportsNamespaces):
             Fetches the last value stored in the series from Neptune.
 
         For more information on field types, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(function_name="fetch_last")
 
@@ -535,7 +535,7 @@ class Handler(SupportsNamespaces):
             ``Pandas.DataFrame``: containing all the values and their indexes stored in the series field.
 
         For more information on field types, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
         """
         return self._pass_call_to_attr(
             function_name="fetch_values",
@@ -557,7 +557,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `None`.
 
         For more information, see the docs:
-            https://docs.neptune.ai/api/field_types#delete_files
+            https://docs-legacy.neptune.ai/api/field_types#delete_files
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -589,7 +589,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `None`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api-reference/field-types
+           https://docs-legacy.neptune.ai/api-reference/field-types
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -605,7 +605,7 @@ class Handler(SupportsNamespaces):
                 Defaults to `None`.
 
         For more information, see the docs:
-           https://docs.neptune.ai/api/field_types#download_last
+           https://docs-legacy.neptune.ai/api/field_types#download_last
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -614,7 +614,7 @@ class Handler(SupportsNamespaces):
         """Fetches the hash of an artifact.
 
         You may also want to check the docs:
-           https://docs.neptune.ai/api/field_types#fetch_hash
+           https://docs-legacy.neptune.ai/api/field_types#fetch_hash
         """
         return self._pass_call_to_attr(function_name="fetch_hash")
 
@@ -622,7 +622,7 @@ class Handler(SupportsNamespaces):
         """Fetches the extension of a file.
 
         You may also want to check the docs:
-           https://docs.neptune.ai/api/field_types#fetch_extension
+           https://docs-legacy.neptune.ai/api/field_types#fetch_extension
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -631,7 +631,7 @@ class Handler(SupportsNamespaces):
         """Fetches the list of files in an artifact and their metadata.
 
         You may also want to check the docs:
-           https://docs.neptune.ai/api/field_types#fetch_files_list
+           https://docs-legacy.neptune.ai/api/field_types#fetch_files_list
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -668,7 +668,7 @@ class Handler(SupportsNamespaces):
             8, 17, 10, 31, 26, 338000, tzinfo=tzutc()), file_type='file'), ...]
 
         For more information, see the API reference:
-           https://docs.neptune.ai/api/field_types#list_fileset_files
+           https://docs-legacy.neptune.ai/api/field_types#list_fileset_files
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -681,7 +681,7 @@ class Handler(SupportsNamespaces):
         """Creates an artifact tracking some files.
 
         You may also want to check the docs:
-           https://docs.neptune.ai/api/field_types#track_files
+           https://docs-legacy.neptune.ai/api/field_types#track_files
         """
         raise NeptuneUnsupportedFunctionalityException
 
@@ -703,7 +703,7 @@ class Handler(SupportsNamespaces):
             >>> run = neptune.init_run(with_id="RUN-100")
             >>> run["large_dataset"].pop()
 
-        See also the API reference: https://docs.neptune.ai/api/client_index/#pop
+        See also the API reference: https://docs-legacy.neptune.ai/api/client_index/#pop
         """
         with self._container.lock():
             handler = self
