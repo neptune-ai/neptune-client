@@ -42,7 +42,7 @@ runs:
         path: ./test-results
 
     - name: Upload Pull Request coverage report do Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         token: ${{ inputs.codecov-token }}
         files: ./coverage.xml
