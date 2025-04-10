@@ -517,7 +517,6 @@ def get_workspace_member_list(workspace: str, *, api_token: Optional[str] = None
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
-        # return result
         return {
             f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role)
             for m in result
