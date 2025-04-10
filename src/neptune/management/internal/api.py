@@ -419,7 +419,11 @@ def get_project_member_list(
 
     try:
         result = backend_client.api.listProjectMembers(**params).response().result
-        return {f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role) for m in result}
+        return {
+            f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role)
+            for m in result
+            if m.registeredMemberInfo is not None
+        }
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
 
@@ -513,7 +517,12 @@ def get_workspace_member_list(workspace: str, *, api_token: Optional[str] = None
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
-        return {f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role) for m in result}
+        # return result
+        return {
+            f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role)
+            for m in result
+            if m.registeredMemberInfo is not None
+        }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace) from e
 
