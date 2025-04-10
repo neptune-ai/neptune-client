@@ -6,7 +6,7 @@
 <div align="center">
   <a href="https://neptune.ai/">Website</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://docs-beta.neptune.ai/">Docs</a>
+  <a href="https://docs.neptune.ai/">Docs</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://neptune.ai/blog">Blog</a>
 &nbsp;
@@ -18,7 +18,7 @@
 > For the new Neptune client, go to **[neptune-client-scale &rarr;][client]**
 
 > [!NOTE]
-> If you need to access Legacy Neptune, see the [Legacy documentation][legacy-setup] for setup instructions.
+> If you need to access Neptune Legacy (version `2.x`), see the [legacy documentation][legacy-setup] for setup instructions.
 <hr />
 
 &nbsp;
