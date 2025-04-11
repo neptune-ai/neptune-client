@@ -66,7 +66,7 @@ class Project(MetadataContainer):
     links to documents, or key project metrics.
 
     Note: If you want to instead create a project, use the
-    [`management.create_project()`](https://docs.neptune.ai/api/management/#create_project) function.
+    [`management.create_project()`](https://docs-legacy.neptune.ai/api/management/#create_project) function.
 
     You can also use the Project object as a context manager (see examples).
 
@@ -130,9 +130,9 @@ class Project(MetadataContainer):
 
     For more, see the docs:
         Initializing a project:
-            https://docs.neptune.ai/api/neptune#init_project
+            https://docs-legacy.neptune.ai/api/neptune#init_project
         Project class reference:
-            https://docs.neptune.ai/api/project/
+            https://docs-legacy.neptune.ai/api/project/
     """
 
     container_type = ContainerType.PROJECT
@@ -212,7 +212,7 @@ class Project(MetadataContainer):
         Only runs matching all of the criteria will be returned.
 
         Args:
-            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+            query: NQL query string. Syntax: https://docs-legacy.neptune.ai/usage/nql/
                 Example: `"(accuracy: float > 0.88) AND (loss: float < 0.2)"`.
                 Exclusive with the `id`, `state`, `owner`, and `tag` parameters.
             id: Neptune ID of a run, or list of several IDs.
@@ -288,7 +288,7 @@ class Project(MetadataContainer):
             ... runs_table_df = project.fetch_runs_table(state="inactive", tag="Exploration").to_pandas()
 
         See also the API reference in the docs:
-            https://docs.neptune.ai/api/project#fetch_runs_table
+            https://docs-legacy.neptune.ai/api/project#fetch_runs_table
         """
 
         if any((id, state, owner, tag)) and query is not None:
@@ -346,7 +346,7 @@ class Project(MetadataContainer):
         """Retrieve models stored in the project.
 
         Args:
-            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+            query: NQL query string. Syntax: https://docs-legacy.neptune.ai/usage/nql/
                 Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             trashed: Whether to retrieve trashed models.
                 If `True`, only trashed models are retrieved.
@@ -391,7 +391,7 @@ class Project(MetadataContainer):
                 ).to_pandas()
 
         See also the API reference in the docs:
-            https://docs.neptune.ai/api/project#fetch_models_table
+            https://docs-legacy.neptune.ai/api/project#fetch_models_table
         """
         verify_type("query", query, (str, type(None)))
         verify_type("limit", limit, (int, type(None)))
