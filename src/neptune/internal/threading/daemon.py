@@ -134,7 +134,7 @@ class Daemon(threading.Thread):
                         if self_.last_backoff_time == 0:
                             if e.cause.__class__.__name__ == "HTTPTooManyRequests":
                                 warn_once(
-                                    "Looks like you're reaching the default workspace logging-rate limit."
+                                    "You're hitting the default logging-rate limit for your workspace."
                                     " See how to optimize the logging calls to reduce requests:"
                                     " https://docs.neptune.ai/help/reducing_requests/. \n"
                                     " To increase the limits for your workspace, contact sales@neptune.ai.",
