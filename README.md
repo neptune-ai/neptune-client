@@ -1,6 +1,6 @@
 <div align="center">
     <img src="https://raw.githubusercontent.com/neptune-ai/neptune-client/assets/readme/Github-cover-022025.png" width="1500" />
- <h1>neptune.ai</h1>
+ <h1>neptune.ai Legacy</h1>
 </div>
 
 <div align="center">
