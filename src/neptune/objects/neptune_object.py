@@ -345,7 +345,7 @@ class NeptuneObject(WithBackend, ABC):
             >>> params.assign({"max_epochs": 10, "optimizer": "Adam", "learning_rate": 0.8})
 
         See also the API reference:
-            https://docs.neptune.ai/api/universal/#assign
+            https://docs-legacy.neptune.ai/api/universal/#assign
         """
         self._get_root_handler().assign(value, wait=wait)
 
@@ -374,7 +374,7 @@ class NeptuneObject(WithBackend, ABC):
             >>> optimizer = model["parameters/optimizer"].fetch()
 
         See also the API reference:
-            https://docs.neptune.ai/api/universal#fetch
+            https://docs-legacy.neptune.ai/api/universal#fetch
         """
         return self._get_root_handler().fetch()
 
@@ -412,9 +412,9 @@ class NeptuneObject(WithBackend, ABC):
 
         See also the docs:
             Best practices - Stopping objects
-                https://docs.neptune.ai/usage/best_practices/#stopping-runs-and-other-objects
+                https://docs-legacy.neptune.ai/usage/best_practices/#stopping-runs-and-other-objects
             API reference:
-                https://docs.neptune.ai/api/universal/#stop
+                https://docs-legacy.neptune.ai/api/universal/#stop
         """
         verify_type("seconds", seconds, (float, int, type(None)))
         if self._state != ContainerState.STARTED:
@@ -461,7 +461,7 @@ class NeptuneObject(WithBackend, ABC):
         Note: The returned object is a deep copy of the structure of the internal object.
 
         See also the API reference:
-            https://docs.neptune.ai/api/universal/#get_structure
+            https://docs-legacy.neptune.ai/api/universal/#get_structure
         """
         return self._structure.get_structure().to_dict()
 
@@ -470,7 +470,7 @@ class NeptuneObject(WithBackend, ABC):
 
         Paths are ordered lexicographically and the whole structure is neatly colored.
 
-        See also: https://docs.neptune.ai/api/universal/#print_structure
+        See also: https://docs-legacy.neptune.ai/api/universal/#print_structure
         """
         self._print_structure_impl(self.get_structure(), indent=0)
 
@@ -546,7 +546,7 @@ class NeptuneObject(WithBackend, ABC):
             ... run.pop("model_checkpoint")
 
         See also the API reference:
-           https://docs.neptune.ai/api/universal/#pop
+           https://docs-legacy.neptune.ai/api/universal/#pop
         """
         verify_type("path", path, str)
         self._get_root_handler().pop(path, wait=wait)
@@ -566,7 +566,7 @@ class NeptuneObject(WithBackend, ABC):
                 locally from memory, but will not wait for them to reach Neptune servers.
 
         See also the API reference:
-            https://docs.neptune.ai/api/universal/#wait
+            https://docs-legacy.neptune.ai/api/universal/#wait
         """
         with self._lock:
             if disk_only:
@@ -594,7 +594,7 @@ class NeptuneObject(WithBackend, ABC):
             ... # No error
 
         See also the API reference:
-            https://docs.neptune.ai/api/universal/#sync
+            https://docs-legacy.neptune.ai/api/universal/#sync
         """
         with self._lock:
             if wait:
@@ -616,7 +616,7 @@ class NeptuneObject(WithBackend, ABC):
 
         The same link is printed in the console once the object has been initialized.
 
-        API reference: https://docs.neptune.ai/api/universal/#get_url
+        API reference: https://docs-legacy.neptune.ai/api/universal/#get_url
         """
         raise NeptuneUnsupportedFunctionalityException
 

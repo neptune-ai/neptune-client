@@ -238,19 +238,19 @@ class Run(NeptuneObject):
 
     For more, see the docs:
         Initializing a run:
-            https://docs.neptune.ai/api/neptune#init_run
+            https://docs-legacy.neptune.ai/api/neptune#init_run
         Run class reference:
-            https://docs.neptune.ai/api/run/
+            https://docs-legacy.neptune.ai/api/run/
         Essential logging methods:
-            https://docs.neptune.ai/logging/methods/
+            https://docs-legacy.neptune.ai/logging/methods/
         Resuming a run:
-            https://docs.neptune.ai/logging/to_existing_object/
+            https://docs-legacy.neptune.ai/logging/to_existing_object/
         Setting a custom run ID:
-            https://docs.neptune.ai/logging/custom_run_id/
+            https://docs-legacy.neptune.ai/logging/custom_run_id/
         Logging to multiple runs at once:
-            https://docs.neptune.ai/logging/to_multiple_objects/
+            https://docs-legacy.neptune.ai/logging/to_multiple_objects/
         Accessing the run from multiple places:
-            https://docs.neptune.ai/logging/from_multiple_places/
+            https://docs-legacy.neptune.ai/logging/from_multiple_places/
     """
 
     container_type = ContainerType.RUN
@@ -443,7 +443,7 @@ def capture_only_if_non_interactive(mode) -> bool:
                 " To enable them, set each parameter to 'True' when initializing the run. The monitoring will"
                 " continue until you call run.stop() or the kernel stops."
                 " Also note: Your source files can only be tracked if you pass the path(s) to the 'source_code'"
-                " argument. For help, see the Neptune docs: https://docs.neptune.ai/logging/source_code/",
+                " argument. For help, see the Neptune docs: https://docs-legacy.neptune.ai/logging/source_code/",
                 exception=NeptuneWarning,
             )
         return False

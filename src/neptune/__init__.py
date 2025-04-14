@@ -86,7 +86,7 @@ to the `api_token` argument when initializing Neptune.
 
 ---
 
-Learn more in the docs: https://docs.neptune.ai/api/neptune/
+Learn more in the docs: https://docs-legacy.neptune.ai/api/neptune/
 """
 __all__ = [
     "ANONYMOUS_API_TOKEN",

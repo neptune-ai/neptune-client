@@ -83,7 +83,7 @@ authors = ["neptune.ai <contact@neptune.ai>"]
 description = "Neptune Client"
 repository = "https://github.com/neptune-ai/neptune-client"
 homepage = "https://neptune.ai/"
-documentation = "https://docs.neptune.ai/"
+documentation = "https://docs-legacy.neptune.ai/"
 include = ["CHANGELOG.md"]
 license = "Apache License 2.0"
 name = "neptune"
@@ -117,7 +117,7 @@ packages = [
 
 [tool.poetry.urls]
 "Tracker" = "https://github.com/neptune-ai/neptune-client/issues"
-"Documentation" = "https://docs.neptune.ai/"
+"Documentation" = "https://docs-legacy.neptune.ai/"
 
 [tool.poetry.scripts]
 neptune = "neptune.cli.__main__:main"

@@ -140,7 +140,7 @@ There are two possible reasons:
     If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
         {python}run.sync(){end}
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         self._msg = message.format(field_path=field_path, **STYLES)
         super().__init__(self._msg)
@@ -158,7 +158,7 @@ class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
 {end}
 {type} has no attribute {attribute}.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/help/error_type_does_not_support_attribute/
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/help/error_type_does_not_support_attribute/
 """
         self._msg = message.format(type=type_, attribute=attribute, **STYLES)
         super().__init__(self._msg)
@@ -314,9 +314,9 @@ class ProjectNotFoundWithSuggestions(ExceptionWithProjectsWorkspacesListing, Pro
 We couldn't find project {fail}"{project}"{end}.
 {available_projects_message}{available_workspaces_message}
 You may want to check the following docs page:
-    - https://docs.neptune.ai/setup/creating_project/
+    - https://docs-legacy.neptune.ai/setup/creating_project/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(
             message=message,
@@ -335,9 +335,9 @@ class AmbiguousProjectName(ExceptionWithProjectsWorkspacesListing):
 Cannot resolve project {fail}"{project}"{end}. Name is ambiguous.
 {available_projects_message}
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/setup/creating_project/
+    - https://docs-legacy.neptune.ai/setup/creating_project/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message=message, available_projects=available_projects, project=project_id)
 
@@ -377,9 +377,9 @@ and skip the {bold}project{end} argument of the {bold}init_run(){end} function:
     {python}neptune.init_run(){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/setup/creating_project/
+    - https://docs-legacy.neptune.ai/setup/creating_project/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(
             message=message,
@@ -402,10 +402,10 @@ It seems you are trying to log metadata to (or fetch it from) a {container_type}
 Here's what you can do:{resume_info}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/logging/to_existing_object/
-    - https://docs.neptune.ai/usage/querying_metadata/
+    - https://docs-legacy.neptune.ai/logging/to_existing_object/
+    - https://docs-legacy.neptune.ai/usage/querying_metadata/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(
             message.format(
@@ -421,10 +421,10 @@ You may also want to check the following docs pages:
 class InactiveRunException(InactiveContainerException):
     resume_info = """
     - Resume the run to continue logging to it:
-    https://docs.neptune.ai/logging/to_existing_object/
+    https://docs-legacy.neptune.ai/logging/to_existing_object/
     - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only,
     you can resume a run in read-only mode:
-    https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
+    https://docs-legacy.neptune.ai/api/connection_modes/#read-only-mode"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.RUN)
@@ -433,10 +433,10 @@ class InactiveRunException(InactiveContainerException):
 class InactiveModelException(InactiveContainerException):
     resume_info = """
     - Resume the model to continue logging to it:
-    https://docs.neptune.ai/api/neptune/#init_model
+    https://docs-legacy.neptune.ai/api/neptune/#init_model
     - Don't invoke `stop()` on a model that you want to access. If you want to stop monitoring only,
     you can resume a model in read-only mode:
-    https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
+    https://docs-legacy.neptune.ai/api/connection_modes/#read-only-mode"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.MODEL)
@@ -445,10 +445,10 @@ class InactiveModelException(InactiveContainerException):
 class InactiveModelVersionException(InactiveContainerException):
     resume_info = """
     - Resume the model version to continue logging to it:
-    https://docs.neptune.ai/api/neptune/#init_model_version
+    https://docs-legacy.neptune.ai/api/neptune/#init_model_version
     - Don't invoke `stop()` on a model version that you want to access. If you want to stop monitoring only,
     you can resume a model version in read-only mode:
-    https://docs.neptune.ai/api/connection_modes/#read-only-mode"""
+    https://docs-legacy.neptune.ai/api/connection_modes/#read-only-mode"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.MODEL_VERSION)
@@ -457,7 +457,7 @@ class InactiveModelVersionException(InactiveContainerException):
 class InactiveProjectException(InactiveContainerException):
     resume_info = """
     - Resume the connection to the project to continue logging to it:
-    https://docs.neptune.ai/api/neptune/#init_project
+    https://docs-legacy.neptune.ai/api/neptune/#init_project
     - Don't invoke `stop()` on a project that you want to access."""
 
     def __init__(self, label: str):
@@ -498,9 +498,9 @@ and skip the {bold}api_token{end} argument of the {bold}init_run(){end} function
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/setup/setting_api_token/
+    - https://docs-legacy.neptune.ai/setup/setting_api_token/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(env_api_token=API_TOKEN_ENV_NAME, **STYLES))
 
@@ -525,10 +525,10 @@ Pass the ID of a {container_type} to the {python}with_id{end} argument of {pytho
 when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/usage/resume_run/
-    - https://docs.neptune.ai/api/connection_modes/#read-only-mode
+    - https://docs-legacy.neptune.ai/usage/resume_run/
+    - https://docs-legacy.neptune.ai/api/connection_modes/#read-only-mode
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         self.container_type = container_type
         self.callback_name = callback_name
@@ -572,9 +572,9 @@ class NeptuneParametersCollision(NeptuneException):
 The {python}{parameter1}{end} and {python}{parameter2}{end} parameters of the {python}{method_name}(){end} method are mutually exclusive.
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/universal/#initialization-methods
+    - https://docs-legacy.neptune.ai/api/universal/#initialization-methods
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         super().__init__(
             message.format(
@@ -603,10 +603,10 @@ Make sure you have no {bash}{custom_id_env}{end} environment variable set
 and no value is explicitly passed to the `custom_run_id` argument when you are resuming a run.
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/logging/to_existing_object/
-    - https://docs.neptune.ai/logging/custom_run_id/
+    - https://docs-legacy.neptune.ai/logging/to_existing_object/
+    - https://docs-legacy.neptune.ai/logging/custom_run_id/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         super().__init__(message.format(custom_id_env=CUSTOM_RUN_ID_ENV_NAME, **STYLES))
 
@@ -632,7 +632,7 @@ In order to update the Neptune client library, run the following command in your
 Or if you are using Conda, run the following instead:
     {bash}conda update -c conda-forge neptune{end}
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(
             message.format(
@@ -655,9 +655,9 @@ class NeptuneMissingRequiredInitParameter(NeptuneWrongInitParametersException):
 {end}
 {python}neptune.{called_function}(){end} invocation was missing {python}{parameter_name}{end}.
 If you want to create a new object using {python}{called_function}{end}, {python}{parameter_name}{end} is required:
-https://docs.neptune.ai/api/neptune#{called_function}
+https://docs-legacy.neptune.ai/api/neptune#{called_function}
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(
             message.format(
@@ -680,11 +680,11 @@ What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer is supposed to be using a proxy to access the internet.
       If so, you may want to use the {python}proxies{end} parameter of the {python}init_run(){end} function.
-      See https://docs.neptune.ai/api/universal/#proxies
+      See https://docs-legacy.neptune.ai/api/universal/#proxies
       and https://requests.readthedocs.io/en/latest/user/advanced/#proxies
     - Check the status of Neptune services: https://status.neptune.ai/
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(host=host, **STYLES))
 
@@ -706,9 +706,9 @@ You can set the connection mode when creating a new run:
     {python}run = neptune.init_run(mode="async"){end}
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/connection_modes
+    - https://docs-legacy.neptune.ai/api/connection_modes
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
 
@@ -735,7 +735,7 @@ class NeptuneProtectedPathException(NeptuneException):
 Field {path} cannot be changed directly.
 {extra_info}
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         self._path = path
         super().__init__(
@@ -772,9 +772,9 @@ class NeptuneMissingRequirementException(NeptuneException):
         {bash}pip install "neptune[{framework_name}]"{end}
 
     For detailed instructions, check the integration guides:
-        - https://docs.neptune.ai/integrations
+        - https://docs-legacy.neptune.ai/integrations
 
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+    {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
     """
         framework_name = framework_name if framework_name else package_name
         super().__init__(
@@ -803,9 +803,9 @@ How do I upload my offline metadata to Neptune?
     Once your workspace or project is available, you can upload the data with the following command:
         {bash}neptune sync{end}
 Learn more in the docs:
-    - https://docs.neptune.ai/help/error_limit_exceeded/
-    - https://docs.neptune.ai/help/workspace_or_project_read_only/
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+    - https://docs-legacy.neptune.ai/help/error_limit_exceeded/
+    - https://docs-legacy.neptune.ai/help/workspace_or_project_read_only/
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES, reason=reason))
 
@@ -832,7 +832,7 @@ To continue uploading the metadata:
 
        {bash}neptune sync -p project_name{end}
 
-For more details, see https://docs.neptune.ai/usage/best_practices
+For more details, see https://docs-legacy.neptune.ai/usage/best_practices
 """  # noqa: E501
         super().__init__(
             message.format(
@@ -858,8 +858,8 @@ What should I do?
     - Go to your projects and remove runs or model metadata you don't need
     - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/connection_modes
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+    - https://docs-legacy.neptune.ai/api/connection_modes
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """  # noqa: E501
         super().__init__(message.format(**STYLES))
 
@@ -882,9 +882,9 @@ wait for all the requests sent by invoking:
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs page:
-    - https://docs.neptune.ai/api/connection_modes
+    - https://docs-legacy.neptune.ai/api/connection_modes
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help.html
 """
         super().__init__(message.format(attribute_path=attribute_path, **STYLES))
 
@@ -906,7 +906,7 @@ class NeptuneLocalStorageAccessException(NeptuneException):
 {end}
 Neptune had a problem processing "{path}". It expects it to be {expected_description}.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
 
@@ -923,7 +923,7 @@ The following feature is not yet supported by the Neptune instance you are using
 An update of the Neptune instance is required in order to use it. Please contact your local Neptune administrator
 or Neptune support directly (support@neptune.ai) about the upcoming updates.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         self.message = message.format(missing_feature=missing_feature, **STYLES)
         super().__init__(message)
@@ -947,7 +947,7 @@ You can check all of your models in the Models section of the project:
 Note: If there is a model with the same key in the trash, you need to delete the model from the trash to make the key
 available again.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(model_key=model_key, models_tab_url=models_tab_url, **STYLES))
 
@@ -964,13 +964,13 @@ To synchronize with the Neptune servers, enter the following on your command lin
 
     {bash}neptune sync{end}
 
-For details, see https://docs.neptune.ai/api/neptune_sync/
+For details, see https://docs-legacy.neptune.ai/api/neptune_sync/
 
 If the synchronization fails, you may want to check your connection and ensure that you're
 within limits by going to your Neptune project settings -> Usage.
 If the issue persists, our support is happy to help.
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
 
@@ -984,9 +984,9 @@ class StreamAlreadyUsedException(NeptuneException):
 A File object created with File.from_stream() has already been logged.
 You can only log content from the same stream once.
 
-For more, see https://docs.neptune.ai/api/field_types/#from_stream
+For more, see https://docs-legacy.neptune.ai/api/field_types/#from_stream
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
 
@@ -1014,9 +1014,9 @@ class FileSetNotFound(NeptuneException):
         Remember that each use of {python}wait{end} introduces a delay in code execution.
 
         You may also want to check the following docs page:
-            - https://docs.neptune.ai/api/connection_modes
+            - https://docs-legacy.neptune.ai/api/connection_modes
 
-        {correct}Need help?{end}-> https://docs.neptune.ai/getting_help/
+        {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help/
         """
         super().__init__(message.format(path=path_to_str([attribute, path]), **STYLES))
 
@@ -1029,7 +1029,7 @@ class NeptuneMaxDiskUtilizationExceeded(NeptuneException):
 {end}
 Current disk utilization ({disk_utilization}%) exceeds the limit ({utilization_limit}%).
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting_help
     """
         super().__init__(
             message.format(disk_utilization=disk_utilization, utilization_limit=utilization_limit, **STYLES)
@@ -1040,7 +1040,7 @@ class NeptuneInvalidQueryException(NeptuneException):
     def __init__(self, nql_query: str):
         message = f"""
 The provided NQL query is invalid: {nql_query}.
-For syntax help, see https://docs.neptune.ai/usage/nql/
+For syntax help, see https://docs-legacy.neptune.ai/usage/nql/
 """
         super().__init__(message)
 
