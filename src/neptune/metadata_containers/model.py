@@ -78,7 +78,7 @@ class Model(MetadataContainer):
     A Model object is suitable for storing model metadata that is common to all versions (you can use ModelVersion
     objects to track version-specific metadata). It does not track background metrics or logs automatically,
     but you can assign metadata to the Model object just like you can for runs.
-    To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+    To learn more about model registry, see the docs: https://docs-legacy.neptune.ai/model_registry/overview/
 
     You can also use the Model object as a context manager (see examples).
 
@@ -159,9 +159,9 @@ class Model(MetadataContainer):
 
     For details, see the docs:
         Initializing a model:
-            https://docs.neptune.ai/api/neptune#init_model
+            https://docs-legacy.neptune.ai/api/neptune#init_model
         Model class reference:
-            https://docs.neptune.ai/api/model
+            https://docs-legacy.neptune.ai/api/model
     """
 
     container_type = ContainerType.MODEL
@@ -278,7 +278,7 @@ class Model(MetadataContainer):
         """Retrieve all versions of the given model.
 
         Args:
-            query: NQL query string. Syntax: https://docs.neptune.ai/usage/nql/
+            query: NQL query string. Syntax: https://docs-legacy.neptune.ai/usage/nql/
                 Example: `"(model_size: float > 100) AND (backbone: string = VGG)"`.
             columns: Names of columns to include in the table, as a list of field names.
                 The Neptune ID ("sys/id") is included automatically.
@@ -317,7 +317,7 @@ class Model(MetadataContainer):
             ... ).to_pandas()
 
         See also the API referene:
-            https://docs.neptune.ai/api/model/#fetch_model_versions_table
+            https://docs-legacy.neptune.ai/api/model/#fetch_model_versions_table
         """
         verify_type("query", query, (str, type(None)))
         verify_type("limit", limit, (int, type(None)))

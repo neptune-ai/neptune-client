@@ -103,6 +103,6 @@ def warn_about_unsupported_type(type_str: str):
         message=f"""You're attempting to log a type that is not directly supported by Neptune ({type_str}).
         Convert the value to a supported type, such as a string or float, or use stringify_unsupported(obj)
         for dictionaries or collections that contain unsupported values.
-        For more, see https://docs.neptune.ai/help/value_of_unsupported_type""",
+        For more, see https://docs-legacy.neptune.ai/help/value_of_unsupported_type""",
         exception=NeptuneUnsupportedType,
     )

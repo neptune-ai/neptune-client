@@ -103,7 +103,7 @@ Get information about a workspace, including storage usage and limits:
 
 ---
 
-See also the API reference in the docs: https://docs.neptune.ai/api/management
+See also the API reference in the docs: https://docs-legacy.neptune.ai/api/management
 """
 from .internal.api import (
     WorkspaceMemberRole,

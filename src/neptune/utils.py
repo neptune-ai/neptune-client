@@ -72,7 +72,7 @@ def stringify_unsupported(
         >>> # {'metric': 0.87, 'tuple': {'0': 'hi', '1': 1} - tuple logged as an enumerated dictionary
 
         For more information, see:
-        https://docs.neptune.ai/api/utils/#stringify_unsupported
+        https://docs-legacy.neptune.ai/api/utils/#stringify_unsupported
     """
     if isinstance(value, MutableMapping):
         return {str(k): stringify_unsupported(v, expand=expand) for k, v in value.items()}
@@ -96,7 +96,7 @@ def stop_synchronization_callback(neptune_object: NeptuneObject) -> None:
         ... )
 
     For more information, see:
-        https://docs.neptune.ai/api/utils/stop_synchronization_callback/
+        https://docs-legacy.neptune.ai/api/utils/stop_synchronization_callback/
     """
     logger.error(
         "Threshold for disrupted synchronization exceeded. Stopping the synchronization using the default callback."

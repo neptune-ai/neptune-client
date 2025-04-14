@@ -72,9 +72,9 @@ def model_registry_deprecation(func):
     def inner(*args, **kwargs):
         warn_once(
             "Neptune's model registry has been deprecated and will be removed in a future release."
-            "Use runs to store model metadata instead. For more, see https://docs.neptune.ai/model_registry/."
+            "Use runs to store model metadata instead. For more, see https://docs-legacy.neptune.ai/model_registry/."
             "If you are already using the model registry, you can migrate existing metadata to runs."
-            "Learn how: https://docs.neptune.ai/model_registry/migrate_to_runs/."
+            "Learn how: https://docs-legacy.neptune.ai/model_registry/migrate_to_runs/."
         )
         return func(*args, **kwargs)
 

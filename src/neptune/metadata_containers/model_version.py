@@ -68,7 +68,7 @@ class ModelVersion(MetadataContainer):
     A ModelVersion object is suitable for storing model metadata that is version-specific. It does not track
     background metrics or logs automatically, but you can assign metadata to the model version just like you can
     for runs. You can use the parent Model object to store metadata that is common to all versions of the model.
-    To learn more about model registry, see the docs: https://docs.neptune.ai/model_registry/overview/
+    To learn more about model registry, see the docs: https://docs-legacy.neptune.ai/model_registry/overview/
 
     To manage the stage of a model version, use its `change_stage()` method or use the menu in the web app.
 
@@ -154,9 +154,9 @@ class ModelVersion(MetadataContainer):
 
     For more, see the docs:
         Initializing a model version:
-            https://docs.neptune.ai/api/neptune#init_model_version
+            https://docs-legacy.neptune.ai/api/neptune#init_model_version
         ModelVersion class reference:
-            https://docs.neptune.ai/api/model_version/
+            https://docs-legacy.neptune.ai/api/model_version/
     """
 
     container_type = ContainerType.MODEL_VERSION
@@ -273,9 +273,9 @@ class ModelVersion(MetadataContainer):
             ...     model_version.change_stage("staging")
 
         Learn more about stage management in the docs:
-            https://docs.neptune.ai/model_registry/managing_stage/
+            https://docs-legacy.neptune.ai/model_registry/managing_stage/
         API reference:
-            https://docs.neptune.ai/api/model_version/#change_stage
+            https://docs-legacy.neptune.ai/api/model_version/#change_stage
         """
         mapped_stage = ModelVersionStage(stage)
 
