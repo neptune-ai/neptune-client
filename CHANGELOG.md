@@ -3,6 +3,9 @@
 ### Changes
 - Neptune captures diffs in standard git format ([#1891](https://github.com/neptune-ai/neptune-client/pull/1891))
 
+### Features
+- More descriptive warning message on hitting workspace logging-rate limits ([#1895](https://github.com/neptune-ai/neptune-client/pull/1895))
+
 ## neptune 1.13.0
 
 ### Features

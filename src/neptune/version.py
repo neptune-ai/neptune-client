@@ -46,14 +46,14 @@ def detect_version() -> str:
         raise RuntimeError(
             "We've detected that the 'neptune' and 'neptune-client' packages are both installed. "
             "Uninstall each of them and then install only the new 'neptune' package. For more information, "
-            "see https://docs.neptune.ai/setup/upgrading/"
+            "see https://docs-legacy.neptune.ai/setup/upgrading/"
         )
     elif neptune_version is not None:
         return neptune_version
     elif neptune_client_version is not None:
         warn_once(
             "The 'neptune-client' package has been deprecated and will be removed in the future. Install "
-            "the 'neptune' package instead. For more, see https://docs.neptune.ai/setup/upgrading/"
+            "the 'neptune' package instead. For more, see https://docs-legacy.neptune.ai/setup/upgrading/"
         )
         return neptune_client_version
 

@@ -35,14 +35,14 @@ runs:
       shell: bash
 
     - name: Upload test reports
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-artifacts
         path: ./test-results
 
     - name: Upload Pull Request coverage report do Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         token: ${{ inputs.codecov-token }}
         files: ./coverage.xml

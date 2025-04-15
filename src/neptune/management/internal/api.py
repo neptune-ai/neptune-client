@@ -144,7 +144,7 @@ def get_project_list(*, api_token: Optional[str] = None) -> List[str]:
         >>> management.get_project_list()
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("api_token", api_token, (str, type(None)))
     backend_client = _get_backend_client(api_token=api_token)
@@ -209,7 +209,7 @@ def create_project(
         'ml-team/classification'
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("name", name, str)
     verify_type("key", key, (str, type(None)))
@@ -289,7 +289,7 @@ def delete_project(project: str, *, workspace: Optional[str] = None, api_token: 
         >>> management.delete_project(project="ml-team/classification")
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
@@ -330,7 +330,7 @@ def add_project_member(
             - "viewer": Can only view project content and members.
             - "contributor": Can view and edit project content. Can view members.
             - "owner": Can view and edit project content and members.
-            For more information, see https://docs.neptune.ai/management/roles/
+            For more information, see https://docs-legacy.neptune.ai/management/roles/
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the project argument to "project-name" instead of "workspace-name/project-name".
             If None, it will be parsed from the project argument.
@@ -349,7 +349,7 @@ def add_project_member(
         ... )
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("username", username, str)
@@ -406,7 +406,7 @@ def get_project_member_list(
         >>> management.get_project_member_list(project="ml-team/classification")
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
@@ -419,7 +419,11 @@ def get_project_member_list(
 
     try:
         result = backend_client.api.listProjectMembers(**params).response().result
-        return {f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role) for m in result}
+        return {
+            f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role)
+            for m in result
+            if m.registeredMemberInfo is not None
+        }
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
 
@@ -457,7 +461,7 @@ def remove_project_member(
         ... )
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("username", username, str)
@@ -502,7 +506,7 @@ def get_workspace_member_list(workspace: str, *, api_token: Optional[str] = None
         >>> management.get_workspace_member_list(workspace="ml-team")
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("workspace", workspace, str)
     verify_type("api_token", api_token, (str, type(None)))
@@ -513,7 +517,11 @@ def get_workspace_member_list(workspace: str, *, api_token: Optional[str] = None
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
-        return {f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role) for m in result}
+        return {
+            f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role)
+            for m in result
+            if m.registeredMemberInfo is not None
+        }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace) from e
 
@@ -559,7 +567,7 @@ def get_workspace_service_account_list(workspace: str, *, api_token: Optional[st
         >>> management.get_workspace_service_account_list(workspace="ml-team")
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     service_accounts = _get_raw_workspace_service_account_list(workspace_name=workspace, api_token=api_token)
 
@@ -604,8 +612,8 @@ def invite_to_workspace(
         ... )
 
     Learn more in the docs:
-    - https://docs.neptune.ai/api/management/#invite_to_workspace
-    - https://docs.neptune.ai/management/inviting_people/
+    - https://docs-legacy.neptune.ai/api/management/#invite_to_workspace
+    - https://docs-legacy.neptune.ai/management/inviting_people/
     """
     verify_type("workspace", workspace, str)
     verify_type("role", role, (WorkspaceMemberRole, str))
@@ -682,7 +690,7 @@ def get_project_service_account_list(
         ... )
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
@@ -723,7 +731,7 @@ def add_project_service_account(
              - "viewer": can only view project content and members
              - "contributor": can view and edit project content and only view members
              - "owner": can view and edit project content and members
-            For more information, see https://docs.neptune.ai/management/roles/
+            For more information, see https://docs-legacy.neptune.ai/management/roles/
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the project argument to "project-name" instead of "workspace-name/project-name".
             If None, it will be parsed from the project argument.
@@ -742,7 +750,7 @@ def add_project_service_account(
         ... )
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("service_account_name", service_account_name, str)
@@ -819,7 +827,7 @@ def remove_project_service_account(
         ... )
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management
+    https://docs-legacy.neptune.ai/api/management
     """
     verify_type("project", project, str)
     verify_type("service_account_name", service_account_name, str)
@@ -893,7 +901,7 @@ def trash_objects(
         ... )
         Note: Trashing a model object also trashes all of its versions.
 
-    For more, see the docs: https://docs.neptune.ai/api/management/#trash_objects
+    For more, see the docs: https://docs-legacy.neptune.ai/api/management/#trash_objects
     """
     verify_type("project", project, str)
     verify_type("workspace", workspace, (str, type(None)))
@@ -1066,7 +1074,7 @@ def get_workspace_status(workspace: str, *, api_token: Optional[str] = None) -> 
         ... 'membersCount': 1}
 
     You may also want to check the management API reference:
-    https://docs.neptune.ai/api/management/#get_workspace_status
+    https://docs-legacy.neptune.ai/api/management/#get_workspace_status
     """
     verify_type("workspace", workspace, str)
     verify_type("api_token", api_token, (str, type(None)))

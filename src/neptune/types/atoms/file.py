@@ -106,7 +106,7 @@ class File(Atom):
         Returns:
             `File` value object created based on the path.
 
-        For more, see the documentation: https://docs.neptune.ai/api/field_types#from_path
+        For more, see the documentation: https://docs-legacy.neptune.ai/api/field_types#from_path
         """
         verify_type("path", path, str)
         verify_type("extension", extension, (str, type(None)))
@@ -133,7 +133,7 @@ class File(Atom):
         You may also want to check `from_content docs page`_.
 
         .. _from_content docs page:
-           https://docs.neptune.ai/api/field_types#from_content
+           https://docs-legacy.neptune.ai/api/field_types#from_content
         """
         verify_type("content", content, (bytes, str, type(None)))
         verify_type("extension", extension, (str, type(None)))
@@ -160,7 +160,7 @@ class File(Atom):
             `File` value object created from the stream.
 
         See also:
-        - from_stream() documentation: https://docs.neptune.ai/api/field_types#from_stream
+        - from_stream() documentation: https://docs-legacy.neptune.ai/api/field_types#from_stream
         - IOBase documentation: https://docs.python.org/3/library/io.html#io.IOBase
         """
         verify_type("stream", stream, (IOBase, type(None)))
@@ -207,8 +207,8 @@ class File(Atom):
             >>> run["dataset/data_sample/img2"].upload(pil_image)
 
         See also the docs:
-            - How to log images: https://docs.neptune.ai/logging/images/
-            - API referene: https://docs.neptune.ai/api/field_types#as_image
+            - How to log images: https://docs-legacy.neptune.ai/logging/images/
+            - API referene: https://docs-legacy.neptune.ai/api/field_types#as_image
         """
         content_bytes = get_image_content(image, autoscale=autoscale)
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
@@ -256,7 +256,7 @@ class File(Atom):
         You may also want to check `as_html docs page`_.
 
         .. _as_html docs page:
-           https://docs.neptune.ai/api/field_types#as_html
+           https://docs-legacy.neptune.ai/api/field_types#as_html
         """
         content = get_html_content(chart, **kwargs)
         return File.from_content(content if content is not None else "", extension="html")
@@ -287,7 +287,7 @@ class File(Atom):
         You may also want to check `as_pickle docs page`_.
 
         .. _as_pickle docs page:
-           https://docs.neptune.ai/api/field_types#as_pickle
+           https://docs-legacy.neptune.ai/api/field_types#as_pickle
         """
         content = get_pickle_content(obj)
         return File.from_content(content if content is not None else b"", extension="pkl")

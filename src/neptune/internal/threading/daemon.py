@@ -21,6 +21,10 @@ import threading
 from enum import Enum
 
 from neptune.common.exceptions import NeptuneConnectionLostException
+from neptune.common.warnings import (
+    NeptuneWarning,
+    warn_once,
+)
 from neptune.internal.utils.logger import get_logger
 
 logger = get_logger()
@@ -78,7 +82,10 @@ class Daemon(threading.Thread):
 
     def _is_interrupted(self) -> bool:
         with self._wait_condition:
-            return self._state in (Daemon.DaemonState.INTERRUPTED, Daemon.DaemonState.STOPPED)
+            return self._state in (
+                Daemon.DaemonState.INTERRUPTED,
+                Daemon.DaemonState.STOPPED,
+            )
 
     def run(self):
         with self._wait_condition:
@@ -125,12 +132,21 @@ class Daemon(threading.Thread):
                         return result
                     except NeptuneConnectionLostException as e:
                         if self_.last_backoff_time == 0:
-                            logger.warning(
-                                "Experiencing connection interruptions."
-                                " Will try to reestablish communication with Neptune."
-                                " Internal exception was: %s",
-                                e.cause.__class__.__name__,
-                            )
+                            if e.cause.__class__.__name__ == "HTTPTooManyRequests":
+                                warn_once(
+                                    "You're hitting the default logging-rate limit for your workspace."
+                                    " See how to optimize the logging calls to reduce requests:"
+                                    " https://docs.neptune.ai/help/reducing_requests/. \n"
+                                    " To increase the limits for your workspace, contact sales@neptune.ai.",
+                                    exception=NeptuneWarning,
+                                )
+                            else:
+                                logger.warning(
+                                    "Experiencing connection interruptions."
+                                    " Will try to reestablish communication with Neptune."
+                                    " Internal exception was: %s",
+                                    e.cause.__class__.__name__,
+                                )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
