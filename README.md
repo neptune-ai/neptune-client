@@ -14,18 +14,18 @@
 </div>
 
 > [!IMPORTANT]
-> This is the legacy client.<br/>
+> This is the Python client for Neptune app version `2.x`.<br/>
 > For the new Neptune client, go to **[neptune-client-scale &rarr;][client]**
 
 > [!NOTE]
-> If you need to access Neptune Legacy (version `2.x`), see the [legacy documentation][legacy-setup] for setup instructions.
+> For Neptune `2.x` setup and instructions, see the [2.x documentation site][legacy-setup].
 <hr />
 
 &nbsp;
 ## Support
 
 If you get stuck or simply want to talk to us about something, here are your options:
-* Chat! In the Legacy app, click the blue message icon in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
+* Chat! In the `2.x` app, click the blue message icon in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * Shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 &nbsp;
 
