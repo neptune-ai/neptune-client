@@ -18,7 +18,7 @@
 > For the new Neptune client, go to **[neptune-client-scale &rarr;][client]**
 
 > [!NOTE]
-> For Neptune `2.x` setup and instructions, see the [2.x documentation site][legacy-setup].
+> For Neptune `2.x` setup and instructions, see the [documentation][legacy-setup].
 <hr />
 
 &nbsp;
