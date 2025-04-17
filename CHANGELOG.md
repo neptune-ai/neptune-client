@@ -1,3 +1,9 @@
+## neptune 1.14.1
+
+### Fixes
+- Use retry mechanism while refreshing oauth token ([#1917](https://github.com/neptune-ai/neptune-client/pull/1917))
+- Fix missing distutils dependency error that could appear when installing on Python 3.12+ ([#1917](https://github.com/neptune-ai/neptune-client/pull/1917))
+
 ## neptune 1.14.0
 
 ### Features
