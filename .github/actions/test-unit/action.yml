@@ -38,7 +38,7 @@ runs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-artifacts
+        name: test-artifacts-${{ inputs.os }},py${{ inputs.python-version }}
         path: ./test-results
 
     - name: Upload Pull Request coverage report do Codecov
