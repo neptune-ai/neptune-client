@@ -13,10 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, windows]
-        python-version: ["3.8"]
+        python-version: ["3.9"]
         include:
           - os: macos
-            python-version: "3.8"
+            python-version: "3.9"
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}-latest
     steps:

@@ -32,10 +32,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.8", "3.12" ]
+        python-version: [ "3.9", "3.12" ]
         os: [ ubuntu, windows ]
         include:
-          - python-version:  "3.8"
+          - python-version:  "3.9"
             os: macos
           - python-version: "3.12"
             os: macos
@@ -67,10 +67,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.8", "3.12" ]
+        python-version: [ "3.9", "3.12" ]
         os: [ ubuntu, windows ]
         include:
-          - python-version:  "3.8"
+          - python-version:  "3.9"
             os: macos
           - python-version: "3.12"
             os: macos
@@ -102,10 +102,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.8", "3.12" ]
+        python-version: [ "3.9", "3.12" ]
         os: [ ubuntu, windows ]
         include:
-          - python-version:  "3.8"
+          - python-version:  "3.9"
             os: macos
           - python-version: "3.12"
             os: macos
@@ -140,10 +140,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.8", "3.12" ]
+        python-version: [ "3.9", "3.12" ]
         os: [ ubuntu, windows ]
         include:
-          - python-version:  "3.8"
+          - python-version:  "3.9"
             os: macos
           - python-version: "3.12"
             os: macos

@@ -29,11 +29,6 @@ flags:
       - src/neptune
     carryforward: true
 
-  py3.8:
-    paths:
-      - src/neptune
-    carryforward: true
-
   py3.9:
     paths:
       - src/neptune
@@ -50,6 +45,11 @@ flags:
     carryforward: true
 
   py3.12:
+    paths:
+      - src/neptune
+    carryforward: true
+
+  py3.13:
     paths:
       - src/neptune
     carryforward: true
