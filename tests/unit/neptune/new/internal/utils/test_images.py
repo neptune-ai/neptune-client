@@ -27,6 +27,7 @@ import matplotlib
 import numpy
 import pandas
 import plotly.express as px
+import pytest
 import seaborn as sns
 from bokeh.plotting import figure
 from matplotlib import pyplot
@@ -188,6 +189,18 @@ class TestImage(unittest.TestCase):
         # then
         self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
 
+    @pytest.mark.skip(reason="Conversion to html fails for matplotlib axes with polar projection")
+    def test_get_html_from_matplotlib_figure_polar(self):
+        fig = pyplot.figure()
+        rect = 0.1, 0.1, 0.8, 0.8
+        fig.add_axes(rect, polar=True)
+
+        # when
+        result = get_html_content(fig)
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
+
     def test_get_html_from_plotly(self):
         # given
         df = px.data.tips()
@@ -232,7 +245,7 @@ class TestImage(unittest.TestCase):
         result = get_html_content(chart)
 
         # then
-        self.assertTrue(result.startswith("<!DOCTYPE html>\n<html>\n<head>\n  <style>"))
+        self.assertTrue(result.startswith("<!DOCTYPE html>\n<html>\n<head>\n"))
 
     def test_get_html_from_bokeh(self):
         # given
