@@ -21,7 +21,8 @@ future = ">=0.17.1"
 # Utility
 packaging = "*"
 click = ">=7.0"
-setuptools = { version= "*", python = ">=3.12" }
+setuptools = { version = "*", python = ">=3.12" }
+simplejson = "<3.19.0"
 
 # Networking
 bravado = "^11.0.0"
@@ -42,7 +43,7 @@ pandas = "*"
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = ">=3.9,<3.12" }
-neptune-detectron2 = { version = "*", optional = true, python = ">=3.8"}
+neptune-detectron2 = { version = "*", optional = true, python = ">=3.8" }
 neptune-fastai = { version = "*", optional = true }
 neptune-lightgbm = { version = "*", optional = true }
 pytorch-lightning = { version = "*", optional = true }
@@ -116,9 +117,7 @@ keywords = [
     "ML Model Store",
     "ML Metadata Store",
 ]
-packages = [
-    { include = "neptune", from = "src" },
-]
+packages = [{ include = "neptune", from = "src" }]
 
 [tool.poetry.urls]
 "Tracker" = "https://github.com/neptune-ai/neptune-client/issues"
