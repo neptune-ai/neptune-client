@@ -1,3 +1,8 @@
+## [Unreleased] neptune 1.15.0
+
+### Changes
+- Pin `simplejson` required version to below `3.19` ([#1920](https://github.com/neptune-ai/neptune-client/pull/1920))
+
 ## neptune 1.14.1
 
 ### Fixes
