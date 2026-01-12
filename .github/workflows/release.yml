@@ -37,7 +37,7 @@ jobs:
       - name: Build package
         run: poetry build
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: neptune-package
           path: dist/
