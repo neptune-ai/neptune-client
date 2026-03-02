@@ -46,7 +46,7 @@ jobs:
     needs: [ build-neptune ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: neptune-package
           path: dist
@@ -66,7 +66,7 @@ jobs:
       - test-clean-install-neptune
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: neptune-package
           path: dist/
