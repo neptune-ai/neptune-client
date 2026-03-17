@@ -22,12 +22,6 @@
 <hr />
 
 &nbsp;
-## Support
-
-If you get stuck or simply want to talk to us about something, here are your options:
-* Chat! In the `2.x` app, click the blue message icon in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
-* Shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
-&nbsp;
 
 
 [client]: https://github.com/neptune-ai/neptune-client-scale
